@@ -16,7 +16,7 @@ export default function Page() {
             link.route === pathname ||
             (pathname.includes(link.route) && link.route.length > 1);
           return (
-            <div className='group'>
+            <div className='group' key={link.label}>
               <Link
                 href={`${
                   link.label === 'Profile' ? `/profile/${userId}` : link.route
