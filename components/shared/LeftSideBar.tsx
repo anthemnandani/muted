@@ -1,62 +1,55 @@
 'use client';
-import React from 'react';
 import { sidebarLinks } from '@/constants';
-import Image from 'next/image';
+import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { SignOutButton, SignedIn, useAuth } from '@clerk/nextjs';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+import { Icons } from '../icons';
 
-export default function Page() {
-  const router = useRouter();
+const LeftSideBar = () => {
   const pathname = usePathname();
-  const { userId } = useAuth();
+
   return (
-    <section className='bg-dark-2 sticky left-0 top-0 z-20 w-fit h-screen flex flex-col justify-between max-md:hidden border-r border-r-dark-4 pt-28 pb-5 overflow-auto custom-scrollbar'>
-      <ul className='flex flex-col gap-6 w-full px-6 flex-1'>
+    <section className='hidden sticky left-0 top-0 z-20 w-[76px] h-screen md:flex-col-between'>
+      <Link
+        href='/'
+        className='text-2xl font-semibold tracking-wide cursor-pointer active:scale-95 transform transition-all duration-150 ease-out hover:scale-105 z-[50] py-4'
+      >
+        <Icons.logo className='h-9 w-9' />
+      </Link>
+      <ul className='flex-col-center gap-4 w-full'>
         {sidebarLinks.map((link) => {
           const isActive =
             link.route === pathname ||
             (pathname.includes(link.route) && link.route.length > 1);
+          const Icon = link.icon;
+
           return (
-            <div className='group' key={link.label}>
+            <div key={link.label}>
               <Link
-                href={`${
-                  link.label === 'Profile' ? `/profile/${userId}` : link.route
-                }`}
-                key={link.label}
-                className={`flex justify-start gap-4 p-4 rounded-lg ${
-                  isActive && 'bg-primary-500'
-                } group-hover:bg-primary-500`}
+                href={link.route}
+                className='relative w-15 h-12 flex-center rounded-xl hover:bg-primary transition-colors duration-150'
               >
-                <Image
-                  src={link.imgURL}
-                  alt={link.label}
-                  width={20}
-                  height={20}
+                <Icon
+                  className={cn(
+                    'h-6 w-6 transition-colors duration-150',
+                    isActive ? 'text-foreground' : 'text-secondary'
+                  )}
+                  fill={
+                    isActive && link.addFill ? 'currentColor' : 'transparent'
+                  }
                 />
-                <p className='text-light-1 text-sm lg:text-base'>
-                  {link.label}
-                </p>
               </Link>
             </div>
           );
         })}
       </ul>
-      <div className='mt-10 px-8'>
-        <SignedIn>
-          <SignOutButton signOutCallback={() => router.push('/sign-in')}>
-            <div className='flex gap-2 items-center p-4 cursor-pointer'>
-              <Image
-                src='/assets/logout.svg'
-                alt='Logout'
-                width={20}
-                height={20}
-              />
-              <p className='text-light-2 max-lg:hidden'>Logout</p>
-            </div>
-          </SignOutButton>
-        </SignedIn>
+
+      <div className='flex-col-center gap-8 mt-[15px] mb-10'>
+        <Icons.pin className='text-secondary w-[26px] h-[26px] transform transition-all duration-150 ease-out hover:scale-100 active:scale-90 cursor-pointer hover:text-foreground active:text-foreground' />
+        <Icons.menu className='text-secondary w-5 h-5 ml-1 transform transition-all duration-150 ease-out hover:scale-100 active:scale-90 cursor-pointer hover:text-foreground active:text-foreground' />
       </div>
     </section>
   );
-}
+};
+
+export default LeftSideBar;

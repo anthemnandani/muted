@@ -1,33 +1,28 @@
+import { Icons } from '@/components/icons';
+
 export const sidebarLinks = [
   {
-    imgURL: '/assets/home.svg',
+    icon: Icons.home,
     route: '/',
     label: 'Home',
+    addFill: true,
   },
   {
-    imgURL: '/assets/search.svg',
+    icon: Icons.search,
     route: '/search',
     label: 'Search',
   },
   {
-    imgURL: '/assets/heart.svg',
+    icon: Icons.activity,
     route: '/activity',
     label: 'Activity',
+    addFill: true,
   },
   {
-    imgURL: '/assets/create.svg',
-    route: '/create-thread',
-    label: 'Create Thread',
-  },
-  {
-    imgURL: '/assets/community.svg',
-    route: '/communities',
-    label: 'Communities',
-  },
-  {
-    imgURL: '/assets/user.svg',
+    icon: Icons.profile,
     route: '/profile',
     label: 'Profile',
+    addFill: true,
   },
 ];
 
