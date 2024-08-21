@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Icons } from '../icons';
+import NavigationMenu from './NavigationMenu';
 
 const LeftSideBar = () => {
   const pathname = usePathname();
@@ -43,11 +44,7 @@ const LeftSideBar = () => {
           );
         })}
       </ul>
-
-      <div className='flex-col-center gap-8 mt-[15px] mb-10'>
-        <Icons.pin className='text-secondary w-[26px] h-[26px] transform transition-all duration-150 ease-out hover:scale-100 active:scale-90 cursor-pointer hover:text-foreground active:text-foreground' />
-        <Icons.menu className='text-secondary w-5 h-5 ml-1 transform transition-all duration-150 ease-out hover:scale-100 active:scale-90 cursor-pointer hover:text-foreground active:text-foreground' />
-      </div>
+      <NavigationMenu />
     </section>
   );
 };
