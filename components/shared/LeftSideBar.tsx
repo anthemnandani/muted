@@ -1,13 +1,16 @@
 'use client';
 import { sidebarLinks } from '@/constants';
 import { cn } from '@/lib/utils';
+import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Icons } from '../icons';
 import NavigationMenu from './NavigationMenu';
+import Image from 'next/image';
 
 const LeftSideBar = () => {
   const pathname = usePathname();
+  const { theme } = useTheme();
 
   return (
     <section className='hidden sticky left-0 top-0 z-20 w-[76px] h-screen md:flex-col-between'>
@@ -15,7 +18,14 @@ const LeftSideBar = () => {
         href='/'
         className='text-2xl font-semibold tracking-wide cursor-pointer active:scale-95 transform transition-all duration-150 ease-out hover:scale-105 z-[50] py-4'
       >
-        <Icons.logo className='h-9 w-9' />
+        <Image
+          src={`/assets/muted-logo-${
+            theme === 'light' ? 'black' : 'white'
+          }.svg`}
+          alt='Logo'
+          width={36}
+          height={36}
+        />
       </Link>
       <ul className='flex-col-center gap-4 w-full'>
         {sidebarLinks.map((link) => {
