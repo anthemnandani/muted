@@ -1,25 +1,14 @@
-import { formatDateString } from '@/lib/utils';
+import { ThreadCardProps } from '@/lib/types';
+import { formatDateString, formatTimeAgo } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import DeleteThread from '../forms/DeleteThread';
+import { Icons } from '../icons';
+import ThreadActionMenu from '../shared/ThreadActionMenu';
+import { Separator } from '../ui/separator';
+import React from 'react';
 
-interface ThreadCardProps {
-  id: string;
-  content: string;
-  author: {
-    id: string;
-    image: string;
-    name: string;
-  };
-  community: { id: string; name: string; image: string } | null;
-  comments: any[];
-  parentId: string;
-  createdAt: Date;
-  currentUserId: string;
-  isComment?: boolean;
-}
-
-const ThreadCard = ({
+const ThreadCard: React.FC<ThreadCardProps> = ({
   id,
   content,
   author,
@@ -29,17 +18,14 @@ const ThreadCard = ({
   createdAt,
   currentUserId,
   isComment,
-}: ThreadCardProps) => {
+  isLastThread,
+}) => {
   return (
-    <article
-      className={`w-full rounded-xl ${
-        isComment ? 'px-0 xs:px-7' : 'p-7 bg-dark-2'
-      }`}
-    >
-      <div className='flex justify-between items-start'>
+    <article className='w-full cursor-pointer'>
+      <div className='flex justify-between px-2 sm:px-6 mb-4'>
         <div className='flex gap-4 w-full'>
-          <div className='flex flex-col items-center'>
-            <Link href={`/profile/${author.id}`} className='relative h-11 w-11'>
+          <div className='flex-col-center'>
+            <Link href={`/profile/${author.id}`} className='relative h-9 w-9'>
               <Image
                 src={author.image}
                 alt='Profile'
@@ -47,47 +33,39 @@ const ThreadCard = ({
                 className='rounded-full cursor-pointer'
               />
             </Link>
-            <div className='mt-2 w-0.5 bg-neutral-800 rounded-full grow relative'></div>
           </div>
           <div className='flex flex-col w-full'>
-            <Link href={`/profile/${author.id}`} className='w-fit'>
-              <h4 className='text-light-1 font-semibold text-base'>
-                {author.name}
-              </h4>
-            </Link>
-            <p className='text-sm text-light-2 mt-2'>{content}</p>
-            <div className='mt-5 flex flex-col gap-3'>
-              <div className='flex gap-3.5'>
-                <Image
-                  src='/assets/heart-gray.svg'
-                  alt='Like'
-                  width={24}
-                  height={24}
-                  className='cursor-pointer object-contain'
-                />
-                <Link href={`/thread/${id}`}>
-                  <Image
-                    src='/assets/reply.svg'
-                    alt='Reply'
-                    width={24}
-                    height={24}
-                    className='object-contain'
-                  />
+            <div className='flex-between gap-5 py-px w-full max-md:max-w-full max-md:flex-wrap'>
+              <div className='flex items-center gap-2'>
+                <Link href={`/profile/${author.id}`} className='w-fit'>
+                  <h4 className='font-semibold text-[15px] leading-none'>
+                    {author.name}
+                  </h4>
                 </Link>
-                <Image
-                  src='/assets/repost.svg'
-                  alt='Repost'
-                  width={24}
-                  height={24}
-                  className='cursor-pointer object-contain'
-                />
-                <Image
-                  src='/assets/share.svg'
-                  alt='Share'
-                  width={24}
-                  height={24}
-                  className='cursor-pointer object-contain'
-                />
+                <time className='text-[15px] leading-none text-gray-3'>
+                  {formatTimeAgo(createdAt)}
+                </time>
+              </div>
+              <ThreadActionMenu />
+            </div>
+            <p className='text-accent-foreground text-[15px] leading-5 mt-1 max-md:max-w-full whitespace-pre-line'>
+              {content}
+            </p>
+            <div className='flex flex-col gap-3 mt-2'>
+              <div className='flex items-center gap-3.5 -ml-2'>
+                <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
+                  <Icons.heart className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
+                </div>
+
+                <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
+                  <Icons.reply className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
+                </div>
+                <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
+                  <Icons.repost className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
+                </div>
+                <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
+                  <Icons.share className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
+                </div>
               </div>
               {isComment && comments.length > 0 && (
                 <Link href={`/thread/${id}`}>
@@ -152,6 +130,7 @@ const ThreadCard = ({
           </div>{' '}
         </Link>
       )}
+      {isLastThread ? <div className='py-4'></div> : <Separator />}
     </article>
   );
 };

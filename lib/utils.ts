@@ -1,5 +1,12 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import {
+  differenceInSeconds,
+  differenceInMinutes,
+  differenceInHours,
+  differenceInDays,
+  differenceInWeeks,
+} from 'date-fns';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -26,4 +33,25 @@ export function formatDateString(dateString: string) {
   });
 
   return `${time} - ${formattedDate}`;
+}
+
+export function formatTimeAgo(timestamp: Date): string {
+  const now = new Date();
+  const secondsDiff = differenceInSeconds(now, timestamp);
+  const minutesDiff = differenceInMinutes(now, timestamp);
+  const hoursDiff = differenceInHours(now, timestamp);
+  const daysDiff = differenceInDays(now, timestamp);
+  const weeksDiff = differenceInWeeks(now, timestamp);
+
+  if (secondsDiff < 60) {
+    return `${secondsDiff}s`;
+  } else if (minutesDiff < 60) {
+    return `${minutesDiff}m`;
+  } else if (hoursDiff < 24) {
+    return `${hoursDiff}h`;
+  } else if (daysDiff < 7) {
+    return `${daysDiff}d`;
+  } else {
+    return `${weeksDiff}w`;
+  }
 }
