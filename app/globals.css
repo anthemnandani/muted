@@ -222,7 +222,7 @@
 
   /* Dropdown */
   .dropdown-content-container {
-    @apply bg-background shadow-xl dark:bg-[#181818] rounded-md p-0;
+    @apply bg-background shadow-xl dark:bg-[#181818] w-[200px] rounded-md p-0;
   }
 
   .dropdown-menu-item {

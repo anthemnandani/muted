@@ -10,10 +10,10 @@ export default function RootLayout({
   return (
     <>
       <TopBar />
-      <main className='flex'>
-        <LeftSideBar />
-        <section className='min-h-screen flex-col flex-1 items-center pt-28 px-6 pb-10 max-md:pb-32 sm:px-10'>
-          <div className='w-full max-w-4xl'>{children}</div>
+      <LeftSideBar />
+      <main className='flex justify-center'>
+        <section className='min-h-screen md:pt-[60px] px-4 md:px-10'>
+          <div className='w-full max-w-[640px] mx-auto'>{children}</div>
         </section>
         {/* <RightSideBar /> */}
       </main>

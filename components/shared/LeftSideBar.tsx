@@ -10,7 +10,7 @@ const LeftSideBar = () => {
   const { theme } = useTheme();
 
   return (
-    <section className='hidden sticky left-0 top-0 z-20 w-[76px] h-screen md:flex-col-between'>
+    <section className='hidden fixed left-0 top-0 z-20 w-[76px] h-screen md:flex-col-between'>
       <Link href='/' className='logo'>
         <Image
           src={`/assets/muted-logo-${
