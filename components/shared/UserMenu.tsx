@@ -1,6 +1,6 @@
 'use client';
 import { useAuth } from '@clerk/nextjs';
-import { AlertCircle, LogOut, Settings } from 'lucide-react';
+import { AlertCircle, Bookmark, Heart, LogOut, Settings } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 import { Icons } from '../icons';
@@ -12,11 +12,13 @@ import {
 } from '../ui/dropdown-menu';
 import AppearanceMenu from './AppearanceMenu';
 import MenuItem from './MenuItem';
+import useWindow from '@/hooks/useWindow';
 
 const UserMenu = () => {
   const { signOut } = useAuth();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const { isMobile } = useWindow();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -27,6 +29,17 @@ const UserMenu = () => {
       <DropdownMenuContent className='dropdown-content-container ml-4 w-[200px]'>
         <AppearanceMenu theme={theme!} setTheme={setTheme} />
         <MenuItem icon={Settings} label='Settings' className='py-2' />
+        <MenuItem
+          icon={AlertCircle}
+          label='Report a problem'
+          className='py-2'
+        />
+        {isMobile && (
+          <MenuItem icon={Bookmark} label='Saved' className='py-2' />
+        )}
+        {isMobile && (
+          <MenuItem icon={Heart} label='Your likes' className='py-2' />
+        )}
         <MenuItem
           icon={AlertCircle}
           label='Report a problem'
