@@ -20,7 +20,7 @@ const UserMenu = () => {
   const { theme, setTheme } = useTheme();
   const { isMobile } = useWindow();
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <div>
           <Icons.menu className='menu-icon w-5 h-5 ml-1' />
@@ -40,11 +40,7 @@ const UserMenu = () => {
         {isMobile && (
           <MenuItem icon={Heart} label='Your likes' className='py-2' />
         )}
-        <MenuItem
-          icon={AlertCircle}
-          label='Report a problem'
-          className='py-2'
-        />
+
         <DropdownMenuSeparator />
         <MenuItem
           icon={LogOut}

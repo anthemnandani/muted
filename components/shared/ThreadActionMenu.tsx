@@ -1,5 +1,4 @@
 'use client';
-import { cn } from '@/lib/utils';
 import { Bookmark, MoreHorizontal } from 'lucide-react';
 import { Icons } from '../icons';
 import {
@@ -12,16 +11,16 @@ import MenuItem from './MenuItem';
 
 const ThreadActionMenu = () => {
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <div className='flex-center relative cursor-pointer'>
-          <Icons.moreHorizontal className='aspect-square object-cover object-center h-4 w-4 overflow-hidden flex-1 text-secondary' />
+        <div className='flex items-center justify-center relative hover:before:content-[""] hover:before:absolute hover:before:bg-primary hover:before:z-[2] hover:before:-inset-2 hover:before:rounded-full cursor-pointer '>
+          <MoreHorizontal className='aspect-square object-cover object-center h-4 w-4 overflow-hidden flex-1 text-secondary' />
         </div>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         align='end'
-        className='dropdown-content-container !rounded-xl !w-[200px]'
+        className='dropdown-content-container !rounded-xl !w-[220px]'
       >
         <MenuItem
           icon={Bookmark}

@@ -31,7 +31,7 @@
     "react-dom": "^18",
     "react-hook-form": "^7.48.2",
     "svix": "^1.14.0",
-    "tailwind-merge": "^2.0.0",
+    "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "uploadthing": "^5.2.0",
     "webhook": "^0.0.2",
@@ -43,7 +43,7 @@
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
     "postcss": "^8",
-    "tailwindcss": "^3.3.0",
+    "tailwindcss": "^3.4.10",
     "typescript": "^5"
   }
 }
