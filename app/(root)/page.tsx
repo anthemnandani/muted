@@ -1,5 +1,5 @@
 import ThreadCard from '@/components/cards/ThreadCard';
-import CreateWithInput from '@/components/CreateWithInput';
+import CreateWithInput from '@/components/inputs/CreateWithInput';
 import Wrapper from '@/components/shared/Wrapper';
 import { fetchPosts } from '@/lib/actions/thread.actions';
 import { fetchUser } from '@/lib/actions/user.actions';

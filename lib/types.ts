@@ -4,6 +4,11 @@ export type IconProps =
   | React.HTMLAttributes<SVGElement>
   | React.SVGProps<SVGSVGElement>;
 
+export interface AppearanceMenuProps {
+  theme: string;
+  setTheme: (theme: string) => void;
+}
+
 export interface MenuLinkProps {
   route: string;
   isActive: boolean;

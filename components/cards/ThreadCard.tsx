@@ -4,9 +4,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import DeleteThread from '../forms/DeleteThread';
 import { Icons } from '../icons';
-import ThreadActionMenu from '../shared/ThreadActionMenu';
 import { Separator } from '../ui/separator';
 import React from 'react';
+import ThreadActionMenu from '../menus/ThreadActionMenu';
 
 const ThreadCard: React.FC<ThreadCardProps> = ({
   id,

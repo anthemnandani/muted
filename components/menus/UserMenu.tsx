@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import AppearanceMenu from './AppearanceMenu';
-import MenuItem from './MenuItem';
+import MenuItem from '../shared/MenuItem';
 import useWindow from '@/hooks/useWindow';
 
 const UserMenu = () => {

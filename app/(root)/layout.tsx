@@ -1,4 +1,4 @@
-import CreateThreadButton from '@/components/CreateThreadButton';
+import CreateThreadButton from '@/components/buttons/CreateThreadButton';
 import BottomBar from '@/components/shared/BottomBar';
 import LeftSideBar from '@/components/shared/LeftSideBar';
 import TopBar from '@/components/shared/TopBar';

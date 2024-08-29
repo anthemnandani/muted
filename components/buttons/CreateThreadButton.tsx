@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icons } from './icons';
+import { Icons } from '../icons';
 
 const CreateThreadButton = () => {
   return (

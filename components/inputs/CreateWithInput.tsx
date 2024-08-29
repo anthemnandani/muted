@@ -1,8 +1,8 @@
 'use client';
 import { useUser } from '@clerk/nextjs';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Button } from './ui/button';
-import { Separator } from './ui/separator';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Button } from '../ui/button';
+import { Separator } from '../ui/separator';
 
 const CreateWithInput = () => {
   const { user } = useUser();
