@@ -227,6 +227,8 @@ module.exports = {
         'gray-5': '#2d2d2d',
         'gray-6': '#181818',
         'primary-red': '#ff3040',
+        'border-dark': '#00000026',
+        'border-light': '#f3f5f726',
         glassmorphism: 'rgba(16, 16, 18, 0.60)',
       },
       width: {

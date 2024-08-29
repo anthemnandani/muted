@@ -27,7 +27,7 @@ const CreateWithInput = () => {
         </div>
         <Button
           variant='ghost'
-          className='bg-transparent border border-[#f3f5f726] rounded-lg text-[14px] leading-none flex-center hover:bg-transparent dark:hover:bg-transparent'
+          className='bg-transparent border border-border-dark dark:border-border-light rounded-lg text-[14px] leading-none flex-center hover:bg-transparent dark:hover:bg-transparent'
         >
           Post
         </Button>

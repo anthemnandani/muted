@@ -643,7 +643,13 @@ export const Icons = {
     </svg>
   ),
   copyLink: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
-    <svg aria-label='Copy Link' role='img' viewBox='0 0 18 18' {...props}>
+    <svg
+      aria-label='Copy Link'
+      role='img'
+      viewBox='0 0 18 18'
+      fill='none'
+      {...props}
+    >
       <title></title>
       <path
         d='M8.39992 5.44993L9.50669 4.34316C11.2046 2.64524 13.9575 2.64524 15.6554 4.34316V4.34316V4.34316C17.3533 6.04108 17.3533 8.79396 15.6554 10.4919L14.5486 11.5987'
@@ -662,6 +668,17 @@ export const Icons = {
         stroke='currentColor'
         stroke-linecap='round'
         stroke-width='1.65'
+      ></path>
+    </svg>
+  ),
+  plus: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
+    <svg aria-label='Create' role='img' viewBox='0 0 12 12' {...props}>
+      <title>Create</title>
+      <path
+        d='M6 2v8m4-4H2'
+        stroke='currentColor'
+        stroke-linecap='round'
+        stroke-width='1.5'
       ></path>
     </svg>
   ),
