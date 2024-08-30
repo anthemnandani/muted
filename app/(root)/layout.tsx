@@ -1,4 +1,5 @@
-import CreateThreadButton from '@/components/buttons/CreateThreadButton';
+import CreateThreadDesktop from '@/components/buttons/CreateThreadDesktop';
+import CreateThread from '@/components/modals/CreateThread';
 import BottomBar from '@/components/shared/BottomBar';
 import LeftSideBar from '@/components/shared/LeftSideBar';
 import TopBar from '@/components/shared/TopBar';
@@ -17,7 +18,7 @@ export default function RootLayout({
           <div className='w-full max-w-[640px] mx-auto'>{children}</div>
         </section>
       </main>
-      <CreateThreadButton />
+      <CreateThreadDesktop />
       <BottomBar />
     </>
   );

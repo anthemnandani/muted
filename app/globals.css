@@ -68,7 +68,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-hidden;
   }
 }
 
@@ -222,11 +222,11 @@
 
   /* Dropdown */
   .dropdown-content-container {
-    @apply bg-background shadow-xl dark:bg-[#181818] w-[200px] rounded-md p-0;
+    @apply bg-background shadow-xl dark:bg-[#181818] w-[200px] rounded-2xl p-0 z-[1000];
   }
 
   .dropdown-menu-item {
-    @apply tracking-normal font-semibold cursor-pointer text-[15px] active:bg-primary-foreground rounded-none;
+    @apply focus:bg-transparent px-4 tracking-normal select-none font-semibold py-3 cursor-pointer text-[15px] rounded-none active:bg-primary-foreground;
   }
 
   /* Account Profile  */

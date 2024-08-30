@@ -40,3 +40,19 @@ export interface ThreadCardProps {
   isComment?: boolean;
   isLastThread?: boolean;
 }
+
+export interface UserAvatarProps extends React.HTMLAttributes<HTMLDivElement> {
+  image: string | null | undefined;
+  username: string;
+  fullname: string | null | undefined;
+}
+
+export interface CreateThreadInputProps {
+  isOpen: boolean;
+  replyThreadInfo?: any | null;
+  onTextareaChange: (textValue: string) => void;
+  // Todo: change type
+  quoteInfo?:
+    | (Pick<any, 'id' | 'text' | 'author'> & { createdAt?: Date })
+    | null;
+}

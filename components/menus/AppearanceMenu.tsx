@@ -18,7 +18,7 @@ const AppearanceMenu: React.FC<AppearanceMenuProps> = ({ theme, setTheme }) => {
         <span>Appearance</span>
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal>
-        <DropdownMenuSubContent className='dropdown-content-container'>
+        <DropdownMenuSubContent className='dropdown-content-container !rounded-lg'>
           <MenuItem
             icon={Sun}
             label='Light'
