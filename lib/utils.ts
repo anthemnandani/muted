@@ -7,6 +7,8 @@ import {
   differenceInDays,
   differenceInWeeks,
 } from 'date-fns';
+import type { UserResource } from '@clerk/types';
+import type { User } from '@clerk/nextjs/server';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -55,3 +57,11 @@ export function formatTimeAgo(timestamp: Date): string {
     return `${weeksDiff}w`;
   }
 }
+
+export const getUserEmail = (user: UserResource | User | null) => {
+  const email =
+    user?.emailAddresses?.find((e) => e.id === user.primaryEmailAddressId)
+      ?.emailAddress ?? '';
+
+  return email;
+};

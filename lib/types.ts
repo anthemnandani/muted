@@ -56,3 +56,9 @@ export interface CreateThreadInputProps {
     | (Pick<any, 'id' | 'text' | 'author'> & { createdAt?: Date })
     | null;
 }
+
+export enum PostPrivacy {
+  ANYONE = 'ANYONE',
+  FOLLOWED = 'FOLLOWED',
+  MENTIONED = 'MENTIONED',
+}

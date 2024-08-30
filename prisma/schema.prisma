@@ -31,12 +31,12 @@ model User {
 }
 
 model Follower {
-  id         String  @id @default(auto()) @map("_id") @db.ObjectId
-  followerId String  @db.ObjectId
-  followingId String  @db.ObjectId
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  followerId  String @db.ObjectId
+  followingId String @db.ObjectId
 
-  follower   User    @relation(name: "follower", fields: [followerId], references: [id])
-  following  User    @relation(name: "following", fields: [followingId], references: [id])
+  follower  User @relation(name: "follower", fields: [followerId], references: [id])
+  following User @relation(name: "following", fields: [followingId], references: [id])
 
   @@index([followerId])
   @@index([followingId])
@@ -55,12 +55,12 @@ model Post {
   text         String
   images       String[]
   likes        Like[]
-  parentPostId String?         @db.ObjectId
+  parentPostId String?        @db.ObjectId
   parentPost   Post?          @relation("rootPost", fields: [parentPostId], references: [id], onUpdate: NoAction, onDelete: NoAction)
   replies      Post[]         @relation("rootPost")
   notification Notification[]
   reposts      Repost[]
-  quoteId      String?         @db.ObjectId
+  quoteId      String?        @db.ObjectId
   privacy      PostPrivacy    @default(ANYONE)
   reports      Report[]
 
@@ -68,7 +68,7 @@ model Post {
 }
 
 model Like {
-  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   createdAt DateTime @default(now())
   post      Post     @relation(fields: [postId], references: [id], onUpdate: NoAction, onDelete: NoAction)
   postId    String   @db.ObjectId
@@ -80,7 +80,7 @@ model Like {
 }
 
 model Repost {
-  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   createdAt DateTime @default(now())
   post      Post     @relation(fields: [postId], references: [id], onUpdate: NoAction, onDelete: NoAction)
   postId    String   @db.ObjectId
