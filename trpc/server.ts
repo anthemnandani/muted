@@ -4,10 +4,11 @@ import {
 } from '@trpc/client';
 import { headers } from 'next/headers';
 
-import { type AppRouter } from '../server/api/root';
+import { type AppRouter } from '@/server/api/root';
 import { getUrl, transformer } from './shared';
 
 export const api = createTRPCProxyClient<AppRouter>({
+  transformer,
   links: [
     // loggerLink({
     //   enabled: (op) =>
@@ -16,7 +17,6 @@ export const api = createTRPCProxyClient<AppRouter>({
     // }),
     unstable_httpBatchStreamLink({
       url: getUrl(),
-      transformer,
       headers() {
         const heads = new Map(headers());
         heads.set('x-trpc-source', 'rsc');

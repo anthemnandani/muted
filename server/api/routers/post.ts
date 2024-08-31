@@ -1,12 +1,19 @@
-import { z } from 'zod';
-import { createTRPCRouter, privateProcedure } from '../trpc';
 import { getUserEmail } from '@/lib/utils';
+import {
+  GET_COUNT,
+  GET_LIKES,
+  GET_REPLIES,
+  GET_REPOSTS,
+  GET_USER,
+} from '@/server/constants';
+import { PostPrivacy } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
-import { PostPrivacy } from '@prisma/client';
+import { z } from 'zod';
+import { createTRPCRouter, privateProcedure, publicProcedure } from '../trpc';
 
 export const postRouter = createTRPCRouter({
-  createThread: privateProcedure
+  createPost: privateProcedure
     .input(
       z.object({
         text: z.string().min(3, {
@@ -76,6 +83,74 @@ export const postRouter = createTRPCRouter({
       return {
         createPost: transactionResult.newpost,
         success: true,
+      };
+    }),
+
+  getInfinitePosts: publicProcedure
+    .input(
+      z.object({
+        searchQuery: z.string().optional(),
+        limit: z.number().optional(),
+        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
+      })
+    )
+    .query(async ({ input: { limit = 5, cursor, searchQuery }, ctx }) => {
+      const allPosts = await ctx.db.post.findMany({
+        where: {
+          text: {
+            contains: searchQuery,
+          },
+          parentPostId: null,
+        },
+        take: limit + 1,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        select: {
+          id: true,
+          createdAt: true,
+          text: true,
+          images: true,
+          parentPostId: true,
+          quoteId: true,
+          author: {
+            select: {
+              ...GET_USER,
+            },
+          },
+          ...GET_LIKES,
+          ...GET_REPLIES,
+          ...GET_COUNT,
+          ...GET_REPOSTS,
+        },
+      });
+
+      let nextCursor: typeof cursor | undefined;
+
+      if (allPosts.length > limit) {
+        const nextItem = allPosts.pop();
+        if (nextItem != null) {
+          nextCursor = { id: nextItem.id, createdAt: nextItem.createdAt };
+        }
+      }
+
+      return {
+        posts: allPosts.map((post) => ({
+          id: post.id,
+          createdAt: post.createdAt,
+          text: post.text,
+          parentPostId: post.parentPostId,
+          author: post.author,
+          count: {
+            likeCount: post._count.likes,
+            replyCount: post._count.replies,
+          },
+          likes: post.likes,
+          replies: post.replies,
+          quoteId: post.quoteId,
+          images: post.images,
+          reposts: post.reposts,
+        })),
+        nextCursor,
       };
     }),
 });

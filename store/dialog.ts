@@ -1,16 +1,19 @@
+import type { ParentPostInfo } from '@/lib/types';
 import { create } from 'zustand';
 
 interface ToggleState {
   openDialog: boolean;
   setOpenDialog: (open: boolean) => void;
-  // Todo: change type
-  replyPostInfo: any | null;
-  setReplyPostInfo: (reply: any | null) => void;
+
+  replyPostInfo: ParentPostInfo | null;
+  setReplyPostInfo: (reply: ParentPostInfo | null) => void;
   quoteInfo:
-    | (Pick<any, 'id' | 'text' | 'author'> & { createdAt?: Date })
+    | (Pick<ParentPostInfo, 'id' | 'text' | 'author'> & { createdAt?: Date })
     | null;
   setQuoteInfo: (
-    quote: (Pick<any, 'id' | 'text' | 'author'> & { createdAt?: Date }) | null
+    quote:
+      | (Pick<ParentPostInfo, 'id' | 'text' | 'author'> & { createdAt?: Date })
+      | null
   ) => void;
 }
 

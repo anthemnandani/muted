@@ -4,10 +4,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 
-const CreateWithInput = () => {
+const CreateWithInput = ({ onClick }: { onClick: () => void }) => {
   const { user } = useUser();
   return (
-    <div className='flex flex-col w-full select-none'>
+    <div className='flex flex-col w-full select-none' onClick={onClick}>
       <div className='flex w-full my-4 px-6 py-2'>
         <div className='w-full flex select-none'>
           <Avatar className='rounded-full outline outline-1 outline-border h-9 w-9 mr-4'>

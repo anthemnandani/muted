@@ -1,24 +1,162 @@
+// generator client {
+//   provider = "prisma-client-js"
+// }
+
+// datasource db {
+//   provider = "postgres"
+//   url      = env("DATABASE_URL")
+// }
+
+// model User {
+//   id                    String         @id @default(auto()) @map("_id") @db.ObjectId
+//   clerkId               String         @unique
+//   createdAt             DateTime       @default(now()) @map(name: "created_at")
+//   updatedAt             DateTime       @default(now()) @map(name: "updated_at")
+//   username              String?        @unique
+//   fullName              String?
+//   image                 String?
+//   bio                   String?
+//   link                  String?
+//   email                 String         @unique
+//   verified              Boolean?       @default(false)
+//   privacy               Privacy        @default(PUBLIC)
+//   posts                 Post[]
+//   likedPosts            Like[]
+//   isAdmin               Boolean?       @default(false) @map(name: "is_admin")
+//   reposts               Repost[]
+//   reports               Report[]
+//   senderNotifications   Notification[] @relation("sender")
+//   receiverNotifications Notification[] @relation("receiver")
+//   followers             Follower[]     @relation(name: "follower")
+//   following             Follower[]     @relation(name: "following")
+// }
+
+// model Follower {
+//   id          String @id @default(auto()) @map("_id") @db.ObjectId
+//   followerId  String @db.ObjectId
+//   followingId String @db.ObjectId
+
+//   follower  User @relation(name: "follower", fields: [followerId], references: [id])
+//   following User @relation(name: "following", fields: [followingId], references: [id])
+
+//   @@index([followerId])
+//   @@index([followingId])
+// }
+
+// enum Privacy {
+//   PUBLIC
+//   PRIVATE
+// }
+
+// model Post {
+//   id           String         @id @default(auto()) @map("_id") @db.ObjectId
+//   createdAt    DateTime       @default(now())
+//   author       User           @relation(fields: [authorId], references: [id])
+//   authorId     String         @db.ObjectId
+//   text         String
+//   images       String[]
+//   likes        Like[]
+//   parentPostId String?        @db.ObjectId
+//   parentPost   Post?          @relation("rootPost", fields: [parentPostId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   replies      Post[]         @relation("rootPost")
+//   notification Notification[]
+//   reposts      Repost[]
+//   quoteId      String?        @db.ObjectId
+//   privacy      PostPrivacy    @default(ANYONE)
+//   reports      Report[]
+
+//   @@index([authorId])
+// }
+
+// model Like {
+//   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+//   createdAt DateTime @default(now())
+//   post      Post     @relation(fields: [postId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   postId    String   @db.ObjectId
+//   user      User     @relation(fields: [userId], references: [id])
+//   userId    String   @db.ObjectId
+
+//   @@index([userId])
+//   @@index([postId])
+// }
+
+// model Repost {
+//   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+//   createdAt DateTime @default(now())
+//   post      Post     @relation(fields: [postId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   postId    String   @db.ObjectId
+//   user      User     @relation(fields: [userId], references: [id])
+//   userId    String   @db.ObjectId
+
+//   @@index([userId])
+// }
+
+// model Notification {
+//   id             String           @id @default(auto()) @map("_id") @db.ObjectId
+//   createdAt      DateTime         @default(now())
+//   read           Boolean          @default(false)
+//   type           NotificationType
+//   message        String
+//   isPublic       Boolean          @default(false)
+//   senderUserId   String           @db.ObjectId
+//   receiverUserId String?          @db.ObjectId
+//   senderUser     User             @relation("sender", fields: [senderUserId], references: [id])
+//   receiverUser   User?            @relation("receiver", fields: [receiverUserId], references: [id])
+//   postId         String?          @db.ObjectId
+//   post           Post?            @relation(fields: [postId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+//   @@index([receiverUserId])
+// }
+
+// enum NotificationType {
+//   ADMIN
+//   LIKE
+//   REPLY
+//   FOLLOW
+//   REPOST
+//   QUOTE
+// }
+
+// enum PostPrivacy {
+//   FOLLOWED
+//   ANYONE
+//   MENTIONED
+// }
+
+// model Report {
+//   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+//   createdAt DateTime @default(now())
+//   reason    String
+//   post      Post?    @relation(fields: [postId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+//   postId    String?  @db.ObjectId
+//   user      User?    @relation(fields: [userId], references: [id])
+//   userId    String?  @db.ObjectId
+// }
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mongodb"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id                    String         @id @default(auto()) @map("_id") @db.ObjectId
+  id                    String         @id
   createdAt             DateTime       @default(now()) @map(name: "created_at")
   updatedAt             DateTime       @default(now()) @map(name: "updated_at")
   username              String         @unique
-  fullname              String?
+  fullName              String?
   image                 String?
   bio                   String?
   link                  String?
   email                 String         @unique
   verified              Boolean?       @default(false)
   privacy               Privacy        @default(PUBLIC)
+  followers             User[]         @relation(name: "followers")
+  following             User[]         @relation(name: "followers")
   posts                 Post[]
   likedPosts            Like[]
   isAdmin               Boolean?       @default(false) @map(name: "is_admin")
@@ -26,20 +164,8 @@ model User {
   reports               Report[]
   senderNotifications   Notification[] @relation("sender")
   receiverNotifications Notification[] @relation("receiver")
-  followers             Follower[]     @relation(name: "follower")
-  following             Follower[]     @relation(name: "following")
-}
 
-model Follower {
-  id          String @id @default(auto()) @map("_id") @db.ObjectId
-  followerId  String @db.ObjectId
-  followingId String @db.ObjectId
-
-  follower  User @relation(name: "follower", fields: [followerId], references: [id])
-  following User @relation(name: "following", fields: [followingId], references: [id])
-
-  @@index([followerId])
-  @@index([followingId])
+  @@unique([createdAt, id])
 }
 
 enum Privacy {
@@ -48,61 +174,64 @@ enum Privacy {
 }
 
 model Post {
-  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  id           String         @id @default(cuid())
   createdAt    DateTime       @default(now())
-  author       User           @relation(fields: [authorId], references: [id])
-  authorId     String         @db.ObjectId
+  author       User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId     String
   text         String
   images       String[]
   likes        Like[]
-  parentPostId String?        @db.ObjectId
-  parentPost   Post?          @relation("rootPost", fields: [parentPostId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  parentPostId String?
+  parentPost   Post?          @relation("rootPost", fields: [parentPostId], references: [id], onDelete: Cascade)
   replies      Post[]         @relation("rootPost")
   notification Notification[]
   reposts      Repost[]
-  quoteId      String?        @db.ObjectId
+  quoteId      String?
   privacy      PostPrivacy    @default(ANYONE)
   reports      Report[]
 
+  @@unique([createdAt, id])
   @@index([authorId])
 }
 
 model Like {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   createdAt DateTime @default(now())
-  post      Post     @relation(fields: [postId], references: [id], onUpdate: NoAction, onDelete: NoAction)
-  postId    String   @db.ObjectId
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String   @db.ObjectId
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
 
+  @@id([postId, userId])
   @@index([userId])
   @@index([postId])
 }
 
 model Repost {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   createdAt DateTime @default(now())
-  post      Post     @relation(fields: [postId], references: [id], onUpdate: NoAction, onDelete: NoAction)
-  postId    String   @db.ObjectId
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String   @db.ObjectId
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
 
+  @@id([postId, userId])
   @@index([userId])
 }
 
 model Notification {
-  id             String           @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt      DateTime         @default(now())
-  read           Boolean          @default(false)
-  type           NotificationType
-  message        String
-  isPublic       Boolean          @default(false)
-  senderUserId   String           @db.ObjectId
-  receiverUserId String?          @db.ObjectId
-  senderUser     User             @relation("sender", fields: [senderUserId], references: [id])
-  receiverUser   User?            @relation("receiver", fields: [receiverUserId], references: [id])
-  postId         String?          @db.ObjectId
-  post           Post?            @relation(fields: [postId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  id        String           @id @default(cuid())
+  createdAt DateTime         @default(now())
+  read      Boolean          @default(false)
+  type      NotificationType
+  message   String
+  isPublic  Boolean          @default(false)
+
+  senderUserId   String
+  receiverUserId String?
+  senderUser     User    @relation("sender", fields: [senderUserId], references: [id], onDelete: Cascade)
+  receiverUser   User?   @relation("receiver", fields: [receiverUserId], references: [id], onDelete: Cascade)
+
+  postId String?
+  post   Post?   @relation(fields: [postId], references: [id])
 
   @@index([receiverUserId])
 }
@@ -123,11 +252,11 @@ enum PostPrivacy {
 }
 
 model Report {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   reason    String
-  post      Post?    @relation(fields: [postId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  postId    String?  @db.ObjectId
+  post      Post?    @relation(fields: [postId], references: [id])
+  postId    String?
   user      User?    @relation(fields: [userId], references: [id])
-  userId    String?  @db.ObjectId
+  userId    String?
 }

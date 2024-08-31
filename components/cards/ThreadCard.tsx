@@ -1,33 +1,26 @@
 import { ThreadCardProps } from '@/lib/types';
-import { formatDateString, formatTimeAgo } from '@/lib/utils';
+import { cn, formatTimeAgo } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
-import DeleteThread from '../forms/DeleteThread';
-import { Icons } from '../icons';
-import { Separator } from '../ui/separator';
 import React from 'react';
+import { Icons } from '../icons';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
+import { Separator } from '../ui/separator';
 
 const ThreadCard: React.FC<ThreadCardProps> = ({
-  id,
-  content,
-  author,
-  community,
-  comments,
-  parentId,
+  text,
   createdAt,
-  currentUserId,
-  isComment,
+  author,
   isLastThread,
 }) => {
   return (
-    <article className='w-full cursor-pointer'>
+    <article className='w-full cursor-pointer pt-4'>
       <div className='flex justify-between px-2 sm:px-6 mb-4'>
         <div className='flex gap-4 w-full'>
           <div className='flex-col-center'>
             <Link href={`/profile/${author.id}`} className='relative h-9 w-9'>
               <Image
-                src={author.image}
+                src={author.image!}
                 alt='Profile'
                 fill
                 className='rounded-full cursor-pointer'
@@ -39,7 +32,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
               <div className='flex items-center gap-2'>
                 <Link href={`/profile/${author.id}`} className='w-fit'>
                   <h4 className='font-semibold text-[15px] leading-none'>
-                    {author.name}
+                    {author.username ?? author.fullName}
                   </h4>
                 </Link>
                 <time className='text-[15px] leading-none text-gray-3'>
@@ -49,7 +42,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
               <ThreadActionMenu />
             </div>
             <p className='text-accent-foreground text-[15px] leading-5 mt-1 max-md:max-w-full whitespace-pre-line'>
-              {content}
+              {text}
             </p>
             <div className='flex flex-col gap-3 mt-2'>
               <div className='flex items-center gap-3.5 -ml-2'>
@@ -67,26 +60,26 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
                   <Icons.share className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
                 </div>
               </div>
-              {isComment && comments.length > 0 && (
+              {/* {isComment && comments.length > 0 && (
                 <Link href={`/thread/${id}`}>
                   <p className='text-[12px] font-weight-500 text-gray-1'>
                     {comments.length} repl{comments.length > 1 ? 'ies' : 'y'}
                   </p>
                 </Link>
-              )}
+              )} */}
             </div>
           </div>
         </div>
-        <DeleteThread
+        {/* <DeleteThread
           currentUserId={currentUserId}
           authorId={author.id}
           threadId={JSON.stringify(id)}
           parentId={parentId}
           isComment={isComment}
-        />
+        /> */}
       </div>
 
-      {!isComment && comments.length > 0 && (
+      {/* {!isComment && comments.length > 0 && (
         <div className='ml-1 mt-3 flex items-center gap-2'>
           {comments.slice(0, 2).map((comment, index) => (
             <div className='relative w-6 h-6'>
@@ -110,8 +103,8 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
             </p>
           </Link>
         </div>
-      )}
-      {!isComment && community && (
+      )} */}
+      {/* {!isComment && community && (
         <Link
           href={`/communities/${community.id}`}
           className='mt-5 flex items-center'
@@ -129,8 +122,8 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
             />
           </div>{' '}
         </Link>
-      )}
-      {isLastThread ? <div className='py-4'></div> : <Separator />}
+      )} */}
+      {isLastThread ? <div className='mb-[10vh]'></div> : <Separator />}
     </article>
   );
 };
