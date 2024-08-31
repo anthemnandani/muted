@@ -94,7 +94,7 @@ export const postRouter = createTRPCRouter({
         cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
       })
     )
-    .query(async ({ input: { limit = 5, cursor, searchQuery }, ctx }) => {
+    .query(async ({ input: { limit = 10, cursor, searchQuery }, ctx }) => {
       const allPosts = await ctx.db.post.findMany({
         where: {
           text: {
