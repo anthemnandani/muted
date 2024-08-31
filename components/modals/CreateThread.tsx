@@ -52,7 +52,7 @@ const CreateThread = () => {
       retry: false,
     });
 
-  async function handleCreateThread() {
+  async function handleMutation() {
     // const checkUploadedImage = selectedFile[0];
 
     // if (checkUploadedImage) {
@@ -66,7 +66,7 @@ const CreateThread = () => {
 
     // const imgRes = await startUpload(selectedFile);
 
-    const createdThread = await createThread({
+    const promise = createThread({
       text: threadData.text,
       // imageUrl: imgRes ? imgRes[0]?.url : undefined,
       privacy: threadData.privacy,
@@ -82,46 +82,41 @@ const CreateThread = () => {
     //     postAuthor: replyPostInfo.author.id,
     //   })
     // :
-
-    if (createdThread) {
-      toast.success('Success');
-    } else {
-      toast.error('Error creating thread');
-    }
-    setOpenDialog(false);
+    return promise;
   }
 
-  // function handleCreateThread() {
-  //   const promise = handleMutation();
+  function handleCreateThread() {
+    setOpenDialog(false);
+    const promise = handleMutation();
 
-  //   toast.promise(promise, {
-  //     loading: (
-  //       <div className='flex w-[270px] items-center justify-start gap-1.5 p-0'>
-  //         <div>
-  //           <Icons.loading className='h-8 w-8 ' />
-  //         </div>
-  //         Posting...
-  //       </div>
-  //     ),
-  //     success: (data) => {
-  //       return (
-  //         <div className='flex-between w-[270px] p-0 '>
-  //           <div className='flex-center gap-1.5'>
-  //             <Check className='size-5' />
-  //             Posted
-  //           </div>
-  //           <Link
-  //             href={`/${data?.createPost.author.username}/post/${data?.createPost.id}`}
-  //             className='hover:text-blue-900'
-  //           >
-  //             View
-  //           </Link>
-  //         </div>
-  //       );
-  //     },
-  //     error: 'Error',
-  //   });
-  // }
+    toast.promise(promise, {
+      loading: (
+        <div className='flex w-[270px] items-center justify-start gap-1.5 p-0'>
+          <div>
+            <Icons.loading className='h-8 w-8 ' />
+          </div>
+          Posting...
+        </div>
+      ),
+      success: (data) => {
+        return (
+          <div className='flex-between w-[270px] p-0 '>
+            <div className='flex-center gap-1.5'>
+              <Check className='size-5' />
+              Posted
+            </div>
+            <Link
+              href={`/${data?.createPost.author.username}/post/${data?.createPost.id}`}
+              className='hover:text-blue-900'
+            >
+              View
+            </Link>
+          </div>
+        );
+      },
+      error: 'Error',
+    });
+  }
 
   const handleFieldChange = (textValue: string) => {
     setThreadData({
