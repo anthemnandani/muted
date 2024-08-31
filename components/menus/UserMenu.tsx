@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import AppearanceMenu from './AppearanceMenu';
-import MenuItem from './MenuItem';
+import MenuItem from '../shared/MenuItem';
 import useWindow from '@/hooks/useWindow';
 
 const UserMenu = () => {
@@ -26,7 +26,7 @@ const UserMenu = () => {
           <Icons.menu className='menu-icon w-5 h-5 ml-1' />
         </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className='dropdown-content-container ml-4 w-[200px]'>
+      <DropdownMenuContent className='dropdown-content-container ml-4 !rounded-lg'>
         <AppearanceMenu theme={theme!} setTheme={setTheme} />
         <MenuItem icon={Settings} label='Settings' className='py-2' />
         <MenuItem

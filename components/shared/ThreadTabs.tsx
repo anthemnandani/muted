@@ -1,7 +1,6 @@
-import { fetchUserPosts } from '@/lib/actions/user.actions';
-import ThreadCard from '@/components/cards/ThreadCard';
-import { redirect } from 'next/navigation';
 import { fetchCommunityPosts } from '@/lib/actions/community.actions';
+import { fetchUserPosts } from '@/lib/actions/user.actions';
+import { redirect } from 'next/navigation';
 
 interface ThreadTabsProps {
   currentUserId: string;
@@ -52,7 +51,7 @@ export default async function Page({
   if (!result) redirect('/');
   return (
     <div className='flex flex-col gap-10 mt-9'>
-      {result.threads.map((thread: any) => (
+      {/* {result.threads.map((thread: any) => (
         <ThreadCard
           key={thread._id}
           id={thread._id}
@@ -72,7 +71,7 @@ export default async function Page({
           createdAt={thread.createdAt}
           community={thread.community}
         />
-      ))}
+      ))} */}
     </div>
   );
 }

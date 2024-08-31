@@ -1,16 +1,12 @@
+import { AppearanceMenuProps } from '@/lib/types';
 import { Laptop, Moon, Sun } from 'lucide-react';
+import MenuItem from '../shared/MenuItem';
 import {
   DropdownMenuPortal,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
 } from '../ui/dropdown-menu';
-import MenuItem from './MenuItem';
-
-interface AppearanceMenuProps {
-  theme: string;
-  setTheme: (theme: string) => void;
-}
 
 const AppearanceMenu: React.FC<AppearanceMenuProps> = ({ theme, setTheme }) => {
   return (
@@ -22,7 +18,7 @@ const AppearanceMenu: React.FC<AppearanceMenuProps> = ({ theme, setTheme }) => {
         <span>Appearance</span>
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal>
-        <DropdownMenuSubContent className='dropdown-content-container'>
+        <DropdownMenuSubContent className='dropdown-content-container !rounded-lg'>
           <MenuItem
             icon={Sun}
             label='Light'

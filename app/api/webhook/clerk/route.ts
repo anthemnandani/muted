@@ -17,6 +17,7 @@ import {
   removeUserFromCommunity,
   updateCommunityInfo,
 } from '@/lib/actions/community.actions';
+import { db } from '@/server/db';
 
 // Resource: https://clerk.com/docs/integration/webhooks#supported-events
 // Above document lists the supported events
@@ -26,10 +27,13 @@ type EventType =
   | 'organizationMembership.created'
   | 'organizationMembership.deleted'
   | 'organization.updated'
-  | 'organization.deleted';
+  | 'organization.deleted'
+  | 'user.created'
+  | 'user.deleted';
 
 type Event = {
-  data: Record<string, string | number | Record<string, string>[]>;
+  // data: Record<string, string | number | Record<string, string>[]>;
+  data: any;
   object: 'event';
   type: EventType;
 };
@@ -136,6 +140,72 @@ export const POST = async (request: Request) => {
     }
   }
 
+  if (eventType === 'user.created') {
+    try {
+      const {
+        id,
+        first_name,
+        last_name,
+        image_url,
+        username,
+        email_addresses,
+      } = evnt?.data;
+
+      console.log(evnt?.data);
+      const fullName = !last_name ? first_name : `${first_name} ${last_name}`;
+      const email = email_addresses[0].email_address;
+      await db.user.upsert({
+        where: { id },
+        update: {
+          fullName,
+          username: username ?? email.split('@')[0],
+          email,
+          image: image_url,
+        },
+        create: {
+          id,
+          fullName,
+          username: username ?? email.split('@')[0],
+          email,
+          image: image_url,
+        },
+      });
+      return NextResponse.json(
+        { message: 'User created successfully' },
+        { status: 201 }
+      );
+    } catch (error) {
+      console.log(error);
+
+      return NextResponse.json(
+        { message: 'Internal Server Error' },
+        { status: 500 }
+      );
+    }
+  }
+
+  // if (eventType === 'user.deleted') {
+  //   try {
+  //     const { id } = evnt?.data;
+
+  //     console.log(evnt?.data);
+  //     await db.user.delete({
+  //       where: { clerkId: id },
+  //     });
+  //     return NextResponse.json(
+  //       { message: 'User deleted successfully' },
+  //       { status: 200 }
+  //     );
+  //   } catch (error) {
+  //     console.log(error);
+
+  //     return NextResponse.json(
+  //       { message: 'Internal Server Error' },
+  //       { status: 500 }
+  //     );
+  //   }
+  // }
+
   // Listen member deletion event
   if (eventType === 'organizationMembership.deleted') {
     try {
@@ -204,4 +274,9 @@ export const POST = async (request: Request) => {
       );
     }
   }
+
+  return NextResponse.json(
+    { message: 'Unsupported event type' },
+    { status: 400 }
+  );
 };

@@ -1,8 +1,29 @@
 import { LucideIcon } from 'lucide-react';
+import type { AppRouter } from '@/server/api/root';
+import type { inferRouterOutputs } from '@trpc/server';
+
+type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
+type RouterOutput = inferRouterOutputs<AppRouter>;
+
+export type ThreadCardProps = ArrayElement<
+  RouterOutput['post']['getInfinitePosts']['posts']
+> & {
+  isLastThread?: boolean;
+};
+
+export type ParentPostInfo = Pick<
+  ThreadCardProps,
+  'id' | 'text' | 'images' | 'author'
+>;
 
 export type IconProps =
   | React.HTMLAttributes<SVGElement>
   | React.SVGProps<SVGSVGElement>;
+
+export interface AppearanceMenuProps {
+  theme: string;
+  setTheme: (theme: string) => void;
+}
 
 export interface MenuLinkProps {
   route: string;
@@ -19,19 +40,63 @@ export interface MenuItemProps {
   isActionMenuItem?: boolean;
 }
 
-export interface ThreadCardProps {
+export type ParentPostProps = {
   id: string;
-  content: string;
+  createdAt: string;
+  text: string;
+  images: string[];
+  likes: {
+    userId: string;
+  }[];
+  quoteId: string | null;
+  reposts: {
+    userId: string;
+    postId: string;
+  }[];
+  parentPostId: string | null;
+  replies: {
+    author: {
+      username: string;
+      id: string;
+      image: string;
+    };
+  }[];
   author: {
     id: string;
     image: string;
-    name: string;
+    fullname: string;
+    username: string;
+    bio: string;
+    link: string;
+    createdAt: Date;
+    isAdmin: boolean;
+    followers: {
+      id: string;
+      image: string;
+    }[];
   };
-  community: { id: string; name: string; image: string } | null;
-  comments: any[];
-  parentId: string;
-  createdAt: Date;
-  currentUserId: string;
-  isComment?: boolean;
+  like_count: number;
+  reply_count: number;
   isLastThread?: boolean;
+};
+
+export interface UserAvatarProps extends React.HTMLAttributes<HTMLDivElement> {
+  image: string | null | undefined;
+  username: string;
+  fullname: string | null | undefined;
+}
+
+export interface CreateThreadInputProps {
+  isOpen: boolean;
+  replyThreadInfo?: ParentPostInfo | null;
+  onTextareaChange: (textValue: string) => void;
+  quoteInfo?:
+    | (Pick<ParentPostInfo, 'id' | 'text' | 'author'> & { createdAt?: Date })
+    | null;
+}
+
+export enum PostPrivacy {
+  ANYONE = 'ANYONE',
+  FOLLOWED = 'FOLLOWED',
+  MENTIONED = 'MENTIONED',
 }

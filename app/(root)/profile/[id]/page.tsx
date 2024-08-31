@@ -1,12 +1,11 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { fetchUser, getUserReplies } from '@/lib/actions/user.actions';
-import { currentUser } from '@clerk/nextjs';
-import { redirect } from 'next/navigation';
-import { profileTabs } from '@/constants';
-import Image from 'next/image';
 import ProfileHeader from '@/components/shared/ProfileHeader';
 import ThreadTabs from '@/components/shared/ThreadTabs';
-import ThreadCard from '@/components/cards/ThreadCard';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { profileTabs } from '@/constants';
+import { fetchUser, getUserReplies } from '@/lib/actions/user.actions';
+import { currentUser } from '@clerk/nextjs';
+import Image from 'next/image';
+import { redirect } from 'next/navigation';
 
 export default async function Page({ params }: { params: { id: string } }) {
   if (!params.id) return null;
@@ -54,7 +53,7 @@ export default async function Page({ params }: { params: { id: string } }) {
             accountType='User'
           />
         </TabsContent>
-        <TabsContent value='replies'>
+        {/* <TabsContent value='replies'>
           {replies.length === 0 ? (
             <p className='text-gray-1 text-base font-medium w-full'>
               No replies found
@@ -62,22 +61,11 @@ export default async function Page({ params }: { params: { id: string } }) {
           ) : (
             <div className='flex flex-col gap-10 mt-9'>
               {replies.map((reply) => (
-                <ThreadCard
-                  key={reply._id}
-                  id={reply._id}
-                  currentUserId={user.id}
-                  content={reply.content}
-                  author={reply.author}
-                  community={reply.community}
-                  isComment={true}
-                  comments={reply.children}
-                  createdAt={reply.createdAt}
-                  parentId={reply.parentId}
-                />
+                <ThreadCard key={reply.id} {...reply} />
               ))}
             </div>
           )}
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
     </section>
   );

@@ -3,7 +3,7 @@ import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Icons } from '../icons';
-import UserMenu from './UserMenu';
+import UserMenu from '../menus/UserMenu';
 import Navigation from './Navigation';
 
 const LeftSideBar = () => {

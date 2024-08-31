@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import MenuItem from './MenuItem';
+import MenuItem from '../shared/MenuItem';
 
 const ThreadActionMenu = () => {
   return (

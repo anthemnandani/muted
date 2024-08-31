@@ -1,9 +1,8 @@
-import { currentUser } from '@clerk/nextjs';
-import { fetchUser } from '@/lib/actions/user.actions';
-import { getThreadById } from '@/lib/actions/thread.actions';
-import { redirect } from 'next/navigation';
-import ThreadCard from '@/components/cards/ThreadCard';
 import Comment from '@/components/forms/Comment';
+import { getThreadById } from '@/lib/actions/thread.actions';
+import { fetchUser } from '@/lib/actions/user.actions';
+import { currentUser } from '@clerk/nextjs';
+import { redirect } from 'next/navigation';
 
 export default async function Page({ params }: { params: { id: string } }) {
   if (!params.id) return null;
@@ -15,7 +14,7 @@ export default async function Page({ params }: { params: { id: string } }) {
   return (
     <section className='relative'>
       <div className='mb-10'>
-        <ThreadCard
+        {/* <ThreadCard
           id={thread.id}
           currentUserId={user.id}
           content={thread.content}
@@ -24,7 +23,7 @@ export default async function Page({ params }: { params: { id: string } }) {
           comments={thread.children}
           parentId={thread.parentId}
           createdAt={thread.createdAt}
-        />
+        /> */}
       </div>
       <div className='w-full bg-neutral-800 h-0.5'></div>
       <div className='my-8'>
@@ -36,7 +35,7 @@ export default async function Page({ params }: { params: { id: string } }) {
       </div>
       <div className='w-full bg-neutral-800 h-0.5'></div>
       <div className='mt-10 flex flex-col gap-5'>
-        {thread.children.map((item: any) => (
+        {/* {thread.children.map((item: any) => (
           <ThreadCard
             key={item._id}
             id={item._id}
@@ -49,7 +48,7 @@ export default async function Page({ params }: { params: { id: string } }) {
             createdAt={item.createdAt}
             isComment={true}
           />
-        ))}
+        ))} */}
       </div>
     </section>
   );
