@@ -5,16 +5,19 @@ import type { inferRouterOutputs } from '@trpc/server';
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
 type RouterOutput = inferRouterOutputs<AppRouter>;
 
-export type ThreadCardProps = ArrayElement<
+export type PostProps = ArrayElement<
   RouterOutput['post']['getInfinitePosts']['posts']
 > & {
   isLastThread?: boolean;
 };
 
 export type ParentPostInfo = Pick<
-  ThreadCardProps,
+  PostProps,
   'id' | 'text' | 'images' | 'author'
 >;
+
+export type UserProfileInfoProps =
+  RouterOutput['user']['userInfo']['userDetails'];
 
 export type IconProps =
   | React.HTMLAttributes<SVGElement>
