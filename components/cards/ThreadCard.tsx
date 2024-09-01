@@ -1,5 +1,5 @@
 import { ThreadCardProps } from '@/lib/types';
-import { cn, formatTimeAgo } from '@/lib/utils';
+import { formatTimeAgo } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
@@ -32,7 +32,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
               <div className='flex items-center gap-2'>
                 <Link href={`/profile/${author.id}`} className='w-fit'>
                   <h4 className='font-semibold text-[15px] leading-none'>
-                    {author.username ?? author.fullName}
+                    {author.username}
                   </h4>
                 </Link>
                 <time className='text-[15px] leading-none text-gray-3'>
