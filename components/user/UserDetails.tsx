@@ -2,13 +2,13 @@
 
 import { Icons } from '@/components/icons';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import type { UserProfileInfoProps } from '@/lib/types';
 import { cn, formatURL } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import React from 'react';
+import EditProfile from '../modals/EditProfile';
 // import UserFollowers from '@/components/user/user-followers';
 // import FollowButton from '@/components/buttons/follow-button';
 
@@ -50,28 +50,27 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
           </Avatar>
         </div>
 
-        {bio && <span className='text-[15px] whitespace-pre-line'>{bio}</span>}
+        {bio && <p className='text-[15px] whitespace-pre-line mt-4'>{bio}</p>}
 
-        <div className='flex-between'>
-          <div className='hidden sm:flex -space-x-1 overflow-hidden w-full items-center '>
-            <div className='flex items-center'>
-              {/* <UserFollowers followers={followers} showImage={true} /> */}
+        <div className='hidden sm:flex -space-x-1 overflow-hidden w-full items-center mt-3'>
+          <div className='flex items-center'>
+            {/* <UserFollowers followers={followers} showImage={true} /> */}
+            <span className='text-gray-3 text-[15px]'>0 followers</span>
+            {/* {followers.length > 0 && link && ( */}
+            <span className='mx-2 text-gray-3'> · </span>
+            {/* )} */}
 
-              {followers.length > 0 && link && (
-                <span className='mx-2 text-gray-3'> · </span>
-              )}
-
-              {link && (
-                <Link
-                  href={link}
-                  className='text-gray-3 text-[15px] hover:underline cursor-pointer active:text-[#4d4d4d]'
-                >
-                  {formatURL(link)}
-                </Link>
-              )}
-            </div>
+            {link && (
+              <Link
+                href={link}
+                className='text-gray-3 text-[15px] hover:underline cursor-pointer active:text-[#4d4d4d]'
+              >
+                {formatURL(link)}
+              </Link>
+            )}
           </div>
         </div>
+
         {/* {user?.id != id && (
           <div className='grid gap-2 sm:grid-cols-2 pt-2'>
             <FollowButton
@@ -89,15 +88,8 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
           </div>
         )} */}
       </div>
-      <div className='py-4 px-6'>
-        {user?.id === id && (
-          <Button
-            variant='ghost'
-            className='w-full rounded-[10px] border border-border-dark dark:border-border-light hover:bg-transparent dark:hover:bg-transparent'
-          >
-            Edit Profile
-          </Button>
-        )}
+      <div className='py-3 px-6 !mt-2'>
+        {user?.id === id && <EditProfile />}
       </div>
       <div className='w-full flex border-b border-border'>
         <Link

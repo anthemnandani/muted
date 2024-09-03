@@ -72,6 +72,18 @@ export const getUsername = (user: UserResource | User | null) => {
   return username;
 };
 
+export const getFullName = (firstName: string, lastName: string) => {
+  if (
+    !lastName ||
+    lastName === undefined ||
+    lastName === null ||
+    lastName === ''
+  ) {
+    return firstName;
+  }
+  return `${firstName} ${lastName}`;
+};
+
 export const formatURL = (originalURL: string) => {
   const parsedUrl = new URL(originalURL);
   const domain = parsedUrl.hostname;

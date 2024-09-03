@@ -8,6 +8,7 @@ import {
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '../trpc';
+import { getUserEmail } from '@/lib/utils';
 
 export const userRouter = createTRPCRouter({
   userInfo: privateProcedure
@@ -129,6 +130,48 @@ export const userRouter = createTRPCRouter({
           reposts: post.reposts,
         })),
         nextCursor,
+      };
+    }),
+
+  updateProfile: privateProcedure
+    .input(
+      z.object({
+        image: z.string().url().optional(),
+        link: z.string().url().optional(),
+        bio: z.string().max(150).optional(),
+        privacy: z.enum(['PUBLIC', 'PRIVATE']),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { user } = ctx;
+      const email = getUserEmail(user);
+      const dbUser = await ctx.db.user.findUnique({
+        where: {
+          email: email,
+        },
+        select: {
+          id: true,
+          verified: true,
+        },
+      });
+
+      if (!dbUser) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const updatedUser = await ctx.db.user.update({
+        where: { id: dbUser.id },
+        data: {
+          image: input.image,
+          link: input.link,
+          bio: input.bio,
+          privacy: input.privacy,
+        },
+      });
+
+      return {
+        updatedUser,
+        success: true,
       };
     }),
 });
