@@ -19,14 +19,7 @@ import { Dialog, DialogContent, DialogTrigger } from '../ui/dialog';
 const CreateThread = () => {
   const { postPrivacy } = usePost();
 
-  const {
-    openDialog,
-    setOpenDialog,
-    replyPostInfo,
-    setReplyPostInfo,
-    quoteInfo,
-    setQuoteInfo,
-  } = useDialog();
+  const { openDialog, setOpenDialog, replyPostInfo, quoteInfo } = useDialog();
   const [threadData, setThreadData] = React.useState({
     privacy: postPrivacy,
     text: '',
@@ -53,35 +46,13 @@ const CreateThread = () => {
     });
 
   async function handleMutation() {
-    // const checkUploadedImage = selectedFile[0];
-
-    // if (checkUploadedImage) {
-    //   const isSafe = await NSFWFilter.isSafe(checkUploadedImage);
-
-    //   if (!isSafe) {
-    //     toast.error('Your post is not work-safe. Please revise it.');
-    //     return;
-    //   }
-    // }
-
-    // const imgRes = await startUpload(selectedFile);
-
     const promise = createThread({
       text: threadData.text,
-      // imageUrl: imgRes ? imgRes[0]?.url : undefined,
       privacy: threadData.privacy,
       quoteId: quoteInfo?.id,
       postAuthor: quoteInfo?.author.id,
     });
-    // replyPostInfo
-    // ? replyToPost({
-    //     text: JSON.stringify(threadData.text, null, 2),
-    //     postId: replyPostInfo.id,
-    //     imageUrl: imgRes ? imgRes[0]?.url : undefined,
-    //     privacy: threadData.privacy,
-    //     postAuthor: replyPostInfo.author.id,
-    //   })
-    // :
+
     return promise;
   }
 

@@ -1,5 +1,5 @@
-import { ThreadCardProps } from '@/lib/types';
-import { cn, formatTimeAgo } from '@/lib/utils';
+import { PostProps } from '@/lib/types';
+import { formatTimeAgo } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
@@ -7,7 +7,7 @@ import { Icons } from '../icons';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
 import { Separator } from '../ui/separator';
 
-const ThreadCard: React.FC<ThreadCardProps> = ({
+const ThreadCard: React.FC<PostProps> = ({
   text,
   createdAt,
   author,
@@ -15,10 +15,10 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
 }) => {
   return (
     <article className='w-full cursor-pointer pt-4'>
-      <div className='flex justify-between px-2 sm:px-6 mb-4'>
+      <div className='flex justify-between px-2 md:px-4 mb-4'>
         <div className='flex gap-4 w-full'>
           <div className='flex-col-center'>
-            <Link href={`/profile/${author.id}`} className='relative h-9 w-9'>
+            <Link href={`/@${author.username}`} className='relative h-9 w-9'>
               <Image
                 src={author.image!}
                 alt='Profile'
@@ -32,7 +32,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
               <div className='flex items-center gap-2'>
                 <Link href={`/profile/${author.id}`} className='w-fit'>
                   <h4 className='font-semibold text-[15px] leading-none'>
-                    {author.username ?? author.fullName}
+                    {author.username}
                   </h4>
                 </Link>
                 <time className='text-[15px] leading-none text-gray-3'>
@@ -123,7 +123,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
           </div>{' '}
         </Link>
       )} */}
-      {isLastThread ? <div className='mb-[10vh]'></div> : <Separator />}
+      {!isLastThread && <Separator />}
     </article>
   );
 };

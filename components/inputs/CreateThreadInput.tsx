@@ -3,7 +3,6 @@ import { CreateThreadInputProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
 import React from 'react';
-import { Icons } from '../icons';
 import UserAvatar from '../shared/UserAvatar';
 import { ResizeTextarea } from '../ui/resize-textarea';
 
@@ -11,7 +10,6 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
   isOpen,
   replyThreadInfo,
   onTextareaChange,
-  quoteInfo,
 }) => {
   const { user } = useUser();
   const [inputValue, setInputValue] = React.useState('');
@@ -58,18 +56,18 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
           placeholder='Start a thread...'
           maxLength={200}
         />
-        {!replyThreadInfo?.text && (
+        {/* {!replyThreadInfo?.text && (
           <div
             // {...getRootProps()}
             ref={scrollDownRef}
             className='space-y-2 mt-1 select-none w-fit'
           >
             <div className='text-gray-3 flex gap-1 select-none items-center text-[15px]'>
-              {/* <input placeholder='Anyone can reply...' /> */}
+              <input placeholder='Anyone can reply...' />
               <Icons.image className='size-5 select-none transform active:scale-75 transition-transform cursor-pointer' />
             </div>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

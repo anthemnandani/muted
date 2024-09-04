@@ -1,20 +1,24 @@
 import { LucideIcon } from 'lucide-react';
 import type { AppRouter } from '@/server/api/root';
 import type { inferRouterOutputs } from '@trpc/server';
+import { Privacy } from '@prisma/client';
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
 type RouterOutput = inferRouterOutputs<AppRouter>;
 
-export type ThreadCardProps = ArrayElement<
+export type PostProps = ArrayElement<
   RouterOutput['post']['getInfinitePosts']['posts']
 > & {
   isLastThread?: boolean;
 };
 
 export type ParentPostInfo = Pick<
-  ThreadCardProps,
+  PostProps,
   'id' | 'text' | 'images' | 'author'
 >;
+
+export type UserProfileInfoProps =
+  RouterOutput['user']['userInfo']['userDetails'];
 
 export type IconProps =
   | React.HTMLAttributes<SVGElement>
@@ -100,3 +104,10 @@ export enum PostPrivacy {
   FOLLOWED = 'FOLLOWED',
   MENTIONED = 'MENTIONED',
 }
+
+export type UserMetaData = {
+  bio?: string;
+  image?: string;
+  link?: string;
+  privacy?: Privacy;
+};
