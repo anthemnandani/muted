@@ -12,7 +12,7 @@ const CreateWithInput = ({ onClick }: { onClick: () => void }) => {
         <div className='w-full flex select-none'>
           <Avatar className='rounded-full outline outline-1 outline-border h-9 w-9 mr-4'>
             <AvatarImage
-              src={user?.imageUrl}
+              src={(user?.publicMetadata?.image as string) || user?.imageUrl}
               alt={user?.username ?? ''}
               className='object-cover'
             />

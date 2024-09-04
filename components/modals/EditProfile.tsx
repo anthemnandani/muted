@@ -79,6 +79,7 @@ const EditProfile = () => {
       onSuccess: async () => {
         await trpcUtils.user.postInfo.invalidate();
         await trpcUtils.user.userInfo.invalidate();
+        await trpcUtils.post.getInfinitePosts.invalidate();
         setOpenDialog(false);
         toast.success('Profile updated successfully!');
         resetFiles();
