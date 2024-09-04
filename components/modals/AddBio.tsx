@@ -78,7 +78,7 @@ const AddBio = () => {
           </span>
         </div>
         <Card className='rounded-2xl border-none bg-background shadow-2xl ring-1 ring-[#393939] ring-offset-0 dark:bg-gray-6'>
-          <div className='no-scrollbar md:h-[215px] overflow-y-auto p-6'>
+          <div className='no-scrollbar h-[215px] overflow-y-auto p-6'>
             <ResizeTextarea
               className='w-full h-full border-none focus:outline-none'
               placeholder='Write a bio...'

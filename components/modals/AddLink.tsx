@@ -2,8 +2,10 @@
 
 import useAddLink from '@/store/addLink';
 import useEditProfile from '@/store/editProfile';
+import { useUser } from '@clerk/nextjs';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { Plus } from 'lucide-react';
+import { useEffect } from 'react';
 import { Card } from '../ui/card';
 import {
   Dialog,
@@ -13,8 +15,6 @@ import {
   DialogTrigger,
 } from '../ui/dialog';
 import { ResizeTextarea } from '../ui/resize-textarea';
-import { useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
 
 const AddLink = () => {
   const { openDialog, setOpenDialog, link, setLink } = useAddLink();
@@ -78,7 +78,7 @@ const AddLink = () => {
           </span>
         </div>
         <Card className='rounded-2xl border-none bg-background shadow-2xl ring-1 ring-[#393939] ring-offset-0 dark:bg-gray-6'>
-          <div className='no-scrollbar md:h-[215px] overflow-y-auto p-6'>
+          <div className='no-scrollbar h-[215px] overflow-y-auto p-6'>
             <ResizeTextarea
               className='w-full h-full border-none focus:outline-none text-[#18A3FE]'
               placeholder='Add a link...'

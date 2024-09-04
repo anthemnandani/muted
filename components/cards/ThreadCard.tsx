@@ -15,7 +15,7 @@ const ThreadCard: React.FC<PostProps> = ({
 }) => {
   return (
     <article className='w-full cursor-pointer pt-4'>
-      <div className='flex justify-between px-2 sm:px-6 mb-4'>
+      <div className='flex justify-between px-2 md:px-4 mb-4'>
         <div className='flex gap-4 w-full'>
           <div className='flex-col-center'>
             <Link href={`/@${author.username}`} className='relative h-9 w-9'>

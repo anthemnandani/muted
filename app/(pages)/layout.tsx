@@ -13,8 +13,8 @@ export default function RootLayout({
       <TopBar />
       <LeftSideBar />
       <main className='flex justify-center h-screen'>
-        <section className='w-full md:pt-[60px] px-4 md:px-10'>
-          <div className='w-full max-w-[640px] mx-auto'>{children}</div>
+        <section className='w-full md:pt-[60px]'>
+          <div className='w-full md:max-w-[640px] mx-auto'>{children}</div>
         </section>
       </main>
       <CreateThread />
