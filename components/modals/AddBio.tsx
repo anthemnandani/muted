@@ -2,9 +2,11 @@
 
 import useAddBio from '@/store/addBio';
 import useEditProfile from '@/store/editProfile';
+import { useUser } from '@clerk/nextjs';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { Plus } from 'lucide-react';
+import { useEffect } from 'react';
 import { Card } from '../ui/card';
 import {
   Dialog,
@@ -17,6 +19,13 @@ import { ResizeTextarea } from '../ui/resize-textarea';
 const AddBio = () => {
   const { openDialog, setOpenDialog, bio, setBio } = useAddBio();
   const { profileBio, setProfileBio } = useEditProfile();
+  const { user } = useUser();
+
+  useEffect(() => {
+    if (user) {
+      setBio((user.publicMetadata?.bio as string) || '');
+    }
+  }, [user, setBio]);
 
   const handleDone = () => {
     setProfileBio(bio);

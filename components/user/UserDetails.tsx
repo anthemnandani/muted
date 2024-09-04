@@ -35,10 +35,10 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
               <h4 className='text-[15px]'>{username}</h4>
             </div>
           </div>
-          <Avatar className='h-[80px] w-[80px] overflow-visible outline outline-2 outline-border relative'>
+          <Avatar className='size-20 overflow-visible outline outline-2 outline-border relative'>
             <AvatarImage
-              src={image ?? ''}
-              alt={fullName ?? ''}
+              src={image || ''}
+              alt={fullName || ''}
               className='h-min w-full rounded-full object-cover '
             />
             <AvatarFallback></AvatarFallback>
@@ -64,6 +64,7 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
               <Link
                 href={link}
                 className='text-gray-3 text-[15px] hover:underline cursor-pointer active:text-[#4d4d4d]'
+                target='_blank'
               >
                 {formatURL(link)}
               </Link>

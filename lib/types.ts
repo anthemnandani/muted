@@ -1,6 +1,7 @@
 import { LucideIcon } from 'lucide-react';
 import type { AppRouter } from '@/server/api/root';
 import type { inferRouterOutputs } from '@trpc/server';
+import { Privacy } from '@prisma/client';
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
 type RouterOutput = inferRouterOutputs<AppRouter>;
@@ -103,3 +104,10 @@ export enum PostPrivacy {
   FOLLOWED = 'FOLLOWED',
   MENTIONED = 'MENTIONED',
 }
+
+export type UserMetaData = {
+  bio?: string;
+  image?: string;
+  link?: string;
+  privacy?: Privacy;
+};

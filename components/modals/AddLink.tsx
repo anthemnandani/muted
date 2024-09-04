@@ -13,10 +13,19 @@ import {
   DialogTrigger,
 } from '../ui/dialog';
 import { ResizeTextarea } from '../ui/resize-textarea';
+import { useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
 
 const AddLink = () => {
   const { openDialog, setOpenDialog, link, setLink } = useAddLink();
   const { profileLink, setProfileLink } = useEditProfile();
+  const { user } = useUser();
+
+  useEffect(() => {
+    if (user) {
+      setLink((user.publicMetadata?.link as string) || '');
+    }
+  }, [user, setLink]);
 
   const handleDone = () => {
     setProfileLink(link);

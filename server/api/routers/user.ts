@@ -9,6 +9,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '../trpc';
 import { getUserEmail } from '@/lib/utils';
+import { clerkClient } from '@clerk/nextjs';
 
 export const userRouter = createTRPCRouter({
   userInfo: privateProcedure
@@ -137,13 +138,24 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         image: z.string().url().optional(),
-        link: z.string().url().optional(),
+        link: z
+          .string()
+          .optional()
+          .refine(
+            (value) => {
+              return value === '' || z.string().url().safeParse(value).success;
+            },
+            {
+              message: 'Invalid url',
+            }
+          ),
         bio: z.string().max(150).optional(),
         privacy: z.enum(['PUBLIC', 'PRIVATE']),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const { user } = ctx;
+      const { bio, link, image, privacy } = input;
       const email = getUserEmail(user);
       const dbUser = await ctx.db.user.findUnique({
         where: {
@@ -151,6 +163,7 @@ export const userRouter = createTRPCRouter({
         },
         select: {
           id: true,
+          image: true,
           verified: true,
         },
       });
@@ -162,12 +175,17 @@ export const userRouter = createTRPCRouter({
       const updatedUser = await ctx.db.user.update({
         where: { id: dbUser.id },
         data: {
-          image: input.image,
-          link: input.link,
-          bio: input.bio,
-          privacy: input.privacy,
+          image,
+          link,
+          bio,
+          privacy,
         },
       });
+      const publicMetadata = { bio, link, privacy, image };
+      const params = {
+        publicMetadata,
+      };
+      await clerkClient.users.updateUser(dbUser.id, params);
 
       return {
         updatedUser,

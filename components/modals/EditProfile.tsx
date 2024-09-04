@@ -1,16 +1,17 @@
 'use client';
-import { useUploadThing } from '@/lib/uploadthing';
-import { getFullName, getUsername, isBase64Image } from '@/lib/utils';
+import useFileUpload from '@/hooks/useFileUpload';
+import { UserMetaData } from '@/lib/types';
+import { getFullName, getUsername } from '@/lib/utils';
 import useEditProfile from '@/store/editProfile';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
 import { Privacy } from '@prisma/client';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
-import { Lock, User2 } from 'lucide-react';
-import { ChangeEvent, useRef, useState } from 'react';
+import { Lock } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { toast } from 'sonner';
 import { Icons } from '../icons';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import UploadPicture from '../menus/UploadPicture';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import {
@@ -31,81 +32,87 @@ const EditProfile = () => {
     openDialog,
     setOpenDialog,
     profileBio,
+    setProfileBio,
     profileLink,
+    setProfileLink,
     profilePic,
     setProfilePic,
     privacy,
     setPrivacy,
   } = useEditProfile();
   const { user } = useUser();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const userFullName = getFullName(user?.firstName ?? '', user?.lastName ?? '');
-  const username = getUsername(user!);
-  const [files, setFiles] = useState<File[]>([]);
+  const resetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const { isUploading, uploadProfileImage, resetFiles } = useFileUpload();
+
+  const userMetaData: UserMetaData | undefined = user?.publicMetadata;
+  useEffect(() => {
+    if (!openDialog) {
+      resetTimeoutRef.current = setTimeout(() => {
+        if (user) {
+          setProfilePic(userMetaData?.image || user?.imageUrl || '');
+        }
+      }, 300);
+    } else if (resetTimeoutRef.current) {
+      clearTimeout(resetTimeoutRef.current);
+    }
+  }, [openDialog, user]);
+
+  useEffect(() => {
+    if (user && openDialog) {
+      setProfileBio(userMetaData?.bio || '');
+      setProfileLink(userMetaData?.link || '');
+      setProfilePic(userMetaData?.image || user?.imageUrl || '');
+      setPrivacy(userMetaData?.privacy || Privacy.PUBLIC);
+    }
+  }, [userMetaData, openDialog]);
+
+  const userFullName = useMemo(
+    () => getFullName(user?.firstName ?? '', user?.lastName ?? ''),
+    [user]
+  );
+  const username = useMemo(() => getUsername(user!), [user]);
   const trpcUtils = api.useUtils();
 
   const { isLoading, mutateAsync: updateProfile } =
     api.user.updateProfile.useMutation({
-      onMutate: ({}) => {
-        setProfilePic('');
-        setFiles([]);
+      onSuccess: async () => {
+        await trpcUtils.user.postInfo.invalidate();
+        await trpcUtils.user.userInfo.invalidate();
+        setOpenDialog(false);
+        toast.success('Profile updated successfully!');
+        resetFiles();
       },
       onError: () => {
         toast.error('Updating Error: Something went wrong!');
       },
-      onSettled: async () => {
-        await trpcUtils.user.userInfo.invalidate();
-      },
       retry: false,
     });
 
-  const { startUpload } = useUploadThing('media');
+  const handlePrivacyChange = useCallback(
+    (checked: boolean) => {
+      setPrivacy(checked ? Privacy.PRIVATE : Privacy.PUBLIC);
+    },
+    [setPrivacy]
+  );
 
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const reader = new FileReader();
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      setFiles(Array.from(e.target.files));
-      if (!file.type.includes('image')) return;
-      reader.onload = async (event) => {
-        const imageUrl = event.target?.result?.toString() || '';
-        setProfilePic(imageUrl);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handlePrivacyChange = (checked: boolean) => {
-    setPrivacy(checked ? Privacy.PRIVATE : Privacy.PUBLIC);
-  };
-
-  const handleMutation = async () => {
-    let imgUrl = undefined;
-    const hasImageChanged = isBase64Image(profilePic);
-    if (hasImageChanged) {
-      const imgRes = await startUpload(files);
-      if (imgRes && imgRes[0].fileUrl) {
-        imgUrl = imgRes[0].fileUrl;
-      }
-    }
-    const promise = updateProfile({
+  const handleUpdateProfile = useCallback(async () => {
+    const imgUrl = await uploadProfileImage(profilePic);
+    await updateProfile({
       image: imgUrl,
-      bio: profileBio,
-      link: profileLink,
-      privacy,
+      bio: profileBio || '',
+      link: profileLink || '',
+      privacy: privacy || Privacy.PUBLIC,
     });
-    return promise;
-  };
-
-  const handleUpdateProfile = async () => {
-    await handleMutation();
-    setOpenDialog(false);
-  };
+  }, [
+    profileBio,
+    profileLink,
+    profilePic,
+    privacy,
+    setOpenDialog,
+    updateProfile,
+    uploadProfileImage,
+  ]);
 
   return (
     <Dialog open={openDialog} onOpenChange={setOpenDialog}>
@@ -139,27 +146,7 @@ const EditProfile = () => {
                 <Separator className='bg-border-light h-[0.5px]' />
               </div>
               <div className='cursor-pointer'>
-                <Avatar
-                  className='outline outline-1 outline-border size-12'
-                  onClick={handleAvatarClick}
-                >
-                  <AvatarImage
-                    src={profilePic || user?.imageUrl}
-                    alt={user?.username ?? ''}
-                    className='object-cover'
-                  />
-                  <AvatarFallback>
-                    <User2 className='size-5' />
-                  </AvatarFallback>
-                </Avatar>
-                <input
-                  title='File Input'
-                  type='file'
-                  ref={fileInputRef}
-                  accept='image/*'
-                  className='hidden'
-                  onChange={handleImageChange}
-                />
+                <UploadPicture />
               </div>
             </div>
             <div className='flex flex-col w-full'>
@@ -194,17 +181,16 @@ const EditProfile = () => {
               />
             </div>
             <Button
-              className='w-full mt-4 rounded-xl bg-foreground hover:bg-foreground select-none text-white dark:text-black'
+              className='w-full h-[52px] flex-center px-4 mt-4 rounded-xl bg-foreground hover:bg-foreground select-none text-white dark:text-black dark:hover:bg-slate-50 disabled:cursor-not-allowed disabled:pointer-events-auto disabled:opacity-100'
               onClick={handleUpdateProfile}
-              disabled={isLoading}
+              disabled={isLoading || isUploading}
             >
-              {isLoading && (
-                <Icons.spinner
-                  className='mr-2 h-4 w-4 animate-spin'
-                  aria-hidden='true'
-                />
+              {isLoading || isUploading ? (
+                <Icons.loading className='size-8' />
+              ) : (
+                <span>Done</span>
               )}
-              Done
+
               <span className='sr-only'>Done</span>
             </Button>
           </div>
