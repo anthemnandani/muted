@@ -28,9 +28,15 @@ const DialogOverlay = React.forwardRef<
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
+type DialogContentProps = React.ComponentPropsWithoutRef<
+  typeof DialogPrimitive.Content
+> & {
+  isSecondDialog?: boolean;
+};
+
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPrWopsWithoutRef<typeof DialogPrimitive.Content>
+  DialogContentProps
 >(({ className, isSecondDialog, children, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay className={cn(isSecondDialog && 'z-[1000]')} />
