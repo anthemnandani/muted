@@ -9,12 +9,10 @@ import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import React from 'react';
 import EditProfile from '../modals/EditProfile';
-// import UserFollowers from '@/components/user/user-followers';
-// import FollowButton from '@/components/buttons/follow-button';
+import { Privacy } from '@prisma/client';
 
 const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
-  const { id, bio, fullName, image, link, username, followers, isAdmin } =
-    props;
+  const { id, bio, fullName, image, link, username, privacy, isAdmin } = props;
   const path = usePathname();
   const { user } = useUser();
 
@@ -92,7 +90,14 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
         )} */}
       </div>
       <div className='py-3 px-6 !mt-2'>
-        {user?.id === id && <EditProfile />}
+        {user?.id === id && (
+          <EditProfile
+            userBio={bio || ''}
+            userLink={link || ''}
+            userImage={image || ''}
+            userPrivacy={privacy as Privacy}
+          />
+        )}
       </div>
       <div className='w-full flex border-b border-border'>
         <Link

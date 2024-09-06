@@ -1,3 +1,4 @@
+import { getUserEmail } from '@/lib/utils';
 import {
   GET_COUNT,
   GET_LIKES,
@@ -8,8 +9,6 @@ import {
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '../trpc';
-import { getUserEmail } from '@/lib/utils';
-import { clerkClient } from '@clerk/nextjs';
 
 export const userRouter = createTRPCRouter({
   userInfo: privateProcedure
@@ -181,11 +180,6 @@ export const userRouter = createTRPCRouter({
           privacy,
         },
       });
-      const publicMetadata = { bio, link, privacy, image };
-      const params = {
-        publicMetadata,
-      };
-      await clerkClient.users.updateUser(dbUser.id, params);
 
       return {
         updatedUser,

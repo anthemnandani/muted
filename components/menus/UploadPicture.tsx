@@ -13,7 +13,7 @@ import Image from 'next/image';
 import { ChangeEvent, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
-const UploadPicture = () => {
+const UploadPicture = ({ userImage }: { userImage: string }) => {
   const { profilePic, setProfilePic } = useEditProfile();
   const { setFiles } = useFileStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -68,7 +68,7 @@ const UploadPicture = () => {
         <DropdownMenuItem
           className='dropdown-menu-item text-primary-red focus:text-primary-red'
           onClick={handleRemoveImage}
-          disabled={profilePic === user?.imageUrl}
+          disabled={profilePic !== userImage || profilePic === user?.imageUrl}
         >
           Remove current picture
         </DropdownMenuItem>

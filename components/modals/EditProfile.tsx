@@ -1,6 +1,6 @@
 'use client';
 import useFileUpload from '@/hooks/useFileUpload';
-import { UserMetaData } from '@/lib/types';
+import { EditProfileProps } from '@/lib/types';
 import { getFullName, getUsername } from '@/lib/utils';
 import useEditProfile from '@/store/editProfile';
 import { api } from '@/trpc/react';
@@ -27,7 +27,12 @@ import { Switch } from '../ui/switch';
 import AddBio from './AddBio';
 import AddLink from './AddLink';
 
-const EditProfile = () => {
+const EditProfile = ({
+  userBio,
+  userLink,
+  userImage,
+  userPrivacy,
+}: EditProfileProps) => {
   const {
     openDialog,
     setOpenDialog,
@@ -45,27 +50,26 @@ const EditProfile = () => {
 
   const { isUploading, uploadProfileImage, resetFiles } = useFileUpload();
 
-  const userMetaData: UserMetaData | undefined = user?.publicMetadata;
   useEffect(() => {
     if (!openDialog) {
       resetTimeoutRef.current = setTimeout(() => {
-        if (user) {
-          setProfilePic(userMetaData?.image || user?.imageUrl || '');
+        if (userImage) {
+          setProfilePic(userImage);
         }
       }, 300);
     } else if (resetTimeoutRef.current) {
       clearTimeout(resetTimeoutRef.current);
     }
-  }, [openDialog, user]);
+  }, [openDialog, userImage]);
 
   useEffect(() => {
-    if (user && openDialog) {
-      setProfileBio(userMetaData?.bio || '');
-      setProfileLink(userMetaData?.link || '');
-      setProfilePic(userMetaData?.image || user?.imageUrl || '');
-      setPrivacy(userMetaData?.privacy || Privacy.PUBLIC);
+    if (openDialog) {
+      setProfileBio(userBio);
+      setProfileLink(userLink);
+      setProfilePic(userImage);
+      setPrivacy(userPrivacy);
     }
-  }, [userMetaData, openDialog]);
+  }, [openDialog, userBio, userLink, userImage, userPrivacy]);
 
   const userFullName = useMemo(
     () => getFullName(user?.firstName ?? '', user?.lastName ?? ''),
@@ -101,8 +105,8 @@ const EditProfile = () => {
     const imgUrl = await uploadProfileImage(profilePic);
     await updateProfile({
       image: imgUrl,
-      bio: profileBio || '',
-      link: profileLink || '',
+      bio: profileBio,
+      link: profileLink,
       privacy: privacy || Privacy.PUBLIC,
     });
   }, [
@@ -110,7 +114,6 @@ const EditProfile = () => {
     profileLink,
     profilePic,
     privacy,
-    setOpenDialog,
     updateProfile,
     uploadProfileImage,
   ]);
@@ -147,7 +150,7 @@ const EditProfile = () => {
                 <Separator className='bg-border-light h-[0.5px]' />
               </div>
               <div className='cursor-pointer'>
-                <UploadPicture />
+                <UploadPicture userImage={userImage} />
               </div>
             </div>
             <div className='flex flex-col w-full'>
@@ -155,7 +158,7 @@ const EditProfile = () => {
                 Bio
               </Label>
               <div className='mb-2 mt-1'>
-                <AddBio />
+                <AddBio userBio={userBio} />
               </div>
               <Separator className='bg-border-light h-[0.5px]' />
             </div>
@@ -164,7 +167,7 @@ const EditProfile = () => {
                 Link
               </Label>
               <div className='mb-2 mt-1'>
-                <AddLink />
+                <AddLink userLink={userLink} />
               </div>
               <Separator className='bg-border-light h-[0.5px]' />
             </div>

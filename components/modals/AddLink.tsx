@@ -2,7 +2,6 @@
 
 import useAddLink from '@/store/addLink';
 import useEditProfile from '@/store/editProfile';
-import { useUser } from '@clerk/nextjs';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { Plus } from 'lucide-react';
 import { useEffect } from 'react';
@@ -16,16 +15,15 @@ import {
 } from '../ui/dialog';
 import { ResizeTextarea } from '../ui/resize-textarea';
 
-const AddLink = () => {
+const AddLink = ({ userLink }: { userLink: string }) => {
   const { openDialog, setOpenDialog, link, setLink } = useAddLink();
   const { profileLink, setProfileLink } = useEditProfile();
-  const { user } = useUser();
 
   useEffect(() => {
-    if (user) {
-      setLink((user.publicMetadata?.link as string) || '');
+    if (userLink) {
+      setLink(userLink);
     }
-  }, [user, setLink]);
+  }, [userLink]);
 
   const handleDone = () => {
     setProfileLink(link);
