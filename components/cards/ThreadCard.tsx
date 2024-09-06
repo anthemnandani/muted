@@ -30,7 +30,7 @@ const ThreadCard: React.FC<PostProps> = ({
           <div className='flex flex-col w-full'>
             <div className='flex-between gap-5 py-px w-full max-md:max-w-full max-md:flex-wrap'>
               <div className='flex items-center gap-2'>
-                <Link href={`/profile/${author.id}`} className='w-fit'>
+                <Link href={`/@${author.username}`} className='w-fit'>
                   <h4 className='font-semibold text-[15px] leading-none'>
                     {author.username}
                   </h4>
