@@ -1,6 +1,7 @@
 'use client';
 import { CreateThreadInputProps } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { cn, getFullName, getUsername } from '@/lib/utils';
+import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
 import React from 'react';
 import UserAvatar from '../shared/UserAvatar';
@@ -12,6 +13,12 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
   onTextareaChange,
 }) => {
   const { user } = useUser();
+  const userFullName = React.useMemo(
+    () => getFullName(user?.firstName ?? '', user?.lastName ?? ''),
+    [user]
+  );
+  const username = React.useMemo(() => getUsername(user!), [user]) as string;
+  const { data } = api.user.userInfo.useQuery({ username });
   const [inputValue, setInputValue] = React.useState('');
 
   const handleResizeTextareaChange = (
@@ -22,15 +29,15 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
     onTextareaChange(newValue);
   };
 
-  const scrollDownRef = React.useRef<HTMLDivElement | null>(null);
+  // const scrollDownRef = React.useRef<HTMLDivElement | null>(null);
 
-  React.useEffect(() => {
-    scrollDownRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest',
-      inline: 'start',
-    });
-  }, [isOpen]);
+  // React.useEffect(() => {
+  //   scrollDownRef.current?.scrollIntoView({
+  //     behavior: 'smooth',
+  //     block: 'nearest',
+  //     inline: 'start',
+  //   });
+  // }, [isOpen]);
 
   return (
     <div
@@ -40,14 +47,14 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
     >
       <div className='relative flex-col-center'>
         <UserAvatar
-          image={user?.imageUrl}
-          username={user?.username ?? ''}
-          fullname={user?.fullName}
+          image={data?.userDetails?.image || ''}
+          username={username}
+          fullname={userFullName}
         />
       </div>
       <div className='flex flex-col w-full gap-1.5 pb-4'>
         <span className='text-[15px] font-medium leading-none tracking-normal'>
-          {user?.username || user?.fullName}
+          {username}
         </span>
         <ResizeTextarea
           name='text'

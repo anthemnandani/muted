@@ -9,12 +9,13 @@ import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import React from 'react';
 import EditProfile from '../modals/EditProfile';
-// import UserFollowers from '@/components/user/user-followers';
-// import FollowButton from '@/components/buttons/follow-button';
+import { Privacy } from '@prisma/client';
+import { Follow } from '../ui/follow-button';
+import { Button } from '../ui/button';
+import UserProfileMenu from '../menus/UserProfileMenu';
 
 const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
-  const { id, bio, fullName, image, link, username, followers, isAdmin } =
-    props;
+  const { id, bio, fullName, image, link, username, privacy, isAdmin } = props;
   const path = usePathname();
   const { user } = useUser();
 
@@ -52,47 +53,62 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
           </Avatar>
         </div>
 
-        {bio && <p className='text-[15px] whitespace-pre-line mt-4'>{bio}</p>}
+        <p className='text-[15px] whitespace-pre-line mt-6'>{bio}</p>
+        <div className='flex-between mt-3'>
+          <div className='hidden sm:flex -space-x-1 overflow-hidden w-full items-center'>
+            <div className='flex items-center'>
+              {/* <UserFollowers followers={followers} showImage={true} /> */}
+              <span className='text-gray-3 text-[15px]'>0 followers</span>
+              {/* {followers.length > 0 && link && ( */}
+              <span className='mx-2 text-gray-3'> · </span>
+              {/* )} */}
 
-        <div className='hidden sm:flex -space-x-1 overflow-hidden w-full items-center mt-3'>
-          <div className='flex items-center'>
-            {/* <UserFollowers followers={followers} showImage={true} /> */}
-            <span className='text-gray-3 text-[15px]'>0 followers</span>
-            {/* {followers.length > 0 && link && ( */}
-            <span className='mx-2 text-gray-3'> · </span>
-            {/* )} */}
-
-            {link && (
-              <Link
-                href={link}
-                className='text-gray-3 text-[15px] hover:underline cursor-pointer active:text-[#4d4d4d]'
-                target='_blank'
-              >
-                {formatURL(link)}
-              </Link>
-            )}
+              {link && (
+                <Link
+                  href={link}
+                  className='text-gray-3 text-[15px] hover:underline cursor-pointer active:text-[#4d4d4d]'
+                  target='_blank'
+                >
+                  {formatURL(link)}
+                </Link>
+              )}
+            </div>
           </div>
+          {user?.id != id && <UserProfileMenu />}
         </div>
+      </div>
 
-        {/* {user?.id != id && (
+      <div className='py-3 px-6 !mt-2'>
+        {user?.id != id && (
           <div className='grid gap-2 sm:grid-cols-2 pt-2'>
-            <FollowButton
+            {/* <FollowButton
             className='text-[14px] px-6'
             variant='default'
             author={props}
-          />
+          /> */}
+            <Follow
+              className='text-[14px] rounded-xl py-1.5 px-6 select-none'
+              variant='default'
+            >
+              Follow
+            </Follow>
             <Button
-              size={'sm'}
+              size='sm'
               variant='outline'
               className='w-full border-[#333333] sm:w-auto rounded-xl cursor-not-allowed py-1 font-semibold tracking-normal text-[16px] active:scale-95 '
             >
               Mention
             </Button>
           </div>
-        )} */}
-      </div>
-      <div className='py-3 px-6 !mt-2'>
-        {user?.id === id && <EditProfile />}
+        )}
+        {user?.id === id && (
+          <EditProfile
+            userBio={bio || ''}
+            userLink={link || ''}
+            userImage={image || ''}
+            userPrivacy={privacy as Privacy}
+          />
+        )}
       </div>
       <div className='w-full flex border-b border-border'>
         <Link

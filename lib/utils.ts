@@ -66,13 +66,13 @@ export const getUserEmail = (user: UserResource | User | null) => {
   return email;
 };
 
-export const getUsername = (user: UserResource | User | null) => {
+export const getUsername = (user?: UserResource | User | null) => {
   const username =
     user?.username ?? user?.emailAddresses[0].emailAddress.split('@')[0];
   return username;
 };
 
-export const getFullName = (firstName: string, lastName: string) => {
+export const getFullName = (firstName?: string, lastName?: string) => {
   if (
     !lastName ||
     lastName === undefined ||

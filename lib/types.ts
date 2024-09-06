@@ -1,7 +1,7 @@
-import { LucideIcon } from 'lucide-react';
 import type { AppRouter } from '@/server/api/root';
-import type { inferRouterOutputs } from '@trpc/server';
 import { Privacy } from '@prisma/client';
+import type { inferRouterOutputs } from '@trpc/server';
+import { LucideIcon } from 'lucide-react';
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
 type RouterOutput = inferRouterOutputs<AppRouter>;
@@ -23,6 +23,8 @@ export type UserProfileInfoProps =
 export type IconProps =
   | React.HTMLAttributes<SVGElement>
   | React.SVGProps<SVGSVGElement>;
+
+export type AuthorInfoProps = PostProps['author'];
 
 export interface AppearanceMenuProps {
   theme: string;
@@ -99,15 +101,15 @@ export interface CreateThreadInputProps {
     | null;
 }
 
+export interface EditProfileProps {
+  userBio: string;
+  userLink: string;
+  userImage: string;
+  userPrivacy: Privacy;
+}
+
 export enum PostPrivacy {
   ANYONE = 'ANYONE',
   FOLLOWED = 'FOLLOWED',
   MENTIONED = 'MENTIONED',
 }
-
-export type UserMetaData = {
-  bio?: string;
-  image?: string;
-  link?: string;
-  privacy?: Privacy;
-};

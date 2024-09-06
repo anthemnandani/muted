@@ -10,7 +10,7 @@ const Wrapper = ({ children }: { children: React.ReactNode }) => {
       className={cn(
         'min-h-screen',
         !isMobile &&
-          'dark:bg-gray-6 bg-white border md:dark:border-gray-5 border-gray-1 shadow-lg rounded-tl-[25px] rounded-tr-[25px]'
+          'dark:bg-gray-6 bg-white border dark:border-gray-5 border-gray-1 shadow-lg rounded-tl-[25px] rounded-tr-[25px]'
       )}
     >
       {children}
