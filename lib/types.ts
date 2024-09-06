@@ -24,6 +24,8 @@ export type IconProps =
   | React.HTMLAttributes<SVGElement>
   | React.SVGProps<SVGSVGElement>;
 
+export type UserProfileCardProps = PostProps['author'];
+
 export interface AppearanceMenuProps {
   theme: string;
   setTheme: (theme: string) => void;

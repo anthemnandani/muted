@@ -18,7 +18,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
     [user]
   );
   const username = React.useMemo(() => getUsername(user!), [user]) as string;
-  const { data, isLoading } = api.user.userInfo.useQuery({ username });
+  const { data } = api.user.userInfo.useQuery({ username });
   const [inputValue, setInputValue] = React.useState('');
 
   const handleResizeTextareaChange = (
@@ -47,7 +47,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
     >
       <div className='relative flex-col-center'>
         <UserAvatar
-          image={isLoading ? user?.imageUrl : data?.userDetails?.image}
+          image={data?.userDetails?.image || ''}
           username={username}
           fullname={userFullName}
         />

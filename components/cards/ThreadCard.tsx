@@ -1,11 +1,11 @@
 import { PostProps } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils';
-import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
 import { Icons } from '../icons';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
 import { Separator } from '../ui/separator';
+import UserProfileCard from './UserProfileCard';
 
 const ThreadCard: React.FC<PostProps> = ({
   text,
@@ -18,14 +18,7 @@ const ThreadCard: React.FC<PostProps> = ({
       <div className='flex justify-between px-2 md:px-4 mb-4'>
         <div className='flex gap-4 w-full'>
           <div className='flex-col-center'>
-            <Link href={`/@${author.username}`} className='relative h-9 w-9'>
-              <Image
-                src={author.image!}
-                alt='Profile'
-                fill
-                className='rounded-full cursor-pointer'
-              />
-            </Link>
+            <UserProfileCard {...author} />
           </div>
           <div className='flex flex-col w-full'>
             <div className='flex-between gap-5 py-px w-full max-md:max-w-full max-md:flex-wrap'>
