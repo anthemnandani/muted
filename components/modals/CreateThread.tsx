@@ -96,12 +96,22 @@ const CreateThread = () => {
     });
   };
   const { isMobile } = useWindow();
+
   return (
     <Dialog open={openDialog} onOpenChange={setOpenDialog}>
       <DialogTrigger>
-        {isMobile ? <CreateThreadMobile /> : <CreateThreadDesktop />}
+        {isMobile ? (
+          <CreateThreadMobile />
+        ) : (
+          <>
+            <div className='hidden md:flex relative w-15 h-12 flex-center rounded-xl bg-primary transition-colors duration-150 text-secondary hover:text-foreground'>
+              <Icons.plus className='size-6' />
+            </div>
+            <CreateThreadDesktop />
+          </>
+        )}
       </DialogTrigger>
-      <DialogContent className='w-full max-w-lg select-none border-none bg-transparent shadow-none outline-none sm:max-w-[668px]'>
+      <DialogContent className='w-full select-none border-none bg-transparent shadow-none outline-none md:max-w-[668px]'>
         <h1 className='mb-2 w-full text-center font-bold text-white'>
           {replyPostInfo ? 'Reply' : 'New thread'}
         </h1>

@@ -1,4 +1,3 @@
-import CreateThread from '@/components/modals/CreateThread';
 import BottomBar from '@/components/shared/BottomBar';
 import LeftSideBar from '@/components/shared/LeftSideBar';
 import TopBar from '@/components/shared/TopBar';
@@ -17,7 +16,7 @@ export default function RootLayout({
           <div className='w-full md:max-w-[640px] mx-auto'>{children}</div>
         </section>
       </main>
-      <CreateThread />
+
       <BottomBar />
     </>
   );

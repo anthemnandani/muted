@@ -1,17 +1,16 @@
 'use client';
+import useWindow from '@/hooks/useWindow';
+import { getUsername } from '@/lib/utils';
+import { useUser } from '@clerk/nextjs';
 import { usePathname } from 'next/navigation';
 import { Icons } from '../icons';
 import CreateThread from '../modals/CreateThread';
 import MenuLink from './MenuLink';
-import { useUser } from '@clerk/nextjs';
-import { getUsername } from '@/lib/utils';
-import useWindow from '@/hooks/useWindow';
 
 const Navigation = () => {
   const pathname = usePathname();
   const { user } = useUser();
   const username = getUsername(user!);
-  const { isMobile } = useWindow();
   return (
     <>
       <MenuLink
@@ -25,7 +24,7 @@ const Navigation = () => {
         icon={Icons.search}
         isActive={pathname === '/search'}
       />
-      {isMobile && <CreateThread />}
+      <CreateThread />
       <MenuLink
         route='/activity'
         icon={Icons.activity}
