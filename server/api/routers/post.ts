@@ -6,11 +6,12 @@ import {
   GET_REPOSTS,
   GET_USER,
 } from '@/server/constants';
-import { PostPrivacy } from '@prisma/client';
+import { PostPrivacy, Prisma } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure, publicProcedure } from '../trpc';
+import type { ParentPostProps } from '@/lib/types';
 
 export const postRouter = createTRPCRouter({
   createPost: privateProcedure
@@ -151,6 +152,232 @@ export const postRouter = createTRPCRouter({
           reposts: post.reposts,
         })),
         nextCursor,
+      };
+    }),
+
+  getNestedPosts: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const { id } = input;
+      const getPosts = await ctx.db.post.findUnique({
+        where: {
+          id,
+        },
+        select: {
+          id: true,
+          text: true,
+          createdAt: true,
+          ...GET_COUNT,
+          images: true,
+          parentPostId: true,
+          author: {
+            select: {
+              ...GET_USER,
+            },
+          },
+          ...GET_LIKES,
+          replies: {
+            select: {
+              id: true,
+              createdAt: true,
+              text: true,
+              images: true,
+              quoteId: true,
+              ...GET_REPOSTS,
+              ...GET_LIKES,
+              parentPostId: true,
+              replies: {
+                select: {
+                  author: {
+                    select: {
+                      id: true,
+                      username: true,
+                      image: true,
+                    },
+                  },
+                },
+              },
+              author: {
+                select: {
+                  ...GET_USER,
+                },
+              },
+              ...GET_COUNT,
+            },
+          },
+          quoteId: true,
+          ...GET_REPOSTS,
+        },
+      });
+
+      const parentPosts = await ctx.db.$queryRaw<ParentPostProps[]>(
+        Prisma.sql`
+          WITH RECURSIVE Posts_tree AS (
+            SELECT
+              t.*,
+              0 AS depth,
+              jsonb_build_object(
+                'id', u.id,
+                'username', u.username,
+                'image', u.image,
+                'fullName', u."fullName",
+                'bio', u.bio,
+                'link', u.link,
+                'createdAt', u.created_at,
+                'followers', COALESCE(
+                  (
+                    SELECT jsonb_agg( 
+                      jsonb_build_object('id', f.id, 'image', f.image)
+                    ) 
+                    FROM "User" f 
+                    JOIN "_followers" uf ON f.id = uf."A" 
+                    WHERE uf."B" = u.id
+                  ),
+                  '[]'
+                )
+              ) AS author,
+              (SELECT json_agg(
+                json_build_object('userId', "userId")
+              )
+              FROM "Like" 
+              WHERE "postId" = t.id
+            ) AS likes,
+              (SELECT jsonb_agg(
+                jsonb_build_object(
+                  'author', jsonb_build_object(
+                    'id', r."authorId",
+                    'username', ru.username,
+                    'image', ru.image
+                  )
+                )
+              )
+              FROM "Post" r
+              JOIN "User" ru ON r."authorId" = ru.id
+              WHERE r."parentPostId" = t.id) AS replies,
+              (SELECT count(*) FROM "Like" l WHERE l."postId" = t.id) AS like_count,
+              (SELECT count(*) FROM "Post" r WHERE r."parentPostId" = t.id) AS reply_count,
+              (SELECT "quoteId" FROM "Post" WHERE "id" = t.id) AS quote_id,
+              (SELECT jsonb_agg(jsonb_build_object('userId', "userId", 'postId', "postId")) 
+                FROM "Repost" 
+                WHERE "postId" = t.id) AS reposts
+            FROM "Post" t
+            JOIN "User" u ON t."authorId" = u.id
+            WHERE t.id = ${id}
+      
+            UNION ALL
+      
+            SELECT
+              t.*,
+              tt.depth + 1,
+              jsonb_build_object(
+                'id', u.id,
+                'username', u.username,
+                'image', u.image,
+                'fullName', u."fullName",
+                'bio', u.bio,
+                'link', u.link,
+                'createdAt', u.created_at,
+                'followers', COALESCE(
+                  (
+                    SELECT jsonb_agg( 
+                      jsonb_build_object('id', f.id, 'image', f.image)
+                    ) 
+                    FROM "User" f 
+                    JOIN "_followers" uf ON f.id = uf."A" 
+                    WHERE uf."B" = u.id
+                  ),
+                  '[]'
+                )
+              ) AS author,
+              (SELECT json_agg(
+                json_build_object('userId', "userId")
+              )
+              FROM "Like" 
+              WHERE "postId" = t.id
+            ) AS likes,
+              (SELECT jsonb_agg(
+                jsonb_build_object(
+                  'author', jsonb_build_object(
+                    'id', r."authorId",
+                    'username', ru.username,
+                    'image', ru.image
+                  )
+                )
+              )
+              FROM "Post" r
+              JOIN "User" ru ON r."authorId" = ru.id
+              WHERE r."parentPostId" = t.id) AS replies,
+              (SELECT count(*) FROM "Like" l WHERE l."postId" = t.id) AS like_count,
+              (SELECT count(*) FROM "Post" r WHERE r."parentPostId" = t.id) AS reply_count,
+              (SELECT "quoteId" FROM "Post" WHERE "id" = t.id) AS quote_id,
+              (SELECT jsonb_agg(jsonb_build_object('userId', "userId", 'postId', "postId")) 
+                FROM "Repost" 
+                WHERE "postId" = t.id) AS reposts
+            FROM "Post" t
+            JOIN "User" u ON t."authorId" = u.id
+            JOIN Posts_tree tt ON t.id = tt."parentPostId"
+          )
+      
+          SELECT *
+          FROM Posts_tree
+          ORDER BY depth;
+        `
+      );
+
+      if (!getPosts) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      return {
+        postInfo: {
+          id: getPosts.id,
+          createdAt: getPosts.createdAt,
+          text: getPosts.text,
+          images: getPosts.images,
+          quoteId: getPosts.quoteId,
+          reposts: getPosts.reposts,
+          parentPostId: getPosts.parentPostId,
+          author: getPosts.author,
+          count: {
+            likeCount: getPosts._count.likes,
+            replyCount: getPosts._count.replies,
+          },
+          likes: getPosts.likes,
+          replies: getPosts.replies.map(({ _count, ...reply }) => ({
+            ...reply,
+            count: {
+              likeCount: _count.likes,
+              replyCount: _count.replies,
+            },
+          })),
+        },
+
+        // TODO: need to fix type here
+        parentPosts: parentPosts
+          .filter((parent) => parent.id !== id)
+          .map((parent) => {
+            return {
+              id: parent.id,
+              createdAt: new Date(parent.createdAt),
+              text: parent.text,
+              images: parent.images,
+              parentPostId: parent.parentPostId,
+              author: parent.author,
+              count: {
+                likeCount: Number(parent.like_count),
+                replyCount: Number(parent.reply_count),
+              },
+              likes: parent.likes ?? [],
+              replies: parent.replies ?? [],
+              quoteId: parent.quoteId,
+              reposts: parent.reposts,
+            };
+          })
+          .reverse(),
       };
     }),
 });

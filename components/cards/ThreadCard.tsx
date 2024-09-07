@@ -1,6 +1,8 @@
+'use client';
 import { PostProps } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils';
 import { Plus } from 'lucide-react';
+import Link from 'next/link';
 import React from 'react';
 import { Icons } from '../icons';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
@@ -11,14 +13,15 @@ import Username from '../user/Username';
 import UserProfileCard from './UserProfileCard';
 
 const ThreadCard: React.FC<PostProps> = ({
+  id,
   text,
   createdAt,
   author,
   isLastThread,
 }) => {
   return (
-    <article className='w-full cursor-pointer pt-4'>
-      <div className='flex justify-between px-2 md:px-4 mb-4'>
+    <article className='w-full pt-4'>
+      <div className='flex justify-between px-4 md:px-6 mb-4'>
         <div className='flex gap-4 w-full'>
           <div className='flex-col-center'>
             <Dialog>
@@ -56,9 +59,14 @@ const ThreadCard: React.FC<PostProps> = ({
               </div>
               <ThreadActionMenu />
             </div>
-            <p className='text-accent-foreground text-[15px] leading-5 mt-1 max-md:max-w-full whitespace-pre-line'>
-              {text}
-            </p>
+            <Link href={`/@${author.username}/post/${id}`} className='w-full'>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: text.replace(/\\n/g, '\n'),
+                }}
+                className='text-accent-foreground text-[15px] leading-5 mt-1 max-md:max-w-full whitespace-pre-line'
+              />
+            </Link>
             <div className='flex flex-col gap-3 mt-2'>
               <div className='flex items-center gap-3.5 -ml-2'>
                 <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>

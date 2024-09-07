@@ -12,6 +12,8 @@ export type PostProps = ArrayElement<
   isLastThread?: boolean;
 };
 
+export type PostReplyCardProps = RouterOutput['post']['getNestedPosts'];
+
 export type ParentPostInfo = Pick<
   PostProps,
   'id' | 'text' | 'images' | 'author'
@@ -70,7 +72,7 @@ export type ParentPostProps = {
   author: {
     id: string;
     image: string;
-    fullname: string;
+    fullName: string;
     username: string;
     bio: string;
     link: string;
