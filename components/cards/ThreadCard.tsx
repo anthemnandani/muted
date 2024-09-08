@@ -1,6 +1,6 @@
 'use client';
 import { PostProps } from '@/lib/types';
-import { formatTimeAgo } from '@/lib/utils';
+import { cn, formatTimeAgo } from '@/lib/utils';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
@@ -18,11 +18,12 @@ const ThreadCard: React.FC<PostProps> = ({
   text,
   createdAt,
   author,
-  replies,
+  count,
+  className,
   isLastThread,
 }) => {
   return (
-    <article className='w-full pt-4'>
+    <article className={cn('w-full pt-4', className)}>
       <div className='flex justify-between px-4 md:px-6 mb-4'>
         <div className='flex gap-4 w-full'>
           <div className='flex-col-center'>
@@ -83,7 +84,7 @@ const ThreadCard: React.FC<PostProps> = ({
                     author: { ...author },
                     createdAt,
                   }}
-                  replies={replies}
+                  count={count}
                 />
                 <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
                   <Icons.repost className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />

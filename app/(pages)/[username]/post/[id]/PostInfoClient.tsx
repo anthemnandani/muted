@@ -2,7 +2,7 @@
 
 import Loading from '@/app/(pages)/loading';
 import NotFound from '@/app/not-found';
-import ThreadReplyCard from '@/components/cards/ThreadReplyCard';
+import ThreadCard from '@/components/cards/ThreadCard';
 import Wrapper from '@/components/shared/Wrapper';
 import { api } from '@/trpc/react';
 
@@ -13,7 +13,14 @@ const PostInfoClient = ({ id }: { id: string }) => {
   if (isError) return <NotFound />;
   return data ? (
     <Wrapper>
-      <ThreadReplyCard {...data} key={data.postInfo.id} />
+      <ThreadCard {...data.postInfo} className='pt-6' />
+      {data.postInfo.replies.map((post, index) => (
+        <ThreadCard
+          key={post.id}
+          {...post}
+          isLastThread={index == data.postInfo.replies.length - 1}
+        />
+      ))}
     </Wrapper>
   ) : (
     <NotFound />

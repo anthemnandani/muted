@@ -5,18 +5,12 @@ import { ParentPostInfo } from '@/lib/types';
 
 interface ReplyButtonProps {
   replyThreadInfo: ParentPostInfo;
-  replies: {
-    author: {
-      username: string;
-      id: string;
-      image: string | null;
-    };
-  }[];
+  count: { likeCount: number; replyCount: number };
 }
 
 const ReplyButton: React.FC<ReplyButtonProps> = ({
   replyThreadInfo,
-  replies,
+  count,
 }) => {
   const { setOpenDialog, setReplyPostInfo } = useDialog();
   return (
@@ -28,8 +22,10 @@ const ReplyButton: React.FC<ReplyButtonProps> = ({
       }}
     >
       <Icons.reply className='size-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
-      {replies?.length > 0 && (
-        <span className='text-[13px] ml-2 text-gray-2'>{replies.length}</span>
+      {count?.replyCount > 0 && (
+        <span className='text-[13px] ml-2 text-gray-2'>
+          {count?.replyCount}
+        </span>
       )}
     </div>
   );

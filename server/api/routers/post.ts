@@ -155,6 +155,87 @@ export const postRouter = createTRPCRouter({
       };
     }),
 
+  replyToPost: privateProcedure
+    .input(
+      z.object({
+        postAuthor: z.string(),
+        postId: z.string(),
+        text: z.string().min(3, {
+          message: 'Text must be at least 3 character',
+        }),
+        imageUrl: z.string().optional(),
+        privacy: z.nativeEnum(PostPrivacy),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { user, userId } = ctx;
+      const email = getUserEmail(user);
+      const dbUser = await ctx.db.user.findUnique({
+        where: {
+          email,
+        },
+        select: {
+          verified: true,
+        },
+      });
+
+      if (!dbUser) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const filter = new Filter();
+      const filteredText = filter.clean(input.text);
+
+      const transactionResult = await ctx.db.$transaction(async (prisma) => {
+        const repliedPost = await prisma.post.create({
+          data: {
+            text: filteredText,
+            images: input.imageUrl ? [input.imageUrl] : [],
+            privacy: input.privacy,
+            author: {
+              connect: {
+                id: userId,
+              },
+            },
+            parentPost: {
+              connect: {
+                id: input.postId,
+              },
+            },
+          },
+          select: {
+            id: true,
+            author: true,
+          },
+        });
+
+        if (userId !== input.postAuthor) {
+          await prisma.notification.create({
+            data: {
+              type: 'REPLY',
+              senderUserId: userId,
+              receiverUserId: input.postAuthor,
+              postId: input.postId,
+              message: input.text,
+            },
+          });
+        }
+
+        return {
+          repliedPost,
+        };
+      });
+
+      if (!transactionResult) {
+        throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+      }
+
+      return {
+        createPost: transactionResult.repliedPost,
+        success: true,
+      };
+    }),
+
   getNestedPosts: publicProcedure
     .input(
       z.object({

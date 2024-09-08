@@ -6,6 +6,7 @@ import { api } from '@/trpc/react';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 import { toast } from 'sonner';
 import CreateThreadDesktop from '../buttons/CreateThreadDesktop';
@@ -25,6 +26,7 @@ import {
 
 const CreateThread = () => {
   const { postPrivacy } = usePost();
+  const router = useRouter();
 
   const {
     openDialog,
@@ -65,13 +67,36 @@ const CreateThread = () => {
       retry: false,
     });
 
-  async function handleMutation() {
-    const promise = createThread({
-      text: threadData.text,
-      privacy: threadData.privacy,
-      quoteId: quoteInfo?.id,
-      postAuthor: quoteInfo?.author.id,
+  const { isLoading: isReplying, mutateAsync: replyToPost } =
+    api.post.replyToPost.useMutation({
+      onError: (err) => {
+        toast.error('ReplyingError: Something went wrong!');
+        if (err.data?.code === 'UNAUTHORIZED') {
+          router.push('/login');
+        }
+      },
+      onSettled: async () => {
+        await trpcUtils.post.getInfinitePosts.invalidate();
+        await trpcUtils.invalidate();
+      },
+      retry: false,
     });
+
+  async function handleMutation() {
+    const promise = replyPostInfo
+      ? replyToPost({
+          text: threadData.text,
+          postId: replyPostInfo.id,
+          // imageUrl: imgRes ? imgRes[0]?.url : undefined,
+          privacy: threadData.privacy,
+          postAuthor: replyPostInfo.author.id,
+        })
+      : createThread({
+          text: threadData.text,
+          privacy: threadData.privacy,
+          quoteId: quoteInfo?.id,
+          postAuthor: quoteInfo?.author.id,
+        });
 
     return promise;
   }
@@ -178,11 +203,11 @@ const CreateThread = () => {
               onClick={handleCreateThread}
               variant='ghost'
               className='bg-transparent border border-border-dark dark:border-border-light rounded-lg text-[14px] leading-none flex-center hover:bg-transparent dark:hover:bg-transparent disabled:cursor-not-allowed disabled:pointer-events-auto'
-              disabled={threadData?.text === '' || isLoading}
+              disabled={threadData?.text === '' || isLoading || isReplying}
             >
-              {isLoading && (
+              {(isLoading || isReplying) && (
                 <Icons.spinner
-                  className='mr-2 h-4 w-4 animate-spin'
+                  className='mr-2 size-4 animate-spin'
                   aria-hidden='true'
                 />
               )}

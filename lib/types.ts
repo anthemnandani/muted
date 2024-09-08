@@ -10,9 +10,8 @@ export type PostProps = ArrayElement<
   RouterOutput['post']['getInfinitePosts']['posts']
 > & {
   isLastThread?: boolean;
+  className?: string;
 };
-
-export type PostReplyCardProps = RouterOutput['post']['getNestedPosts'];
 
 export type ParentPostInfo = Pick<
   PostProps,
