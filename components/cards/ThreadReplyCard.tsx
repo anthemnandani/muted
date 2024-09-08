@@ -10,6 +10,7 @@ import Username from '../user/Username';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
 import { Icons } from '../icons';
 import { Separator } from '../ui/separator';
+import ReplyButton from '../buttons/ReplyButton';
 
 const ThreadReplyCard: React.FC<PostReplyCardProps> = ({
   postInfo,
@@ -102,9 +103,16 @@ const ThreadReplyCard: React.FC<PostReplyCardProps> = ({
                     <Icons.heart className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
                   </div>
 
-                  <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
-                    <Icons.reply className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
-                  </div>
+                  <ReplyButton
+                    replyThreadInfo={{
+                      id,
+                      text,
+                      images: [],
+                      author: { ...author },
+                      createdAt,
+                    }}
+                    replies={replies}
+                  />
                   <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
                     <Icons.repost className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
                   </div>

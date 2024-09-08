@@ -11,7 +11,6 @@ const PostInfoClient = ({ id }: { id: string }) => {
 
   if (isLoading) return <Loading />;
   if (isError) return <NotFound />;
-  console.log('Data: ', data);
   return data ? (
     <Wrapper>
       <ThreadReplyCard {...data} key={data.postInfo.id} />

@@ -16,7 +16,7 @@ export type PostReplyCardProps = RouterOutput['post']['getNestedPosts'];
 
 export type ParentPostInfo = Pick<
   PostProps,
-  'id' | 'text' | 'images' | 'author'
+  'id' | 'text' | 'images' | 'author' | 'createdAt'
 >;
 
 export type UserProfileInfoProps =
@@ -101,6 +101,7 @@ export interface CreateThreadInputProps {
   quoteInfo?:
     | (Pick<ParentPostInfo, 'id' | 'text' | 'author'> & { createdAt?: Date })
     | null;
+  placeholder?: string;
 }
 
 export interface EditProfileProps {

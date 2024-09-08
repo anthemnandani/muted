@@ -11,12 +11,14 @@ import { Dialog, DialogContent, DialogTrigger } from '../ui/dialog';
 import { Separator } from '../ui/separator';
 import Username from '../user/Username';
 import UserProfileCard from './UserProfileCard';
+import ReplyButton from '../buttons/ReplyButton';
 
 const ThreadCard: React.FC<PostProps> = ({
   id,
   text,
   createdAt,
   author,
+  replies,
   isLastThread,
 }) => {
   return (
@@ -67,15 +69,22 @@ const ThreadCard: React.FC<PostProps> = ({
                 className='text-accent-foreground text-[15px] leading-5 mt-1 max-md:max-w-full whitespace-pre-line'
               />
             </Link>
-            <div className='flex flex-col gap-3 mt-2'>
+            <div className='flex flex-col gap-3 pt-3'>
               <div className='flex items-center gap-3.5 -ml-2'>
                 <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
                   <Icons.heart className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
                 </div>
 
-                <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
-                  <Icons.reply className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
-                </div>
+                <ReplyButton
+                  replyThreadInfo={{
+                    id,
+                    text,
+                    images: [],
+                    author: { ...author },
+                    createdAt,
+                  }}
+                  replies={replies}
+                />
                 <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
                   <Icons.repost className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
                 </div>

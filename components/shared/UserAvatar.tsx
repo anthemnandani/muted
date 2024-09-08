@@ -18,7 +18,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
         className
       )}
     >
-      <Avatar className='h-min w-full rounded-full object-cover'>
+      <Avatar className='h-min w-full rounded-full object-cover flex-center'>
         <AvatarImage
           src={image ?? ''}
           alt={fullname ?? ''}
