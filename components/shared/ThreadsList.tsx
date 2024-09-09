@@ -3,7 +3,7 @@ import React from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { Icons } from '../icons';
 import ThreadCard from '../cards/ThreadCard';
-import { PostProps } from '@/lib/types';
+import { ParentPostProps, PostProps } from '@/lib/types';
 
 interface ThreadsListProps {
   posts?: PostProps[];
@@ -27,7 +27,7 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
         </div>
       }
     >
-      {posts?.map((post, index) => {
+      {posts?.map((post: any, index: number) => {
         return (
           <ThreadCard
             key={post.id}
