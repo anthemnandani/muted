@@ -1,3 +1,4 @@
+import type { ParentPostProps } from '@/lib/types';
 import { getUserEmail } from '@/lib/utils';
 import {
   GET_COUNT,
@@ -11,7 +12,6 @@ import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure, publicProcedure } from '../trpc';
-import type { ParentPostProps } from '@/lib/types';
 
 export const postRouter = createTRPCRouter({
   createPost: privateProcedure
@@ -141,10 +141,6 @@ export const postRouter = createTRPCRouter({
           text: post.text,
           parentPostId: post.parentPostId,
           author: post.author,
-          count: {
-            likeCount: post._count.likes,
-            replyCount: post._count.replies,
-          },
           likes: post.likes,
           replies: post.replies,
           quoteId: post.quoteId,
@@ -244,10 +240,9 @@ export const postRouter = createTRPCRouter({
     )
     .query(async ({ input, ctx }) => {
       const { id } = input;
+
       const getPosts = await ctx.db.post.findUnique({
-        where: {
-          id,
-        },
+        where: { id },
         select: {
           id: true,
           text: true,
@@ -255,11 +250,7 @@ export const postRouter = createTRPCRouter({
           ...GET_COUNT,
           images: true,
           parentPostId: true,
-          author: {
-            select: {
-              ...GET_USER,
-            },
-          },
+          author: { select: { ...GET_USER } },
           ...GET_LIKES,
           replies: {
             select: {
@@ -271,29 +262,46 @@ export const postRouter = createTRPCRouter({
               ...GET_REPOSTS,
               ...GET_LIKES,
               parentPostId: true,
-              replies: {
-                select: {
-                  author: {
-                    select: {
-                      id: true,
-                      username: true,
-                      image: true,
-                    },
-                  },
-                },
-              },
-              author: {
-                select: {
-                  ...GET_USER,
-                },
-              },
+              author: { select: { ...GET_USER } },
               ...GET_COUNT,
             },
+            orderBy: { createdAt: 'desc' },
           },
           quoteId: true,
           ...GET_REPOSTS,
         },
       });
+
+      if (!getPosts) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const fetchNestedReplies = async (postId: string) => {
+        const replies: any = await ctx.db.post.findMany({
+          where: { parentPostId: postId },
+          select: {
+            id: true,
+            createdAt: true,
+            text: true,
+            images: true,
+            quoteId: true,
+            ...GET_REPOSTS,
+            ...GET_LIKES,
+            parentPostId: true,
+            author: { select: { ...GET_USER } },
+            ...GET_COUNT,
+          },
+          orderBy: { createdAt: 'desc' },
+        });
+
+        for (const reply of replies) {
+          reply.replies = await fetchNestedReplies(reply.id);
+        }
+
+        return replies;
+      };
+
+      const nestedReplies = await fetchNestedReplies(id);
 
       const parentPosts = await ctx.db.$queryRaw<ParentPostProps[]>(
         Prisma.sql`
@@ -409,10 +417,6 @@ export const postRouter = createTRPCRouter({
         `
       );
 
-      if (!getPosts) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
-      }
-
       return {
         postInfo: {
           id: getPosts.id,
@@ -423,41 +427,23 @@ export const postRouter = createTRPCRouter({
           reposts: getPosts.reposts,
           parentPostId: getPosts.parentPostId,
           author: getPosts.author,
-          count: {
-            likeCount: getPosts._count.likes,
-            replyCount: getPosts._count.replies,
-          },
           likes: getPosts.likes,
-          replies: getPosts.replies.map(({ _count, ...reply }) => ({
-            ...reply,
-            count: {
-              likeCount: _count.likes,
-              replyCount: _count.replies,
-            },
-          })),
+          replies: nestedReplies,
         },
-
-        // TODO: need to fix type here
         parentPosts: parentPosts
           .filter((parent) => parent.id !== id)
-          .map((parent) => {
-            return {
-              id: parent.id,
-              createdAt: new Date(parent.createdAt),
-              text: parent.text,
-              images: parent.images,
-              parentPostId: parent.parentPostId,
-              author: parent.author,
-              count: {
-                likeCount: Number(parent.like_count),
-                replyCount: Number(parent.reply_count),
-              },
-              likes: parent.likes ?? [],
-              replies: parent.replies ?? [],
-              quoteId: parent.quoteId,
-              reposts: parent.reposts,
-            };
-          })
+          .map((parent) => ({
+            id: parent.id,
+            createdAt: new Date(parent.createdAt),
+            text: parent.text,
+            images: parent.images,
+            parentPostId: parent.parentPostId,
+            author: parent.author,
+            likes: parent.likes ?? [],
+            replies: parent.replies ?? [],
+            quoteId: parent.quoteId,
+            reposts: parent.reposts,
+          }))
           .reverse(),
       };
     }),

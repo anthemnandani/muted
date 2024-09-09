@@ -10,8 +10,12 @@ export type PostProps = ArrayElement<
   RouterOutput['post']['getInfinitePosts']['posts']
 > & {
   isLastThread?: boolean;
-  className?: string;
+  showSeparator?: boolean;
+  showLine?: boolean;
+  isNested?: boolean;
 };
+
+export type PostReplyCardProps = RouterOutput['post']['getNestedPosts'];
 
 export type ParentPostInfo = Pick<
   PostProps,
@@ -49,7 +53,7 @@ export interface MenuItemProps {
 
 export type ParentPostProps = {
   id: string;
-  createdAt: string;
+  createdAt: Date;
   text: string;
   images: string[];
   likes: {
@@ -62,10 +66,30 @@ export type ParentPostProps = {
   }[];
   parentPostId: string | null;
   replies: {
+    id: string;
+    createdAt: Date;
+    text: string;
+    images: string[];
+    parentPostId: string | null;
+    quoteId: string | null;
+
     author: {
-      username: string;
       id: string;
-      image: string;
+      username: string;
+      image: string | null;
+    };
+    replies: {
+      id: string;
+      createdAt: Date;
+      text: string;
+      images: string[];
+      parentPostId: string | null;
+      quoteId: string | null;
+      author: {
+        id: string;
+        username: string;
+        image: string | null;
+      };
     };
   }[];
   author: {
@@ -82,9 +106,10 @@ export type ParentPostProps = {
       image: string;
     }[];
   };
-  like_count: number;
-  reply_count: number;
   isLastThread?: boolean;
+  showSeparator?: boolean;
+  showLine?: boolean;
+  isNested?: boolean;
 };
 
 export interface UserAvatarProps extends React.HTMLAttributes<HTMLDivElement> {

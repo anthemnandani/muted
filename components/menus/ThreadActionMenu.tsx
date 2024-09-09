@@ -8,8 +8,10 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import MenuItem from '../shared/MenuItem';
+import { useUser } from '@clerk/nextjs';
 
-const ThreadActionMenu = () => {
+const ThreadActionMenu = ({ authorId }: { authorId: string }) => {
+  const { user } = useUser();
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
@@ -28,31 +30,58 @@ const ThreadActionMenu = () => {
           className='flex-between py-3.5 px-4'
           isActionMenuItem
         />
-        <MenuItem
-          icon={Icons.notInterested}
-          label='Not interested'
-          className='flex-between py-3.5 px-4'
-          isActionMenuItem
-        />
-        <DropdownMenuSeparator />
-        <MenuItem
-          icon={Icons.mute}
-          label='Mute'
-          className='flex-between py-3.5 px-4'
-          isActionMenuItem
-        />
-        <MenuItem
-          icon={Icons.block}
-          label='Block'
-          className='flex-between py-3.5 px-4 text-primary-red'
-          isActionMenuItem
-        />
-        <MenuItem
-          icon={Icons.report}
-          label='Report'
-          className='flex-between py-3.5 px-4 text-primary-red'
-          isActionMenuItem
-        />
+        {user?.id !== authorId ? (
+          <>
+            <MenuItem
+              icon={Icons.notInterested}
+              label='Not interested'
+              className='flex-between py-3.5 px-4'
+              isActionMenuItem
+            />
+            <DropdownMenuSeparator />
+            <MenuItem
+              icon={Icons.mute}
+              label='Mute'
+              className='flex-between py-3.5 px-4'
+              isActionMenuItem
+            />
+            <MenuItem
+              icon={Icons.block}
+              label='Block'
+              className='flex-between py-3.5 px-4 text-primary-red focus:text-primary-red'
+              isActionMenuItem
+            />
+            <MenuItem
+              icon={Icons.report}
+              label='Report'
+              className='flex-between py-3.5 px-4 text-primary-red focus:text-primary-red'
+              isActionMenuItem
+            />
+          </>
+        ) : (
+          <>
+            <MenuItem
+              icon={Icons.profilePin}
+              label='Pin to profile'
+              className='flex-between py-3.5 px-4'
+              isActionMenuItem
+            />
+            <MenuItem
+              icon={Icons.hide}
+              label='Hide like and share counts'
+              className='flex-between py-3.5 px-4'
+              isActionMenuItem
+            />
+            <DropdownMenuSeparator />
+            <MenuItem
+              icon={Icons.delete}
+              label='Delete'
+              className='flex-between py-3.5 px-4 text-primary-red focus:text-primary-red'
+              isActionMenuItem
+            />
+          </>
+        )}
+
         <DropdownMenuSeparator />
         <MenuItem
           icon={Icons.copyLink}
