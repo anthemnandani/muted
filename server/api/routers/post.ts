@@ -1,3 +1,4 @@
+import type { ParentPostProps } from '@/lib/types';
 import { getUserEmail } from '@/lib/utils';
 import {
   GET_COUNT,
@@ -6,7 +7,7 @@ import {
   GET_REPOSTS,
   GET_USER,
 } from '@/server/constants';
-import { PostPrivacy } from '@prisma/client';
+import { PostPrivacy, Prisma } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
 import { z } from 'zod';
@@ -140,10 +141,6 @@ export const postRouter = createTRPCRouter({
           text: post.text,
           parentPostId: post.parentPostId,
           author: post.author,
-          count: {
-            likeCount: post._count.likes,
-            replyCount: post._count.replies,
-          },
           likes: post.likes,
           replies: post.replies,
           quoteId: post.quoteId,
@@ -151,6 +148,303 @@ export const postRouter = createTRPCRouter({
           reposts: post.reposts,
         })),
         nextCursor,
+      };
+    }),
+
+  replyToPost: privateProcedure
+    .input(
+      z.object({
+        postAuthor: z.string(),
+        postId: z.string(),
+        text: z.string().min(3, {
+          message: 'Text must be at least 3 character',
+        }),
+        imageUrl: z.string().optional(),
+        privacy: z.nativeEnum(PostPrivacy),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { user, userId } = ctx;
+      const email = getUserEmail(user);
+      const dbUser = await ctx.db.user.findUnique({
+        where: {
+          email,
+        },
+        select: {
+          verified: true,
+        },
+      });
+
+      if (!dbUser) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const filter = new Filter();
+      const filteredText = filter.clean(input.text);
+
+      const transactionResult = await ctx.db.$transaction(async (prisma) => {
+        const repliedPost = await prisma.post.create({
+          data: {
+            text: filteredText,
+            images: input.imageUrl ? [input.imageUrl] : [],
+            privacy: input.privacy,
+            author: {
+              connect: {
+                id: userId,
+              },
+            },
+            parentPost: {
+              connect: {
+                id: input.postId,
+              },
+            },
+          },
+          select: {
+            id: true,
+            author: true,
+          },
+        });
+
+        if (userId !== input.postAuthor) {
+          await prisma.notification.create({
+            data: {
+              type: 'REPLY',
+              senderUserId: userId,
+              receiverUserId: input.postAuthor,
+              postId: input.postId,
+              message: input.text,
+            },
+          });
+        }
+
+        return {
+          repliedPost,
+        };
+      });
+
+      if (!transactionResult) {
+        throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+      }
+
+      return {
+        createPost: transactionResult.repliedPost,
+        success: true,
+      };
+    }),
+
+  getNestedPosts: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const { id } = input;
+
+      const getPosts = await ctx.db.post.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          text: true,
+          createdAt: true,
+          ...GET_COUNT,
+          images: true,
+          parentPostId: true,
+          author: { select: { ...GET_USER } },
+          ...GET_LIKES,
+          replies: {
+            select: {
+              id: true,
+              createdAt: true,
+              text: true,
+              images: true,
+              quoteId: true,
+              ...GET_REPOSTS,
+              ...GET_LIKES,
+              parentPostId: true,
+              author: { select: { ...GET_USER } },
+              ...GET_COUNT,
+            },
+            orderBy: { createdAt: 'desc' },
+          },
+          quoteId: true,
+          ...GET_REPOSTS,
+        },
+      });
+
+      if (!getPosts) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const fetchNestedReplies = async (postId: string) => {
+        const replies: any = await ctx.db.post.findMany({
+          where: { parentPostId: postId },
+          select: {
+            id: true,
+            createdAt: true,
+            text: true,
+            images: true,
+            quoteId: true,
+            ...GET_REPOSTS,
+            ...GET_LIKES,
+            parentPostId: true,
+            author: { select: { ...GET_USER } },
+            ...GET_COUNT,
+          },
+          orderBy: { createdAt: 'desc' },
+        });
+
+        for (const reply of replies) {
+          reply.replies = await fetchNestedReplies(reply.id);
+        }
+
+        return replies;
+      };
+
+      const nestedReplies = await fetchNestedReplies(id);
+
+      const parentPosts = await ctx.db.$queryRaw<ParentPostProps[]>(
+        Prisma.sql`
+          WITH RECURSIVE Posts_tree AS (
+            SELECT
+              t.*,
+              0 AS depth,
+              jsonb_build_object(
+                'id', u.id,
+                'username', u.username,
+                'image', u.image,
+                'fullName', u."fullName",
+                'bio', u.bio,
+                'link', u.link,
+                'createdAt', u.created_at,
+                'followers', COALESCE(
+                  (
+                    SELECT jsonb_agg( 
+                      jsonb_build_object('id', f.id, 'image', f.image)
+                    ) 
+                    FROM "User" f 
+                    JOIN "_followers" uf ON f.id = uf."A" 
+                    WHERE uf."B" = u.id
+                  ),
+                  '[]'
+                )
+              ) AS author,
+              (SELECT json_agg(
+                json_build_object('userId', "userId")
+              )
+              FROM "Like" 
+              WHERE "postId" = t.id
+            ) AS likes,
+              (SELECT jsonb_agg(
+                jsonb_build_object(
+                  'author', jsonb_build_object(
+                    'id', r."authorId",
+                    'username', ru.username,
+                    'image', ru.image
+                  )
+                )
+              )
+              FROM "Post" r
+              JOIN "User" ru ON r."authorId" = ru.id
+              WHERE r."parentPostId" = t.id) AS replies,
+              (SELECT count(*) FROM "Like" l WHERE l."postId" = t.id) AS like_count,
+              (SELECT count(*) FROM "Post" r WHERE r."parentPostId" = t.id) AS reply_count,
+              (SELECT "quoteId" FROM "Post" WHERE "id" = t.id) AS quote_id,
+              (SELECT jsonb_agg(jsonb_build_object('userId', "userId", 'postId', "postId")) 
+                FROM "Repost" 
+                WHERE "postId" = t.id) AS reposts
+            FROM "Post" t
+            JOIN "User" u ON t."authorId" = u.id
+            WHERE t.id = ${id}
+      
+            UNION ALL
+      
+            SELECT
+              t.*,
+              tt.depth + 1,
+              jsonb_build_object(
+                'id', u.id,
+                'username', u.username,
+                'image', u.image,
+                'fullName', u."fullName",
+                'bio', u.bio,
+                'link', u.link,
+                'createdAt', u.created_at,
+                'followers', COALESCE(
+                  (
+                    SELECT jsonb_agg( 
+                      jsonb_build_object('id', f.id, 'image', f.image)
+                    ) 
+                    FROM "User" f 
+                    JOIN "_followers" uf ON f.id = uf."A" 
+                    WHERE uf."B" = u.id
+                  ),
+                  '[]'
+                )
+              ) AS author,
+              (SELECT json_agg(
+                json_build_object('userId', "userId")
+              )
+              FROM "Like" 
+              WHERE "postId" = t.id
+            ) AS likes,
+              (SELECT jsonb_agg(
+                jsonb_build_object(
+                  'author', jsonb_build_object(
+                    'id', r."authorId",
+                    'username', ru.username,
+                    'image', ru.image
+                  )
+                )
+              )
+              FROM "Post" r
+              JOIN "User" ru ON r."authorId" = ru.id
+              WHERE r."parentPostId" = t.id) AS replies,
+              (SELECT count(*) FROM "Like" l WHERE l."postId" = t.id) AS like_count,
+              (SELECT count(*) FROM "Post" r WHERE r."parentPostId" = t.id) AS reply_count,
+              (SELECT "quoteId" FROM "Post" WHERE "id" = t.id) AS quote_id,
+              (SELECT jsonb_agg(jsonb_build_object('userId', "userId", 'postId', "postId")) 
+                FROM "Repost" 
+                WHERE "postId" = t.id) AS reposts
+            FROM "Post" t
+            JOIN "User" u ON t."authorId" = u.id
+            JOIN Posts_tree tt ON t.id = tt."parentPostId"
+          )
+      
+          SELECT *
+          FROM Posts_tree
+          ORDER BY depth;
+        `
+      );
+
+      return {
+        postInfo: {
+          id: getPosts.id,
+          createdAt: getPosts.createdAt,
+          text: getPosts.text,
+          images: getPosts.images,
+          quoteId: getPosts.quoteId,
+          reposts: getPosts.reposts,
+          parentPostId: getPosts.parentPostId,
+          author: getPosts.author,
+          likes: getPosts.likes,
+          replies: nestedReplies,
+        },
+        parentPosts: parentPosts
+          .filter((parent) => parent.id !== id)
+          .map((parent) => ({
+            id: parent.id,
+            createdAt: new Date(parent.createdAt),
+            text: parent.text,
+            images: parent.images,
+            parentPostId: parent.parentPostId,
+            author: parent.author,
+            likes: parent.likes ?? [],
+            replies: parent.replies ?? [],
+            quoteId: parent.quoteId,
+            reposts: parent.reposts,
+          }))
+          .reverse(),
       };
     }),
 });

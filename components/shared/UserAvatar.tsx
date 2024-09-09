@@ -18,13 +18,15 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
         className
       )}
     >
-      <Avatar className='h-min w-full rounded-full object-cover'>
+      <Avatar className='h-min w-full rounded-full object-cover flex-center'>
         <AvatarImage
           src={image ?? ''}
           alt={fullname ?? ''}
           className='rounded-full w-full h-full object-cover'
         />
-        <AvatarFallback>{username.slice(0, 2).toUpperCase()}</AvatarFallback>
+        <AvatarFallback className='flex-center'>
+          {username.slice(0, 2).toUpperCase()}
+        </AvatarFallback>
       </Avatar>
     </Link>
   );

@@ -9,6 +9,7 @@ import {
 } from 'date-fns';
 import type { UserResource } from '@clerk/types';
 import type { User } from '@clerk/nextjs/server';
+import { ParentPostProps } from './types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -89,4 +90,16 @@ export const formatURL = (originalURL: string) => {
   const domain = parsedUrl.hostname;
   const firstPath = parsedUrl.pathname.split('/')[1] ?? '';
   return `${domain}${firstPath ? `/${firstPath}` : ''}`;
+};
+
+export const countTotalReplies = (replies: any) => {
+  let totalReplies = replies?.length;
+
+  replies?.forEach((reply: any) => {
+    if (reply.replies && reply.replies.length > 0) {
+      totalReplies += countTotalReplies(reply.replies);
+    }
+  });
+
+  return totalReplies;
 };

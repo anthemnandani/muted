@@ -10,11 +10,16 @@ export type PostProps = ArrayElement<
   RouterOutput['post']['getInfinitePosts']['posts']
 > & {
   isLastThread?: boolean;
+  showSeparator?: boolean;
+  showLine?: boolean;
+  isNested?: boolean;
 };
+
+export type PostReplyCardProps = RouterOutput['post']['getNestedPosts'];
 
 export type ParentPostInfo = Pick<
   PostProps,
-  'id' | 'text' | 'images' | 'author'
+  'id' | 'text' | 'images' | 'author' | 'createdAt'
 >;
 
 export type UserProfileInfoProps =
@@ -48,7 +53,7 @@ export interface MenuItemProps {
 
 export type ParentPostProps = {
   id: string;
-  createdAt: string;
+  createdAt: Date;
   text: string;
   images: string[];
   likes: {
@@ -61,16 +66,36 @@ export type ParentPostProps = {
   }[];
   parentPostId: string | null;
   replies: {
+    id: string;
+    createdAt: Date;
+    text: string;
+    images: string[];
+    parentPostId: string | null;
+    quoteId: string | null;
+
     author: {
-      username: string;
       id: string;
-      image: string;
+      username: string;
+      image: string | null;
+    };
+    replies: {
+      id: string;
+      createdAt: Date;
+      text: string;
+      images: string[];
+      parentPostId: string | null;
+      quoteId: string | null;
+      author: {
+        id: string;
+        username: string;
+        image: string | null;
+      };
     };
   }[];
   author: {
     id: string;
     image: string;
-    fullname: string;
+    fullName: string;
     username: string;
     bio: string;
     link: string;
@@ -81,9 +106,10 @@ export type ParentPostProps = {
       image: string;
     }[];
   };
-  like_count: number;
-  reply_count: number;
   isLastThread?: boolean;
+  showSeparator?: boolean;
+  showLine?: boolean;
+  isNested?: boolean;
 };
 
 export interface UserAvatarProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -99,6 +125,7 @@ export interface CreateThreadInputProps {
   quoteInfo?:
     | (Pick<ParentPostInfo, 'id' | 'text' | 'author'> & { createdAt?: Date })
     | null;
+  placeholder?: string;
 }
 
 export interface EditProfileProps {
