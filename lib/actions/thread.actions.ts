@@ -1,9 +1,9 @@
 'use server';
 import { revalidatePath } from 'next/cache';
+import Community from '../models/community.model';
 import Thread from '../models/thread.model';
 import User from '../models/user.model';
 import connectDB from '../mongoose';
-import Community from '../models/community.model';
 
 interface CreateThreadParams {
   content: string;
@@ -222,3 +222,39 @@ export async function deleteThread(id: string, path: string): Promise<void> {
     throw new Error(`Failed to delete thread: ${error.message}`);
   }
 }
+
+// export async function updatePostPaths() {
+//   const postsToUpdate = await db.post.findMany({
+//     where: {
+//       path: null,
+//     },
+//   });
+
+//   for (const post of postsToUpdate) {
+//     let path = `/${post.id}/`;
+//     let currentParentId = post.parentPostId;
+
+//     while (currentParentId) {
+//       const parentPost = await db.post.findUnique({
+//         where: { id: currentParentId },
+//         select: { id: true, parentPostId: true, path: true },
+//       });
+
+//       if (!parentPost) break;
+
+//       if (parentPost.path) {
+//         path = `${parentPost.path}${post.id}/`;
+//         break;
+//       } else {
+//         path = `/${parentPost.id}${path}`;
+//         currentParentId = parentPost.parentPostId;
+//       }
+//     }
+
+//     // Update the post's path
+//     await db.post.update({
+//       where: { id: post.id },
+//       data: { path },
+//     });
+//   }
+// }

@@ -1,9 +1,9 @@
 'use client';
 import { ParentPostProps } from '@/lib/types';
-import { cn, countTotalReplies, formatTimeAgo } from '@/lib/utils';
+import { cn, formatTimeAgo } from '@/lib/utils';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
-import React, { useMemo } from 'react';
+import React from 'react';
 import ReplyButton from '../buttons/ReplyButton';
 import { Icons } from '../icons';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
@@ -18,14 +18,12 @@ const ThreadCard: React.FC<ParentPostProps> = ({
   text,
   createdAt,
   author,
-  replies,
   isLastThread,
+  repliesCount,
   showSeparator = true,
   showLine = false,
   isNested = false,
 }) => {
-  const replyCount = useMemo(() => countTotalReplies(replies), [replies]);
-
   return (
     <article className={cn('w-full', !isNested && 'pt-4')}>
       <div className='flex justify-between px-4 md:px-6 mb-4'>
@@ -92,7 +90,7 @@ const ThreadCard: React.FC<ParentPostProps> = ({
                     author: { ...author },
                     createdAt,
                   }}
-                  replyCount={replyCount}
+                  replyCount={repliesCount}
                 />
                 <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
                   <Icons.repost className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />

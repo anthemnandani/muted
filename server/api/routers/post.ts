@@ -1,4 +1,4 @@
-import type { ParentPostProps } from '@/lib/types';
+import { ParentPostProps } from '@/lib/types';
 import { getUserEmail } from '@/lib/utils';
 import {
   GET_COUNT,
@@ -7,7 +7,8 @@ import {
   GET_REPOSTS,
   GET_USER,
 } from '@/server/constants';
-import { PostPrivacy, Prisma } from '@prisma/client';
+import { createId } from '@paralleldrive/cuid2';
+import { PostPrivacy } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
 import { z } from 'zod';
@@ -24,6 +25,7 @@ export const postRouter = createTRPCRouter({
         privacy: z.nativeEnum(PostPrivacy).default('ANYONE'),
         quoteId: z.string().optional(),
         postAuthor: z.string().optional(),
+        parentPostId: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -113,6 +115,8 @@ export const postRouter = createTRPCRouter({
           images: true,
           parentPostId: true,
           quoteId: true,
+          path: true,
+          repliesCount: true,
           author: {
             select: {
               ...GET_USER,
@@ -139,6 +143,8 @@ export const postRouter = createTRPCRouter({
           id: post.id,
           createdAt: post.createdAt,
           text: post.text,
+          path: post.path,
+          repliesCount: post.repliesCount,
           parentPostId: post.parentPostId,
           author: post.author,
           likes: post.likes,
@@ -157,7 +163,7 @@ export const postRouter = createTRPCRouter({
         postAuthor: z.string(),
         postId: z.string(),
         text: z.string().min(3, {
-          message: 'Text must be at least 3 character',
+          message: 'Text must be at least 3 characters',
         }),
         imageUrl: z.string().optional(),
         privacy: z.nativeEnum(PostPrivacy),
@@ -167,12 +173,8 @@ export const postRouter = createTRPCRouter({
       const { user, userId } = ctx;
       const email = getUserEmail(user);
       const dbUser = await ctx.db.user.findUnique({
-        where: {
-          email,
-        },
-        select: {
-          verified: true,
-        },
+        where: { email },
+        select: { verified: true },
       });
 
       if (!dbUser) {
@@ -183,21 +185,38 @@ export const postRouter = createTRPCRouter({
       const filteredText = filter.clean(input.text);
 
       const transactionResult = await ctx.db.$transaction(async (prisma) => {
+        const postId = createId();
+
+        const parentPost = await prisma.post.findUnique({
+          where: { id: input.postId },
+          select: { path: true, id: true },
+        });
+
+        if (!parentPost) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Parent post not found',
+          });
+        }
+
+        const parentPath = parentPost.path ?? `/${parentPost.id}`;
+        const path = `${parentPath}${postId}/`;
+        const ancestorIds = parentPath.split('/').filter(Boolean);
+
+        await prisma.post.updateMany({
+          where: { id: { in: ancestorIds } },
+          data: { repliesCount: { increment: 1 } },
+        });
+
         const repliedPost = await prisma.post.create({
           data: {
+            id: postId,
             text: filteredText,
             images: input.imageUrl ? [input.imageUrl] : [],
             privacy: input.privacy,
-            author: {
-              connect: {
-                id: userId,
-              },
-            },
-            parentPost: {
-              connect: {
-                id: input.postId,
-              },
-            },
+            authorId: userId,
+            parentPostId: input.postId,
+            path,
           },
           select: {
             id: true,
@@ -217,9 +236,7 @@ export const postRouter = createTRPCRouter({
           });
         }
 
-        return {
-          repliedPost,
-        };
+        return { repliedPost };
       });
 
       if (!transactionResult) {
@@ -236,215 +253,125 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
+        limit: z.number().optional().default(10),
+        cursor: z
+          .object({
+            id: z.string(),
+            createdAt: z.date(),
+          })
+          .optional(),
       })
     )
     .query(async ({ input, ctx }) => {
-      const { id } = input;
+      const { id, limit, cursor } = input;
 
-      const getPosts = await ctx.db.post.findUnique({
+      const post = await ctx.db.post.findUnique({
         where: { id },
         select: {
           id: true,
-          text: true,
           createdAt: true,
-          ...GET_COUNT,
+          text: true,
           images: true,
           parentPostId: true,
-          author: { select: { ...GET_USER } },
-          ...GET_LIKES,
-          replies: {
-            select: {
-              id: true,
-              createdAt: true,
-              text: true,
-              images: true,
-              quoteId: true,
-              ...GET_REPOSTS,
-              ...GET_LIKES,
-              parentPostId: true,
-              author: { select: { ...GET_USER } },
-              ...GET_COUNT,
-            },
-            orderBy: { createdAt: 'desc' },
-          },
           quoteId: true,
+          path: true,
+          repliesCount: true,
+          author: {
+            select: {
+              ...GET_USER,
+            },
+          },
+          ...GET_LIKES,
           ...GET_REPOSTS,
         },
       });
 
-      if (!getPosts) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
+      if (!post) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Post not found' });
       }
 
-      const fetchNestedReplies = async (postId: string) => {
-        const replies: any = await ctx.db.post.findMany({
-          where: { parentPostId: postId },
+      const ancestorIds = post.path
+        ? post.path.split('/').filter(Boolean).slice(0, -1)
+        : [];
+
+      let parentPosts: ParentPostProps[] = [];
+      if (ancestorIds.length > 0) {
+        parentPosts = await ctx.db.post.findMany({
+          where: { id: { in: ancestorIds } },
           select: {
             id: true,
             createdAt: true,
             text: true,
             images: true,
-            quoteId: true,
-            ...GET_REPOSTS,
-            ...GET_LIKES,
             parentPostId: true,
-            author: { select: { ...GET_USER } },
-            ...GET_COUNT,
+            quoteId: true,
+            path: true,
+            repliesCount: true,
+            author: {
+              select: {
+                ...GET_USER,
+              },
+            },
+            ...GET_LIKES,
+            ...GET_REPOSTS,
           },
-          orderBy: { createdAt: 'desc' },
         });
 
-        for (const reply of replies) {
-          reply.replies = await fetchNestedReplies(reply.id);
+        const idOrderMap = new Map();
+        ancestorIds.forEach((id, index) => idOrderMap.set(id, index));
+        parentPosts.sort((a, b) => idOrderMap.get(a.id) - idOrderMap.get(b.id));
+      }
+
+      const replies = await ctx.db.post.findMany({
+        where: {
+          path: {
+            startsWith: `${post.path}`,
+          },
+          id: {
+            not: post.id,
+          },
+        },
+        take: limit + 1,
+        cursor: cursor ? { id: cursor.id } : undefined,
+        select: {
+          id: true,
+          text: true,
+          createdAt: true,
+          images: true,
+          parentPostId: true,
+          quoteId: true,
+          path: true,
+          repliesCount: true,
+          author: {
+            select: {
+              ...GET_USER,
+            },
+          },
+          ...GET_LIKES,
+          ...GET_REPOSTS,
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+      });
+
+      let nextCursor: typeof cursor | undefined;
+
+      if (replies.length > limit) {
+        const nextItem = replies.pop();
+        if (nextItem != null) {
+          nextCursor = {
+            id: nextItem.id,
+            createdAt: nextItem.createdAt,
+          };
         }
-
-        return replies;
-      };
-
-      const nestedReplies = await fetchNestedReplies(id);
-
-      const parentPosts = await ctx.db.$queryRaw<ParentPostProps[]>(
-        Prisma.sql`
-          WITH RECURSIVE Posts_tree AS (
-            SELECT
-              t.*,
-              0 AS depth,
-              jsonb_build_object(
-                'id', u.id,
-                'username', u.username,
-                'image', u.image,
-                'fullName', u."fullName",
-                'bio', u.bio,
-                'link', u.link,
-                'createdAt', u.created_at,
-                'followers', COALESCE(
-                  (
-                    SELECT jsonb_agg( 
-                      jsonb_build_object('id', f.id, 'image', f.image)
-                    ) 
-                    FROM "User" f 
-                    JOIN "_followers" uf ON f.id = uf."A" 
-                    WHERE uf."B" = u.id
-                  ),
-                  '[]'
-                )
-              ) AS author,
-              (SELECT json_agg(
-                json_build_object('userId', "userId")
-              )
-              FROM "Like" 
-              WHERE "postId" = t.id
-            ) AS likes,
-              (SELECT jsonb_agg(
-                jsonb_build_object(
-                  'author', jsonb_build_object(
-                    'id', r."authorId",
-                    'username', ru.username,
-                    'image', ru.image
-                  )
-                )
-              )
-              FROM "Post" r
-              JOIN "User" ru ON r."authorId" = ru.id
-              WHERE r."parentPostId" = t.id) AS replies,
-              (SELECT count(*) FROM "Like" l WHERE l."postId" = t.id) AS like_count,
-              (SELECT count(*) FROM "Post" r WHERE r."parentPostId" = t.id) AS reply_count,
-              (SELECT "quoteId" FROM "Post" WHERE "id" = t.id) AS quote_id,
-              (SELECT jsonb_agg(jsonb_build_object('userId', "userId", 'postId', "postId")) 
-                FROM "Repost" 
-                WHERE "postId" = t.id) AS reposts
-            FROM "Post" t
-            JOIN "User" u ON t."authorId" = u.id
-            WHERE t.id = ${id}
-      
-            UNION ALL
-      
-            SELECT
-              t.*,
-              tt.depth + 1,
-              jsonb_build_object(
-                'id', u.id,
-                'username', u.username,
-                'image', u.image,
-                'fullName', u."fullName",
-                'bio', u.bio,
-                'link', u.link,
-                'createdAt', u.created_at,
-                'followers', COALESCE(
-                  (
-                    SELECT jsonb_agg( 
-                      jsonb_build_object('id', f.id, 'image', f.image)
-                    ) 
-                    FROM "User" f 
-                    JOIN "_followers" uf ON f.id = uf."A" 
-                    WHERE uf."B" = u.id
-                  ),
-                  '[]'
-                )
-              ) AS author,
-              (SELECT json_agg(
-                json_build_object('userId', "userId")
-              )
-              FROM "Like" 
-              WHERE "postId" = t.id
-            ) AS likes,
-              (SELECT jsonb_agg(
-                jsonb_build_object(
-                  'author', jsonb_build_object(
-                    'id', r."authorId",
-                    'username', ru.username,
-                    'image', ru.image
-                  )
-                )
-              )
-              FROM "Post" r
-              JOIN "User" ru ON r."authorId" = ru.id
-              WHERE r."parentPostId" = t.id) AS replies,
-              (SELECT count(*) FROM "Like" l WHERE l."postId" = t.id) AS like_count,
-              (SELECT count(*) FROM "Post" r WHERE r."parentPostId" = t.id) AS reply_count,
-              (SELECT "quoteId" FROM "Post" WHERE "id" = t.id) AS quote_id,
-              (SELECT jsonb_agg(jsonb_build_object('userId', "userId", 'postId', "postId")) 
-                FROM "Repost" 
-                WHERE "postId" = t.id) AS reposts
-            FROM "Post" t
-            JOIN "User" u ON t."authorId" = u.id
-            JOIN Posts_tree tt ON t.id = tt."parentPostId"
-          )
-      
-          SELECT *
-          FROM Posts_tree
-          ORDER BY depth;
-        `
-      );
+      }
 
       return {
-        postInfo: {
-          id: getPosts.id,
-          createdAt: getPosts.createdAt,
-          text: getPosts.text,
-          images: getPosts.images,
-          quoteId: getPosts.quoteId,
-          reposts: getPosts.reposts,
-          parentPostId: getPosts.parentPostId,
-          author: getPosts.author,
-          likes: getPosts.likes,
-          replies: nestedReplies,
-        },
-        parentPosts: parentPosts
-          .filter((parent) => parent.id !== id)
-          .map((parent) => ({
-            id: parent.id,
-            createdAt: new Date(parent.createdAt),
-            text: parent.text,
-            images: parent.images,
-            parentPostId: parent.parentPostId,
-            author: parent.author,
-            likes: parent.likes ?? [],
-            replies: parent.replies ?? [],
-            quoteId: parent.quoteId,
-            reposts: parent.reposts,
-          }))
-          .reverse(),
+        postInfo: post,
+        parentPosts: parentPosts,
+        replies,
+        nextCursor,
       };
     }),
 });

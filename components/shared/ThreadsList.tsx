@@ -1,12 +1,12 @@
 'use client';
+import { ParentPostProps } from '@/lib/types';
 import React from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import { Icons } from '../icons';
 import ThreadCard from '../cards/ThreadCard';
-import { ParentPostProps, PostProps } from '@/lib/types';
+import { Icons } from '../icons';
 
 interface ThreadsListProps {
-  posts?: PostProps[];
+  posts?: ParentPostProps[];
   fetchNextPage: any;
   hasNextPage?: boolean;
 }
@@ -27,7 +27,7 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
         </div>
       }
     >
-      {posts?.map((post: any, index: number) => {
+      {posts?.map((post, index) => {
         return (
           <ThreadCard
             key={post.id}

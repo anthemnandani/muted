@@ -1,14 +1,14 @@
+import type { User } from '@clerk/nextjs/server';
+import type { UserResource } from '@clerk/types';
 import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
 import {
-  differenceInSeconds,
-  differenceInMinutes,
-  differenceInHours,
   differenceInDays,
+  differenceInHours,
+  differenceInMinutes,
+  differenceInSeconds,
   differenceInWeeks,
 } from 'date-fns';
-import type { UserResource } from '@clerk/types';
-import type { User } from '@clerk/nextjs/server';
+import { twMerge } from 'tailwind-merge';
 import { ParentPostProps } from './types';
 
 export function cn(...inputs: ClassValue[]) {
@@ -103,3 +103,27 @@ export const countTotalReplies = (replies: any) => {
 
   return totalReplies;
 };
+
+export function buildReplyTree(
+  replies?: ParentPostProps[],
+  rootPostId?: string
+) {
+  const replyMap: { [key: string]: ParentPostProps } = {};
+  replies?.forEach((reply) => {
+    reply.children = [];
+    replyMap[reply.id] = reply;
+  });
+
+  const tree: ParentPostProps[] = [];
+  replies?.forEach((reply) => {
+    if (reply.parentPostId === rootPostId) {
+      tree.push(reply);
+    } else if (reply.parentPostId && replyMap[reply.parentPostId]) {
+      if (replyMap[reply.parentPostId]) {
+        replyMap[reply.parentPostId].children?.push(reply);
+      }
+    }
+  });
+
+  return tree;
+}

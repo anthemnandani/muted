@@ -3,10 +3,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Username from '@/components/user/Username';
 import type { ParentPostProps } from '@/lib/types';
-import { countTotalReplies, formatTimeAgo } from '@/lib/utils';
+import { formatTimeAgo } from '@/lib/utils';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
-import React, { useMemo } from 'react';
+import React from 'react';
 import ReplyButton from '../buttons/ReplyButton';
 import { Icons } from '../icons';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
@@ -18,10 +18,8 @@ const ParentThreadCard: React.FC<ParentPostProps> = ({
   text,
   createdAt,
   author,
-  replies,
+  repliesCount,
 }) => {
-  console.log('Replies: ', replies);
-  const replyCount = useMemo(() => countTotalReplies(replies), [replies]);
   return (
     <article className='w-full pt-4'>
       <div className='flex justify-between px-4 md:px-6'>
@@ -52,7 +50,7 @@ const ParentThreadCard: React.FC<ParentPostProps> = ({
               </DialogContent>
             </Dialog>
 
-            {replyCount > 0 && (
+            {repliesCount > 0 && (
               <div className='mt-4 w-0.5 bg-[#D8D8D8] dark:bg-[#313639] rounded-full grow relative'></div>
             )}
           </div>
@@ -88,7 +86,7 @@ const ParentThreadCard: React.FC<ParentPostProps> = ({
                     author: { ...author },
                     createdAt,
                   }}
-                  replyCount={replyCount}
+                  replyCount={repliesCount}
                 />
                 <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
                   <Icons.repost className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />

@@ -44,13 +44,21 @@ export const GET_LIKES = {
 export const GET_REPLIES = {
   replies: {
     select: {
+      id: true,
+      text: true,
+      createdAt: true,
+      images: true,
+      parentPostId: true,
+      quoteId: true,
+      path: true,
+      repliesCount: true,
       author: {
         select: {
-          id: true,
-          username: true,
-          image: true,
+          ...GET_USER,
         },
       },
+      ...GET_LIKES,
+      ...GET_REPOSTS,
     },
   },
 };

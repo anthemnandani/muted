@@ -1,10 +1,10 @@
 'use client';
 
-import type { PostReplyCardProps } from '@/lib/types';
-import { cn, countTotalReplies, formatTimeAgo } from '@/lib/utils';
+import type { ThreadReplyCardProps } from '@/lib/types';
+import { cn, formatTimeAgo } from '@/lib/utils';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
-import React, { useMemo } from 'react';
+import React from 'react';
 import ReplyButton from '../buttons/ReplyButton';
 import { Icons } from '../icons';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
@@ -15,7 +15,7 @@ import Username from '../user/Username';
 import ParentThreadCard from './ParentThreadCard';
 import UserProfileCard from './UserProfileCard';
 
-const ThreadReplyCard: React.FC<PostReplyCardProps> = ({
+const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
   postInfo,
   parentPosts,
 }) => {
@@ -36,31 +36,13 @@ const ThreadReplyCard: React.FC<PostReplyCardProps> = ({
     scrollToPost();
   }, [postInfo]);
 
-  const { id, author, createdAt, replies, text } = postInfo;
-  const replyCount = useMemo(() => countTotalReplies(replies), [replies]);
+  const { id, author, createdAt, text } = postInfo;
 
   return (
     <>
-      <div
-        className={cn('flex flex-col w-full pt-2', {
-          'mb-0': postInfo.replies.length > 0,
-        })}
-      >
+      <div className={cn('flex flex-col w-full pt-2')}>
         {parentPosts?.map((post) => (
-          <ParentThreadCard
-            key={post.id}
-            author={post.author}
-            id={post.id}
-            createdAt={post.createdAt}
-            likes={post.likes}
-            parentPostId={post.parentPostId}
-            replies={post.replies}
-            images={post.images}
-            text={post.text}
-            quoteId={post.quoteId}
-            reposts={post.reposts}
-            showSeparator={false}
-          />
+          <ParentThreadCard key={post.id} {...post} showSeparator={false} />
         ))}
 
         <article className='w-full pt-4'>
@@ -126,7 +108,7 @@ const ThreadReplyCard: React.FC<PostReplyCardProps> = ({
                       author: { ...author },
                       createdAt,
                     }}
-                    replyCount={replyCount}
+                    replyCount={postInfo.repliesCount}
                   />
                   <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
                     <Icons.repost className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
