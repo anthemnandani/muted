@@ -11,15 +11,17 @@ import { api } from '@/trpc/react';
 import { useMemo } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
+interface ThreadRecursiveCardProps {
+  post: ParentPostProps;
+  isNested?: boolean;
+  isLastThread?: boolean;
+}
+
 const ThreadRecursiveCard = ({
   post,
   isNested = false,
   isLastThread = false,
-}: {
-  post: ParentPostProps;
-  isNested?: boolean;
-  isLastThread?: boolean;
-}) => {
+}: ThreadRecursiveCardProps) => {
   return (
     <>
       <ThreadCard
@@ -30,7 +32,7 @@ const ThreadRecursiveCard = ({
       />
       {post.children &&
         post.children.length === 1 &&
-        post.children.map((reply, index) => (
+        post.children.map((reply) => (
           <ThreadRecursiveCard key={reply.id} post={reply} isNested />
         ))}
     </>
@@ -65,7 +67,11 @@ const PostInfoClient = ({ id }: { id: string }) => {
 
   return (
     <Wrapper>
-      <ThreadReplyCard postInfo={postInfo!} parentPosts={parentPosts || []} />
+      <ThreadReplyCard
+        postInfo={postInfo!}
+        parentPosts={parentPosts || []}
+        showSeparator={replyTree.length !== 0}
+      />
       <InfiniteScroll
         dataLength={allReplies?.length ?? 0}
         next={fetchNextPage}

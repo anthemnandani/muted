@@ -4,6 +4,7 @@ import { cn, formatTimeAgo } from '@/lib/utils';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
+import LikeButton from '../buttons/LikeButton';
 import ReplyButton from '../buttons/ReplyButton';
 import { Icons } from '../icons';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
@@ -18,6 +19,8 @@ const ThreadCard: React.FC<ParentPostProps> = ({
   text,
   createdAt,
   author,
+  likesCount,
+  likes,
   isLastThread,
   repliesCount,
   showSeparator = true,
@@ -78,9 +81,13 @@ const ThreadCard: React.FC<ParentPostProps> = ({
             </Link>
             <div className='flex flex-col gap-3 pt-2.5'>
               <div className='flex items-center gap-3.5 -ml-2'>
-                <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
-                  <Icons.heart className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
-                </div>
+                <LikeButton
+                  likeInfo={{
+                    id,
+                    likesCount: likesCount || 0,
+                    likes,
+                  }}
+                />
 
                 <ReplyButton
                   replyThreadInfo={{
@@ -90,7 +97,7 @@ const ThreadCard: React.FC<ParentPostProps> = ({
                     author: { ...author },
                     createdAt,
                   }}
-                  replyCount={repliesCount}
+                  repliesCount={repliesCount}
                 />
                 <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
                   <Icons.repost className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
