@@ -3,7 +3,6 @@ import { getUserEmail } from '@/lib/utils';
 import {
   GET_COUNT,
   GET_LIKES,
-  GET_REPLIES,
   GET_REPOSTS,
   GET_USER,
 } from '@/server/constants';
@@ -123,9 +122,13 @@ export const postRouter = createTRPCRouter({
             },
           },
           ...GET_LIKES,
-          ...GET_REPLIES,
           ...GET_COUNT,
           ...GET_REPOSTS,
+          _count: {
+            select: {
+              likes: true,
+            },
+          },
         },
       });
 
@@ -148,10 +151,10 @@ export const postRouter = createTRPCRouter({
           parentPostId: post.parentPostId,
           author: post.author,
           likes: post.likes,
-          replies: post.replies,
           quoteId: post.quoteId,
           images: post.images,
           reposts: post.reposts,
+          likesCount: post._count.likes,
         })),
         nextCursor,
       };
@@ -283,6 +286,11 @@ export const postRouter = createTRPCRouter({
           },
           ...GET_LIKES,
           ...GET_REPOSTS,
+          _count: {
+            select: {
+              likes: true,
+            },
+          },
         },
       });
 
@@ -307,6 +315,7 @@ export const postRouter = createTRPCRouter({
             quoteId: true,
             path: true,
             repliesCount: true,
+
             author: {
               select: {
                 ...GET_USER,
@@ -314,6 +323,11 @@ export const postRouter = createTRPCRouter({
             },
             ...GET_LIKES,
             ...GET_REPOSTS,
+            _count: {
+              select: {
+                likes: true,
+              },
+            },
           },
         });
 
@@ -349,6 +363,11 @@ export const postRouter = createTRPCRouter({
           },
           ...GET_LIKES,
           ...GET_REPOSTS,
+          _count: {
+            select: {
+              likes: true,
+            },
+          },
         },
         orderBy: {
           createdAt: 'asc',
@@ -368,9 +387,18 @@ export const postRouter = createTRPCRouter({
       }
 
       return {
-        postInfo: post,
-        parentPosts: parentPosts,
-        replies,
+        postInfo: {
+          ...post,
+          likesCount: post._count.likes,
+        },
+        parentPosts: parentPosts.map((parentPost) => ({
+          ...parentPost,
+          likesCount: parentPost?._count?.likes,
+        })),
+        replies: replies.map((reply) => ({
+          ...reply,
+          likesCount: reply._count.likes,
+        })),
         nextCursor,
       };
     }),

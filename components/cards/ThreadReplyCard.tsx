@@ -5,6 +5,7 @@ import { cn, formatTimeAgo } from '@/lib/utils';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
+import LikeButton from '../buttons/LikeButton';
 import ReplyButton from '../buttons/ReplyButton';
 import { Icons } from '../icons';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
@@ -18,6 +19,7 @@ import UserProfileCard from './UserProfileCard';
 const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
   postInfo,
   parentPosts,
+  showSeparator = true,
 }) => {
   React.useEffect(() => {
     const scrollToPost = () => {
@@ -36,7 +38,7 @@ const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
     scrollToPost();
   }, [postInfo]);
 
-  const { id, author, createdAt, text } = postInfo;
+  const { id, author, createdAt, text, likes, likesCount } = postInfo;
 
   return (
     <>
@@ -96,9 +98,13 @@ const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
               </Link>
               <div className='flex flex-col gap-3 pt-2.5'>
                 <div className='flex items-center gap-3.5 -ml-2'>
-                  <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
-                    <Icons.heart className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
-                  </div>
+                  <LikeButton
+                    likeInfo={{
+                      id,
+                      likesCount: likesCount || 0,
+                      likes,
+                    }}
+                  />
 
                   <ReplyButton
                     replyThreadInfo={{
@@ -108,7 +114,7 @@ const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
                       author: { ...author },
                       createdAt,
                     }}
-                    replyCount={postInfo.repliesCount}
+                    repliesCount={postInfo.repliesCount}
                   />
                   <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
                     <Icons.repost className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
@@ -120,7 +126,7 @@ const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
               </div>
             </div>
           </div>
-          <Separator />
+          {showSeparator && <Separator />}
         </article>
       </div>
     </>

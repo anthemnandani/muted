@@ -9,7 +9,9 @@ type RouterOutput = inferRouterOutputs<AppRouter>;
 export type ThreadReplyCardProps = Pick<
   RouterOutput['post']['getNestedPosts'],
   'parentPosts' | 'postInfo'
->;
+> & {
+  showSeparator?: boolean;
+};
 
 export type PostProps = ArrayElement<
   RouterOutput['post']['getInfinitePosts']['posts']
@@ -68,52 +70,6 @@ export type ParentPostProps = {
     postId: string;
   }[];
   parentPostId: string | null;
-  // replies?: {
-  //   id: string;
-  //   createdAt: Date;
-  //   text: string;
-  //   images: string[];
-  //   parentPostId: string | null;
-  //   quoteId: string | null;
-  //   repliesCount: number;
-  //   path: string | null;
-  //   author: {
-  //     id: string;
-  //     image: string | null;
-  //     fullName: string | null;
-  //     username: string;
-  //     bio: string | null;
-  //     link: string | null;
-  //     createdAt: Date;
-  //     isAdmin: boolean | null;
-  //     followers: {
-  //       id: string;
-  //       image: string | null;
-  //     }[];
-  //   };
-  //   replies: {
-  //     id: string;
-  //     createdAt: Date;
-  //     text: string;
-  //     images: string[];
-  //     parentPostId: string | null;
-  //     quoteId: string | null;
-  //     author: {
-  //       id: string;
-  //       image: string | null;
-  //       fullName: string | null;
-  //       username: string;
-  //       bio: string | null;
-  //       link: string | null;
-  //       createdAt: Date;
-  //       isAdmin: boolean | null;
-  //       followers: {
-  //         id: string;
-  //         image: string | null;
-  //       }[];
-  //     };
-  //   };
-  // }[];
   author: {
     id: string;
     image: string | null;
@@ -129,6 +85,10 @@ export type ParentPostProps = {
     }[];
   };
   children?: ParentPostProps[];
+  likesCount?: number;
+  _count?: {
+    likes: number;
+  };
   path: string | null;
   repliesCount: number;
   isLastThread?: boolean;

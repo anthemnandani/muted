@@ -12,12 +12,15 @@ import { Icons } from '../icons';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
 import { Dialog, DialogContent, DialogTrigger } from '../ui/dialog';
 import UserProfileCard from './UserProfileCard';
+import LikeButton from '../buttons/LikeButton';
 
 const ParentThreadCard: React.FC<ParentPostProps> = ({
   id,
   text,
   createdAt,
   author,
+  likesCount,
+  likes,
   repliesCount,
 }) => {
   return (
@@ -74,9 +77,13 @@ const ParentThreadCard: React.FC<ParentPostProps> = ({
             </Link>
             <div className='flex flex-col gap-3 pt-3'>
               <div className='flex items-center gap-3.5 -ml-2'>
-                <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
-                  <Icons.heart className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
-                </div>
+                <LikeButton
+                  likeInfo={{
+                    id,
+                    likesCount: likesCount || 0,
+                    likes,
+                  }}
+                />
 
                 <ReplyButton
                   replyThreadInfo={{
@@ -86,7 +93,7 @@ const ParentThreadCard: React.FC<ParentPostProps> = ({
                     author: { ...author },
                     createdAt,
                   }}
-                  replyCount={repliesCount}
+                  repliesCount={repliesCount}
                 />
                 <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
                   <Icons.repost className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
