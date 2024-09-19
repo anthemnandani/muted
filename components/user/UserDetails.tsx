@@ -5,17 +5,28 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { UserProfileInfoProps } from '@/lib/types';
 import { cn, formatURL } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
+import { Privacy } from '@prisma/client';
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import React from 'react';
-import EditProfile from '../modals/EditProfile';
-import { Privacy } from '@prisma/client';
-import { Follow } from '../ui/follow-button';
-import { Button } from '../ui/button';
+import FollowButton from '../buttons/FollowButton';
 import UserProfileMenu from '../menus/UserProfileMenu';
+import EditProfile from '../modals/EditProfile';
+import { Button } from '../ui/button';
+import UserFollowers from './UserFollowers';
 
 const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
-  const { id, bio, fullName, image, link, username, privacy, isAdmin } = props;
+  const {
+    id,
+    bio,
+    fullName,
+    image,
+    link,
+    username,
+    privacy,
+    isAdmin,
+    followers,
+  } = props;
   const path = usePathname();
   const { user } = useUser();
 
@@ -57,11 +68,10 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
         <div className='flex-between mt-3'>
           <div className='hidden sm:flex -space-x-1 overflow-hidden w-full items-center'>
             <div className='flex items-center'>
-              {/* <UserFollowers followers={followers} showImage={true} /> */}
-              <span className='text-gray-3 text-[15px]'>0 followers</span>
-              {/* {followers.length > 0 && link && ( */}
-              <span className='mx-2 text-gray-3'> · </span>
-              {/* )} */}
+              <UserFollowers followers={followers} showImage={true} />
+              {followers.length > 0 && link && (
+                <span className='mx-2 text-gray-3'> · </span>
+              )}
 
               {link && (
                 <Link
@@ -81,17 +91,11 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
       <div className='py-3 px-6 !mt-2'>
         {user?.id != id && (
           <div className='grid gap-2 sm:grid-cols-2 pt-2'>
-            {/* <FollowButton
-            className='text-[14px] px-6'
-            variant='default'
-            author={props}
-          /> */}
-            <Follow
-              className='text-[14px] rounded-xl py-1.5 px-6 select-none'
+            <FollowButton
+              className='text-[14px] px-6'
               variant='default'
-            >
-              Follow
-            </Follow>
+              author={props}
+            />
             <Button
               size='sm'
               variant='outline'
