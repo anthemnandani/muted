@@ -21,14 +21,16 @@ const ThreadCard: React.FC<ParentPostProps> = ({
   author,
   likesCount,
   likes,
-  isLastThread,
   repliesCount,
+  isLastThread,
   showSeparator = true,
   showLine = false,
   isNested = false,
 }) => {
   return (
-    <article className={cn('w-full', !isNested && 'pt-4')}>
+    <article
+      className={cn('w-full', !isNested && 'pt-4', isLastThread && 'mb-20')}
+    >
       <div className='flex justify-between px-4 md:px-6 mb-4'>
         <div className='flex gap-4 w-full'>
           <div className='flex-col-center'>
