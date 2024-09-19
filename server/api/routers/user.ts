@@ -101,6 +101,11 @@ export const userRouter = createTRPCRouter({
           ...GET_LIKES,
           ...GET_COUNT,
           ...GET_REPOSTS,
+          _count: {
+            select: {
+              likes: true,
+            },
+          },
         },
       });
 
@@ -120,10 +125,7 @@ export const userRouter = createTRPCRouter({
           text: post.text,
           parentPostId: post.parentPostId,
           author: post.author,
-          count: {
-            likeCount: post._count.likes,
-            replyCount: post._count.replies,
-          },
+          likesCount: post._count.likes,
           likes: post.likes,
           path: post.path,
           repliesCount: post.repliesCount,
