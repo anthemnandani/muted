@@ -2,7 +2,6 @@ import { getUserEmail } from '@/lib/utils';
 import {
   GET_COUNT,
   GET_LIKES,
-  GET_REPLIES,
   GET_REPOSTS,
   GET_USER,
 } from '@/server/constants';
@@ -188,6 +187,96 @@ export const userRouter = createTRPCRouter({
       return {
         updatedUser,
         success: true,
+      };
+    }),
+
+  repliesInfo: privateProcedure
+    .input(
+      z.object({
+        username: z.string(),
+        limit: z.number().optional(),
+        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
+      })
+    )
+    .query(async ({ input: { username, limit = 10, cursor }, ctx }) => {
+      const isUser = await ctx.db.user.findUnique({
+        where: {
+          username,
+        },
+      });
+
+      if (!isUser) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const userProfileInfo = await ctx.db.post.findMany({
+        where: {
+          author: {
+            username,
+          },
+          parentPostId: {
+            not: null,
+          },
+        },
+        take: limit + 1,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        select: {
+          id: true,
+          createdAt: true,
+          text: true,
+          images: true,
+          parentPostId: true,
+          quoteId: true,
+          path: true,
+          repliesCount: true,
+          author: {
+            select: {
+              ...GET_USER,
+            },
+          },
+          ...GET_LIKES,
+          ...GET_COUNT,
+          ...GET_REPOSTS,
+          _count: {
+            select: {
+              likes: true,
+            },
+          },
+        },
+      });
+
+      if (!userProfileInfo) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      let nextCursor: typeof cursor | undefined;
+
+      if (userProfileInfo.length > limit) {
+        const nextItem = userProfileInfo.pop();
+        if (nextItem != null) {
+          nextCursor = { id: nextItem.id, createdAt: nextItem.createdAt };
+        }
+      }
+
+      return {
+        replies: userProfileInfo.map((post) => ({
+          id: post.id,
+          createdAt: post.createdAt,
+          text: post.text,
+          images: post.images,
+          parentPostId: post.parentPostId,
+          author: post.author,
+          likesCount: post._count.likes,
+          likes: post.likes,
+          reposts: post.reposts,
+          quoteId: post.quoteId,
+          path: post.path,
+          repliesCount: post.repliesCount,
+        })),
+        nextCursor,
       };
     }),
 });
