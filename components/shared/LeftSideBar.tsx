@@ -7,14 +7,15 @@ import UserMenu from '../menus/UserMenu';
 import Navigation from './Navigation';
 
 const LeftSideBar = () => {
-  const { theme } = useTheme();
+  const { theme, resolvedTheme } = useTheme();
+  const logoTheme = theme === 'system' ? resolvedTheme : theme;
 
   return (
     <section className='hidden fixed left-0 top-0 z-20 w-[76px] h-screen md:flex-col-between'>
       <Link href='/' className='logo'>
         <Image
           src={`/assets/muted-logo-${
-            theme === 'light' ? 'black' : 'white'
+            logoTheme === 'light' ? 'black' : 'white'
           }.svg`}
           alt='Logo'
           width={36}

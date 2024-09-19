@@ -1,9 +1,11 @@
 'use client';
+import useWindow from '@/hooks/useWindow';
 import { useAuth } from '@clerk/nextjs';
 import { AlertCircle, Bookmark, Heart, LogOut, Settings } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 import { Icons } from '../icons';
+import MenuItem from '../shared/MenuItem';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,8 +13,6 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import AppearanceMenu from './AppearanceMenu';
-import MenuItem from '../shared/MenuItem';
-import useWindow from '@/hooks/useWindow';
 
 const UserMenu = () => {
   const { signOut } = useAuth();

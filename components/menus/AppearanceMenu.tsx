@@ -1,5 +1,8 @@
+'use client';
 import { AppearanceMenuProps } from '@/lib/types';
 import { Laptop, Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 import MenuItem from '../shared/MenuItem';
 import {
   DropdownMenuPortal,
@@ -9,22 +12,30 @@ import {
 } from '../ui/dropdown-menu';
 
 const AppearanceMenu: React.FC<AppearanceMenuProps> = ({ theme, setTheme }) => {
+  const { resolvedTheme } = useTheme();
+  const [currentTheme, setCurrentTheme] = useState(theme);
+
+  useEffect(() => {
+    if (resolvedTheme) {
+      setCurrentTheme(resolvedTheme);
+    }
+  }, [resolvedTheme]);
+
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger className='dropdown-menu-item'>
-        {theme === 'light' && <Sun className='mr-2 h-4 w-4' />}
-        {theme === 'dark' && <Moon className='mr-2 h-4 w-4' />}
-        {theme === 'system' && <Laptop className='mr-2 h-4 w-4' />}
+        {currentTheme === 'light' && <Sun className='mr-2 size-4' />}
+        {currentTheme === 'dark' && <Moon className='mr-2 size-4' />}
+        {currentTheme === 'system' && <Laptop className='mr-2 size-4' />}
         <span>Appearance</span>
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal>
-        <DropdownMenuSubContent className='dropdown-content-container !rounded-lg'>
+        <DropdownMenuSubContent className='dropdown-content-container max-md:w-[140px] !rounded-lg'>
           <MenuItem
             icon={Sun}
             label='Light'
             onClick={() => setTheme('light')}
           />
-
           <MenuItem icon={Moon} label='Dark' onClick={() => setTheme('dark')} />
           <MenuItem
             icon={Laptop}

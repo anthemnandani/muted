@@ -23,7 +23,9 @@ const ReplyButton: React.FC<ReplyButtonProps> = ({
     >
       <Icons.reply className='size-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
       {repliesCount > 0 && (
-        <span className='text-[13px] ml-2 text-gray-2'>{repliesCount}</span>
+        <span className='text-[13px] ml-2 text-gray-4 dark:text-gray-2'>
+          {repliesCount}
+        </span>
       )}
     </div>
   );

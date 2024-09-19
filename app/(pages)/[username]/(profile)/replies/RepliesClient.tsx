@@ -5,9 +5,9 @@ import Loader from '@/components/shared/Loader';
 import ThreadsList from '@/components/shared/ThreadsList';
 import { api } from '@/trpc/react';
 
-const ProfileClient = ({ username }: { username: string }) => {
+const RepliesClient = ({ username }: { username: string }) => {
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
-    api.user.postInfo.useInfiniteQuery(
+    api.user.repliesInfo.useInfiniteQuery(
       { username },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -16,7 +16,7 @@ const ProfileClient = ({ username }: { username: string }) => {
       }
     );
 
-  const allPosts = data?.pages.flatMap((page) => page.posts);
+  const allReplies = data?.pages.flatMap((page) => page.replies);
 
   if (isLoading) {
     return <Loader />;
@@ -26,18 +26,18 @@ const ProfileClient = ({ username }: { username: string }) => {
 
   return (
     <div>
-      {allPosts ? (
-        allPosts?.length > 0 ? (
+      {allReplies ? (
+        allReplies?.length > 0 ? (
           <section className='flex flex-col justify-start w-full'>
             <ThreadsList
-              posts={allPosts}
+              posts={allReplies}
               fetchNextPage={fetchNextPage}
               hasNextPage={hasNextPage}
             />
           </section>
         ) : (
           <div className='h-[50vh] w-full flex-center text-gray-3'>
-            <p>No threads yet.</p>
+            <p>No replies yet.</p>
           </div>
         )
       ) : (
@@ -47,4 +47,4 @@ const ProfileClient = ({ username }: { username: string }) => {
   );
 };
 
-export default ProfileClient;
+export default RepliesClient;

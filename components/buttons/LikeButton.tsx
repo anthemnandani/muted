@@ -74,7 +74,7 @@ const LikeButton: React.FC<LikeButtonProps> = ({ likeInfo }) => {
           className={cn(
             'text-[13px] ml-2',
             isLikedByMe && 'text-primary-red',
-            !isLikedByMe && 'text-gray-2'
+            !isLikedByMe && 'text-gray-4 dark:text-gray-2'
           )}
         >
           {likesCount}

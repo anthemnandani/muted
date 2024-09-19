@@ -1,8 +1,9 @@
 import type { AuthorInfoProps } from '@/lib/types';
 import Link from 'next/link';
+import FollowButton from '../buttons/FollowButton';
 import { Icons } from '../icons';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Follow } from '../ui/follow-button';
+import UserFollowers from '../user/UserFollowers';
 
 const UserProfileCard: React.FC<AuthorInfoProps> = (props) => {
   const { bio, image, username, followers, fullName, isAdmin } = props;
@@ -36,18 +37,12 @@ const UserProfileCard: React.FC<AuthorInfoProps> = (props) => {
           {bio}
         </span>
       )}
-      {/* <div className='flex items-center'> */}
-      {/* <UserFollowers followers={followers} showImage={true} /> */}
+      <div className='flex items-center'>
+        <UserFollowers followers={followers} showImage={true} />
 
-      {followers.length > 0 && <span className='mx-2 text-gray-3'> · </span>}
-      {/* </div> */}
-      {/* <FollowButton variant='default' author={props} /> */}
-      <Follow
-        variant='default'
-        className='rounded-xl py-1.5 px-4 select-none text-[15px]'
-      >
-        Follow
-      </Follow>
+        {followers.length > 0 && <span className='mx-2 text-gray-3'> · </span>}
+      </div>
+      <FollowButton variant='default' author={props} />
     </div>
   );
 };
