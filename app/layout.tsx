@@ -11,8 +11,9 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Threads',
-  description: 'Threads Clone built Using Next 14',
+  title: 'Muted',
+  description:
+    'Muted is a social media platform for sharing thoughts and ideas.',
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
