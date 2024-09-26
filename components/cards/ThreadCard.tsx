@@ -37,7 +37,7 @@ const ThreadCard: React.FC<ParentPostProps> = ({
     >
       <div className='flex justify-between px-4 md:px-6 mb-4'>
         <div className='flex gap-4 w-full'>
-          <div className='flex-col-center'>
+          <div className='flex flex-col items-center'>
             <Dialog>
               <DialogTrigger asChild>
                 <button className='relative' type='button'>

@@ -83,7 +83,7 @@
   }
 
   .flex-col-center {
-    @apply flex flex-col items-center;
+    @apply flex flex-col items-center justify-center;
   }
 
   .flex-col-between {
