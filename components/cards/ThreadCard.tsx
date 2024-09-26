@@ -29,11 +29,15 @@ const ThreadCard: React.FC<ParentPostProps> = ({
 }) => {
   return (
     <article
-      className={cn('w-full', !isNested && 'pt-4', isLastThread && 'mb-20')}
+      className={cn(
+        'w-full',
+        !isNested && 'pt-4',
+        isLastThread && 'mb-20 md:mb-10'
+      )}
     >
       <div className='flex justify-between px-4 md:px-6 mb-4'>
         <div className='flex gap-4 w-full'>
-          <div className='flex-col-center'>
+          <div className='flex flex-col items-center'>
             <Dialog>
               <DialogTrigger asChild>
                 <button className='relative' type='button'>

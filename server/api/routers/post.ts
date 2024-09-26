@@ -47,13 +47,17 @@ export const postRouter = createTRPCRouter({
       const filteredText = filter.clean(input.text);
 
       const transactionResult = await ctx.db.$transaction(async (prisma) => {
+        const postId = createId();
+        const path = `/${postId}/`;
         const newpost = await ctx.db.post.create({
           data: {
+            id: postId,
             text: filteredText,
             authorId: userId,
             images: input.imageUrl ? [input.imageUrl] : [],
             privacy: input.privacy,
             quoteId: input.quoteId,
+            path,
           },
           select: {
             id: true,

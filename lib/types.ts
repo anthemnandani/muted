@@ -1,4 +1,5 @@
 import type { AppRouter } from '@/server/api/root';
+import type { User } from '@prisma/client';
 import { Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
 import { LucideIcon } from 'lucide-react';
@@ -29,6 +30,8 @@ export type ParentPostInfo = Pick<
 
 export type UserProfileInfoProps =
   RouterOutput['user']['userInfo']['userDetails'];
+
+export type UserSetupProps = Pick<User, 'bio' | 'link' | 'privacy'>;
 
 export type IconProps =
   | React.HTMLAttributes<SVGElement>

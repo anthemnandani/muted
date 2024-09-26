@@ -22,10 +22,10 @@ const LeftSideBar = () => {
           height={36}
         />
       </Link>
-      <ul className='flex-col-center gap-4 w-full'>
+      <ul className='flex flex-col items-center gap-4 w-full'>
         <Navigation />
       </ul>
-      <div className='flex-col-center gap-8 mt-[15px] mb-10'>
+      <div className='flex flex-col items-center gap-8 mt-[15px] mb-10'>
         <Icons.pin className='menu-icon w-[26px] h-[26px]' />
         <UserMenu />
       </div>
