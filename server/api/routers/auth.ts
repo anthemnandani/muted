@@ -29,11 +29,11 @@ export const authRouter = createTRPCRouter({
       if (!dbUser) {
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
       }
-
+      console.log('Db User: ', dbUser);
       await ctx.db.$transaction(async (prisma) => {
         const updatedUser = await prisma.user.update({
           where: {
-            id: user.id,
+            id: dbUser.id,
           },
           data: {
             privacy: input.privacy,
