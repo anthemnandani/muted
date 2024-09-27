@@ -3,7 +3,7 @@
 import { Icons } from '@/components/icons';
 import { ResizeTextarea } from '@/components/ui/resize-textarea';
 import type { CreateThreadInputProps } from '@/lib/types';
-import { cn, formatTimeAgo, getFullName, getUsername } from '@/lib/utils';
+import { cn, formatTimeAgo, getFullName } from '@/lib/utils';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
 import React from 'react';
@@ -22,8 +22,8 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
     () => getFullName(user?.firstName ?? '', user?.lastName ?? ''),
     [user]
   );
-  const username = React.useMemo(() => getUsername(user!), [user]) as string;
-  const { data } = api.user.userInfo.useQuery({ username });
+
+  const { data } = api.user.userInfo.useQuery({ username: user?.username! });
 
   const [inputValue, setInputValue] = React.useState('');
 
@@ -61,7 +61,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
         ) : (
           <UserAvatar
             image={data?.userDetails?.image || ''}
-            username={username}
+            username={user?.username!}
             fullname={userFullName}
           />
         )}

@@ -1,6 +1,5 @@
 import { getUserEmail } from '@/lib/utils';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
-import { clerkClient } from '@clerk/nextjs';
 import { Privacy } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
@@ -29,7 +28,7 @@ export const authRouter = createTRPCRouter({
       if (!dbUser) {
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
       }
-      console.log('Db User: ', dbUser);
+
       await ctx.db.$transaction(async (prisma) => {
         const updatedUser = await prisma.user.update({
           where: {
@@ -42,12 +41,6 @@ export const authRouter = createTRPCRouter({
             verified: true,
           },
         });
-
-        const params = {
-          username: updatedUser.username,
-        };
-
-        await clerkClient.users.updateUser(userId, params);
 
         await prisma.notification.create({
           data: {

@@ -1,6 +1,5 @@
 'use client';
-import useWindow from '@/hooks/useWindow';
-import { getUsername } from '@/lib/utils';
+
 import { useUser } from '@clerk/nextjs';
 import { usePathname } from 'next/navigation';
 import { Icons } from '../icons';
@@ -10,7 +9,7 @@ import MenuLink from './MenuLink';
 const Navigation = () => {
   const pathname = usePathname();
   const { user } = useUser();
-  const username = getUsername(user!);
+
   return (
     <>
       <MenuLink
@@ -32,7 +31,7 @@ const Navigation = () => {
         addFill
       />
       <MenuLink
-        route={`/@${username}`}
+        route={`/@${user?.username}`}
         icon={Icons.profile}
         isActive={!!pathname.match(/^\/@\w+$/)}
         addFill

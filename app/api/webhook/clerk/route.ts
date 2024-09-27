@@ -65,18 +65,19 @@ export const POST = async (request: Request) => {
       console.log(evnt?.data);
       const fullName = getFullName(first_name, last_name);
       const email = email_addresses[0].email_address;
+
       await db.user.upsert({
         where: { id },
         update: {
           fullName,
-          username: username ?? email.split('@')[0],
+          username,
           email,
           image: image_url,
         },
         create: {
           id,
           fullName,
-          username: username ?? email.split('@')[0],
+          username,
           email,
           image: image_url,
         },

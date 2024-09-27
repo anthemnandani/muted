@@ -3,7 +3,6 @@ import useWindow from '@/hooks/useWindow';
 import { useAuth } from '@clerk/nextjs';
 import { AlertCircle, Bookmark, Heart, LogOut, Settings } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { useRouter } from 'next/navigation';
 import { Icons } from '../icons';
 import MenuItem from '../shared/MenuItem';
 import {
@@ -16,7 +15,6 @@ import AppearanceMenu from './AppearanceMenu';
 
 const UserMenu = () => {
   const { signOut } = useAuth();
-  const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { isMobile } = useWindow();
   return (
@@ -45,7 +43,7 @@ const UserMenu = () => {
         <MenuItem
           icon={LogOut}
           label='Log out'
-          onClick={() => signOut(() => router.push('/'))}
+          onClick={() => signOut()}
           className='py-2'
         />
       </DropdownMenuContent>

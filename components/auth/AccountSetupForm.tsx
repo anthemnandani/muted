@@ -30,7 +30,7 @@ import { Label } from '../ui/label';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { ResizeTextarea } from '../ui/resize-textarea';
 
-const AccountSetupForm = ({ username }: { username: string }) => {
+const AccountSetupForm = () => {
   const { user } = useUser();
   const router = useRouter();
 
@@ -58,7 +58,7 @@ const AccountSetupForm = ({ username }: { username: string }) => {
         if (success) {
           router.push(origin ? `${origin}` : '/');
         }
-        toast.success(`Welcome to Muted ${username} !`);
+        toast.success(`Welcome to Muted ${user?.username}!`);
       },
       onError: (err) => {
         toast.error('AuthCallBack: Something went wrong!');
@@ -119,7 +119,7 @@ const AccountSetupForm = ({ username }: { username: string }) => {
                           {`${getFullName(
                             user?.firstName ?? '',
                             user?.lastName ?? ''
-                          )} ${'(' + username + ')'}`}
+                          )} ${'(' + user?.username + ')'}`}
                         </div>
                       </div>
                     </div>

@@ -1,7 +1,7 @@
 'use client';
 import useFileUpload from '@/hooks/useFileUpload';
 import { EditProfileProps } from '@/lib/types';
-import { getFullName, getUsername } from '@/lib/utils';
+import { getFullName } from '@/lib/utils';
 import useEditProfile from '@/store/editProfile';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
@@ -75,7 +75,6 @@ const EditProfile = ({
     () => getFullName(user?.firstName ?? '', user?.lastName ?? ''),
     [user]
   );
-  const username = useMemo(() => getUsername(user!), [user]);
   const trpcUtils = api.useUtils();
 
   const { isLoading, mutateAsync: updateProfile } =
@@ -144,7 +143,7 @@ const EditProfile = ({
                 <div className='flex items-center gap-2 w-full mt-1 mb-2 h-7'>
                   <Lock className='size-4' />
                   <div className='flex-grow overflow-hidden outline-none text-[15px] text-accent-foreground break-words tracking-wide w-full select-none'>
-                    {`${userFullName} (@${username})`}
+                    {`${userFullName} (@${user?.username})`}
                   </div>
                 </div>
                 <Separator className='bg-border-light h-[0.5px]' />

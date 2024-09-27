@@ -1,16 +1,13 @@
 'use client';
-import { getUsername } from '@/lib/utils';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
-import { useMemo } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 
 const CreateWithInput = ({ onClick }: { onClick: () => void }) => {
   const { user } = useUser();
-  const username = useMemo(() => getUsername(user!), [user]) as string;
-  const { data } = api.user.userInfo.useQuery({ username });
+  const { data } = api.user.userInfo.useQuery({ username: user?.username! });
   return (
     <div className='flex flex-col w-full select-none' onClick={onClick}>
       <div className='flex w-full my-4 px-6 py-2'>
@@ -18,11 +15,11 @@ const CreateWithInput = ({ onClick }: { onClick: () => void }) => {
           <Avatar className='rounded-full outline outline-1 outline-border h-9 w-9 mr-4'>
             <AvatarImage
               src={data?.userDetails?.image || ''}
-              alt={username ?? ''}
+              alt={user?.username ?? ''}
               className='object-cover'
             />
             <AvatarFallback>
-              {username?.slice(0, 2).toUpperCase()}
+              {user?.username?.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <input
