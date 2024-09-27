@@ -6,17 +6,14 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Auth',
-  description: 'Threads clone built using Next.js',
+  description:
+    'Muted is a social media platform for sharing thoughts and ideas',
 };
 
-export default function RootLayout({
+export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <html lang='en'>
-      <body className={`${inter.className} bg-dark-1`}>{children}</body>
-    </html>
-  );
+  return <div>{children}</div>;
 }

@@ -10,8 +10,7 @@ import UserMenu from '../menus/UserMenu';
 const TopBar = () => {
   const { isMobile } = useWindow();
   const [isScrolled, setIsScrolled] = useState(false);
-  const { theme, resolvedTheme } = useTheme();
-  const logoTheme = theme === 'system' ? resolvedTheme : theme;
+  const { theme } = useTheme();
 
   useEffect(() => {
     const changeBgColor = () => {
@@ -35,7 +34,7 @@ const TopBar = () => {
           <Link href='/' className='logo w-full sm:w-fit flex-center'>
             <Image
               src={`/assets/muted-logo-${
-                logoTheme === 'light' ? 'black' : 'white'
+                theme === 'light' ? 'black' : 'white'
               }.svg`}
               alt='Logo'
               width={34}

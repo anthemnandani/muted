@@ -18,22 +18,26 @@ export const metadata: Metadata = {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider appearance={{ baseTheme: dark }}>
-      <html lang='en'>
-        <body className={inter.className}>
-          <TRPCReactProvider headers={headers()}>
-            <ThemeProvider
-              attribute='class'
-              defaultTheme='dark'
-              enableSystem
-              disableTransitionOnChange
+    <html lang='en'>
+      <body className={inter.className}>
+        <TRPCReactProvider headers={headers()}>
+          <ThemeProvider
+            attribute='class'
+            defaultTheme='dark'
+            enableSystem
+            disableTransitionOnChange
+          >
+            <ClerkProvider
+              appearance={{
+                baseTheme: dark,
+              }}
             >
               {children}
               <Toaster />
-            </ThemeProvider>
-          </TRPCReactProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+            </ClerkProvider>
+          </ThemeProvider>
+        </TRPCReactProvider>
+      </body>
+    </html>
   );
 }
