@@ -8,23 +8,35 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '../ui/hover-card';
+import { cn } from '@/lib/utils';
 
 interface UsernameProps {
   author: AuthorInfoProps;
+  isReposted?: boolean;
 }
 
-const Username: React.FC<UsernameProps> = ({ author }) => {
+const Username: React.FC<UsernameProps> = ({ author, isReposted }) => {
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
         <Link
           href={`/@${author.username}`}
-          className='flex-center gap-1.5 cursor-pointer hover:underline w-fit'
+          className='flex-center gap-1.5 w-fit group'
         >
-          <h1 className='text-accent-foreground text-[15px] font-semibold leading-[0]'>
+          <span
+            className={cn(
+              'text-accent-foreground text-[15px] font-semibold leading-[0] group-hover:underline',
+              isReposted && 'text-[13px] text-[#999] dark:text-gray-3'
+            )}
+          >
             {author.username}
-          </h1>
-          {author.isAdmin && <Icons.verified className='w-3 h-3' />}
+          </span>
+          {isReposted && (
+            <span className='text-[13px] text-[#999] dark:text-gray-3'>
+              reposted
+            </span>
+          )}
+          {/* {author.isAdmin && <Icons.verified className='w-3 h-3' />} */}
         </Link>
       </HoverCardTrigger>
       <HoverCardContent
