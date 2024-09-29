@@ -280,6 +280,111 @@ export const userRouter = createTRPCRouter({
       };
     }),
 
+  repostsInfo: privateProcedure
+    .input(
+      z.object({
+        username: z.string(),
+        limit: z.number().optional(),
+        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
+      })
+    )
+    .query(async ({ input: { username, limit = 10, cursor }, ctx }) => {
+      const isUser = await ctx.db.user.findUnique({
+        where: {
+          username,
+        },
+      });
+
+      if (!isUser) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const userProfileInfo = await ctx.db.post.findMany({
+        where: {
+          reposts: {
+            some: {
+              userId: isUser.id,
+            },
+          },
+        },
+        take: limit + 1,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        select: {
+          id: true,
+          createdAt: true,
+          text: true,
+          images: true,
+          parentPostId: true,
+          quoteId: true,
+          path: true,
+          repliesCount: true,
+          author: {
+            select: {
+              ...GET_USER,
+            },
+          },
+          ...GET_LIKES,
+          ...GET_COUNT,
+          ...GET_REPOSTS,
+          _count: {
+            select: {
+              likes: true,
+              reposts: true,
+            },
+          },
+          reposts: {
+            select: {
+              user: {
+                select: {
+                  ...GET_USER,
+                },
+              },
+              post: {
+                select: {
+                  id: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      let nextCursor: typeof cursor | undefined;
+
+      if (userProfileInfo.length > limit) {
+        const nextItem = userProfileInfo.pop();
+        if (nextItem != null) {
+          nextCursor = { id: nextItem.id, createdAt: nextItem.createdAt };
+        }
+      }
+
+      return {
+        reposts: userProfileInfo.map((post) => ({
+          id: post.id,
+          createdAt: post.createdAt,
+          text: post.text,
+          images: post.images,
+          parentPostId: post.parentPostId,
+          author: post.author,
+          likesCount: post._count.likes,
+          likes: post.likes,
+          reposts: post.reposts.map((repost) => ({
+            userId: repost.user.id,
+            postId: repost.post.id,
+          })),
+          quoteId: post.quoteId,
+          path: post.path,
+          repliesCount: post.repliesCount,
+          repostsCount: post._count.reposts,
+          repostedBy: post.reposts[0].user,
+        })),
+        nextCursor,
+      };
+    }),
+
   toggleFollow: privateProcedure
     .input(
       z.object({
