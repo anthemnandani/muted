@@ -1,8 +1,8 @@
 import type { AuthorInfoProps } from '@/lib/types';
+import { cn, formatRepostTime } from '@/lib/utils';
 import Link from 'next/link';
 import React from 'react';
 import UserProfileCard from '../cards/UserProfileCard';
-import { Icons } from '../icons';
 import {
   HoverCard,
   HoverCardContent,
@@ -11,20 +11,37 @@ import {
 
 interface UsernameProps {
   author: AuthorInfoProps;
+  isReposted?: boolean;
+  repostedAt?: Date;
 }
 
-const Username: React.FC<UsernameProps> = ({ author }) => {
+const Username: React.FC<UsernameProps> = ({
+  author,
+  isReposted,
+  repostedAt,
+}) => {
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
         <Link
           href={`/@${author.username}`}
-          className='flex-center gap-1.5 cursor-pointer hover:underline w-fit'
+          className='flex-center gap-1.5 w-fit group'
         >
-          <h1 className='text-accent-foreground text-[15px] font-semibold leading-[0]'>
+          <span
+            className={cn(
+              'text-accent-foreground text-[15px] font-semibold leading-[0] group-hover:underline',
+              isReposted && 'text-[13px] text-[#999] dark:text-gray-3'
+            )}
+          >
             {author.username}
-          </h1>
-          {author.isAdmin && <Icons.verified className='w-3 h-3' />}
+          </span>
+          {isReposted && (
+            <span className='text-[13px] text-[#999] dark:text-gray-3'>
+              reposted {formatRepostTime(repostedAt!)}
+            </span>
+          )}
+
+          {/* {author.isAdmin && <Icons.verified className='w-3 h-3' />} */}
         </Link>
       </HoverCardTrigger>
       <HoverCardContent

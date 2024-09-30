@@ -13,6 +13,7 @@ import ThreadActionMenu from '../menus/ThreadActionMenu';
 import { Dialog, DialogContent, DialogTrigger } from '../ui/dialog';
 import UserProfileCard from './UserProfileCard';
 import LikeButton from '../buttons/LikeButton';
+import RepostButton from '../buttons/RepostButton';
 
 const ParentThreadCard: React.FC<ParentPostProps> = ({
   id,
@@ -21,6 +22,8 @@ const ParentThreadCard: React.FC<ParentPostProps> = ({
   author,
   likesCount,
   likes,
+  reposts,
+  repostsCount,
   repliesCount,
 }) => {
   return (
@@ -95,9 +98,14 @@ const ParentThreadCard: React.FC<ParentPostProps> = ({
                   }}
                   repliesCount={repliesCount}
                 />
-                <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
-                  <Icons.repost className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
-                </div>
+                <RepostButton
+                  id={id}
+                  text={text}
+                  author={author}
+                  createdAt={createdAt}
+                  reposts={reposts}
+                  repostsCount={repostsCount || 0}
+                />
                 <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
                   <Icons.share className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
                 </div>

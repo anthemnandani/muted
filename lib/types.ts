@@ -59,6 +59,21 @@ export interface MenuItemProps {
   isActionMenuItem?: boolean;
 }
 
+export type Author = {
+  id: string;
+  image: string | null;
+  fullName: string | null;
+  username: string;
+  bio: string | null;
+  link: string | null;
+  createdAt: Date;
+  isAdmin: boolean | null;
+  followers: {
+    id: string;
+    image: string | null;
+  }[];
+};
+
 export type ParentPostProps = {
   id: string;
   createdAt: Date;
@@ -68,29 +83,17 @@ export type ParentPostProps = {
     userId: string;
   }[];
   quoteId: string | null;
-  reposts: {
-    userId: string;
-    postId: string;
-  }[];
+  reposts: { userId: string; postId: string }[];
   parentPostId: string | null;
-  author: {
-    id: string;
-    image: string | null;
-    fullName: string | null;
-    username: string;
-    bio: string | null;
-    link: string | null;
-    createdAt: Date;
-    isAdmin: boolean | null;
-    followers: {
-      id: string;
-      image: string | null;
-    }[];
-  };
+  author: Author;
+  repostedBy?: Author;
   children?: ParentPostProps[];
   likesCount?: number;
+  repostsCount?: number;
+  repostedAt?: Date;
   _count?: {
     likes: number;
+    reposts: number;
   };
   path: string | null;
   repliesCount: number;

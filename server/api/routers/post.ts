@@ -97,11 +97,16 @@ export const postRouter = createTRPCRouter({
       z.object({
         searchQuery: z.string().optional(),
         limit: z.number().optional(),
-        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
+        cursor: z
+          .object({
+            id: z.string(),
+            createdAt: z.date(),
+          })
+          .optional(),
       })
     )
     .query(async ({ input: { limit = 10, cursor, searchQuery }, ctx }) => {
-      const allPosts = await ctx.db.post.findMany({
+      const posts = await ctx.db.post.findMany({
         where: {
           text: {
             contains: searchQuery,
@@ -109,7 +114,9 @@ export const postRouter = createTRPCRouter({
           parentPostId: null,
         },
         take: limit + 1,
-        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        cursor: cursor
+          ? { createdAt_id: { createdAt: cursor.createdAt, id: cursor.id } }
+          : undefined,
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         select: {
           id: true,
@@ -131,35 +138,92 @@ export const postRouter = createTRPCRouter({
           _count: {
             select: {
               likes: true,
+              reposts: true,
+            },
+          },
+          reposts: {
+            select: {
+              createdAt: true,
+              user: {
+                select: {
+                  ...GET_USER,
+                },
+              },
+              post: {
+                select: {
+                  id: true,
+                },
+              },
             },
           },
         },
       });
 
+      const repostsMap = new Map();
+      const flattenedPosts = posts.flatMap((post) => {
+        const postItem = {
+          ...post,
+          reposts: post.reposts.map((repost) => ({
+            userId: repost.user.id,
+            postId: repost.post.id,
+          })),
+          likesCount: post._count.likes,
+          repostsCount: post._count.reposts,
+          type: 'post' as const,
+        };
+
+        const repostItems = post.reposts.map((repost) => {
+          const repostItem = {
+            ...post,
+            reposts: post.reposts.map((repost) => ({
+              userId: repost.user.id,
+              postId: repost.post.id,
+            })),
+            likesCount: post._count.likes,
+            repostsCount: post._count.reposts,
+            repostedBy: repost.user,
+            repostedAt: repost.createdAt,
+            type: 'repost' as const,
+          };
+          repostsMap.set(`${repost.user.id}-${post.id}`, repostItem);
+          return repostItem;
+        });
+
+        return [postItem, ...repostItems];
+      });
+
+      const uniqueFlattenedPosts = flattenedPosts.filter((item) => {
+        if (item.type === 'repost') {
+          const key = `${item.repostedBy.id}-${item.id}`;
+          return repostsMap.get(key) === item;
+        }
+        return true;
+      });
+
+      uniqueFlattenedPosts.sort((a, b) => {
+        const aTime =
+          a.type === 'repost' ? a.repostedAt.getTime() : a.createdAt.getTime();
+        const bTime =
+          b.type === 'repost' ? b.repostedAt.getTime() : b.createdAt.getTime();
+        return bTime - aTime;
+      });
+
       let nextCursor: typeof cursor | undefined;
 
-      if (allPosts.length > limit) {
-        const nextItem = allPosts.pop();
-        if (nextItem != null) {
-          nextCursor = { id: nextItem.id, createdAt: nextItem.createdAt };
-        }
+      if (uniqueFlattenedPosts.length > limit) {
+        const nextItem = uniqueFlattenedPosts[limit];
+        nextCursor = {
+          id: nextItem.id,
+          createdAt:
+            nextItem.type === 'repost'
+              ? nextItem.repostedAt
+              : nextItem.createdAt,
+        };
+        uniqueFlattenedPosts.length = limit;
       }
 
       return {
-        posts: allPosts.map((post) => ({
-          id: post.id,
-          createdAt: post.createdAt,
-          text: post.text,
-          path: post.path,
-          repliesCount: post.repliesCount,
-          parentPostId: post.parentPostId,
-          author: post.author,
-          likes: post.likes,
-          quoteId: post.quoteId,
-          images: post.images,
-          reposts: post.reposts,
-          likesCount: post._count.likes,
-        })),
+        posts: uniqueFlattenedPosts,
         nextCursor,
       };
     }),
@@ -293,6 +357,7 @@ export const postRouter = createTRPCRouter({
           _count: {
             select: {
               likes: true,
+              reposts: true,
             },
           },
         },
@@ -319,7 +384,6 @@ export const postRouter = createTRPCRouter({
             quoteId: true,
             path: true,
             repliesCount: true,
-
             author: {
               select: {
                 ...GET_USER,
@@ -330,6 +394,7 @@ export const postRouter = createTRPCRouter({
             _count: {
               select: {
                 likes: true,
+                reposts: true,
               },
             },
           },
@@ -370,6 +435,7 @@ export const postRouter = createTRPCRouter({
           _count: {
             select: {
               likes: true,
+              reposts: true,
             },
           },
         },
@@ -394,16 +460,111 @@ export const postRouter = createTRPCRouter({
         postInfo: {
           ...post,
           likesCount: post._count.likes,
+          repostsCount: post._count.reposts,
         },
         parentPosts: parentPosts.map((parentPost) => ({
           ...parentPost,
           likesCount: parentPost?._count?.likes,
+          repostsCount: parentPost?._count?.reposts,
         })),
         replies: replies.map((reply) => ({
           ...reply,
           likesCount: reply._count.likes,
+          repostsCount: reply._count.reposts,
         })),
         nextCursor,
       };
+    }),
+
+  toggleRepost: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .mutation(async ({ input: { id }, ctx }) => {
+      const { userId } = ctx;
+
+      const data = { postId: id, userId };
+
+      const existingRepost = await ctx.db.repost.findUnique({
+        where: {
+          postId_userId: data,
+        },
+      });
+
+      if (existingRepost == null) {
+        const transactionResult = await ctx.db.$transaction(async (prisma) => {
+          const createdRepost = await prisma.repost.create({
+            data,
+            select: {
+              post: {
+                select: {
+                  text: true,
+                  authorId: true,
+                },
+              },
+            },
+          });
+
+          const createNotification = await prisma.notification.create({
+            data: {
+              type: 'REPOST',
+              postId: data.postId,
+              message: createdRepost.post.text,
+              senderUserId: userId,
+              receiverUserId: createdRepost.post.authorId,
+            },
+          });
+
+          return {
+            createdRepost,
+            createNotification,
+          };
+        });
+
+        if (!transactionResult) {
+          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+        }
+
+        return { createdRepost: true };
+      } else {
+        const transactionResult = await ctx.db.$transaction(async (prisma) => {
+          const removeRepost = await prisma.repost.delete({
+            where: {
+              postId_userId: data,
+            },
+          });
+
+          const notification = await prisma.notification.findFirst({
+            where: {
+              senderUserId: userId,
+              postId: data.postId,
+              type: 'REPOST',
+            },
+            select: {
+              id: true,
+            },
+          });
+
+          if (notification) {
+            await prisma.notification.delete({
+              where: {
+                id: notification.id,
+              },
+            });
+          }
+
+          return {
+            removeRepost,
+          };
+        });
+
+        if (!transactionResult) {
+          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+        }
+
+        return { createdRepost: false };
+      }
     }),
 });

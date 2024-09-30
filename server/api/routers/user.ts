@@ -280,6 +280,121 @@ export const userRouter = createTRPCRouter({
       };
     }),
 
+  repostsInfo: privateProcedure
+    .input(
+      z.object({
+        username: z.string(),
+        limit: z.number().optional(),
+        cursor: z
+          .object({ postId: z.string(), createdAt: z.date() })
+          .optional(),
+      })
+    )
+    .query(async ({ input: { username, limit = 10, cursor }, ctx }) => {
+      const isUser = await ctx.db.user.findUnique({
+        where: {
+          username,
+        },
+      });
+
+      if (!isUser) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const userReposts = await ctx.db.repost.findMany({
+        where: {
+          userId: isUser.id,
+        },
+        take: limit + 1,
+        cursor: cursor
+          ? {
+              postId_userId: { postId: cursor.postId, userId: isUser.id },
+              createdAt: cursor.createdAt,
+            }
+          : undefined,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        select: {
+          createdAt: true,
+          userId: true,
+          postId: true,
+          user: {
+            select: {
+              ...GET_USER,
+            },
+          },
+          post: {
+            select: {
+              id: true,
+              createdAt: true,
+              text: true,
+              images: true,
+              parentPostId: true,
+              quoteId: true,
+              path: true,
+              repliesCount: true,
+              author: {
+                select: {
+                  ...GET_USER,
+                },
+              },
+              ...GET_LIKES,
+              ...GET_COUNT,
+              ...GET_REPOSTS,
+              _count: {
+                select: {
+                  likes: true,
+                  reposts: true,
+                },
+              },
+              reposts: {
+                select: {
+                  userId: true,
+                  postId: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      let nextCursor: typeof cursor | undefined;
+
+      if (userReposts.length > limit) {
+        const nextItem = userReposts.pop();
+        if (nextItem != null) {
+          nextCursor = {
+            postId: nextItem.postId,
+            createdAt: nextItem.createdAt,
+          };
+        }
+      }
+
+      return {
+        reposts: userReposts.map((repost) => ({
+          id: repost.post.id,
+          createdAt: repost.post.createdAt,
+          text: repost.post.text,
+          images: repost.post.images,
+          parentPostId: repost.post.parentPostId,
+          author: repost.post.author,
+          likesCount: repost.post._count.likes,
+          likes: repost.post.likes,
+          reposts: repost.post.reposts,
+          quoteId: repost.post.quoteId,
+          path: repost.post.path,
+          repliesCount: repost.post.repliesCount,
+          repostsCount: repost.post._count.reposts,
+          repostedBy: repost.user,
+          repostedAt: repost.createdAt,
+        })),
+        nextCursor,
+      };
+    }),
+
+  // ... existing code ...
+
   toggleFollow: privateProcedure
     .input(
       z.object({
