@@ -130,7 +130,7 @@ export function formatRepostTime(repostTimestamp: Date): string {
   if (secondsDiff < 60) {
     return 'now';
   } else if (minutesDiff < 60) {
-    return `${minutesDiff} min${minutesDiff > 1 ? 's' : ''} ago`;
+    return `${minutesDiff}m ago`;
   } else {
     return '';
   }
