@@ -90,6 +90,7 @@ export type ParentPostProps = {
   children?: ParentPostProps[];
   likesCount?: number;
   repostsCount?: number;
+  repostedAt?: Date;
   _count?: {
     likes: number;
     reposts: number;

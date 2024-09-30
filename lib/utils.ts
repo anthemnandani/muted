@@ -121,3 +121,17 @@ export function buildReplyTree(
 
   return tree;
 }
+
+export function formatRepostTime(repostTimestamp: Date): string {
+  const now = new Date();
+  const secondsDiff = differenceInSeconds(now, repostTimestamp);
+  const minutesDiff = differenceInMinutes(now, repostTimestamp);
+
+  if (secondsDiff < 60) {
+    return 'now';
+  } else if (minutesDiff < 60) {
+    return `${minutesDiff} min${minutesDiff > 1 ? 's' : ''} ago`;
+  } else {
+    return '';
+  }
+}

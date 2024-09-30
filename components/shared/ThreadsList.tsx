@@ -30,7 +30,11 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
       {posts?.map((post, index) => {
         return (
           <ThreadCard
-            key={post.id}
+            key={
+              post.repostedBy
+                ? `repost-${post.repostedBy.id}-${post.id}`
+                : `post-${post.id}`
+            }
             {...post}
             isLastThread={index == posts.length - 1}
           />

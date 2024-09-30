@@ -66,7 +66,7 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
 
         <p className='text-[15px] whitespace-pre-line mt-6'>{bio}</p>
         <div className='flex-between mt-3'>
-          <div className='hidden sm:flex -space-x-1 overflow-hidden w-full items-center'>
+          <div className='flex -space-x-1 overflow-hidden w-full items-center'>
             <div className='flex items-center'>
               <UserFollowers followers={followers} showImage={true} />
               {followers.length > 0 && link && (

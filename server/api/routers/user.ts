@@ -285,7 +285,9 @@ export const userRouter = createTRPCRouter({
       z.object({
         username: z.string(),
         limit: z.number().optional(),
-        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
+        cursor: z
+          .object({ postId: z.string(), createdAt: z.date() })
+          .optional(),
       })
     )
     .query(async ({ input: { username, limit = 10, cursor }, ctx }) => {
@@ -299,52 +301,57 @@ export const userRouter = createTRPCRouter({
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
 
-      const userProfileInfo = await ctx.db.post.findMany({
+      const userReposts = await ctx.db.repost.findMany({
         where: {
-          reposts: {
-            some: {
-              userId: isUser.id,
-            },
-          },
+          userId: isUser.id,
         },
         take: limit + 1,
-        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        cursor: cursor
+          ? {
+              postId_userId: { postId: cursor.postId, userId: isUser.id },
+              createdAt: cursor.createdAt,
+            }
+          : undefined,
         orderBy: {
           createdAt: 'desc',
         },
         select: {
-          id: true,
           createdAt: true,
-          text: true,
-          images: true,
-          parentPostId: true,
-          quoteId: true,
-          path: true,
-          repliesCount: true,
-          author: {
+          userId: true,
+          postId: true,
+          user: {
             select: {
               ...GET_USER,
             },
           },
-          ...GET_LIKES,
-          ...GET_COUNT,
-          ...GET_REPOSTS,
-          _count: {
+          post: {
             select: {
-              likes: true,
-              reposts: true,
-            },
-          },
-          reposts: {
-            select: {
-              user: {
+              id: true,
+              createdAt: true,
+              text: true,
+              images: true,
+              parentPostId: true,
+              quoteId: true,
+              path: true,
+              repliesCount: true,
+              author: {
                 select: {
                   ...GET_USER,
                 },
               },
-              post: {
+              ...GET_LIKES,
+              ...GET_COUNT,
+              ...GET_REPOSTS,
+              _count: {
                 select: {
-                  id: true,
+                  likes: true,
+                  reposts: true,
+                },
+              },
+              reposts: {
+                select: {
+                  userId: true,
+                  postId: true,
                 },
               },
             },
@@ -354,36 +361,39 @@ export const userRouter = createTRPCRouter({
 
       let nextCursor: typeof cursor | undefined;
 
-      if (userProfileInfo.length > limit) {
-        const nextItem = userProfileInfo.pop();
+      if (userReposts.length > limit) {
+        const nextItem = userReposts.pop();
         if (nextItem != null) {
-          nextCursor = { id: nextItem.id, createdAt: nextItem.createdAt };
+          nextCursor = {
+            postId: nextItem.postId,
+            createdAt: nextItem.createdAt,
+          };
         }
       }
 
       return {
-        reposts: userProfileInfo.map((post) => ({
-          id: post.id,
-          createdAt: post.createdAt,
-          text: post.text,
-          images: post.images,
-          parentPostId: post.parentPostId,
-          author: post.author,
-          likesCount: post._count.likes,
-          likes: post.likes,
-          reposts: post.reposts.map((repost) => ({
-            userId: repost.user.id,
-            postId: repost.post.id,
-          })),
-          quoteId: post.quoteId,
-          path: post.path,
-          repliesCount: post.repliesCount,
-          repostsCount: post._count.reposts,
-          repostedBy: post.reposts[0].user,
+        reposts: userReposts.map((repost) => ({
+          id: repost.post.id,
+          createdAt: repost.post.createdAt,
+          text: repost.post.text,
+          images: repost.post.images,
+          parentPostId: repost.post.parentPostId,
+          author: repost.post.author,
+          likesCount: repost.post._count.likes,
+          likes: repost.post.likes,
+          reposts: repost.post.reposts,
+          quoteId: repost.post.quoteId,
+          path: repost.post.path,
+          repliesCount: repost.post.repliesCount,
+          repostsCount: repost.post._count.reposts,
+          repostedBy: repost.user,
+          repostedAt: repost.createdAt,
         })),
         nextCursor,
       };
     }),
+
+  // ... existing code ...
 
   toggleFollow: privateProcedure
     .input(

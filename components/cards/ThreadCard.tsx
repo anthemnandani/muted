@@ -27,6 +27,7 @@ const ThreadCard: React.FC<ParentPostProps> = ({
   reposts,
   repliesCount,
   repostedBy,
+  repostedAt,
   isLastThread,
   showSeparator = true,
   showLine = false,
@@ -41,7 +42,9 @@ const ThreadCard: React.FC<ParentPostProps> = ({
       )}
     >
       <div className='px-4 md:px-6 mb-3'>
-        {repostedBy && <RepostedBy repostedBy={repostedBy} />}
+        {repostedBy && (
+          <RepostedBy repostedBy={repostedBy} repostedAt={repostedAt} />
+        )}
 
         <div className='flex justify-between'>
           <div className='flex gap-4 w-full'>
