@@ -105,13 +105,18 @@ export const postRouter = createTRPCRouter({
           .optional(),
       })
     )
-    .query(async ({ input: { limit = 10, cursor, searchQuery }, ctx }) => {
+    .query(async ({ input: { limit = 20, cursor, searchQuery }, ctx }) => {
       const posts = await ctx.db.post.findMany({
         where: {
           text: {
             contains: searchQuery,
           },
-          parentPostId: null,
+          OR: [
+            { parentPostId: null },
+            {
+              AND: [{ parentPostId: { not: null } }, { reposts: { some: {} } }],
+            },
+          ],
         },
         take: limit + 1,
         cursor: cursor
@@ -161,19 +166,19 @@ export const postRouter = createTRPCRouter({
 
       const repostsMap = new Map();
       const flattenedPosts = posts.flatMap((post) => {
-        const postItem = {
-          ...post,
-          reposts: post.reposts.map((repost) => ({
-            userId: repost.user.id,
-            postId: repost.post.id,
-          })),
-          likesCount: post._count.likes,
-          repostsCount: post._count.reposts,
-          type: 'post' as const,
-        };
+        if (post.parentPostId === null) {
+          const postItem = {
+            ...post,
+            reposts: post.reposts.map((repost) => ({
+              userId: repost.user.id,
+              postId: repost.post.id,
+            })),
+            likesCount: post._count.likes,
+            repostsCount: post._count.reposts,
+            type: 'post' as const,
+          };
 
-        const repostItems = post.reposts.map((repost) => {
-          const repostItem = {
+          const repostItems = post.reposts.map((repost) => ({
             ...post,
             reposts: post.reposts.map((repost) => ({
               userId: repost.user.id,
@@ -184,12 +189,31 @@ export const postRouter = createTRPCRouter({
             repostedBy: repost.user,
             repostedAt: repost.createdAt,
             type: 'repost' as const,
-          };
-          repostsMap.set(`${repost.user.id}-${post.id}`, repostItem);
-          return repostItem;
-        });
+          }));
 
-        return [postItem, ...repostItems];
+          repostItems.forEach((item) =>
+            repostsMap.set(`${item.repostedBy.id}-${post.id}`, item)
+          );
+
+          return [postItem, ...repostItems];
+        } else {
+          return post.reposts.map((repost) => {
+            const repostItem = {
+              ...post,
+              reposts: post.reposts.map((repost) => ({
+                userId: repost.user.id,
+                postId: repost.post.id,
+              })),
+              likesCount: post._count.likes,
+              repostsCount: post._count.reposts,
+              repostedBy: repost.user,
+              repostedAt: repost.createdAt,
+              type: 'repost' as const,
+            };
+            repostsMap.set(`${repost.user.id}-${post.id}`, repostItem);
+            return repostItem;
+          });
+        }
       });
 
       const uniqueFlattenedPosts = flattenedPosts.filter((item) => {

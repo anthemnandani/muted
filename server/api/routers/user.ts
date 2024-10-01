@@ -64,7 +64,7 @@ export const userRouter = createTRPCRouter({
         cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
       })
     )
-    .query(async ({ input: { username, limit = 10, cursor }, ctx }) => {
+    .query(async ({ input: { username, limit = 20, cursor }, ctx }) => {
       const isUser = await ctx.db.user.findUnique({
         where: {
           username,
@@ -198,7 +198,7 @@ export const userRouter = createTRPCRouter({
         cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
       })
     )
-    .query(async ({ input: { username, limit = 10, cursor }, ctx }) => {
+    .query(async ({ input: { username, limit = 20, cursor }, ctx }) => {
       const isUser = await ctx.db.user.findUnique({
         where: {
           username,
@@ -290,7 +290,7 @@ export const userRouter = createTRPCRouter({
           .optional(),
       })
     )
-    .query(async ({ input: { username, limit = 10, cursor }, ctx }) => {
+    .query(async ({ input: { username, limit = 20, cursor }, ctx }) => {
       const isUser = await ctx.db.user.findUnique({
         where: {
           username,
@@ -392,8 +392,6 @@ export const userRouter = createTRPCRouter({
         nextCursor,
       };
     }),
-
-  // ... existing code ...
 
   toggleFollow: privateProcedure
     .input(
