@@ -226,11 +226,11 @@
 
   /* Dropdown */
   .dropdown-content-container {
-    @apply bg-background shadow-xl dark:bg-[#181818] z-[1000];
+    @apply bg-background shadow-xl dark:bg-gray-6 z-[1000];
   }
 
   .dropdown-menu-item {
-    @apply px-4 tracking-normal select-none font-semibold py-3 cursor-pointer text-[15px] rounded-none focus:focus:bg-hovered-background;
+    @apply px-4 tracking-normal select-none font-semibold py-3 cursor-pointer text-[15px] rounded-none focus:bg-hovered-background focus:rounded-lg;
   }
 
   /* Account Profile  */

@@ -140,12 +140,6 @@ export const postRouter = createTRPCRouter({
           ...GET_LIKES,
           ...GET_COUNT,
           ...GET_REPOSTS,
-          _count: {
-            select: {
-              likes: true,
-              reposts: true,
-            },
-          },
           reposts: {
             select: {
               createdAt: true,
@@ -378,12 +372,7 @@ export const postRouter = createTRPCRouter({
           },
           ...GET_LIKES,
           ...GET_REPOSTS,
-          _count: {
-            select: {
-              likes: true,
-              reposts: true,
-            },
-          },
+          ...GET_COUNT,
         },
       });
 
@@ -415,12 +404,7 @@ export const postRouter = createTRPCRouter({
             },
             ...GET_LIKES,
             ...GET_REPOSTS,
-            _count: {
-              select: {
-                likes: true,
-                reposts: true,
-              },
-            },
+            ...GET_COUNT,
           },
         });
 
@@ -456,12 +440,7 @@ export const postRouter = createTRPCRouter({
           },
           ...GET_LIKES,
           ...GET_REPOSTS,
-          _count: {
-            select: {
-              likes: true,
-              reposts: true,
-            },
-          },
+          ...GET_COUNT,
         },
         orderBy: {
           createdAt: 'asc',
@@ -590,5 +569,49 @@ export const postRouter = createTRPCRouter({
 
         return { createdRepost: false };
       }
+    }),
+  getQuotedPost: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const postInfo = await ctx.db.post.findUnique({
+        where: {
+          id: input.id,
+        },
+        select: {
+          id: true,
+          createdAt: true,
+          text: true,
+          ...GET_LIKES,
+          images: true,
+          path: true,
+          repliesCount: true,
+          author: {
+            select: {
+              ...GET_USER,
+            },
+          },
+          ...GET_COUNT,
+        },
+      });
+
+      if (!postInfo) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      return {
+        postInfo: {
+          id: postInfo.id,
+          text: postInfo.text,
+          createdAt: postInfo.createdAt,
+          likeCount: postInfo._count.likes,
+          user: postInfo.author,
+          likes: postInfo.likes,
+          repliesCount: postInfo.repliesCount,
+        },
+      };
     }),
 });

@@ -16,6 +16,7 @@ import { Separator } from '../ui/separator';
 import Username from '../user/Username';
 import ParentThreadCard from './ParentThreadCard';
 import UserProfileCard from './UserProfileCard';
+import ThreadQuoteCard from './ThreadQuoteCard';
 
 const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
   postInfo,
@@ -39,7 +40,7 @@ const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
     scrollToPost();
   }, [postInfo]);
 
-  const { id, author, createdAt, text, likes, likesCount } = postInfo;
+  const { id, author, createdAt, text, likes, likesCount, quoteId } = postInfo;
 
   return (
     <>
@@ -97,6 +98,7 @@ const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
                   className='text-accent-foreground text-[15px] leading-5 mt-1 max-md:max-w-full whitespace-pre-line'
                 />
               </Link>
+              {quoteId && <ThreadQuoteCard quoteId={quoteId} />}
               <div className='flex flex-col gap-3 pt-2.5'>
                 <div className='flex items-center gap-3.5 -ml-2'>
                   <LikeButton

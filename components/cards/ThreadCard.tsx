@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogTrigger } from '../ui/dialog';
 import { Separator } from '../ui/separator';
 import RepostedBy from '../user/RepostedBy';
 import Username from '../user/Username';
+import ThreadQuoteCard from './ThreadQuoteCard';
 import UserProfileCard from './UserProfileCard';
 
 const ThreadCard: React.FC<ParentPostProps> = ({
@@ -27,6 +28,7 @@ const ThreadCard: React.FC<ParentPostProps> = ({
   reposts,
   repliesCount,
   repostedBy,
+  quoteId,
   repostedAt,
   isLastThread,
   showSeparator = true,
@@ -96,6 +98,7 @@ const ThreadCard: React.FC<ParentPostProps> = ({
                   className='text-accent-foreground text-[15px] leading-5 mt-1 max-md:max-w-full whitespace-pre-line'
                 />
               </Link>
+              {quoteId && <ThreadQuoteCard quoteId={quoteId} />}
               <div className='flex flex-col gap-3 pt-2.5'>
                 <div className='flex items-center gap-3.5 -ml-2'>
                   <LikeButton
@@ -125,7 +128,7 @@ const ThreadCard: React.FC<ParentPostProps> = ({
                     repostsCount={repostsCount || 0}
                   />
                   <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
-                    <Icons.share className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
+                    <Icons.share className='size-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
                   </div>
                 </div>
               </div>
