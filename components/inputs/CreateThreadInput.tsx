@@ -9,6 +9,7 @@ import { useUser } from '@clerk/nextjs';
 import React from 'react';
 import UserAvatar from '../shared/UserAvatar';
 import Username from '../user/Username';
+import ThreadQuoteCard from '../cards/ThreadQuoteCard';
 
 const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
   isOpen,
@@ -124,10 +125,11 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
                         </div>
                     </div>
                 }
+                    */}
 
-                {quoteInfo &&
-                    <PostQuoteCard {...quoteInfo} createdAt={quoteInfo.createdAt} />
-                } */}
+        {quoteInfo && (
+          <ThreadQuoteCard {...quoteInfo} createdAt={quoteInfo.createdAt} />
+        )}
       </div>
     </div>
   );

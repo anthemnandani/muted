@@ -3,7 +3,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { AuthorInfoProps } from '@/lib/types';
@@ -12,6 +11,7 @@ import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
 import React from 'react';
 import { toast } from 'sonner';
+import QuoteButton from './QuoteButton';
 
 interface RepostButtonProps {
   id: string;
@@ -95,37 +95,31 @@ const RepostButton: React.FC<RepostButtonProps> = ({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align='start'
-        className='bg-background shadow-xl dark:bg-gray-6 rounded-2xl w-[190px] p-0'
+        className='dropdown-content-container p-2 rounded-2xl w-[240px]'
       >
         <DropdownMenuItem
           disabled={isLoading}
           onClick={handleToggleRepost}
-          className={cn(
-            'focus:bg-transparent px-4 tracking-normal select-none font-semibold py-3 cursor-pointer text-[15px] active:bg-primary-foreground rounded-none w-full justify-between',
-            {
-              'text-red-600 focus:text-red-600': isRepostedByMe,
-            }
-          )}
+          className={cn('dropdown-menu-item flex-between py-3.5 px-4', {
+            'text-red-600 focus:text-red-600': isRepostedByMe,
+          })}
         >
           {isRepostedByMe ? 'Remove' : 'Repost'}
-
           <Icons.repost
             className={cn('size-5', {
               'text-red-600': isRepostedByMe,
             })}
           />
         </DropdownMenuItem>
-        <DropdownMenuSeparator className='h-[1.2px] my-0' />
-        <div className='focus:bg-transparent px-4 tracking-normal select-none font-semibold py-3 cursor-pointer text-[15px] rounded-none active:bg-primary-foreground w-full justify-between'>
-          {/* <QuoteButton
-            quoteInfo={{
-              text,
-              id,
-              author,
-              createdAt,
-            }}
-          /> */}
-        </div>
+
+        <QuoteButton
+          quoteInfo={{
+            text,
+            id,
+            author,
+            createdAt,
+          }}
+        />
       </DropdownMenuContent>
     </DropdownMenu>
   );

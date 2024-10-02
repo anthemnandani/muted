@@ -19,7 +19,7 @@ export const GET_COUNT = {
   _count: {
     select: {
       likes: true,
-      replies: true,
+      reposts: true,
     },
   },
 };
