@@ -39,7 +39,7 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
 
   return (
     <div className='z-[10] mt-4 flex w-full flex-col space-y-4'>
-      <div className='pt-2 md:pt-4 px-4 md:px-5 pb-[10px]'>
+      <div className='pt-2 px-4 md:px-5 pb-[10px]'>
         <div className='flex w-full items-center'>
           <div className='flex w-full flex-col p-3 pl-0 gap-1'>
             <h1 className='text-2xl leading-[30px] tracking-normal'>

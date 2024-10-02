@@ -20,7 +20,7 @@ const UserProfileMenu = () => {
 
       <DropdownMenuContent
         align='end'
-        className='dropdown-content-container !rounded-xl !w-[220px]'
+        className='dropdown-content-container rounded-xl w-[220px] p-0'
       >
         <MenuItem
           icon={Icons.copyLink}
@@ -52,13 +52,13 @@ const UserProfileMenu = () => {
         <MenuItem
           icon={Icons.block}
           label='Block'
-          className='flex-between py-3.5 px-4 text-primary-red'
+          className='flex-between py-3.5 px-4 !text-primary-red'
           isActionMenuItem
         />
         <MenuItem
           icon={Icons.report}
           label='Report'
-          className='flex-between py-3.5 px-4 text-primary-red'
+          className='flex-between py-3.5 px-4 !text-primary-red'
           isActionMenuItem
         />
       </DropdownMenuContent>

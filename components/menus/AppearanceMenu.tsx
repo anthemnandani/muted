@@ -30,7 +30,7 @@ const AppearanceMenu: React.FC<AppearanceMenuProps> = ({ theme, setTheme }) => {
         <span>Appearance</span>
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal>
-        <DropdownMenuSubContent className='dropdown-content-container max-md:w-[140px] !rounded-lg'>
+        <DropdownMenuSubContent className='dropdown-content-container w-[200px] p-0 max-md:w-[140px] rounded-lg'>
           <MenuItem
             icon={Sun}
             label='Light'

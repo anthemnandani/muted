@@ -34,7 +34,7 @@ const PostPrivacyMenu: React.FC = ({}) => {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align='start'
-        className='dropdown-content-container -ml-4'
+        className='dropdown-content-container w-[200px] p-0 rounded-2xl -ml-4'
       >
         <DropdownMenuItem
           className='dropdown-menu-item'
