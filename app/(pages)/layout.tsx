@@ -28,11 +28,12 @@ export default async function PagesLayout({
       <TopBar />
       <LeftSideBar />
       <main className='flex justify-center h-screen'>
-        <section className='w-full md:pt-[60px]'>
-          <div className='w-full md:max-w-[640px] mx-auto'>{children}</div>
+        <section className='w-full'>
+          <div className='w-full md:max-w-[640px] mx-auto relative'>
+            {children}
+          </div>
         </section>
       </main>
-
       <BottomBar />
     </>
   );

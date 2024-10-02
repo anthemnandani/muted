@@ -466,6 +466,19 @@ export const Icons = {
       />
     </svg>
   ),
+  more: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
+    <svg aria-label='More' role='img' viewBox='0 0 13 12' {...props}>
+      <title>More</title>
+      <path
+        d='m2.5 4.2 4 4 4-4'
+        fill='none'
+        stroke='currentColor'
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        strokeWidth='1.5'
+      ></path>
+    </svg>
+  ),
   repost: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
     <svg
       aria-label='Repost'
@@ -768,6 +781,18 @@ export const Icons = {
         d='M6 2v8m4-4H2'
         stroke='currentColor'
         strokeLinecap='round'
+        strokeWidth='1.5'
+      ></path>
+    </svg>
+  ),
+  back: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
+    <svg aria-label='Back' role='img' viewBox='0 0 12 12' {...props}>
+      <title>Back</title>
+      <path
+        d='M1 6h10M1 6l4-4M1 6l4 4'
+        stroke='currentColor'
+        strokeLinecap='round'
+        strokeLinejoin='round'
         strokeWidth='1.5'
       ></path>
     </svg>

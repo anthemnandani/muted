@@ -4,10 +4,14 @@ import NotFound from '@/app/not-found';
 import ThreadCard from '@/components/cards/ThreadCard';
 import ThreadReplyCard from '@/components/cards/ThreadReplyCard';
 import { Icons } from '@/components/icons';
+import PinToHome from '@/components/menus/PinToHome';
+import HeaderWrapper from '@/components/shared/HeaderWrapper';
 import Wrapper from '@/components/shared/Wrapper';
+import useWindow from '@/hooks/useWindow';
 import { ParentPostProps } from '@/lib/types';
 import { buildReplyTree } from '@/lib/utils';
 import { api } from '@/trpc/react';
+import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
@@ -40,6 +44,8 @@ const ThreadRecursiveCard = ({
 };
 
 const PostInfoClient = ({ id }: { id: string }) => {
+  const { isMobile } = useWindow();
+  const router = useRouter();
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
     api.post.getNestedPosts.useInfiniteQuery(
       { id },
@@ -66,31 +72,44 @@ const PostInfoClient = ({ id }: { id: string }) => {
   if (isError || !data) return <NotFound />;
 
   return (
-    <Wrapper>
-      <ThreadReplyCard
-        postInfo={postInfo!}
-        parentPosts={parentPosts || []}
-        showSeparator={replyTree.length !== 0}
-      />
-      <InfiniteScroll
-        dataLength={allReplies?.length ?? 0}
-        next={fetchNextPage}
-        hasMore={hasNextPage ?? false}
-        loader={
-          <div className='h-[80px] w-full flex-center mb-[10vh] sm:mb-0'>
-            <Icons.loading className='size-11' />
+    <>
+      {!isMobile && (
+        <HeaderWrapper>
+          <div className='flex-between h-[60px] px-4'>
+            <div className='icon-container' onClick={() => router.back()}>
+              <Icons.back className='size-3' />
+            </div>
+            <span className='text-[15px] font-semibold'>Muted</span>
+            <PinToHome />
           </div>
-        }
-      >
-        {replyTree.map((reply, index) => (
-          <ThreadRecursiveCard
-            key={reply.id}
-            post={reply}
-            isLastThread={index === replyTree.length - 1}
-          />
-        ))}
-      </InfiniteScroll>
-    </Wrapper>
+        </HeaderWrapper>
+      )}
+      <Wrapper>
+        <ThreadReplyCard
+          postInfo={postInfo!}
+          parentPosts={parentPosts || []}
+          showSeparator={replyTree.length !== 0}
+        />
+        <InfiniteScroll
+          dataLength={allReplies?.length ?? 0}
+          next={fetchNextPage}
+          hasMore={hasNextPage ?? false}
+          loader={
+            <div className='h-[80px] w-full flex-center mb-[10vh] sm:mb-0'>
+              <Icons.loading className='size-11' />
+            </div>
+          }
+        >
+          {replyTree.map((reply, index) => (
+            <ThreadRecursiveCard
+              key={reply.id}
+              post={reply}
+              isLastThread={index === replyTree.length - 1}
+            />
+          ))}
+        </InfiniteScroll>
+      </Wrapper>
+    </>
   );
 };
 
