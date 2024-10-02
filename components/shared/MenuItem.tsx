@@ -17,11 +17,11 @@ const MenuItem: React.FC<MenuItemProps> = ({
     {isActionMenuItem ? (
       <>
         <span>{label}</span>
-        <Icon className='h-5 w-5' />
+        {Icon && <Icon className='h-5 w-5' />}
       </>
     ) : (
       <>
-        <Icon className='mr-2 h-4 w-4' />
+        {Icon && <Icon className='mr-2 h-4 w-4' />}
         <span>{label}</span>
       </>
     )}

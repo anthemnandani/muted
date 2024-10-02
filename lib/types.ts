@@ -52,7 +52,7 @@ export interface MenuLinkProps {
 }
 
 export interface MenuItemProps {
-  icon: LucideIcon | ((props: IconProps) => JSX.Element);
+  icon: LucideIcon | ((props: IconProps) => JSX.Element) | null;
   label: string;
   onClick?: () => void;
   className?: string;
@@ -130,4 +130,11 @@ export enum PostPrivacy {
   ANYONE = 'ANYONE',
   FOLLOWED = 'FOLLOWED',
   MENTIONED = 'MENTIONED',
+}
+
+export enum ThreadFilter {
+  FOR_YOU = 'For you',
+  FOLLOWING = 'Following',
+  LIKED = 'Liked',
+  SAVED = 'Saved',
 }
