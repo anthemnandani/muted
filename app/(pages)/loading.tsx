@@ -3,7 +3,7 @@ import React from 'react';
 
 export default function Loading() {
   return (
-    <div className='h-[80vh] w-full flex-center'>
+    <div className='h-screen w-full flex-center'>
       <Icons.loading className='size-11' />
     </div>
   );

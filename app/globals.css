@@ -209,6 +209,10 @@
     background: #7878a3;
   }
 
+  .icon-container {
+    @apply bg-white dark:bg-gray-6 border dark:border-gray-5 border-gray-1 rounded-full p-1.5 cursor-pointer transition-transform duration-200 ease-in-out hover:scale-110;
+  }
+
   /* Shadcn Component Styles */
 
   /* Tab */
@@ -222,11 +226,11 @@
 
   /* Dropdown */
   .dropdown-content-container {
-    @apply bg-background shadow-xl dark:bg-[#181818] w-[200px] rounded-2xl p-0 z-[1000];
+    @apply bg-background shadow-xl dark:bg-[#181818] z-[1000];
   }
 
   .dropdown-menu-item {
-    @apply focus:bg-transparent px-4 tracking-normal select-none font-semibold py-3 cursor-pointer text-[15px] rounded-none active:bg-primary-foreground;
+    @apply px-4 tracking-normal select-none font-semibold py-3 cursor-pointer text-[15px] rounded-none focus:focus:bg-hovered-background;
   }
 
   /* Account Profile  */

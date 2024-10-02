@@ -22,7 +22,7 @@ const ThreadActionMenu = ({ authorId }: { authorId: string }) => {
 
       <DropdownMenuContent
         align='end'
-        className='dropdown-content-container !rounded-xl !w-[220px]'
+        className='dropdown-content-container rounded-xl p-0 w-[220px]'
       >
         <MenuItem
           icon={Bookmark}
