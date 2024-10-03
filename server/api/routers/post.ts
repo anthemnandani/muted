@@ -1,6 +1,7 @@
 import { ParentPostProps } from '@/lib/types';
 import { getUserEmail } from '@/lib/utils';
 import {
+  GET_BOOKMARKS,
   GET_COUNT,
   GET_LIKES,
   GET_REPOSTS,
@@ -138,6 +139,7 @@ export const postRouter = createTRPCRouter({
             },
           },
           ...GET_LIKES,
+          ...GET_BOOKMARKS,
           ...GET_COUNT,
           ...GET_REPOSTS,
           reposts: {
@@ -169,6 +171,7 @@ export const postRouter = createTRPCRouter({
             })),
             likesCount: post._count.likes,
             repostsCount: post._count.reposts,
+            bookmarksCount: post._count.bookmarks,
             type: 'post' as const,
           };
 
@@ -180,6 +183,7 @@ export const postRouter = createTRPCRouter({
             })),
             likesCount: post._count.likes,
             repostsCount: post._count.reposts,
+            bookmarksCount: post._count.bookmarks,
             repostedBy: repost.user,
             repostedAt: repost.createdAt,
             type: 'repost' as const,
@@ -200,6 +204,7 @@ export const postRouter = createTRPCRouter({
               })),
               likesCount: post._count.likes,
               repostsCount: post._count.reposts,
+              bookmarksCount: post._count.bookmarks,
               repostedBy: repost.user,
               repostedAt: repost.createdAt,
               type: 'repost' as const,
@@ -371,6 +376,7 @@ export const postRouter = createTRPCRouter({
             },
           },
           ...GET_LIKES,
+          ...GET_BOOKMARKS,
           ...GET_REPOSTS,
           ...GET_COUNT,
         },
@@ -403,6 +409,7 @@ export const postRouter = createTRPCRouter({
               },
             },
             ...GET_LIKES,
+            ...GET_BOOKMARKS,
             ...GET_REPOSTS,
             ...GET_COUNT,
           },
@@ -441,6 +448,7 @@ export const postRouter = createTRPCRouter({
           ...GET_LIKES,
           ...GET_REPOSTS,
           ...GET_COUNT,
+          ...GET_BOOKMARKS,
         },
         orderBy: {
           createdAt: 'asc',
@@ -464,16 +472,19 @@ export const postRouter = createTRPCRouter({
           ...post,
           likesCount: post._count.likes,
           repostsCount: post._count.reposts,
+          bookmarksCount: post._count.bookmarks,
         },
         parentPosts: parentPosts.map((parentPost) => ({
           ...parentPost,
           likesCount: parentPost?._count?.likes,
           repostsCount: parentPost?._count?.reposts,
+          bookmarksCount: parentPost?._count?.bookmarks,
         })),
         replies: replies.map((reply) => ({
           ...reply,
           likesCount: reply._count.likes,
           repostsCount: reply._count.reposts,
+          bookmarksCount: reply._count.bookmarks,
         })),
         nextCursor,
       };
@@ -568,6 +579,96 @@ export const postRouter = createTRPCRouter({
         }
 
         return { createdRepost: false };
+      }
+    }),
+  toggleBookmark: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .mutation(async ({ input: { id }, ctx }) => {
+      const { userId } = ctx;
+
+      const data = { postId: id, userId };
+
+      const existingBookmark = await ctx.db.bookmark.findUnique({
+        where: {
+          postId_userId: data,
+        },
+      });
+
+      if (existingBookmark == null) {
+        const transactionResult = await ctx.db.$transaction(async (prisma) => {
+          const createdBookmark = await prisma.bookmark.create({
+            data,
+            select: {
+              post: {
+                select: {
+                  text: true,
+                  author: true,
+                },
+              },
+            },
+          });
+
+          const createdNotification = await prisma.notification.create({
+            data: {
+              type: 'BOOKMARK',
+              senderUserId: userId,
+              receiverUserId: createdBookmark.post.author.id,
+              postId: data.postId,
+              message: createdBookmark.post.text,
+            },
+          });
+
+          return {
+            createdBookmark,
+            createdNotification,
+          };
+        });
+
+        if (!transactionResult) {
+          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+        }
+
+        return { addedBookmark: true };
+      } else {
+        const transactionResult = await ctx.db.$transaction(async (prisma) => {
+          const removeBookmark = await prisma.bookmark.delete({
+            where: {
+              postId_userId: data,
+            },
+          });
+
+          const notification = await prisma.notification.findFirst({
+            where: {
+              senderUserId: userId,
+              postId: data.postId,
+              type: 'BOOKMARK',
+            },
+            select: {
+              id: true,
+            },
+          });
+
+          if (notification) {
+            await prisma.notification.delete({
+              where: {
+                id: notification.id,
+              },
+            });
+          }
+          return {
+            removeBookmark,
+          };
+        });
+
+        if (!transactionResult) {
+          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+        }
+
+        return { addedBookmark: false };
       }
     }),
   getQuotedPost: publicProcedure

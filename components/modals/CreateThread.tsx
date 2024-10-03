@@ -131,6 +131,7 @@ const CreateThread = () => {
         );
       },
       error: 'Error',
+      richColors: true,
     });
   }
 

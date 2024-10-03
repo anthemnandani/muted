@@ -1,5 +1,6 @@
 import { getUserEmail } from '@/lib/utils';
 import {
+  GET_BOOKMARKS,
   GET_COUNT,
   GET_LIKES,
   GET_REPOSTS,
@@ -98,11 +99,13 @@ export const userRouter = createTRPCRouter({
             },
           },
           ...GET_LIKES,
+          ...GET_BOOKMARKS,
           ...GET_COUNT,
           ...GET_REPOSTS,
           _count: {
             select: {
               likes: true,
+              bookmarks: true,
             },
           },
         },
@@ -131,6 +134,8 @@ export const userRouter = createTRPCRouter({
           quoteId: post.quoteId,
           images: post.images,
           reposts: post.reposts,
+          bookmarks: post.bookmarks,
+          bookmarksCount: post._count.bookmarks,
         })),
         nextCursor,
       };
@@ -238,11 +243,13 @@ export const userRouter = createTRPCRouter({
             },
           },
           ...GET_LIKES,
+          ...GET_BOOKMARKS,
           ...GET_COUNT,
           ...GET_REPOSTS,
           _count: {
             select: {
               likes: true,
+              bookmarks: true,
             },
           },
         },
@@ -272,6 +279,8 @@ export const userRouter = createTRPCRouter({
           likesCount: post._count.likes,
           likes: post.likes,
           reposts: post.reposts,
+          bookmarks: post.bookmarks,
+          bookmarksCount: post._count.bookmarks,
           quoteId: post.quoteId,
           path: post.path,
           repliesCount: post.repliesCount,
@@ -342,10 +351,12 @@ export const userRouter = createTRPCRouter({
               ...GET_LIKES,
               ...GET_COUNT,
               ...GET_REPOSTS,
+              ...GET_BOOKMARKS,
               _count: {
                 select: {
                   likes: true,
                   reposts: true,
+                  bookmarks: true,
                 },
               },
               reposts: {
@@ -382,6 +393,8 @@ export const userRouter = createTRPCRouter({
           likesCount: repost.post._count.likes,
           likes: repost.post.likes,
           reposts: repost.post.reposts,
+          bookmarks: repost.post.bookmarks,
+          bookmarksCount: repost.post._count.bookmarks,
           quoteId: repost.post.quoteId,
           path: repost.post.path,
           repliesCount: repost.post.repliesCount,

@@ -82,6 +82,7 @@ export type ParentPostProps = {
   likes: {
     userId: string;
   }[];
+  bookmarks: { userId: string }[];
   quoteId: string | null;
   reposts: { userId: string; postId: string }[];
   parentPostId: string | null;
@@ -89,11 +90,13 @@ export type ParentPostProps = {
   repostedBy?: Author;
   children?: ParentPostProps[];
   likesCount?: number;
+  bookmarksCount?: number;
   repostsCount?: number;
   repostedAt?: Date;
   _count?: {
     likes: number;
     reposts: number;
+    bookmarks: number;
   };
   path: string | null;
   repliesCount: number;

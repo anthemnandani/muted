@@ -71,6 +71,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         </div>
       ),
       error: 'Error',
+      richColors: true,
     });
   };
 

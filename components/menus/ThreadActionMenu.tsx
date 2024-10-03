@@ -1,14 +1,14 @@
 'use client';
+import { useUser } from '@clerk/nextjs';
 import { Bookmark, MoreHorizontal } from 'lucide-react';
 import { Icons } from '../icons';
+import MenuItem from '../shared/MenuItem';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import MenuItem from '../shared/MenuItem';
-import { useUser } from '@clerk/nextjs';
 
 const ThreadActionMenu = ({ authorId }: { authorId: string }) => {
   const { user } = useUser();

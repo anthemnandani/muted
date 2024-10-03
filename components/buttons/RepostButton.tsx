@@ -73,6 +73,7 @@ const RepostButton: React.FC<RepostButtonProps> = ({
         );
       },
       error: 'Error',
+      richColors: true,
     });
   };
 
