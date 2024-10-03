@@ -162,6 +162,7 @@ model User {
   isAdmin               Boolean?       @default(false) @map(name: "is_admin")
   reposts               Repost[]
   reports               Report[]
+  bookmarks             Bookmark[]
   senderNotifications   Notification[] @relation("sender")
   receiverNotifications Notification[] @relation("receiver")
 
@@ -189,6 +190,7 @@ model Post {
   quoteId      String?
   privacy      PostPrivacy    @default(ANYONE)
   reports      Report[]
+  bookmarks    Bookmark[]
   repliesCount Int            @default(0)
   path         String?
 
@@ -211,6 +213,17 @@ model Like {
 }
 
 model Repost {
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  @@id([postId, userId])
+  @@index([userId])
+}
+
+model Bookmark {
   createdAt DateTime @default(now())
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId    String
@@ -247,6 +260,7 @@ enum NotificationType {
   FOLLOW
   REPOST
   QUOTE
+  BOOKMARK
 }
 
 enum PostPrivacy {
