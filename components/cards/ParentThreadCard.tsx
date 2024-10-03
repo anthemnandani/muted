@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Username from '@/components/user/Username';
 import type { ParentPostProps } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils';
-import { Plus } from 'lucide-react';
+import { Bookmark, Plus } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 import ReplyButton from '../buttons/ReplyButton';
@@ -106,8 +106,14 @@ const ParentThreadCard: React.FC<ParentPostProps> = ({
                   reposts={reposts}
                   repostsCount={repostsCount || 0}
                 />
-                <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
-                  <Icons.share className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
+                <div
+                  className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95 cursor-pointer'
+                  title='Bookmark'
+                >
+                  <Bookmark className='size-5 transition-colors duration-150' />
+                </div>
+                <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95 cursor-pointer'>
+                  <Icons.copyLink2 className='size-5 transition-colors duration-150' />
                 </div>
               </div>
             </div>

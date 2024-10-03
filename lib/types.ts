@@ -101,6 +101,7 @@ export type ParentPostProps = {
   showSeparator?: boolean;
   showLine?: boolean;
   isNested?: boolean;
+  isReply?: boolean;
 };
 
 export interface UserAvatarProps extends React.HTMLAttributes<HTMLDivElement> {

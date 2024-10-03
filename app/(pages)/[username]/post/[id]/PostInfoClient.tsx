@@ -33,6 +33,7 @@ const ThreadRecursiveCard = ({
         isNested={isNested}
         showLine={post.children && post.children.length === 1}
         isLastThread={isLastThread}
+        isReply
       />
       {post.children &&
         post.children.length === 1 &&

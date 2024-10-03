@@ -9,9 +9,10 @@ import { Icons } from '../icons';
 
 interface LikeButtonProps {
   likeInfo: Pick<PostProps, 'id' | 'likes' | 'likesCount'>;
+  isParentPost?: boolean;
 }
 
-const LikeButton: React.FC<LikeButtonProps> = ({ likeInfo }) => {
+const LikeButton: React.FC<LikeButtonProps> = ({ likeInfo, isParentPost }) => {
   const { user: loggedUser } = useUser();
 
   const { likesCount: initialLikesCount, id, likes } = likeInfo;
@@ -69,7 +70,7 @@ const LikeButton: React.FC<LikeButtonProps> = ({ likeInfo }) => {
           })}
         />
       </button>
-      {likesCount > 0 && (
+      {likesCount > 0 && !isParentPost && (
         <span
           className={cn(
             'text-[13px] ml-2',
