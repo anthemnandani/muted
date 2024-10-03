@@ -23,6 +23,7 @@ interface RepostButtonProps {
     postId: string;
   }[];
   repostsCount: number;
+  isParentPost?: boolean;
 }
 
 const RepostButton: React.FC<RepostButtonProps> = ({
@@ -32,6 +33,7 @@ const RepostButton: React.FC<RepostButtonProps> = ({
   createdAt,
   reposts,
   repostsCount,
+  isParentPost,
 }) => {
   const { user: loggedUser } = useUser();
 
@@ -82,11 +84,11 @@ const RepostButton: React.FC<RepostButtonProps> = ({
           className='flex-center hover:bg-primary rounded-full p-2 w-fit h-fit active:scale-95 outline-none cursor-pointer'
         >
           {isRepostedByMe ? (
-            <Icons.reposted className='size-5 ' />
+            <Icons.reposted className='size-5' />
           ) : (
-            <Icons.repost className='size-5 ' />
+            <Icons.repost className='size-5' />
           )}
-          {repostsCount > 0 && (
+          {repostsCount > 0 && !isParentPost && (
             <span className='text-[13px] ml-2 text-gray-4 dark:text-gray-2'>
               {repostsCount}
             </span>

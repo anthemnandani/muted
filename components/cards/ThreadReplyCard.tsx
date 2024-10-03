@@ -1,8 +1,9 @@
 'use client';
 
 import type { ThreadReplyCardProps } from '@/lib/types';
-import { cn, formatTimeAgo } from '@/lib/utils';
-import { Plus } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { Bookmark, Plus } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 import LikeButton from '../buttons/LikeButton';
@@ -40,8 +41,20 @@ const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
     scrollToPost();
   }, [postInfo]);
 
-  const { id, author, createdAt, text, likes, likesCount, quoteId } = postInfo;
-
+  const {
+    id,
+    author,
+    createdAt,
+    text,
+    likes,
+    likesCount,
+    repliesCount,
+    repostsCount,
+    reposts,
+    quoteId,
+  } = postInfo;
+  const time = format(createdAt, 'h:mm a');
+  const date = format(createdAt, 'MMM d, yyyy');
   return (
     <>
       <div className={cn('flex flex-col w-full pt-2')}>
@@ -79,12 +92,7 @@ const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
                 </Dialog>
 
                 <div className='flex-between gap-5 py-px w-full max-md:max-w-full max-md:flex-wrap'>
-                  <div className='flex items-center gap-2'>
-                    <Username author={author} />
-                    <time className='text-[15px] leading-none text-gray-3'>
-                      {formatTimeAgo(createdAt)}
-                    </time>
-                  </div>
+                  <Username author={author} />
                   <ThreadActionMenu authorId={author.id} />
                 </div>
               </div>
@@ -99,39 +107,71 @@ const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
                 />
               </Link>
               {quoteId && <ThreadQuoteCard quoteId={quoteId} />}
-              <div className='flex flex-col gap-3 pt-2.5'>
-                <div className='flex items-center gap-3.5 -ml-2'>
-                  <LikeButton
-                    likeInfo={{
-                      id,
-                      likesCount: likesCount || 0,
-                      likes,
-                    }}
-                  />
-
-                  <ReplyButton
-                    replyThreadInfo={{
-                      id,
-                      text,
-                      images: [],
-                      author: { ...author },
-                      createdAt,
-                    }}
-                    repliesCount={postInfo.repliesCount}
-                  />
-                  <RepostButton
-                    id={id}
-                    text={text}
-                    author={author}
-                    createdAt={createdAt}
-                    reposts={postInfo.reposts}
-                    repostsCount={postInfo.repostsCount}
-                  />
-                  <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
-                    <Icons.share className='h-[18px] w-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
-                  </div>
+              <div className='mt-1 flex items-center space-x-2 py-2 text-[15px] text-gray-3'>
+                <p>{time}</p>
+                <div className='size-1 rounded-full bg-gray-3'></div>
+                <p>{date}</p>
+              </div>
+              <div className='flex items-center space-x-6 border-t border-b border-zinc-800 py-3'>
+                <div>
+                  <span className='font-medium'>{repliesCount}</span>{' '}
+                  <span className='text-gray-3'>comments</span>
+                </div>
+                <div>
+                  <span className='font-medium'>3</span>{' '}
+                  <span className='text-gray-3'>shares</span>
+                </div>
+                <div>
+                  <span className='font-medium'>{likesCount}</span>{' '}
+                  <span className='text-gray-3'>likes</span>
                 </div>
               </div>
+
+              <div className='flex items-center justify-around border-b border-zinc-800 py-3'>
+                <LikeButton
+                  likeInfo={{
+                    id,
+                    likesCount: likesCount || 0,
+                    likes,
+                  }}
+                  isParentPost
+                />
+
+                <ReplyButton
+                  replyThreadInfo={{
+                    id,
+                    text,
+                    images: [],
+                    author: { ...author },
+                    createdAt,
+                  }}
+                  repliesCount={repliesCount}
+                  isParentPost
+                />
+                <RepostButton
+                  id={id}
+                  text={text}
+                  author={author}
+                  createdAt={createdAt}
+                  reposts={reposts}
+                  repostsCount={repostsCount || 0}
+                  isParentPost
+                />
+                <div
+                  className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95 cursor-pointer'
+                  title='Bookmark'
+                >
+                  <Bookmark className='size-5 transition-colors duration-150' />
+                </div>
+                <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95 cursor-pointer'>
+                  <Icons.copyLink2 className='size-5 transition-colors duration-150' />
+                </div>
+              </div>
+              {repliesCount > 0 && (
+                <div className='mt-6 mb-2 font-semibold text-[15px] leading-none'>
+                  Replies
+                </div>
+              )}
             </div>
           </div>
           {showSeparator && <Separator />}

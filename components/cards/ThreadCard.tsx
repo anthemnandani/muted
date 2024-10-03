@@ -1,7 +1,7 @@
 'use client';
 import { ParentPostProps } from '@/lib/types';
 import { cn, formatTimeAgo } from '@/lib/utils';
-import { Plus } from 'lucide-react';
+import { Bookmark, Plus } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 import LikeButton from '../buttons/LikeButton';
@@ -34,6 +34,7 @@ const ThreadCard: React.FC<ParentPostProps> = ({
   showSeparator = true,
   showLine = false,
   isNested = false,
+  isReply = false,
 }) => {
   return (
     <article
@@ -99,8 +100,14 @@ const ThreadCard: React.FC<ParentPostProps> = ({
                 />
               </Link>
               {quoteId && <ThreadQuoteCard quoteId={quoteId} />}
-              <div className='flex flex-col gap-3 pt-2.5'>
-                <div className='flex items-center gap-3.5 -ml-2'>
+              <div className='flex flex-col gap-3 pt-4'>
+                <div
+                  className={cn(
+                    '-ml-2',
+                    isReply && 'flex items-center gap-3.5',
+                    !isReply && 'flex-between max-w-[280px] md:max-w-[400px]'
+                  )}
+                >
                   <LikeButton
                     likeInfo={{
                       id,
@@ -127,8 +134,14 @@ const ThreadCard: React.FC<ParentPostProps> = ({
                     reposts={reposts}
                     repostsCount={repostsCount || 0}
                   />
-                  <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95'>
-                    <Icons.share className='size-[18px] transition-colors duration-150 text-gray-4 dark:text-gray-2' />
+                  <div
+                    className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95 cursor-pointer'
+                    title='Bookmark'
+                  >
+                    <Bookmark className='size-5 transition-colors duration-150' />
+                  </div>
+                  <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95 cursor-pointer'>
+                    <Icons.copyLink2 className='size-5 transition-colors duration-150' />
                   </div>
                 </div>
               </div>
