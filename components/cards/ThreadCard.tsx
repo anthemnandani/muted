@@ -1,9 +1,10 @@
 'use client';
 import { ParentPostProps } from '@/lib/types';
 import { cn, formatTimeAgo } from '@/lib/utils';
-import { Bookmark, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
+import BookmarkButton from '../buttons/BookmarkButton';
 import LikeButton from '../buttons/LikeButton';
 import ReplyButton from '../buttons/ReplyButton';
 import RepostButton from '../buttons/RepostButton';
@@ -26,6 +27,8 @@ const ThreadCard: React.FC<ParentPostProps> = ({
   repostsCount,
   likes,
   reposts,
+  bookmarksCount,
+  bookmarks,
   repliesCount,
   repostedBy,
   quoteId,
@@ -134,12 +137,13 @@ const ThreadCard: React.FC<ParentPostProps> = ({
                     reposts={reposts}
                     repostsCount={repostsCount || 0}
                   />
-                  <div
-                    className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95 cursor-pointer'
-                    title='Bookmark'
-                  >
-                    <Bookmark className='size-5 transition-colors duration-150' />
-                  </div>
+                  <BookmarkButton
+                    bookmarkInfo={{
+                      id,
+                      bookmarksCount: bookmarksCount || 0,
+                      bookmarks,
+                    }}
+                  />
                   <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95 cursor-pointer'>
                     <Icons.copyLink2 className='size-5 transition-colors duration-150' />
                   </div>

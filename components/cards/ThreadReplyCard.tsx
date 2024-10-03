@@ -3,9 +3,10 @@
 import type { ThreadReplyCardProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Bookmark, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
+import BookmarkButton from '../buttons/BookmarkButton';
 import LikeButton from '../buttons/LikeButton';
 import ReplyButton from '../buttons/ReplyButton';
 import RepostButton from '../buttons/RepostButton';
@@ -16,8 +17,8 @@ import { Dialog, DialogContent, DialogTrigger } from '../ui/dialog';
 import { Separator } from '../ui/separator';
 import Username from '../user/Username';
 import ParentThreadCard from './ParentThreadCard';
-import UserProfileCard from './UserProfileCard';
 import ThreadQuoteCard from './ThreadQuoteCard';
+import UserProfileCard from './UserProfileCard';
 
 const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
   postInfo,
@@ -48,6 +49,8 @@ const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
     text,
     likes,
     likesCount,
+    bookmarks,
+    bookmarksCount,
     repliesCount,
     repostsCount,
     reposts,
@@ -157,12 +160,14 @@ const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
                   repostsCount={repostsCount || 0}
                   isParentPost
                 />
-                <div
-                  className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95 cursor-pointer'
-                  title='Bookmark'
-                >
-                  <Bookmark className='size-5 transition-colors duration-150' />
-                </div>
+                <BookmarkButton
+                  bookmarkInfo={{
+                    id,
+                    bookmarksCount: bookmarksCount || 0,
+                    bookmarks,
+                  }}
+                  isParentPost
+                />
                 <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95 cursor-pointer'>
                   <Icons.copyLink2 className='size-5 transition-colors duration-150' />
                 </div>

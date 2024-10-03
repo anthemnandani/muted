@@ -20,6 +20,7 @@ export const GET_COUNT = {
     select: {
       likes: true,
       reposts: true,
+      bookmarks: true,
     },
   },
 };
@@ -35,6 +36,14 @@ export const GET_REPOSTS = {
 
 export const GET_LIKES = {
   likes: {
+    select: {
+      userId: true,
+    },
+  },
+};
+
+export const GET_BOOKMARKS = {
+  bookmarks: {
     select: {
       userId: true,
     },
