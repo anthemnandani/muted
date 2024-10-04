@@ -101,11 +101,15 @@ const PostInfoClient = ({ id }: { id: string }) => {
             </div>
           }
         >
-          {replyTree.map((reply, index) => (
+          {replyTree.map((reply: ParentPostProps, index: number) => (
             <ThreadRecursiveCard
               key={reply.id}
               post={reply}
-              isLastThread={index === replyTree.length - 1}
+              isLastThread={
+                (index === replyTree.length - 1 &&
+                  (reply?.children?.length ?? 0) === 0) ||
+                (reply?.children?.length ?? 0) >= 2
+              }
             />
           ))}
         </InfiniteScroll>
