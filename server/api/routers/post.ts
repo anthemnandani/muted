@@ -120,9 +120,7 @@ export const postRouter = createTRPCRouter({
           ],
         },
         take: limit + 1,
-        cursor: cursor
-          ? { createdAt_id: { createdAt: cursor.createdAt, id: cursor.id } }
-          : undefined,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         select: {
           id: true,
@@ -237,10 +235,7 @@ export const postRouter = createTRPCRouter({
         const nextItem = uniqueFlattenedPosts[limit];
         nextCursor = {
           id: nextItem.id,
-          createdAt:
-            nextItem.type === 'repost'
-              ? nextItem.repostedAt
-              : nextItem.createdAt,
+          createdAt: nextItem.createdAt,
         };
         uniqueFlattenedPosts.length = limit;
       }
