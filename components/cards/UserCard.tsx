@@ -1,56 +1,96 @@
-'use client';
-import Image from 'next/image';
-import { Button } from '../ui/button';
-import { useRouter } from 'next/navigation';
+import { Icons } from '@/components/icons';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
+import type { UserCardProps } from '@/lib/types';
+import Link from 'next/link';
+import React from 'react';
+import FollowButton from '../buttons/FollowButton';
+import UserFollowers from '../user/UserFollowers';
+import Username from '../user/Username';
 
-interface UserCardProps {
-  id: string;
-  name: string;
-  username: string;
-  image: string;
-  personType?: string;
-}
-
-export default function Page({
+const UserCard: React.FC<UserCardProps> = ({
   id,
+  bio,
+  fullName,
+  createdAt,
   image,
-  name,
+  link,
+  isAdmin,
   username,
-  personType,
-}: UserCardProps) {
-  const router = useRouter();
-  const isCommunity = personType === 'Community';
-  const handleClick = () => {
-    if (isCommunity) {
-      router.push(`/communities/${id}`);
-    } else {
-      router.push(`/profile/${id}`);
-    }
-    return;
-  };
+  followers,
+}) => {
   return (
-    <div className='flex justify-between xs:items-center gap-4 w-full max-xs:flex-col max-xs:bg-dark-3 max-xs:p-4 max-xs:rounded-xl'>
-      <div className='flex items-start justify-start xs:items-center gap-3 flex-1'>
-        <div className='relative w-14 h-14'>
-          <Image
-            src={image}
-            alt='Profile'
-            fill
-            className='object-cover rounded-full'
+    <div className='flex flex-col w-full'>
+      <div className='flex w-full mt-5'>
+        <Link href={`/@${username}`}>
+          <Avatar className='h-10 w-10 relative overflow-visible cursor-pointer outline outline-1 outline-border '>
+            <AvatarImage
+              src={image ?? ''}
+              alt={fullName ?? ''}
+              className='rounded-full object-cover'
+            />
+            <AvatarFallback>
+              {username.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </Link>
+        <div className='flex flex-col w-full ml-3'>
+          <div className='flex justify-between  w-full'>
+            <Link
+              href={`/@${username}`}
+              className='flex flex-col gap-1.5 w-full'
+            >
+              <div className='flex flex-col w-full'>
+                <div className='flex'>
+                  <Username
+                    author={{
+                      id,
+                      image,
+                      createdAt,
+                      username,
+                      fullName,
+                      isAdmin,
+                      link,
+                      bio,
+                      followers,
+                    }}
+                  />
+                  {/* TODO: This is temp solution */}
+                  <div className='w-3 h-3 invisible'>
+                    <Icons.verified className='w-3 h-3' />
+                  </div>
+                </div>
+                <span className='text-[15px]  text-[#6A6A6A] tracking-wide mt-1'>
+                  {fullName}
+                </span>
+              </div>
+            </Link>
+            <FollowButton
+              className='text-[14px] px-6'
+              variant='outline'
+              author={{
+                id,
+                image,
+                createdAt,
+                username,
+                fullName,
+                isAdmin,
+                link,
+                bio,
+                followers,
+              }}
+            />
+          </div>
+          <UserFollowers
+            followers={followers}
+            showImage={false}
+            className='text-black dark:text-white pl-0 mt-1 text-[16px]'
           />
-        </div>
-        <div className='flex-1 text-ellipsis'>
-          <h3 className='text-light-1 text-[18px] font-medium'>{name}</h3>
-          <p className='text-gray-1 text-sm font-medium'>@{username}</p>
+          <Separator className='mt-4' />
         </div>
       </div>
-
-      <Button
-        onClick={handleClick}
-        className='bg-primary-500 min-w-[74px] h-auto text-light-1 font-medium rounded-lg hover:bg-primary-500'
-      >
-        View
-      </Button>
     </div>
   );
-}
+};
+
+export default UserCard;

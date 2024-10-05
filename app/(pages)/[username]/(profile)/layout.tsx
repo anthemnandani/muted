@@ -10,11 +10,11 @@ import useWindow from '@/hooks/useWindow';
 import { api } from '@/trpc/react';
 import { useParams } from 'next/navigation';
 
-interface PagesLayoutProps {
+interface ProfileLayoutProps {
   children: React.ReactNode;
 }
 
-export default function ProfileLayout({ children }: PagesLayoutProps) {
+export default function ProfileLayout({ children }: ProfileLayoutProps) {
   const params = useParams<{ username: string }>();
   const username = decodeURIComponent(params.username).substring(1);
   const { isMobile } = useWindow();

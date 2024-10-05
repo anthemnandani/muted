@@ -514,4 +514,45 @@ export const userRouter = createTRPCRouter({
         return { unFollowUser: false };
       }
     }),
+
+  allUsers: privateProcedure
+    .input(
+      z.object({
+        searchQuery: z.string().optional(),
+        limit: z.number().optional(),
+        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
+      })
+    )
+    .query(async ({ input: { limit = 20, cursor, searchQuery }, ctx }) => {
+      const allUsers = await ctx.db.user.findMany({
+        where: {
+          OR: [
+            { fullName: { contains: searchQuery, mode: 'insensitive' } },
+            { username: { contains: searchQuery, mode: 'insensitive' } },
+          ],
+        },
+        take: limit + 1,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        select: {
+          ...GET_USER,
+        },
+      });
+
+      let nextCursor: typeof cursor | undefined;
+
+      if (allUsers.length > limit) {
+        const nextItem = allUsers.pop();
+        if (nextItem != null) {
+          nextCursor = {
+            id: nextItem.id,
+            createdAt: nextItem.createdAt,
+          };
+        }
+      }
+      return {
+        allUsers,
+        nextCursor,
+      };
+    }),
 });

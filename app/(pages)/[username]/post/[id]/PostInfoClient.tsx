@@ -106,9 +106,8 @@ const PostInfoClient = ({ id }: { id: string }) => {
               key={reply.id}
               post={reply}
               isLastThread={
-                (index === replyTree.length - 1 &&
-                  (reply?.children?.length ?? 0) === 0) ||
-                (reply?.children?.length ?? 0) >= 2
+                index === replyTree.length - 1 &&
+                (reply?.children?.length === 0 || reply?.children?.length! >= 2)
               }
             />
           ))}

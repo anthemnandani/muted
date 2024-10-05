@@ -31,6 +31,10 @@ export type ParentPostInfo = Pick<
 export type UserProfileInfoProps =
   RouterOutput['user']['userInfo']['userDetails'];
 
+export type UserCardProps = ArrayElement<
+  RouterOutput['user']['allUsers']['allUsers']
+>;
+
 export type UserSetupProps = Pick<User, 'bio' | 'link' | 'privacy'>;
 
 export type IconProps =
