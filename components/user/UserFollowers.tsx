@@ -30,14 +30,12 @@ const UserFollowers: React.FC<UserFollowersProps> = ({
           ))}
         </div>
       )}
-      {followers.length > 0 && (
-        <>
-          <div className={cn('pl-2 text-gray-3 text-[15px]', className)}>
-            {followers.length}{' '}
-            {followers.length === 1 ? 'follower' : 'followers'}
-          </div>
-        </>
-      )}
+
+      <>
+        <div className={cn('pl-2 text-gray-3 text-[15px]', className)}>
+          {followers.length} {followers.length === 1 ? 'follower' : 'followers'}
+        </div>
+      </>
     </div>
   );
 };

@@ -54,15 +54,13 @@ const FollowButton: React.FC<FollowButtonProps> = ({
   const handleToggleFollow = () => {
     toast.promise(toggleFollow({ id: author.id }), {
       loading: (
-        <div className='flex w-[270px] items-center p-0'>
+        <div className='flex w-[270px] items-center justify-start gap-1.5 p-0'>
           <div>
             <Icons.loading className='size-8' />
           </div>
-          <span className='flex-1 text-center'>
-            {followUpdate.current.isFollowedByMe
-              ? 'Unfollowing...'
-              : 'Following...'}
-          </span>
+          {followUpdate.current.isFollowedByMe
+            ? 'Unfollowing...'
+            : 'Following...'}
         </div>
       ),
       success: () => (

@@ -25,22 +25,22 @@ const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
   parentPosts,
   showSeparator = true,
 }) => {
-  React.useEffect(() => {
-    const scrollToPost = () => {
-      const postIdFromUrl = postInfo.id;
-      if (postIdFromUrl) {
-        const postElement = document.getElementById(postIdFromUrl);
-        if (postElement) {
-          postElement.scrollIntoView({
-            behavior: 'smooth',
-            block: 'nearest',
-          });
-        }
-      }
-    };
+  // React.useEffect(() => {
+  //   const scrollToPost = () => {
+  //     const postIdFromUrl = postInfo.id;
+  //     if (postIdFromUrl) {
+  //       const postElement = document.getElementById(postIdFromUrl);
+  //       if (postElement) {
+  //         postElement.scrollIntoView({
+  //           behavior: 'smooth',
+  //           block: 'nearest',
+  //         });
+  //       }
+  //     }
+  //   };
 
-    scrollToPost();
-  }, [postInfo]);
+  //   scrollToPost();
+  // }, [postInfo]);
 
   const {
     id,

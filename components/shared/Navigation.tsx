@@ -19,7 +19,7 @@ const Navigation = () => {
         addFill
       />
       <MenuLink
-        route='/'
+        route='/search'
         icon={Icons.search}
         isActive={pathname === '/search'}
       />
@@ -27,7 +27,7 @@ const Navigation = () => {
       <MenuLink
         route='/activity'
         icon={Icons.activity}
-        isActive={pathname === '/search'}
+        isActive={pathname === '/activity'}
         addFill
       />
       <MenuLink
