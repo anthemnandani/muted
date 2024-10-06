@@ -7,10 +7,10 @@ import { formatTimeAgo } from '@/lib/utils';
 import { Bookmark, Plus } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
+import CopyLinkButton from '../buttons/CopyLinkButton';
 import LikeButton from '../buttons/LikeButton';
 import ReplyButton from '../buttons/ReplyButton';
 import RepostButton from '../buttons/RepostButton';
-import { Icons } from '../icons';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
 import { Dialog, DialogContent, DialogTrigger } from '../ui/dialog';
 import UserProfileCard from './UserProfileCard';
@@ -116,9 +116,7 @@ const ParentThreadCard: React.FC<ParentPostProps> = ({
                 >
                   <Bookmark className='size-5 transition-colors duration-150' />
                 </div>
-                <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95 cursor-pointer'>
-                  <Icons.copyLink2 className='size-5 transition-colors duration-150' />
-                </div>
+                <CopyLinkButton postId={id} username={author.username} />
               </div>
             </div>
           </div>
