@@ -7,12 +7,14 @@ const MenuItem: React.FC<MenuItemProps> = ({
   icon: Icon,
   label,
   onClick,
+  onSelect,
   isActionMenuItem,
   className,
 }) => (
   <DropdownMenuItem
     className={cn('dropdown-menu-item', className)}
     onClick={onClick}
+    onSelect={onSelect}
   >
     {isActionMenuItem ? (
       <>

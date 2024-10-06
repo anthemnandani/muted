@@ -92,7 +92,11 @@ const ThreadCard: React.FC<ParentPostProps> = ({
                     {formatTimeAgo(createdAt)}
                   </time>
                 </div>
-                <ThreadActionMenu authorId={author.id} />
+                <ThreadActionMenu
+                  authorId={author.id}
+                  postId={id}
+                  repostedBy={repostedBy}
+                />
               </div>
               <Link href={`/@${author.username}/post/${id}`} className='w-full'>
                 <div

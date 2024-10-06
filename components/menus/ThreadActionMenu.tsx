@@ -1,7 +1,9 @@
 'use client';
+import { Author } from '@/lib/types';
 import { useUser } from '@clerk/nextjs';
-import { Bookmark, MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal } from 'lucide-react';
 import { Icons } from '../icons';
+import DeletePost from '../modals/DeletePost';
 import MenuItem from '../shared/MenuItem';
 import {
   DropdownMenu,
@@ -10,13 +12,24 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 
-const ThreadActionMenu = ({ authorId }: { authorId: string }) => {
+interface ThreadActionMenuProps {
+  authorId: string;
+  postId: string;
+  repostedBy?: Author;
+}
+
+const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
+  authorId,
+  postId,
+  repostedBy,
+}) => {
   const { user } = useUser();
+
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <div className='flex items-center justify-center relative hover:before:content-[""] hover:before:absolute hover:before:bg-primary hover:before:z-[2] hover:before:-inset-2 hover:before:rounded-full cursor-pointer '>
-          <MoreHorizontal className='aspect-square object-cover object-center h-4 w-4 overflow-hidden flex-1 text-secondary' />
+        <div className='flex-center relative hover:before:content-[""] hover:before:absolute hover:before:bg-primary hover:before:z-[2] hover:before:-inset-2 hover:before:rounded-full cursor-pointer'>
+          <MoreHorizontal className='aspect-square object-cover object-center size-4 overflow-hidden flex-1 text-secondary' />
         </div>
       </DropdownMenuTrigger>
 
@@ -24,13 +37,8 @@ const ThreadActionMenu = ({ authorId }: { authorId: string }) => {
         align='end'
         className='dropdown-content-container rounded-xl p-0 w-[220px]'
       >
-        <MenuItem
-          icon={Bookmark}
-          label='Save'
-          className='flex-between py-3.5 px-4'
-          isActionMenuItem
-        />
-        {user?.id !== authorId ? (
+        {(!repostedBy && user?.id !== authorId) ||
+        (repostedBy && user?.id !== repostedBy?.id) ? (
           <>
             <MenuItem
               icon={Icons.notInterested}
@@ -38,7 +46,7 @@ const ThreadActionMenu = ({ authorId }: { authorId: string }) => {
               className='flex-between py-3.5 px-4'
               isActionMenuItem
             />
-            <DropdownMenuSeparator />
+
             <MenuItem
               icon={Icons.mute}
               label='Mute'
@@ -51,6 +59,7 @@ const ThreadActionMenu = ({ authorId }: { authorId: string }) => {
               className='flex-between py-3.5 px-4 text-primary-red focus:text-primary-red'
               isActionMenuItem
             />
+            <DropdownMenuSeparator />
             <MenuItem
               icon={Icons.report}
               label='Report'
@@ -66,29 +75,18 @@ const ThreadActionMenu = ({ authorId }: { authorId: string }) => {
               className='flex-between py-3.5 px-4'
               isActionMenuItem
             />
+
             <MenuItem
               icon={Icons.hide}
               label='Hide like and share counts'
               className='flex-between py-3.5 px-4'
               isActionMenuItem
             />
+
             <DropdownMenuSeparator />
-            <MenuItem
-              icon={Icons.delete}
-              label='Delete'
-              className='flex-between py-3.5 px-4 text-primary-red focus:text-primary-red'
-              isActionMenuItem
-            />
+            <DeletePost postId={postId} isRepost={!!repostedBy} />
           </>
         )}
-
-        <DropdownMenuSeparator />
-        <MenuItem
-          icon={Icons.copyLink}
-          label='Copy link'
-          className='flex-between py-3.5 px-4'
-          isActionMenuItem
-        />
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -96,7 +96,11 @@ const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
 
                 <div className='flex-between gap-5 py-px w-full max-md:max-w-full max-md:flex-wrap'>
                   <Username author={author} />
-                  <ThreadActionMenu authorId={author.id} />
+                  <ThreadActionMenu
+                    authorId={author.id}
+                    postId={id}
+                    repostedBy={author}
+                  />
                 </div>
               </div>
             </div>
