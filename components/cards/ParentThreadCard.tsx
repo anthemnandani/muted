@@ -7,13 +7,13 @@ import { formatTimeAgo } from '@/lib/utils';
 import { Bookmark, Plus } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
+import LikeButton from '../buttons/LikeButton';
 import ReplyButton from '../buttons/ReplyButton';
+import RepostButton from '../buttons/RepostButton';
 import { Icons } from '../icons';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
 import { Dialog, DialogContent, DialogTrigger } from '../ui/dialog';
 import UserProfileCard from './UserProfileCard';
-import LikeButton from '../buttons/LikeButton';
-import RepostButton from '../buttons/RepostButton';
 
 const ParentThreadCard: React.FC<ParentPostProps> = ({
   id,
@@ -68,7 +68,11 @@ const ParentThreadCard: React.FC<ParentPostProps> = ({
                   {formatTimeAgo(createdAt)}
                 </time>
               </div>
-              <ThreadActionMenu authorId={author.id} />
+              <ThreadActionMenu
+                authorId={author.id}
+                postId={id}
+                repostedBy={author}
+              />
             </div>
             <Link href={`/@${author.username}/post/${id}`} className='w-full'>
               <div

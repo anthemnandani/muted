@@ -710,4 +710,73 @@ export const postRouter = createTRPCRouter({
         },
       };
     }),
+
+  deletePost: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { userId } = ctx;
+      const transactionResult = await ctx.db.$transaction(async (prisma) => {
+        const postInfo = await prisma.post.delete({
+          where: {
+            id: input.id,
+            authorId: userId,
+          },
+          select: {
+            id: true,
+          },
+        });
+
+        if (!postInfo) {
+          throw new TRPCError({ code: 'NOT_FOUND' });
+        }
+
+        await prisma.post.updateMany({
+          where: {
+            quoteId: input.id,
+          },
+          data: {
+            quoteId: null,
+          },
+        });
+
+        return { success: true };
+      });
+
+      if (!transactionResult) {
+        throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+      }
+
+      return { success: true };
+    }),
+
+  deleteRepost: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { userId } = ctx;
+
+      const data = { postId: input.id, userId };
+      const transactionResult = await ctx.db.$transaction(async (prisma) => {
+        await prisma.repost.delete({
+          where: {
+            postId_userId: data,
+          },
+        });
+
+        return { success: true };
+      });
+
+      if (!transactionResult) {
+        throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+      }
+
+      return { success: true };
+    }),
 });

@@ -70,6 +70,7 @@ module.exports = {
         'gray-4': '#424242',
         'gray-5': '#2d2d2d',
         'gray-6': '#181818',
+        'gray-7': '#393939',
         'primary-red': '#ff3040',
         'border-dark': '#00000026',
         'border-light': '#f3f5f726',

@@ -59,6 +59,7 @@ export interface MenuItemProps {
   icon: LucideIcon | ((props: IconProps) => JSX.Element) | null;
   label: string;
   onClick?: () => void;
+  onSelect?: (e: Event) => void;
   className?: string;
   isActionMenuItem?: boolean;
 }
