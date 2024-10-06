@@ -19,6 +19,7 @@ import Username from '../user/Username';
 import ParentThreadCard from './ParentThreadCard';
 import ThreadQuoteCard from './ThreadQuoteCard';
 import UserProfileCard from './UserProfileCard';
+import CopyLinkButton from '../buttons/CopyLinkButton';
 
 const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
   postInfo,
@@ -122,15 +123,21 @@ const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
               <div className='flex items-center space-x-6 border-t border-b border-zinc-800 py-3'>
                 <div>
                   <span className='font-medium'>{repliesCount}</span>{' '}
-                  <span className='text-gray-3'>comments</span>
+                  <span className='text-gray-3'>
+                    comment{repliesCount !== 1 ? 's' : ''}
+                  </span>
                 </div>
                 <div>
-                  <span className='font-medium'>3</span>{' '}
-                  <span className='text-gray-3'>shares</span>
+                  <span className='font-medium'>{repostsCount}</span>{' '}
+                  <span className='text-gray-3'>
+                    repost{repostsCount !== 1 ? 's' : ''}
+                  </span>
                 </div>
                 <div>
                   <span className='font-medium'>{likesCount}</span>{' '}
-                  <span className='text-gray-3'>likes</span>
+                  <span className='text-gray-3'>
+                    like{likesCount !== 1 ? 's' : ''}
+                  </span>
                 </div>
               </div>
 
@@ -172,9 +179,7 @@ const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
                   }}
                   isParentPost
                 />
-                <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95 cursor-pointer'>
-                  <Icons.copyLink2 className='size-5 transition-colors duration-150' />
-                </div>
+                <CopyLinkButton postId={id} username={author.username} />
               </div>
               {repliesCount > 0 && (
                 <div className='mt-6 mb-2 font-semibold text-[15px] leading-none'>

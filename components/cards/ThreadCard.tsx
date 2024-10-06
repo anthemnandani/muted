@@ -17,6 +17,7 @@ import RepostedBy from '../user/RepostedBy';
 import Username from '../user/Username';
 import ThreadQuoteCard from './ThreadQuoteCard';
 import UserProfileCard from './UserProfileCard';
+import CopyLinkButton from '../buttons/CopyLinkButton';
 
 const ThreadCard: React.FC<ParentPostProps> = ({
   id,
@@ -148,9 +149,7 @@ const ThreadCard: React.FC<ParentPostProps> = ({
                       bookmarks,
                     }}
                   />
-                  <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95 cursor-pointer'>
-                    <Icons.copyLink2 className='size-5 transition-colors duration-150' />
-                  </div>
+                  <CopyLinkButton postId={id} username={author.username} />
                 </div>
               </div>
             </div>
