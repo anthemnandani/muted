@@ -48,6 +48,15 @@ export interface AppearanceMenuProps {
   setTheme: (theme: string) => void;
 }
 
+export interface ThreadDisplayProps {
+  isLastThread?: boolean;
+  showSeparator?: boolean;
+  showLine?: boolean;
+  isNested?: boolean;
+  isReply?: boolean;
+  showUsername?: boolean;
+}
+
 export interface MenuLinkProps {
   route: string;
   isActive: boolean;
@@ -91,6 +100,7 @@ export type ParentPostProps = {
   quoteId: string | null;
   reposts: { userId: string; postId: string }[];
   parentPostId: string | null;
+  parentPost?: any;
   author: Author;
   repostedBy?: Author;
   children?: ParentPostProps[];
@@ -105,12 +115,9 @@ export type ParentPostProps = {
   };
   path: string | null;
   repliesCount: number;
-  isLastThread?: boolean;
-  showSeparator?: boolean;
-  showLine?: boolean;
-  isNested?: boolean;
-  isReply?: boolean;
 };
+
+export interface ThreadCardProps extends ParentPostProps, ThreadDisplayProps {}
 
 export interface UserAvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   image: string | null | undefined;
@@ -126,6 +133,12 @@ export interface CreateThreadInputProps {
     | (Pick<ParentPostInfo, 'id' | 'text' | 'author'> & { createdAt?: Date })
     | null;
   placeholder?: string;
+}
+
+export interface ThreadsListProps {
+  posts?: ParentPostProps[];
+  fetchNextPage: () => void;
+  hasNextPage?: boolean;
 }
 
 export interface EditProfileProps {
