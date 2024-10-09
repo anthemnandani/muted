@@ -1,14 +1,14 @@
 'use client';
-import { ParentPostProps } from '@/lib/types';
+import { ThreadCardProps } from '@/lib/types';
 import { cn, formatTimeAgo } from '@/lib/utils';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 import BookmarkButton from '../buttons/BookmarkButton';
+import CopyLinkButton from '../buttons/CopyLinkButton';
 import LikeButton from '../buttons/LikeButton';
 import ReplyButton from '../buttons/ReplyButton';
 import RepostButton from '../buttons/RepostButton';
-import { Icons } from '../icons';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Dialog, DialogContent, DialogTrigger } from '../ui/dialog';
@@ -17,9 +17,8 @@ import RepostedBy from '../user/RepostedBy';
 import Username from '../user/Username';
 import ThreadQuoteCard from './ThreadQuoteCard';
 import UserProfileCard from './UserProfileCard';
-import CopyLinkButton from '../buttons/CopyLinkButton';
 
-const ThreadCard: React.FC<ParentPostProps> = ({
+const ThreadCard: React.FC<ThreadCardProps> = ({
   id,
   text,
   createdAt,
@@ -32,6 +31,7 @@ const ThreadCard: React.FC<ParentPostProps> = ({
   bookmarks,
   repliesCount,
   repostedBy,
+  parentPost,
   quoteId,
   repostedAt,
   isLastThread,
@@ -39,6 +39,7 @@ const ThreadCard: React.FC<ParentPostProps> = ({
   showLine = false,
   isNested = false,
   isReply = false,
+  showUsername = false,
 }) => {
   return (
     <article
@@ -99,6 +100,14 @@ const ThreadCard: React.FC<ParentPostProps> = ({
                   repostedBy={repostedBy}
                 />
               </div>
+              {showUsername && parentPost?.author.username && (
+                <Link
+                  href={`/@${parentPost?.author.username}/post/${parentPost?.id}`}
+                  className='text-gray-3 text-[15px] leading-none my-1'
+                >
+                  Replying to @{parentPost?.author.username}
+                </Link>
+              )}
               <Link href={`/@${author.username}/post/${id}`} className='w-full'>
                 <div
                   dangerouslySetInnerHTML={{

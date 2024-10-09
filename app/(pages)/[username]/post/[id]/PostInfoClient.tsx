@@ -8,7 +8,7 @@ import PinToHome from '@/components/menus/PinToHome';
 import HeaderWrapper from '@/components/shared/HeaderWrapper';
 import Wrapper from '@/components/shared/Wrapper';
 import useWindow from '@/hooks/useWindow';
-import { ParentPostProps } from '@/lib/types';
+import { ParentPostProps, ThreadDisplayProps } from '@/lib/types';
 import { buildReplyTree } from '@/lib/utils';
 import { api } from '@/trpc/react';
 import { useRouter } from 'next/navigation';
@@ -17,28 +17,29 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 
 interface ThreadRecursiveCardProps {
   post: ParentPostProps;
-  isNested?: boolean;
-  isLastThread?: boolean;
+  displayProps: ThreadDisplayProps;
 }
 
 const ThreadRecursiveCard = ({
   post,
-  isNested = false,
-  isLastThread = false,
+  displayProps,
 }: ThreadRecursiveCardProps) => {
   return (
     <>
       <ThreadCard
         {...post}
-        isNested={isNested}
+        {...displayProps}
         showLine={post.children && post.children.length === 1}
-        isLastThread={isLastThread}
         isReply
       />
       {post.children &&
         post.children.length === 1 &&
         post.children.map((reply) => (
-          <ThreadRecursiveCard key={reply.id} post={reply} isNested />
+          <ThreadRecursiveCard
+            key={reply.id}
+            post={reply}
+            displayProps={{ ...displayProps, isNested: true }}
+          />
         ))}
     </>
   );
@@ -105,10 +106,13 @@ const PostInfoClient = ({ id }: { id: string }) => {
             <ThreadRecursiveCard
               key={reply.id}
               post={reply}
-              isLastThread={
-                index === replyTree.length - 1 &&
-                (reply?.children?.length === 0 || reply?.children?.length! >= 2)
-              }
+              displayProps={{
+                isLastThread:
+                  index === replyTree.length - 1 &&
+                  (reply?.children?.length === 0 ||
+                    reply?.children?.length! >= 2),
+                isNested: false,
+              }}
             />
           ))}
         </InfiniteScroll>

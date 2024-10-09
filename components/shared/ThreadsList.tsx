@@ -1,39 +1,36 @@
 'use client';
-import { ParentPostProps } from '@/lib/types';
-import React, { useEffect, useState } from 'react';
+import {
+  ParentPostProps,
+  ThreadDisplayProps,
+  ThreadsListProps,
+} from '@/lib/types';
+import React, { useMemo } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import ThreadCard from '../cards/ThreadCard';
 import { Icons } from '../icons';
-
-interface ThreadsListProps {
-  posts?: ParentPostProps[];
-  fetchNextPage: any;
-  hasNextPage?: boolean;
-}
 
 const ThreadsList: React.FC<ThreadsListProps> = ({
   posts,
   fetchNextPage,
   hasNextPage,
 }) => {
-  const [uniquePosts, setUniquePosts] = useState<ParentPostProps[]>([]);
-
-  useEffect(() => {
-    if (posts) {
-      const seenPosts = new Set();
-      const newUniquePosts = posts.filter((post) => {
-        const key = post.repostedBy
-          ? `repost-${post.repostedBy.id}-${post.id}`
-          : `post-${post.id}`;
-        if (seenPosts.has(key)) {
-          return false;
-        }
-        seenPosts.add(key);
-        return true;
-      });
-      setUniquePosts(newUniquePosts);
-    }
+  const uniquePosts = useMemo(() => {
+    if (!posts) return [];
+    const seenPosts = new Set();
+    return posts.filter((post) => {
+      const key = post.repostedBy
+        ? `repost-${post.repostedBy.id}-${post.id}`
+        : `post-${post.id}`;
+      if (seenPosts.has(key)) return false;
+      seenPosts.add(key);
+      return true;
+    });
   }, [posts]);
+
+  const renderThreadCard = (
+    post: ParentPostProps,
+    displayProps: ThreadDisplayProps
+  ) => <ThreadCard {...post} {...displayProps} />;
 
   return (
     <InfiniteScroll
@@ -47,15 +44,23 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
       }
     >
       {uniquePosts.map((post, index) => (
-        <ThreadCard
+        <div
           key={
             post.repostedBy
               ? `repost-${post.repostedBy.id}-${post.id}`
               : `post-${post.id}`
           }
-          {...post}
-          isLastThread={index === uniquePosts.length - 1}
-        />
+        >
+          {post.parentPost &&
+            renderThreadCard(post.parentPost, {
+              showLine: true,
+              showUsername: true,
+            })}
+          {renderThreadCard(post, {
+            isLastThread: index === uniquePosts.length - 1,
+            isNested: !!post.parentPost,
+          })}
+        </div>
       ))}
     </InfiniteScroll>
   );

@@ -63,7 +63,7 @@ const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
     <>
       <div className={cn('flex flex-col w-full pt-2')}>
         {parentPosts?.map((post) => (
-          <ParentThreadCard key={post.id} {...post} showSeparator={false} />
+          <ParentThreadCard key={post.id} {...post} />
         ))}
 
         <article className='w-full pt-4'>
