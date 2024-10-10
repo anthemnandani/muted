@@ -7,12 +7,10 @@ import { LucideIcon } from 'lucide-react';
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
 type RouterOutput = inferRouterOutputs<AppRouter>;
 
-export type ThreadReplyCardProps = Pick<
+export type ParentThreadCardProps = Pick<
   RouterOutput['post']['getNestedPosts'],
-  'parentPosts' | 'postInfo'
-> & {
-  showSeparator?: boolean;
-};
+  'postInfo'
+>;
 
 export type PostProps = ArrayElement<
   RouterOutput['post']['getInfinitePosts']['posts']
@@ -55,6 +53,9 @@ export interface ThreadDisplayProps {
   isNested?: boolean;
   isReply?: boolean;
   showUsername?: boolean;
+  isTopLevel?: boolean;
+  isLastChild?: boolean;
+  toggleReplies?: () => void;
 }
 
 export interface MenuLinkProps {
@@ -115,6 +116,7 @@ export type ParentPostProps = {
   };
   path: string | null;
   repliesCount: number;
+  parentRepliesCount?: number;
 };
 
 export interface ThreadCardProps extends ParentPostProps, ThreadDisplayProps {}

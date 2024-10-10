@@ -7,23 +7,20 @@ import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 import BookmarkButton from '../buttons/BookmarkButton';
+import CopyLinkButton from '../buttons/CopyLinkButton';
 import LikeButton from '../buttons/LikeButton';
 import ReplyButton from '../buttons/ReplyButton';
 import RepostButton from '../buttons/RepostButton';
-import { Icons } from '../icons';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Dialog, DialogContent, DialogTrigger } from '../ui/dialog';
 import { Separator } from '../ui/separator';
 import Username from '../user/Username';
-import ParentThreadCard from './ParentThreadCard';
 import ThreadQuoteCard from './ThreadQuoteCard';
 import UserProfileCard from './UserProfileCard';
-import CopyLinkButton from '../buttons/CopyLinkButton';
 
 const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
   postInfo,
-  parentPosts,
   showSeparator = true,
 }) => {
   // React.useEffect(() => {
@@ -62,10 +59,6 @@ const ThreadReplyCard: React.FC<ThreadReplyCardProps> = ({
   return (
     <>
       <div className={cn('flex flex-col w-full pt-2')}>
-        {parentPosts?.map((post) => (
-          <ParentThreadCard key={post.id} {...post} />
-        ))}
-
         <article className='w-full pt-4'>
           <div className='flex flex-col px-4 md:px-6 mb-4'>
             <div className='flex justify-between'>

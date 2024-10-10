@@ -40,6 +40,9 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
   isNested = false,
   isReply = false,
   showUsername = false,
+  isLastChild = false,
+  toggleReplies,
+  parentRepliesCount,
 }) => {
   return (
     <article
@@ -164,6 +167,14 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
             </div>
           </div>
         </div>
+        {isLastChild && (
+          <button
+            className='text-gray-3 hover:text-blue transition-all ease-in-out duration-300 mt-2 text-[15px]'
+            onClick={toggleReplies}
+          >
+            Hide Replies ({parentRepliesCount})
+          </button>
+        )}
       </div>
 
       {!isLastThread && showSeparator && !showLine && <Separator />}
