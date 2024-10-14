@@ -1,53 +1,21 @@
 'use client';
 import Loading from '@/app/(pages)/loading';
 import NotFound from '@/app/not-found';
-import ThreadCard from '@/components/cards/ThreadCard';
-import ThreadReplyCard from '@/components/cards/ThreadReplyCard';
+import ParentReplyCard from '@/components/cards/ParentReplyCard';
+import ParentThreadCard from '@/components/cards/ParentThreadCard';
 import { Icons } from '@/components/icons';
 import PinToHome from '@/components/menus/PinToHome';
 import HeaderWrapper from '@/components/shared/HeaderWrapper';
 import Wrapper from '@/components/shared/Wrapper';
 import useWindow from '@/hooks/useWindow';
-import { ParentPostProps, ThreadDisplayProps } from '@/lib/types';
-import { buildReplyTree } from '@/lib/utils';
 import { api } from '@/trpc/react';
 import { useRouter } from 'next/navigation';
-import { useMemo } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
-
-interface ThreadRecursiveCardProps {
-  post: ParentPostProps;
-  displayProps: ThreadDisplayProps;
-}
-
-const ThreadRecursiveCard = ({
-  post,
-  displayProps,
-}: ThreadRecursiveCardProps) => {
-  return (
-    <>
-      <ThreadCard
-        {...post}
-        {...displayProps}
-        showLine={post.children && post.children.length === 1}
-        isReply
-      />
-      {post.children &&
-        post.children.length === 1 &&
-        post.children.map((reply) => (
-          <ThreadRecursiveCard
-            key={reply.id}
-            post={reply}
-            displayProps={{ ...displayProps, isNested: true }}
-          />
-        ))}
-    </>
-  );
-};
 
 const PostInfoClient = ({ id }: { id: string }) => {
   const { isMobile } = useWindow();
   const router = useRouter();
+
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
     api.post.getNestedPosts.useInfiniteQuery(
       { id },
@@ -58,20 +26,11 @@ const PostInfoClient = ({ id }: { id: string }) => {
       }
     );
 
-  const allReplies: ParentPostProps[] = useMemo(() => {
-    if (!data) return [];
-    return data.pages.flatMap((page) => page.replies);
-  }, [data]);
-
-  const firstPage = data?.pages[0];
-  const { postInfo, parentPosts } = firstPage || {};
-
-  const replyTree = useMemo(() => {
-    if (!postInfo) return [];
-    return buildReplyTree(allReplies, postInfo.id);
-  }, [allReplies, postInfo]);
   if (isLoading) return <Loading />;
   if (isError || !data) return <NotFound />;
+
+  const allReplies = data.pages.flatMap((page) => page.replies);
+  const postInfo = data.pages[0].postInfo;
 
   return (
     <>
@@ -81,19 +40,15 @@ const PostInfoClient = ({ id }: { id: string }) => {
             <div className='icon-container' onClick={() => router.back()}>
               <Icons.back className='size-3' />
             </div>
-            <span className='text-[15px] font-semibold'>Muted</span>
+            <span className='text-[15px] font-semibold'>Thread</span>
             <PinToHome />
           </div>
         </HeaderWrapper>
       )}
       <Wrapper>
-        <ThreadReplyCard
-          postInfo={postInfo!}
-          parentPosts={parentPosts || []}
-          showSeparator={replyTree.length !== 0}
-        />
+        <ParentThreadCard postInfo={postInfo!} />
         <InfiniteScroll
-          dataLength={allReplies?.length ?? 0}
+          dataLength={allReplies.length}
           next={fetchNextPage}
           hasMore={hasNextPage ?? false}
           loader={
@@ -102,17 +57,11 @@ const PostInfoClient = ({ id }: { id: string }) => {
             </div>
           }
         >
-          {replyTree.map((reply: ParentPostProps, index: number) => (
-            <ThreadRecursiveCard
+          {allReplies.map((reply, index) => (
+            <ParentReplyCard
               key={reply.id}
-              post={reply}
-              displayProps={{
-                isLastThread:
-                  index === replyTree.length - 1 &&
-                  (reply?.children?.length === 0 ||
-                    reply?.children?.length! >= 2),
-                isNested: false,
-              }}
+              {...reply}
+              showSeparator={index !== allReplies.length - 1}
             />
           ))}
         </InfiniteScroll>

@@ -267,6 +267,7 @@ export const userRouter = createTRPCRouter({
                 select: {
                   likes: true,
                   bookmarks: true,
+                  reposts: true,
                 },
               },
             },
@@ -287,6 +288,7 @@ export const userRouter = createTRPCRouter({
             select: {
               likes: true,
               bookmarks: true,
+              reposts: true,
             },
           },
         },
@@ -312,11 +314,19 @@ export const userRouter = createTRPCRouter({
           text: post.text,
           images: post.images,
           parentPostId: post.parentPostId,
-          parentPost: post.parentPost,
+          parentPost: post.parentPost
+            ? {
+                ...post.parentPost,
+                likesCount: post.parentPost._count.likes,
+                bookmarksCount: post.parentPost._count.bookmarks,
+                repostsCount: post.parentPost._count.reposts,
+              }
+            : null,
           author: post.author,
           likesCount: post._count.likes,
           likes: post.likes,
           reposts: post.reposts,
+          repostsCount: post._count.reposts,
           bookmarks: post.bookmarks,
           bookmarksCount: post._count.bookmarks,
           quoteId: post.quoteId,

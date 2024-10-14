@@ -1,9 +1,5 @@
 'use client';
-import {
-  ParentPostProps,
-  ThreadDisplayProps,
-  ThreadsListProps,
-} from '@/lib/types';
+import { ThreadsListProps } from '@/lib/types';
 import React, { useMemo } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import ThreadCard from '../cards/ThreadCard';
@@ -27,11 +23,6 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
     });
   }, [posts]);
 
-  const renderThreadCard = (
-    post: ParentPostProps,
-    displayProps: ThreadDisplayProps
-  ) => <ThreadCard {...post} {...displayProps} />;
-
   return (
     <InfiniteScroll
       dataLength={uniquePosts.length}
@@ -51,15 +42,10 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
               : `post-${post.id}`
           }
         >
-          {post.parentPost &&
-            renderThreadCard(post.parentPost, {
-              showLine: true,
-              showUsername: true,
-            })}
-          {renderThreadCard(post, {
-            isLastThread: index === uniquePosts.length - 1,
-            isNested: !!post.parentPost,
-          })}
+          <ThreadCard
+            {...post}
+            isLastThread={index === uniquePosts.length - 1}
+          />
         </div>
       ))}
     </InfiniteScroll>

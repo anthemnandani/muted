@@ -7,12 +7,10 @@ import { LucideIcon } from 'lucide-react';
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
 type RouterOutput = inferRouterOutputs<AppRouter>;
 
-export type ThreadReplyCardProps = Pick<
+export type ParentThreadCardProps = Pick<
   RouterOutput['post']['getNestedPosts'],
-  'parentPosts' | 'postInfo'
-> & {
-  showSeparator?: boolean;
-};
+  'postInfo'
+>;
 
 export type PostProps = ArrayElement<
   RouterOutput['post']['getInfinitePosts']['posts']
@@ -55,6 +53,10 @@ export interface ThreadDisplayProps {
   isNested?: boolean;
   isReply?: boolean;
   showUsername?: boolean;
+  isTopLevel?: boolean;
+  isLastChild?: boolean;
+  toggleReplies?: () => void;
+  isChild?: boolean;
 }
 
 export interface MenuLinkProps {
@@ -115,6 +117,7 @@ export type ParentPostProps = {
   };
   path: string | null;
   repliesCount: number;
+  parentRepliesCount?: number;
 };
 
 export interface ThreadCardProps extends ParentPostProps, ThreadDisplayProps {}
@@ -146,6 +149,21 @@ export interface EditProfileProps {
   userLink: string;
   userImage: string;
   userPrivacy: Privacy;
+}
+
+export interface ThreadActionsProps {
+  id: string;
+  likesCount: number;
+  likes: { userId: string }[];
+  text: string;
+  author: Author;
+  createdAt: Date;
+  repliesCount: number;
+  reposts: { userId: string; postId: string }[];
+  repostsCount: number;
+  bookmarks: { userId: string }[];
+  bookmarksCount: number;
+  isParentPost?: boolean;
 }
 
 export enum PostPrivacy {
