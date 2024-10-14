@@ -66,19 +66,21 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
                 />
               </div>
               {showUsername && parentPost?.author.username && (
-                <Link
-                  href={`/@${parentPost?.author.username}/post/${parentPost?.id}`}
-                  className='text-gray-3 text-[15px]'
-                >
-                  Replying to @{parentPost?.author.username}
-                </Link>
+                <div>
+                  <Link
+                    href={`/@${parentPost?.author.username}/post/${parentPost?.id}`}
+                    className='text-gray-3 text-[15px] leading-5'
+                  >
+                    Replying to @{parentPost?.author.username}
+                  </Link>
+                </div>
               )}
               <Link href={`/@${author.username}/post/${id}`} className='w-full'>
                 <div
                   dangerouslySetInnerHTML={{
                     __html: text.replace(/\\n/g, '\n'),
                   }}
-                  className='text-accent-foreground text-[15px] leading-5 mt-1 max-md:max-w-full whitespace-pre-line'
+                  className='text-accent-foreground text-[15px] leading-5 mt-[3px] max-md:max-w-full whitespace-pre-line'
                 />
               </Link>
               {quoteId && <ThreadQuoteCard quoteId={quoteId} />}
