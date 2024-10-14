@@ -1,5 +1,6 @@
 'use client';
-import { ThreadCardProps } from '@/lib/types';
+
+import type { ThreadCardProps } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils';
 import Link from 'next/link';
 import React, { useMemo, useState } from 'react';
@@ -9,29 +10,27 @@ import UserProfile from '../modals/UserProfile';
 import Line from '../shared/Line';
 import ReplyThreadWrapper from '../shared/ReplyThreadWrapper';
 import ThreadActions from '../shared/ThreadActions';
-import { Separator } from '../ui/separator';
 import RepostedBy from '../user/RepostedBy';
 import Username from '../user/Username';
-import ChildReplyCard from './ChildReplyCard';
 import ThreadQuoteCard from './ThreadQuoteCard';
 
-const ParentReplyCard: React.FC<ThreadCardProps> = ({
+const ChildReplyCard: React.FC<ThreadCardProps> = ({
   id,
   text,
   createdAt,
   author,
-  children,
-  repliesCount,
   likesCount,
-  likes,
   repostsCount,
+  likes,
   reposts,
   bookmarksCount,
   bookmarks,
-  repostedBy,
-  quoteId,
   repostedAt,
-  showSeparator,
+  children,
+  repliesCount,
+  repostedBy,
+  parentPost,
+  quoteId,
 }) => {
   const [showReplies, setShowReplies] = useState(false);
 
@@ -49,17 +48,15 @@ const ParentReplyCard: React.FC<ThreadCardProps> = ({
 
   return (
     <>
-      <article className='w-full pt-4'>
+      <article className='w-full'>
         <div className='px-4 md:px-6 mb-3'>
           {repostedBy && (
             <RepostedBy repostedBy={repostedBy} repostedAt={repostedAt} />
           )}
-
           <div className='flex justify-between'>
             <div className='flex gap-4 w-full'>
               <div className='flex flex-col items-center'>
                 <UserProfile author={author} />
-
                 {sortedChildren.length > 0 && <Line />}
               </div>
               <div className='flex flex-col w-full'>
@@ -77,18 +74,16 @@ const ParentReplyCard: React.FC<ThreadCardProps> = ({
                   />
                 </div>
 
-                <Link
-                  href={`/@${author.username}/post/${id}`}
-                  className='w-full'
-                >
+                <div className='w-full'>
                   <div
                     dangerouslySetInnerHTML={{
                       __html: text.replace(/\\n/g, '\n'),
                     }}
                     className='text-accent-foreground text-[15px] leading-5 mt-1 max-md:max-w-full whitespace-pre-line'
                   />
-                </Link>
+                </div>
                 {quoteId && <ThreadQuoteCard quoteId={quoteId} />}
+
                 <div className='-ml-2 flex items-center gap-3.5 pt-4'>
                   <ThreadActions
                     id={id}
@@ -115,12 +110,10 @@ const ParentReplyCard: React.FC<ThreadCardProps> = ({
             />
           )}
         </div>
-
-        {showSeparator && <Separator />}
       </article>
       {showReplies && sortedChildren.length > 0 && (
         <div className='ml-4'>
-          <ReplyThreadWrapper>
+          <ReplyThreadWrapper isChildThread>
             {sortedChildren.map((reply) => (
               <ChildReplyCard key={reply.id} {...reply} />
             ))}
@@ -131,4 +124,4 @@ const ParentReplyCard: React.FC<ThreadCardProps> = ({
   );
 };
 
-export default ParentReplyCard;
+export default ChildReplyCard;

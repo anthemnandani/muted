@@ -1,4 +1,3 @@
-import { ParentPostProps, PostProps } from '@/lib/types';
 import { getUserEmail } from '@/lib/utils';
 import {
   GET_BOOKMARKS,
@@ -338,154 +337,6 @@ export const postRouter = createTRPCRouter({
       };
     }),
 
-  // getNestedPosts: publicProcedure
-  //   .input(
-  //     z.object({
-  //       id: z.string(),
-  //       limit: z.number().optional().default(10),
-  //       cursor: z
-  //         .object({
-  //           id: z.string(),
-  //           createdAt: z.date(),
-  //         })
-  //         .optional(),
-  //     })
-  //   )
-  //   .query(async ({ input, ctx }) => {
-  //     const { id, limit, cursor } = input;
-
-  //     const post = await ctx.db.post.findUnique({
-  //       where: { id },
-  //       select: {
-  //         id: true,
-  //         createdAt: true,
-  //         text: true,
-  //         images: true,
-  //         parentPostId: true,
-  //         quoteId: true,
-  //         path: true,
-  //         repliesCount: true,
-  //         author: {
-  //           select: {
-  //             ...GET_USER,
-  //           },
-  //         },
-  //         ...GET_LIKES,
-  //         ...GET_BOOKMARKS,
-  //         ...GET_REPOSTS,
-  //         ...GET_COUNT,
-  //       },
-  //     });
-
-  //     if (!post) {
-  //       throw new TRPCError({ code: 'NOT_FOUND', message: 'Post not found' });
-  //     }
-
-  //     const ancestorIds = post.path
-  //       ? post.path.split('/').filter(Boolean).slice(0, -1)
-  //       : [];
-
-  //     let parentPosts: ParentPostProps[] = [];
-  //     if (ancestorIds.length > 0) {
-  //       parentPosts = await ctx.db.post.findMany({
-  //         where: { id: { in: ancestorIds } },
-  //         select: {
-  //           id: true,
-  //           createdAt: true,
-  //           text: true,
-  //           images: true,
-  //           parentPostId: true,
-  //           quoteId: true,
-  //           path: true,
-  //           repliesCount: true,
-  //           author: {
-  //             select: {
-  //               ...GET_USER,
-  //             },
-  //           },
-  //           ...GET_LIKES,
-  //           ...GET_BOOKMARKS,
-  //           ...GET_REPOSTS,
-  //           ...GET_COUNT,
-  //         },
-  //       });
-
-  //       const idOrderMap = new Map();
-  //       ancestorIds.forEach((id, index) => idOrderMap.set(id, index));
-  //       parentPosts.sort((a, b) => idOrderMap.get(a.id) - idOrderMap.get(b.id));
-  //     }
-
-  //     const replies = await ctx.db.post.findMany({
-  //       where: {
-  //         path: {
-  //           startsWith: `${post.path}`,
-  //         },
-  //         id: {
-  //           not: post.id,
-  //         },
-  //       },
-  //       take: limit + 1,
-  //       cursor: cursor ? { id: cursor.id } : undefined,
-  //       select: {
-  //         id: true,
-  //         text: true,
-  //         createdAt: true,
-  //         images: true,
-  //         parentPostId: true,
-  //         quoteId: true,
-  //         path: true,
-  //         repliesCount: true,
-  //         author: {
-  //           select: {
-  //             ...GET_USER,
-  //           },
-  //         },
-  //         ...GET_LIKES,
-  //         ...GET_REPOSTS,
-  //         ...GET_COUNT,
-  //         ...GET_BOOKMARKS,
-  //       },
-  //       orderBy: {
-  //         createdAt: 'asc',
-  //       },
-  //     });
-
-  //     let nextCursor: typeof cursor | undefined;
-
-  //     if (replies.length > limit) {
-  //       const nextItem = replies.pop();
-  //       if (nextItem != null) {
-  //         nextCursor = {
-  //           id: nextItem.id,
-  //           createdAt: nextItem.createdAt,
-  //         };
-  //       }
-  //     }
-
-  //     return {
-  //       postInfo: {
-  //         ...post,
-  //         likesCount: post._count.likes,
-  //         repostsCount: post._count.reposts,
-  //         bookmarksCount: post._count.bookmarks,
-  //       },
-  //       parentPosts: parentPosts.map((parentPost) => ({
-  //         ...parentPost,
-  //         likesCount: parentPost?._count?.likes,
-  //         repostsCount: parentPost?._count?.reposts,
-  //         bookmarksCount: parentPost?._count?.bookmarks,
-  //       })),
-  //       replies: replies.map((reply) => ({
-  //         ...reply,
-  //         likesCount: reply._count.likes,
-  //         repostsCount: reply._count.reposts,
-  //         bookmarksCount: reply._count.bookmarks,
-  //       })),
-  //       nextCursor,
-  //     };
-  //   }),
-  // ... existing imports ...
-
   getNestedPosts: publicProcedure
     .input(
       z.object({
@@ -572,44 +423,41 @@ export const postRouter = createTRPCRouter({
         orderBy: [{ path: 'asc' }, { createdAt: 'asc' }],
       });
 
-      let nextCursor: typeof cursor | undefined;
-
-      if (replies.length > limit) {
-        const nextItem = replies.pop();
-        if (nextItem != null) {
-          nextCursor = {
-            id: nextItem.id,
-            createdAt: nextItem.createdAt,
-          };
-        }
-      }
-
-      const formattedReplies = replies.map((reply) => ({
+      const formatReply = (reply: (typeof replies)[number]) => ({
         ...reply,
         likesCount: reply._count.likes,
         repostsCount: reply._count.reposts,
         bookmarksCount: reply._count.bookmarks,
         children: [],
-      }));
+      });
 
-      const replyTree: typeof formattedReplies = [];
-      const replyMap = new Map<string, (typeof formattedReplies)[0]>();
+      const replyMap = new Map();
+      const topLevelReplies: any = [];
 
-      for (const reply of formattedReplies) {
-        const pathParts = reply.path!.split('/').filter(Boolean);
-        const immediateParentId = pathParts[pathParts.indexOf(post.id) + 1];
+      replies.forEach((reply) => {
+        const formattedReply = formatReply(reply);
+        replyMap.set(reply.id, formattedReply);
 
-        if (immediateParentId === reply.id) {
-          replyTree.push(reply);
-          replyMap.set(reply.id, reply);
+        if (reply.parentPostId === post.id) {
+          topLevelReplies.push(formattedReply);
         } else {
-          const parentReply: any = replyMap.get(immediateParentId);
+          const parentReply = replyMap.get(reply.parentPostId);
           if (parentReply) {
-            parentReply.children.push(reply);
+            parentReply.children.push(formattedReply);
           } else {
-            replyTree.push(reply);
+            topLevelReplies.push(formattedReply);
           }
         }
+      });
+
+      let nextCursor: typeof cursor | undefined;
+      if (topLevelReplies.length > limit) {
+        const nextItem = topLevelReplies[limit];
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
+        };
+        topLevelReplies.length = limit;
       }
 
       return {
@@ -619,7 +467,7 @@ export const postRouter = createTRPCRouter({
           repostsCount: post._count.reposts,
           bookmarksCount: post._count.bookmarks,
         },
-        replies: replyTree,
+        replies: topLevelReplies,
         nextCursor,
       };
     }),

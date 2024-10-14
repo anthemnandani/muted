@@ -56,6 +56,7 @@ export interface ThreadDisplayProps {
   isTopLevel?: boolean;
   isLastChild?: boolean;
   toggleReplies?: () => void;
+  isChild?: boolean;
 }
 
 export interface MenuLinkProps {
@@ -148,6 +149,21 @@ export interface EditProfileProps {
   userLink: string;
   userImage: string;
   userPrivacy: Privacy;
+}
+
+export interface ThreadActionsProps {
+  id: string;
+  likesCount: number;
+  likes: { userId: string }[];
+  text: string;
+  author: Author;
+  createdAt: Date;
+  repliesCount: number;
+  reposts: { userId: string; postId: string }[];
+  repostsCount: number;
+  bookmarks: { userId: string }[];
+  bookmarksCount: number;
+  isParentPost?: boolean;
 }
 
 export enum PostPrivacy {
