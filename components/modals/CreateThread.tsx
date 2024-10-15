@@ -1,7 +1,9 @@
 'use client';
 import usePost from '@/hooks/usePost';
 import useWindow from '@/hooks/useWindow';
+import { useUploadThing } from '@/lib/uploadthing';
 import useDialog from '@/store/dialog';
+import useFileStore from '@/store/fileStore';
 import { api } from '@/trpc/react';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { Check } from 'lucide-react';
@@ -27,6 +29,9 @@ import {
 const CreateThread = () => {
   const { postPrivacy } = usePost();
   const router = useRouter();
+
+  const { selectedFile } = useFileStore();
+  const { startUpload } = useUploadThing('media');
 
   const {
     openDialog,
@@ -83,16 +88,18 @@ const CreateThread = () => {
     });
 
   async function handleMutation() {
+    const imgRes = await startUpload(selectedFile);
     const promise = replyPostInfo
       ? replyToPost({
           text: threadData.text,
           postId: replyPostInfo.id,
-          // imageUrl: imgRes ? imgRes[0]?.url : undefined,
+          imageUrl: imgRes ? imgRes[0]?.fileUrl : undefined,
           privacy: threadData.privacy,
           postAuthor: replyPostInfo.author.id,
         })
       : createThread({
           text: threadData.text,
+          imageUrl: imgRes ? imgRes[0]?.fileUrl : undefined,
           privacy: threadData.privacy,
           quoteId: quoteInfo?.id,
           postAuthor: quoteInfo?.author.id,

@@ -11,6 +11,7 @@ import { Separator } from '../ui/separator';
 import RepostedBy from '../user/RepostedBy';
 import Username from '../user/Username';
 import ThreadQuoteCard from './ThreadQuoteCard';
+import ThreadImageCard from './ThreadImageCard';
 
 const ThreadCard: React.FC<ThreadCardProps> = ({
   id,
@@ -19,6 +20,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
   author,
   repostedBy,
   quoteId,
+  images,
   repostedAt,
   likesCount,
   parentPost,
@@ -83,6 +85,9 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
                   className='text-accent-foreground text-[15px] leading-5 mt-[3px] max-md:max-w-full whitespace-pre-line'
                 />
               </Link>
+              {images && images.length > 0 && (
+                <ThreadImageCard image={images[0]} />
+              )}
               {quoteId && <ThreadQuoteCard quoteId={quoteId} />}
 
               <div className='-ml-2 flex-between max-w-[280px] md:max-w-[400px] pt-4'>
