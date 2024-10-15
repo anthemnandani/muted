@@ -7,9 +7,9 @@ import { cn, formatTimeAgo, getFullName } from '@/lib/utils';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
 import React from 'react';
+import ThreadQuoteCard from '../cards/ThreadQuoteCard';
 import UserAvatar from '../shared/UserAvatar';
 import Username from '../user/Username';
-import ThreadQuoteCard from '../cards/ThreadQuoteCard';
 
 const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
   isOpen,
@@ -110,7 +110,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
               value={inputValue}
               onChange={handleResizeTextareaChange}
               placeholder={placeholder}
-              maxLength={200}
+              maxLength={5000}
             />
           </>
         )}
