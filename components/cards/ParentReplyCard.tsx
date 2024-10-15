@@ -13,6 +13,7 @@ import RepostedBy from '../user/RepostedBy';
 import Username from '../user/Username';
 import ChildReplyCard from './ChildReplyCard';
 import ThreadQuoteCard from './ThreadQuoteCard';
+import ThreadImageCard from './ThreadImageCard';
 
 const ParentReplyCard: React.FC<ThreadCardProps> = ({
   id,
@@ -23,6 +24,7 @@ const ParentReplyCard: React.FC<ThreadCardProps> = ({
   repliesCount,
   likesCount,
   likes,
+  images,
   repostsCount,
   reposts,
   bookmarksCount,
@@ -85,6 +87,9 @@ const ParentReplyCard: React.FC<ThreadCardProps> = ({
                   />
                 </div>
                 {quoteId && <ThreadQuoteCard quoteId={quoteId} />}
+                {images && images.length > 0 && (
+                  <ThreadImageCard image={images[0]} />
+                )}
                 <div className='-ml-2 flex items-center gap-3.5 pt-4'>
                   <ThreadActions
                     id={id}

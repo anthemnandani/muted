@@ -9,6 +9,7 @@ import UserProfile from '../modals/UserProfile';
 import ThreadActions from '../shared/ThreadActions';
 import Username from '../user/Username';
 import ThreadQuoteCard from './ThreadQuoteCard';
+import ThreadImageCard from './ThreadImageCard';
 
 const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
   const {
@@ -18,6 +19,7 @@ const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
     text,
     likes,
     likesCount,
+    images,
     bookmarks,
     bookmarksCount,
     repliesCount,
@@ -54,6 +56,9 @@ const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
               />
             </Link>
             {quoteId && <ThreadQuoteCard quoteId={quoteId} />}
+            {images && images.length > 0 && (
+              <ThreadImageCard image={images[0]} />
+            )}
             <div className='mt-1 flex items-center space-x-2 py-2 text-[15px] text-gray-3'>
               <p>{time}</p>
               <div className='size-1 rounded-full bg-gray-3'></div>
