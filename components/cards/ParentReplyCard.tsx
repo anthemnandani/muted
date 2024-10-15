@@ -1,7 +1,6 @@
 'use client';
 import { ThreadCardProps } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils';
-import Link from 'next/link';
 import React, { useMemo, useState } from 'react';
 import ReplyToggleButton from '../buttons/ReplyToggleButton';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
@@ -31,7 +30,6 @@ const ParentReplyCard: React.FC<ThreadCardProps> = ({
   repostedBy,
   quoteId,
   repostedAt,
-  showSeparator,
 }) => {
   const [showReplies, setShowReplies] = useState(false);
 
@@ -49,6 +47,7 @@ const ParentReplyCard: React.FC<ThreadCardProps> = ({
 
   return (
     <>
+      <Separator />
       <article className='w-full pt-4'>
         <div className='px-4 md:px-6 mb-3'>
           {repostedBy && (
@@ -77,17 +76,14 @@ const ParentReplyCard: React.FC<ThreadCardProps> = ({
                   />
                 </div>
 
-                <Link
-                  href={`/@${author.username}/post/${id}`}
-                  className='w-full'
-                >
+                <div className='w-full'>
                   <div
                     dangerouslySetInnerHTML={{
                       __html: text.replace(/\\n/g, '\n'),
                     }}
                     className='text-accent-foreground text-[15px] leading-5 mt-1 max-md:max-w-full whitespace-pre-line'
                   />
-                </Link>
+                </div>
                 {quoteId && <ThreadQuoteCard quoteId={quoteId} />}
                 <div className='-ml-2 flex items-center gap-3.5 pt-4'>
                   <ThreadActions
@@ -115,11 +111,13 @@ const ParentReplyCard: React.FC<ThreadCardProps> = ({
             />
           )}
         </div>
-
-        {showSeparator && <Separator />}
       </article>
       {showReplies && sortedChildren.length > 0 && (
         <div className='ml-4'>
+          <div className='pb-4'>
+            <Separator />
+          </div>
+
           <ReplyThreadWrapper>
             {sortedChildren.map((reply) => (
               <ChildReplyCard key={reply.id} {...reply} />

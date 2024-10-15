@@ -57,12 +57,8 @@ const PostInfoClient = ({ id }: { id: string }) => {
             </div>
           }
         >
-          {allReplies.map((reply, index) => (
-            <ParentReplyCard
-              key={reply.id}
-              {...reply}
-              showSeparator={index !== allReplies.length - 1}
-            />
+          {allReplies.map((reply) => (
+            <ParentReplyCard key={reply.id} {...reply} />
           ))}
         </InfiniteScroll>
       </Wrapper>

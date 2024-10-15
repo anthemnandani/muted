@@ -5,12 +5,12 @@ import Link from 'next/link';
 import React from 'react';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
 import UserProfile from '../modals/UserProfile';
+import Line from '../shared/Line';
 import ThreadActions from '../shared/ThreadActions';
 import { Separator } from '../ui/separator';
 import RepostedBy from '../user/RepostedBy';
 import Username from '../user/Username';
 import ThreadQuoteCard from './ThreadQuoteCard';
-import Line from '../shared/Line';
 
 const ThreadCard: React.FC<ThreadCardProps> = ({
   id,

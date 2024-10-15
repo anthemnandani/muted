@@ -2,7 +2,6 @@
 
 import type { ThreadCardProps } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils';
-import Link from 'next/link';
 import React, { useMemo, useState } from 'react';
 import ReplyToggleButton from '../buttons/ReplyToggleButton';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
@@ -10,6 +9,7 @@ import UserProfile from '../modals/UserProfile';
 import Line from '../shared/Line';
 import ReplyThreadWrapper from '../shared/ReplyThreadWrapper';
 import ThreadActions from '../shared/ThreadActions';
+import { Separator } from '../ui/separator';
 import RepostedBy from '../user/RepostedBy';
 import Username from '../user/Username';
 import ThreadQuoteCard from './ThreadQuoteCard';
@@ -29,7 +29,6 @@ const ChildReplyCard: React.FC<ThreadCardProps> = ({
   children,
   repliesCount,
   repostedBy,
-  parentPost,
   quoteId,
 }) => {
   const [showReplies, setShowReplies] = useState(false);
@@ -113,7 +112,10 @@ const ChildReplyCard: React.FC<ThreadCardProps> = ({
       </article>
       {showReplies && sortedChildren.length > 0 && (
         <div className='ml-4'>
-          <ReplyThreadWrapper isChildThread>
+          <div className='pb-4'>
+            <Separator />
+          </div>
+          <ReplyThreadWrapper>
             {sortedChildren.map((reply) => (
               <ChildReplyCard key={reply.id} {...reply} />
             ))}
