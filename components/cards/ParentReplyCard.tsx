@@ -113,7 +113,7 @@ const ParentReplyCard: React.FC<ThreadCardProps> = ({
         </div>
       </article>
       {showReplies && sortedChildren.length > 0 && (
-        <div className='ml-4'>
+        <div className='ml-12'>
           <div className='pb-4'>
             <Separator />
           </div>
