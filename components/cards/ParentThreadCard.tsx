@@ -7,7 +7,6 @@ import React from 'react';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
 import UserProfile from '../modals/UserProfile';
 import ThreadActions from '../shared/ThreadActions';
-import { Separator } from '../ui/separator';
 import Username from '../user/Username';
 import ThreadQuoteCard from './ThreadQuoteCard';
 
@@ -104,7 +103,6 @@ const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
             )}
           </div>
         </div>
-        {repliesCount > 0 && <Separator />}
       </article>
     </div>
   );
