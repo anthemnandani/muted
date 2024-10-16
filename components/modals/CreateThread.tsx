@@ -30,7 +30,7 @@ const CreateThread = () => {
   const { postPrivacy } = usePost();
   const router = useRouter();
 
-  const { selectedFile } = useFileStore();
+  const { selectedFile, setSelectedFile } = useFileStore();
   const { startUpload } = useUploadThing('media');
 
   const {
@@ -39,6 +39,7 @@ const CreateThread = () => {
     replyPostInfo,
     setReplyPostInfo,
     quoteInfo,
+    setQuoteInfo,
   } = useDialog();
 
   const [threadData, setThreadData] = React.useState({
@@ -155,7 +156,9 @@ const CreateThread = () => {
         privacy: postPrivacy,
         text: '',
       });
+      setSelectedFile([]);
       setReplyPostInfo(null);
+      setQuoteInfo(null);
     }
   }, [openDialog]);
   const { isMobile } = useWindow();
