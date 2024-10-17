@@ -944,20 +944,14 @@ export const postRouter = createTRPCRouter({
       const { userId } = ctx;
       const followingPosts = await ctx.db.post.findMany({
         where: {
-          OR: [
-            {
-              author: {
-                followers: {
-                  some: {
-                    id: userId,
-                  },
-                },
+          author: {
+            followers: {
+              some: {
+                id: userId,
               },
             },
-            {
-              authorId: userId,
-            },
-          ],
+          },
+          parentPostId: null,
         },
         take: limit + 1,
         cursor: cursor ? { createdAt_id: cursor } : undefined,

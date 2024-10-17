@@ -37,16 +37,26 @@ const FollowingClient = () => {
         </HeaderWrapper>
       )}
       <Wrapper>
-        <div className='w-full md:flex hidden'>
-          <CreateWithInput onClick={() => setOpenDialog(true)} />
-        </div>
-        <section className='flex flex-col gap-4 justify-start w-full'>
-          <ThreadsList
-            posts={allPosts}
-            fetchNextPage={fetchNextPage}
-            hasNextPage={hasNextPage}
-          />
-        </section>
+        {allPosts?.length === 0 ? (
+          <div className='flex items-center justify-center w-full h-screen'>
+            <p className='text-gray-3'>
+              Follow more profiles to get your feed going.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className='w-full md:flex hidden'>
+              <CreateWithInput onClick={() => setOpenDialog(true)} />
+            </div>
+            <section className='flex flex-col gap-4 justify-start w-full'>
+              <ThreadsList
+                posts={allPosts}
+                fetchNextPage={fetchNextPage}
+                hasNextPage={hasNextPage}
+              />
+            </section>
+          </>
+        )}
       </Wrapper>
     </>
   );
