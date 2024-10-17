@@ -1,6 +1,7 @@
 'use client';
-import { Bookmark, Check } from 'lucide-react';
-import { useState } from 'react';
+import { ThreadFilter } from '@/lib/types';
+import { Check } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Icons } from '../icons';
 import MenuItem from '../shared/MenuItem';
 import {
@@ -8,10 +9,13 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { ThreadFilter } from '@/lib/types';
 
-const ThreadFilterMenu = () => {
-  const [selectedFilter, setSelectedFilter] = useState('For you');
+const ThreadFilterMenu = ({
+  selectedFilter = ThreadFilter.FOR_YOU,
+}: {
+  selectedFilter?: ThreadFilter;
+}) => {
+  const router = useRouter();
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
@@ -29,28 +33,28 @@ const ThreadFilterMenu = () => {
           label={ThreadFilter.FOR_YOU}
           className='flex-between focus:rounded-lg !py-4'
           isActionMenuItem
-          onClick={() => setSelectedFilter(ThreadFilter.FOR_YOU)}
+          onClick={() => router.push('/')}
         />
         <MenuItem
           icon={selectedFilter === ThreadFilter.FOLLOWING ? Check : null}
           label={ThreadFilter.FOLLOWING}
           className='flex-between focus:rounded-lg !py-4'
           isActionMenuItem
-          onClick={() => setSelectedFilter(ThreadFilter.FOLLOWING)}
+          onClick={() => router.push('/following')}
         />
         <MenuItem
           icon={selectedFilter === ThreadFilter.LIKED ? Check : null}
           label={ThreadFilter.LIKED}
           className='flex-between focus:rounded-lg !py-4'
           isActionMenuItem
-          onClick={() => setSelectedFilter(ThreadFilter.LIKED)}
+          onClick={() => router.push('/liked')}
         />
         <MenuItem
           icon={selectedFilter === ThreadFilter.SAVED ? Check : null}
           label={ThreadFilter.SAVED}
           className='flex-between focus:rounded-lg !py-4'
           isActionMenuItem
-          onClick={() => setSelectedFilter(ThreadFilter.SAVED)}
+          onClick={() => router.push('/saved')}
         />
       </DropdownMenuContent>
     </DropdownMenu>

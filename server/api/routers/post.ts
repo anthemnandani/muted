@@ -766,4 +766,244 @@ export const postRouter = createTRPCRouter({
 
       return { success: true };
     }),
+
+  getSavedPosts: privateProcedure
+    .input(
+      z.object({
+        limit: z.number().optional(),
+        cursor: z
+          .object({
+            postId: z.string(),
+            userId: z.string(),
+          })
+          .optional(),
+      })
+    )
+    .query(async ({ input: { limit = 20, cursor }, ctx }) => {
+      const { userId } = ctx;
+      const savedPosts = await ctx.db.bookmark.findMany({
+        where: {
+          userId,
+        },
+        take: limit + 1,
+        cursor: cursor
+          ? { postId_userId: { postId: cursor.postId, userId } }
+          : undefined,
+        select: {
+          post: {
+            select: {
+              id: true,
+              text: true,
+              createdAt: true,
+              images: true,
+              parentPostId: true,
+              parentPost: {
+                select: {
+                  id: true,
+                  author: {
+                    select: {
+                      ...GET_USER,
+                    },
+                  },
+                },
+              },
+              quoteId: true,
+              path: true,
+              repliesCount: true,
+              author: {
+                select: {
+                  ...GET_USER,
+                },
+              },
+              ...GET_LIKES,
+              ...GET_REPOSTS,
+              ...GET_COUNT,
+              ...GET_BOOKMARKS,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      let nextCursor: typeof cursor | undefined;
+      if (savedPosts.length > limit) {
+        const nextItem = savedPosts[limit];
+        nextCursor = {
+          postId: nextItem.post.id,
+          userId,
+        };
+        savedPosts.length = limit;
+      }
+
+      return {
+        posts: savedPosts.map((savedPost) => ({
+          ...savedPost.post,
+          likesCount: savedPost.post._count.likes,
+          repostsCount: savedPost.post._count.reposts,
+          bookmarksCount: savedPost.post._count.bookmarks,
+        })),
+        nextCursor,
+      };
+    }),
+
+  getLikedPosts: privateProcedure
+    .input(
+      z.object({
+        limit: z.number().optional(),
+        cursor: z
+          .object({
+            postId: z.string(),
+            userId: z.string(),
+          })
+          .optional(),
+      })
+    )
+    .query(async ({ input: { limit = 20, cursor }, ctx }) => {
+      const { userId } = ctx;
+      const likedPosts = await ctx.db.like.findMany({
+        where: {
+          userId,
+        },
+        take: limit + 1,
+        cursor: cursor
+          ? { postId_userId: { postId: cursor.postId, userId } }
+          : undefined,
+        select: {
+          post: {
+            select: {
+              id: true,
+              text: true,
+              createdAt: true,
+              images: true,
+              parentPostId: true,
+              parentPost: {
+                select: {
+                  id: true,
+                  author: {
+                    select: {
+                      ...GET_USER,
+                    },
+                  },
+                },
+              },
+              quoteId: true,
+              path: true,
+              repliesCount: true,
+              author: {
+                select: {
+                  ...GET_USER,
+                },
+              },
+              ...GET_LIKES,
+              ...GET_REPOSTS,
+              ...GET_COUNT,
+              ...GET_BOOKMARKS,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      let nextCursor: typeof cursor | undefined;
+      if (likedPosts.length > limit) {
+        const nextItem = likedPosts[limit];
+        nextCursor = {
+          postId: nextItem.post.id,
+          userId,
+        };
+        likedPosts.length = limit;
+      }
+      return {
+        posts: likedPosts.map((likedPost) => ({
+          ...likedPost.post,
+          likesCount: likedPost.post._count.likes,
+          repostsCount: likedPost.post._count.reposts,
+          bookmarksCount: likedPost.post._count.bookmarks,
+        })),
+        nextCursor,
+      };
+    }),
+
+  getFollowingPosts: privateProcedure
+    .input(
+      z.object({
+        limit: z.number().optional(),
+        cursor: z
+          .object({
+            id: z.string(),
+            createdAt: z.date(),
+          })
+          .optional(),
+      })
+    )
+    .query(async ({ input: { limit = 20, cursor }, ctx }) => {
+      const { userId } = ctx;
+      const followingPosts = await ctx.db.post.findMany({
+        where: {
+          author: {
+            followers: {
+              some: {
+                id: userId,
+              },
+            },
+          },
+        },
+        take: limit + 1,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        select: {
+          id: true,
+          text: true,
+          createdAt: true,
+          images: true,
+          parentPostId: true,
+          parentPost: {
+            select: {
+              id: true,
+              author: {
+                select: {
+                  ...GET_USER,
+                },
+              },
+            },
+          },
+          quoteId: true,
+          path: true,
+          repliesCount: true,
+          author: {
+            select: {
+              ...GET_USER,
+            },
+          },
+          ...GET_LIKES,
+          ...GET_REPOSTS,
+          ...GET_COUNT,
+          ...GET_BOOKMARKS,
+        },
+      });
+
+      let nextCursor: typeof cursor | undefined;
+      if (followingPosts.length > limit) {
+        const nextItem = followingPosts[limit - 1];
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
+        };
+        followingPosts.pop();
+      }
+
+      return {
+        posts: followingPosts.map((post) => ({
+          ...post,
+          likesCount: post._count.likes,
+          repostsCount: post._count.reposts,
+          bookmarksCount: post._count.bookmarks,
+        })),
+        nextCursor,
+      };
+    }),
 });
