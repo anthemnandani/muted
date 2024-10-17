@@ -102,12 +102,6 @@ export const userRouter = createTRPCRouter({
           ...GET_BOOKMARKS,
           ...GET_COUNT,
           ...GET_REPOSTS,
-          _count: {
-            select: {
-              likes: true,
-              bookmarks: true,
-            },
-          },
         },
       });
 
@@ -263,13 +257,6 @@ export const userRouter = createTRPCRouter({
               ...GET_BOOKMARKS,
               ...GET_COUNT,
               ...GET_REPOSTS,
-              _count: {
-                select: {
-                  likes: true,
-                  bookmarks: true,
-                  reposts: true,
-                },
-              },
             },
           },
           quoteId: true,
@@ -284,13 +271,6 @@ export const userRouter = createTRPCRouter({
           ...GET_BOOKMARKS,
           ...GET_COUNT,
           ...GET_REPOSTS,
-          _count: {
-            select: {
-              likes: true,
-              bookmarks: true,
-              reposts: true,
-            },
-          },
         },
       });
 
@@ -400,13 +380,6 @@ export const userRouter = createTRPCRouter({
               ...GET_COUNT,
               ...GET_REPOSTS,
               ...GET_BOOKMARKS,
-              _count: {
-                select: {
-                  likes: true,
-                  reposts: true,
-                  bookmarks: true,
-                },
-              },
               reposts: {
                 select: {
                   userId: true,
