@@ -9,14 +9,14 @@ interface ThreadImageCardProps {
 
 const ThreadImageCard: React.FC<ThreadImageCardProps> = ({ image }) => {
   return (
-    <div className='relative overflow-hidden w-fit mt-2.5 cursor-pointer'>
+    <div className='relative w-full overflow-hidden mt-2.5'>
       <Image
+        alt='Post'
         loading='lazy'
+        width={650}
+        height={600}
+        className='relative max-h-128 rounded object-contain object-center hover:cursor-pointer'
         src={image ?? ''}
-        width={630}
-        height={630}
-        alt='Image'
-        className='object-contain max-h-[430px] w-max'
       />
     </div>
   );
