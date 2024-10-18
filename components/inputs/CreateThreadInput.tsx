@@ -132,7 +132,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
             <div className='flex-grow resize-none overflow-hidden outline-none text-[15px] text-accent-foreground break-words placeholder:text-[#777777] w-full tracking-normal whitespace-pre-line'>
               <div
                 dangerouslySetInnerHTML={{
-                  __html: replyThreadInfo.text.replace(/\\n/g, '\n'),
+                  __html: replyThreadInfo.text?.replace(/\\n/g, '\n') || '',
                 }}
               />
             </div>

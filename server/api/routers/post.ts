@@ -17,9 +17,7 @@ export const postRouter = createTRPCRouter({
   createPost: privateProcedure
     .input(
       z.object({
-        text: z.string().min(3, {
-          message: 'Text must be at least 3 character',
-        }),
+        text: z.string().optional(),
         imageUrl: z.string().optional(),
         privacy: z.nativeEnum(PostPrivacy).default('ANYONE'),
         quoteId: z.string().optional(),
@@ -44,7 +42,7 @@ export const postRouter = createTRPCRouter({
       }
 
       const filter = new Filter();
-      const filteredText = filter.clean(input.text);
+      const filteredText = filter.clean(input.text || '');
 
       const transactionResult = await ctx.db.$transaction(async (prisma) => {
         const postId = createId();
@@ -72,7 +70,7 @@ export const postRouter = createTRPCRouter({
               senderUserId: userId,
               receiverUserId: input.postAuthor,
               postId: newpost.id,
-              message: input.text,
+              message: filteredText,
             },
           });
         }
@@ -507,7 +505,7 @@ export const postRouter = createTRPCRouter({
             data: {
               type: 'REPOST',
               postId: data.postId,
-              message: createdRepost.post.text,
+              message: createdRepost.post.text || '',
               senderUserId: userId,
               receiverUserId: createdRepost.post.authorId,
             },
@@ -600,7 +598,7 @@ export const postRouter = createTRPCRouter({
               senderUserId: userId,
               receiverUserId: createdBookmark.post.author.id,
               postId: data.postId,
-              message: createdBookmark.post.text,
+              message: createdBookmark.post.text || '',
             },
           });
 

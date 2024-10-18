@@ -8,8 +8,8 @@ import ThreadActionMenu from '../menus/ThreadActionMenu';
 import UserProfile from '../modals/UserProfile';
 import ThreadActions from '../shared/ThreadActions';
 import Username from '../user/Username';
-import ThreadQuoteCard from './ThreadQuoteCard';
 import ThreadImageCard from './ThreadImageCard';
+import ThreadQuoteCard from './ThreadQuoteCard';
 
 const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
   const {
@@ -48,17 +48,19 @@ const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
           </div>
           <div className='flex flex-col pt-2.5'>
             <Link href={`/@${author.username}/post/${id}`} className='w-full'>
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: text.replace(/\\n/g, '\n'),
-                }}
-                className='text-accent-foreground text-[15px] leading-5 mt-1 max-md:max-w-full whitespace-pre-line'
-              />
+              {text && (
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: text.replace(/\\n/g, '\n'),
+                  }}
+                  className='text-accent-foreground text-[15px] leading-5 mt-1 max-md:max-w-full whitespace-pre-line'
+                />
+              )}
+              {quoteId && <ThreadQuoteCard quoteId={quoteId} />}
+              {images && images.length > 0 && (
+                <ThreadImageCard image={images[0]} />
+              )}
             </Link>
-            {quoteId && <ThreadQuoteCard quoteId={quoteId} />}
-            {images && images.length > 0 && (
-              <ThreadImageCard image={images[0]} />
-            )}
             <div className='mt-1 flex items-center space-x-2 py-2 text-[15px] text-gray-3'>
               <p>{time}</p>
               <div className='size-1 rounded-full bg-gray-3'></div>
@@ -90,7 +92,7 @@ const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
                 id={id}
                 likesCount={likesCount}
                 likes={likes}
-                text={text}
+                text={text || ''}
                 author={author}
                 createdAt={createdAt}
                 repliesCount={repliesCount}

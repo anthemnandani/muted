@@ -79,12 +79,14 @@ const ParentReplyCard: React.FC<ThreadCardProps> = ({
                 </div>
 
                 <div className='w-full'>
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: text.replace(/\\n/g, '\n'),
-                    }}
-                    className='text-accent-foreground text-[15px] leading-5 mt-1 max-md:max-w-full whitespace-pre-line'
-                  />
+                  {text && (
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: text.replace(/\\n/g, '\n'),
+                      }}
+                      className='text-accent-foreground text-[15px] leading-5 mt-1 max-md:max-w-full whitespace-pre-line'
+                    />
+                  )}
                 </div>
                 {quoteId && <ThreadQuoteCard quoteId={quoteId} />}
                 {images && images.length > 0 && (
