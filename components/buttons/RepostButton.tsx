@@ -15,7 +15,7 @@ import QuoteButton from './QuoteButton';
 
 interface RepostButtonProps {
   id: string;
-  text: string;
+  text: string | null;
   author: AuthorInfoProps;
   createdAt?: Date;
   reposts: {
