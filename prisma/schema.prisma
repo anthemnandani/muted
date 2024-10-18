@@ -44,7 +44,7 @@ model Post {
   createdAt    DateTime       @default(now())
   author       User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId     String
-  text         String
+  text         String?
   images       String[]
   likes        Like[]
   parentPostId String?

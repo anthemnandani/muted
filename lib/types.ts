@@ -93,7 +93,7 @@ export type Author = {
 export type ParentPostProps = {
   id: string;
   createdAt: Date;
-  text: string;
+  text: string | null;
   images: string[];
   likes: {
     userId: string;
@@ -155,7 +155,7 @@ export interface ThreadActionsProps {
   id: string;
   likesCount: number;
   likes: { userId: string }[];
-  text: string;
+  text: string | null;
   author: Author;
   createdAt: Date;
   repliesCount: number;

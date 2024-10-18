@@ -10,8 +10,8 @@ import ThreadActions from '../shared/ThreadActions';
 import { Separator } from '../ui/separator';
 import RepostedBy from '../user/RepostedBy';
 import Username from '../user/Username';
-import ThreadQuoteCard from './ThreadQuoteCard';
 import ThreadImageCard from './ThreadImageCard';
+import ThreadQuoteCard from './ThreadQuoteCard';
 
 const ThreadCard: React.FC<ThreadCardProps> = ({
   id,
@@ -78,18 +78,20 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
                 </div>
               )}
               <Link href={`/@${author.username}/post/${id}`} className='w-full'>
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: text.replace(/\\n/g, '\n'),
-                  }}
-                  className='text-accent-foreground text-[15px] leading-5 mt-[3px] max-md:max-w-full whitespace-pre-line'
-                />
-              </Link>
-              {images && images.length > 0 && (
-                <ThreadImageCard image={images[0]} />
-              )}
-              {quoteId && <ThreadQuoteCard quoteId={quoteId} />}
+                {text && (
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: text.replace(/\\n/g, '\n'),
+                    }}
+                    className='text-accent-foreground text-[15px] leading-5 mt-[3px] max-md:max-w-full whitespace-pre-line'
+                  />
+                )}
 
+                {images && images.length > 0 && (
+                  <ThreadImageCard image={images[0]} />
+                )}
+                {quoteId && <ThreadQuoteCard quoteId={quoteId} />}
+              </Link>
               <div className='-ml-2 flex-between max-w-[280px] md:max-w-[400px] pt-4'>
                 <ThreadActions
                   id={id}

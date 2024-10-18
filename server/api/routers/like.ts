@@ -40,7 +40,7 @@ export const likeRouter = createTRPCRouter({
               senderUserId: userId,
               receiverUserId: createdLike.post.author.id,
               postId: data.postId,
-              message: createdLike.post.text,
+              message: createdLike.post.text ?? '',
             },
           });
 
