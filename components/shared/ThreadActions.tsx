@@ -36,7 +36,7 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
         replyThreadInfo={{
           id,
           text,
-          images: [],
+          media: null,
           author,
           createdAt,
         }}

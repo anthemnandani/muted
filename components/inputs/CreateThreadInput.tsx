@@ -30,11 +30,14 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
   );
   const { setSelectedFile } = useFileStore();
 
-  const maxSize = 4 * 1024 * 1024;
+  const maxSize = 16 * 1024 * 1024;
 
   const { data } = api.user.userInfo.useQuery({ username: user?.username! });
 
   const [inputValue, setInputValue] = React.useState('');
+  const [previewType, setPreviewType] = React.useState<
+    'image' | 'video' | null
+  >(null);
   const [previewURL, setPreviewURL] = React.useState<string | undefined>(
     undefined
   );
@@ -52,12 +55,18 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
       const acceptedFile = acceptedFiles[0];
 
       if (!acceptedFile) {
-        alert('Selected image is too large!');
+        alert('Selected file is too large!');
         return;
       }
 
       const previewURL = URL.createObjectURL(acceptedFile);
       setPreviewURL(previewURL);
+
+      if (acceptedFile.type.startsWith('image/')) {
+        setPreviewType('image');
+      } else if (acceptedFile.type.startsWith('video/')) {
+        setPreviewType('video');
+      }
 
       setSelectedFile(acceptedFiles);
     },
@@ -66,6 +75,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
 
   const accept: Accept = {
     'image/*': [],
+    'video/*': [],
   };
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -136,9 +146,10 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
                 }}
               />
             </div>
-            {replyThreadInfo?.images && replyThreadInfo?.images?.length > 0 && (
-              <ThreadImageCard image={replyThreadInfo.images[0]} />
-            )}
+            {replyThreadInfo?.media &&
+              replyThreadInfo?.media?.fileType === 'image' && (
+                <ThreadImageCard image={replyThreadInfo.media.fileUrl} />
+              )}
           </>
         ) : (
           <>
@@ -151,19 +162,32 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
             />
             {previewURL && (
               <div className='relative overflow-hidden rounded-xl border border-border w-fit'>
-                <img
-                  src={previewURL}
-                  alt=''
-                  className='object-contain max-h-[520px] max-w-full rounded-xl'
-                />
+                {previewType === 'image' && (
+                  <img
+                    src={previewURL}
+                    alt=''
+                    className='object-contain max-h-[520px] max-w-full rounded-md'
+                  />
+                )}
+                {previewType === 'video' && (
+                  <video
+                    src={previewURL}
+                    className='object-contain max-h-[520px] max-w-full rounded-md'
+                    loop
+                    muted
+                    autoPlay
+                    playsInline
+                  />
+                )}
 
                 <Button
                   onClick={() => {
                     setSelectedFile([]);
                     setPreviewURL('');
+                    setPreviewType(null);
                   }}
                   variant='ghost'
-                  className='size-6 p-1 absolute top-2 right-2 z-50 rounded-full transform active:scale-75 transition-transform cursor-pointer bg-background '
+                  className='size-[25px] p-1 absolute top-2 right-2 z-50 rounded-full transform active:scale-75 transition-transform cursor-pointer bg-background '
                 >
                   <X />
                 </Button>

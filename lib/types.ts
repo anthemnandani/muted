@@ -21,9 +21,14 @@ export type PostProps = ArrayElement<
   isNested?: boolean;
 };
 
+export type PostMedia = {
+  fileType?: string;
+  fileUrl?: string;
+} | null;
+
 export type ParentPostInfo = Pick<
   PostProps,
-  'id' | 'text' | 'images' | 'author' | 'createdAt'
+  'id' | 'text' | 'media' | 'author' | 'createdAt'
 >;
 
 export type UserProfileInfoProps =
@@ -94,7 +99,7 @@ export type ParentPostProps = {
   id: string;
   createdAt: Date;
   text: string | null;
-  images: string[];
+  media: PostMedia;
   likes: {
     userId: string;
   }[];

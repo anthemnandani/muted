@@ -1,6 +1,6 @@
 'use client';
 import { ThreadCardProps } from '@/lib/types';
-import { cn, formatTimeAgo } from '@/lib/utils';
+import { cn, formatTimeAgo, isImageOrVideo } from '@/lib/utils';
 import Link from 'next/link';
 import React from 'react';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
@@ -12,6 +12,7 @@ import RepostedBy from '../user/RepostedBy';
 import Username from '../user/Username';
 import ThreadImageCard from './ThreadImageCard';
 import ThreadQuoteCard from './ThreadQuoteCard';
+import ThreadVideoCard from './ThreadVideoCard';
 
 const ThreadCard: React.FC<ThreadCardProps> = ({
   id,
@@ -20,7 +21,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
   author,
   repostedBy,
   quoteId,
-  images,
+  media,
   repostedAt,
   likesCount,
   parentPost,
@@ -87,8 +88,15 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
                   />
                 )}
 
-                {images && images.length > 0 && (
-                  <ThreadImageCard image={images[0]} />
+                {media && media.fileType && (
+                  <>
+                    {isImageOrVideo(media.fileType) === 'image' && (
+                      <ThreadImageCard image={media.fileUrl} />
+                    )}
+                    {isImageOrVideo(media.fileType) === 'video' && (
+                      <ThreadVideoCard video={media.fileUrl} />
+                    )}
+                  </>
                 )}
                 {quoteId && <ThreadQuoteCard quoteId={quoteId} />}
               </Link>

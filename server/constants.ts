@@ -56,7 +56,7 @@ export const GET_REPLIES = {
       id: true,
       text: true,
       createdAt: true,
-      images: true,
+      media: true,
       parentPostId: true,
       quoteId: true,
       path: true,
