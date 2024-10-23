@@ -30,7 +30,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
   );
   const { setSelectedFile } = useFileStore();
 
-  const maxSize = 16 * 1024 * 1024;
+  const maxSize = 512 * 1024 * 1024;
 
   const { data } = api.user.userInfo.useQuery({ username: user?.username! });
 
