@@ -1,7 +1,7 @@
 'use client';
 
 import type { ThreadCardProps } from '@/lib/types';
-import { formatTimeAgo } from '@/lib/utils';
+import { formatTimeAgo, isImageOrVideo } from '@/lib/utils';
 import React, { useMemo, useState } from 'react';
 import ReplyToggleButton from '../buttons/ReplyToggleButton';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
@@ -14,6 +14,7 @@ import RepostedBy from '../user/RepostedBy';
 import Username from '../user/Username';
 import ThreadQuoteCard from './ThreadQuoteCard';
 import ThreadImageCard from './ThreadImageCard';
+import ThreadVideoCard from './ThreadVideoCard';
 
 const ChildReplyCard: React.FC<ThreadCardProps> = ({
   id,
@@ -26,7 +27,7 @@ const ChildReplyCard: React.FC<ThreadCardProps> = ({
   reposts,
   bookmarksCount,
   bookmarks,
-  images,
+  media,
   repostedAt,
   children,
   repliesCount,
@@ -86,8 +87,15 @@ const ChildReplyCard: React.FC<ThreadCardProps> = ({
                   )}
                 </div>
                 {quoteId && <ThreadQuoteCard quoteId={quoteId} />}
-                {images && images.length > 0 && (
-                  <ThreadImageCard image={images[0]} />
+                {media && media.fileType && (
+                  <>
+                    {isImageOrVideo(media.fileType) === 'image' && (
+                      <ThreadImageCard image={media.fileUrl} />
+                    )}
+                    {isImageOrVideo(media.fileType) === 'video' && (
+                      <ThreadVideoCard video={media.fileUrl} />
+                    )}
+                  </>
                 )}
 
                 <div className='-ml-2 flex items-center gap-3.5 pt-4'>

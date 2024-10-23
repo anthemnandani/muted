@@ -45,7 +45,7 @@ model Post {
   author       User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId     String
   text         String?
-  images       String[]
+  media        Json?          @default("{}")
   likes        Like[]
   parentPostId String?
   parentPost   Post?          @relation("rootPost", fields: [parentPostId], references: [id], onDelete: Cascade)

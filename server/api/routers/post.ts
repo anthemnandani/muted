@@ -12,13 +12,19 @@ import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure, publicProcedure } from '../trpc';
+import { PostMedia } from '@/lib/types';
 
 export const postRouter = createTRPCRouter({
   createPost: privateProcedure
     .input(
       z.object({
         text: z.string().optional(),
-        imageUrl: z.string().optional(),
+        media: z
+          .object({
+            fileType: z.string(),
+            fileUrl: z.string(),
+          })
+          .optional(),
         privacy: z.nativeEnum(PostPrivacy).default('ANYONE'),
         quoteId: z.string().optional(),
         postAuthor: z.string().optional(),
@@ -52,7 +58,7 @@ export const postRouter = createTRPCRouter({
             id: postId,
             text: filteredText,
             authorId: userId,
-            images: input.imageUrl ? [input.imageUrl] : [],
+            media: input.media,
             privacy: input.privacy,
             quoteId: input.quoteId,
             path,
@@ -123,7 +129,7 @@ export const postRouter = createTRPCRouter({
           id: true,
           createdAt: true,
           text: true,
-          images: true,
+          media: true,
           parentPostId: true,
           quoteId: true,
           path: true,
@@ -160,6 +166,7 @@ export const postRouter = createTRPCRouter({
         if (post.parentPostId === null) {
           const postItem = {
             ...post,
+            media: post.media as PostMedia,
             reposts: post.reposts.map((repost) => ({
               userId: repost.user.id,
               postId: repost.post.id,
@@ -172,6 +179,7 @@ export const postRouter = createTRPCRouter({
 
           const repostItems = post.reposts.map((repost) => ({
             ...post,
+            media: post.media as PostMedia,
             reposts: post.reposts.map((repost) => ({
               userId: repost.user.id,
               postId: repost.post.id,
@@ -193,6 +201,7 @@ export const postRouter = createTRPCRouter({
           return post.reposts.map((repost) => {
             const repostItem = {
               ...post,
+              media: post.media as PostMedia,
               reposts: post.reposts.map((repost) => ({
                 userId: repost.user.id,
                 postId: repost.post.id,
@@ -251,7 +260,12 @@ export const postRouter = createTRPCRouter({
         text: z.string().min(3, {
           message: 'Text must be at least 3 characters',
         }),
-        imageUrl: z.string().optional(),
+        media: z
+          .object({
+            fileType: z.string(),
+            fileUrl: z.string(),
+          })
+          .optional(),
         privacy: z.nativeEnum(PostPrivacy),
       })
     )
@@ -298,7 +312,7 @@ export const postRouter = createTRPCRouter({
           data: {
             id: postId,
             text: filteredText,
-            images: input.imageUrl ? [input.imageUrl] : [],
+            media: input.media,
             privacy: input.privacy,
             authorId: userId,
             parentPostId: input.postId,
@@ -357,7 +371,7 @@ export const postRouter = createTRPCRouter({
           id: true,
           createdAt: true,
           text: true,
-          images: true,
+          media: true,
           parentPostId: true,
           quoteId: true,
           path: true,
@@ -393,7 +407,7 @@ export const postRouter = createTRPCRouter({
           id: true,
           text: true,
           createdAt: true,
-          images: true,
+          media: true,
           parentPostId: true,
           parentPost: {
             select: {
@@ -423,6 +437,7 @@ export const postRouter = createTRPCRouter({
 
       const formatReply = (reply: (typeof replies)[number]) => ({
         ...reply,
+        media: reply.media as PostMedia,
         likesCount: reply._count.likes,
         repostsCount: reply._count.reposts,
         bookmarksCount: reply._count.bookmarks,
@@ -461,6 +476,7 @@ export const postRouter = createTRPCRouter({
       return {
         postInfo: {
           ...post,
+          media: post.media as PostMedia,
           likesCount: post._count.likes,
           repostsCount: post._count.reposts,
           bookmarksCount: post._count.bookmarks,
@@ -667,7 +683,7 @@ export const postRouter = createTRPCRouter({
           createdAt: true,
           text: true,
           ...GET_LIKES,
-          images: true,
+          media: true,
           path: true,
           repliesCount: true,
           author: {
@@ -793,7 +809,7 @@ export const postRouter = createTRPCRouter({
               id: true,
               text: true,
               createdAt: true,
-              images: true,
+              media: true,
               parentPostId: true,
               parentPost: {
                 select: {
@@ -838,6 +854,7 @@ export const postRouter = createTRPCRouter({
       return {
         posts: savedPosts.map((savedPost) => ({
           ...savedPost.post,
+          media: savedPost.post.media as PostMedia,
           likesCount: savedPost.post._count.likes,
           repostsCount: savedPost.post._count.reposts,
           bookmarksCount: savedPost.post._count.bookmarks,
@@ -874,7 +891,7 @@ export const postRouter = createTRPCRouter({
               id: true,
               text: true,
               createdAt: true,
-              images: true,
+              media: true,
               parentPostId: true,
               parentPost: {
                 select: {
@@ -918,6 +935,7 @@ export const postRouter = createTRPCRouter({
       return {
         posts: likedPosts.map((likedPost) => ({
           ...likedPost.post,
+          media: likedPost.post.media as PostMedia,
           likesCount: likedPost.post._count.likes,
           repostsCount: likedPost.post._count.reposts,
           bookmarksCount: likedPost.post._count.bookmarks,
@@ -958,7 +976,7 @@ export const postRouter = createTRPCRouter({
           id: true,
           text: true,
           createdAt: true,
-          images: true,
+          media: true,
           parentPostId: true,
           parentPost: {
             select: {
@@ -998,6 +1016,7 @@ export const postRouter = createTRPCRouter({
       return {
         posts: followingPosts.map((post) => ({
           ...post,
+          media: post.media as PostMedia,
           likesCount: post._count.likes,
           repostsCount: post._count.reposts,
           bookmarksCount: post._count.bookmarks,

@@ -31,6 +31,7 @@ const CreateThread = () => {
   const router = useRouter();
 
   const { selectedFile, setSelectedFile } = useFileStore();
+
   const { startUpload } = useUploadThing('media');
 
   const {
@@ -89,18 +90,31 @@ const CreateThread = () => {
     });
 
   async function handleMutation() {
-    const imgRes = await startUpload(selectedFile);
+    let mediaUploadUrl = '';
+    let fileType = '';
+    if (selectedFile.length > 0) {
+      const fileRes = await startUpload(selectedFile);
+      if (fileRes && fileRes[0]) {
+        mediaUploadUrl = fileRes[0].fileUrl;
+        fileType = fileRes[0].fileKey.split('.').pop() || '';
+      }
+    }
+
     const promise = replyPostInfo
       ? replyToPost({
           text: threadData.text,
           postId: replyPostInfo.id,
-          imageUrl: imgRes ? imgRes[0]?.fileUrl : undefined,
+          media: mediaUploadUrl
+            ? { fileType, fileUrl: mediaUploadUrl }
+            : undefined,
           privacy: threadData.privacy,
           postAuthor: replyPostInfo.author.id,
         })
       : createThread({
           text: threadData.text,
-          imageUrl: imgRes ? imgRes[0]?.fileUrl : undefined,
+          media: mediaUploadUrl
+            ? { fileType, fileUrl: mediaUploadUrl }
+            : undefined,
           privacy: threadData.privacy,
           quoteId: quoteInfo?.id,
           postAuthor: quoteInfo?.author.id,

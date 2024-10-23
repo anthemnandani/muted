@@ -9,6 +9,7 @@ import {
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '../trpc';
+import { PostMedia } from '@/lib/types';
 
 export const userRouter = createTRPCRouter({
   userInfo: privateProcedure
@@ -88,7 +89,7 @@ export const userRouter = createTRPCRouter({
           id: true,
           createdAt: true,
           text: true,
-          images: true,
+          media: true,
           parentPostId: true,
           quoteId: true,
           path: true,
@@ -126,7 +127,7 @@ export const userRouter = createTRPCRouter({
           path: post.path,
           repliesCount: post.repliesCount,
           quoteId: post.quoteId,
-          images: post.images,
+          media: post.media as PostMedia,
           reposts: post.reposts,
           bookmarks: post.bookmarks,
           bookmarksCount: post._count.bookmarks,
@@ -226,14 +227,14 @@ export const userRouter = createTRPCRouter({
           id: true,
           createdAt: true,
           text: true,
-          images: true,
+          media: true,
           parentPostId: true,
           parentPost: {
             select: {
               id: true,
               createdAt: true,
               text: true,
-              images: true,
+              media: true,
               parentPostId: true,
               quoteId: true,
               path: true,
@@ -292,11 +293,12 @@ export const userRouter = createTRPCRouter({
           id: post.id,
           createdAt: post.createdAt,
           text: post.text,
-          images: post.images,
+          media: post.media as PostMedia,
           parentPostId: post.parentPostId,
           parentPost: post.parentPost
             ? {
                 ...post.parentPost,
+                media: post.parentPost.media as PostMedia,
                 likesCount: post.parentPost._count.likes,
                 bookmarksCount: post.parentPost._count.bookmarks,
                 repostsCount: post.parentPost._count.reposts,
@@ -366,7 +368,7 @@ export const userRouter = createTRPCRouter({
               id: true,
               createdAt: true,
               text: true,
-              images: true,
+              media: true,
               parentPostId: true,
               quoteId: true,
               path: true,
@@ -408,7 +410,7 @@ export const userRouter = createTRPCRouter({
           id: repost.post.id,
           createdAt: repost.post.createdAt,
           text: repost.post.text,
-          images: repost.post.images,
+          media: repost.post.media as PostMedia,
           parentPostId: repost.post.parentPostId,
           author: repost.post.author,
           likesCount: repost.post._count.likes,

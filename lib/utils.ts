@@ -135,3 +135,16 @@ export function formatRepostTime(repostTimestamp: Date): string {
     return '';
   }
 }
+
+export function isImageOrVideo(fileType: string): 'image' | 'video' | null {
+  const imageTypes = ['jpeg', 'jpg', 'png', 'gif', 'webp'];
+  const videoTypes = ['mp4', 'quicktime'];
+
+  if (imageTypes.includes(fileType.toLowerCase())) {
+    return 'image';
+  } else if (videoTypes.includes(fileType.toLowerCase())) {
+    return 'video';
+  } else {
+    return null;
+  }
+}
