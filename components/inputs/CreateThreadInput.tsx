@@ -172,7 +172,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
                 {previewType === 'video' && (
                   <video
                     src={previewURL}
-                    className='object-contain max-h-[520px] max-w-full rounded-md'
+                    className='object-contain max-h-[400px] max-w-full rounded-md'
                     loop
                     muted
                     autoPlay

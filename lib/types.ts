@@ -24,6 +24,7 @@ export type PostProps = ArrayElement<
 export type PostMedia = {
   fileType?: string;
   fileUrl?: string;
+  aspectRatio?: string;
 } | null;
 
 export type ParentPostInfo = Pick<

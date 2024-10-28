@@ -93,7 +93,10 @@ const ChildReplyCard: React.FC<ThreadCardProps> = ({
                       <ThreadImageCard image={media.fileUrl} />
                     )}
                     {isImageOrVideo(media.fileType) === 'video' && (
-                      <ThreadVideoCard video={media.fileUrl} />
+                      <ThreadVideoCard
+                        video={media.fileUrl}
+                        aspectRatio={media.aspectRatio}
+                      />
                     )}
                   </>
                 )}

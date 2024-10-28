@@ -1,22 +1,36 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import React from 'react';
 
 interface ThreadVideoCardProps {
   video: string | undefined;
+  aspectRatio?: string;
 }
 
-const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({ video }) => {
+const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
+  video,
+  aspectRatio,
+}) => {
   return (
-    <div className='relative w-full overflow-hidden mt-2.5'>
-      <video
-        src={video ?? ''}
-        className='relative max-h-128 rounded object-contain object-center hover:cursor-pointer'
-        autoPlay
-        muted
-        loop
-        playsInline
-      />
+    <div className='mt-2.5 flex'>
+      <div
+        className={cn(
+          'relative w-full flex items-center',
+          aspectRatio === '16:9' && 'h-auto',
+          aspectRatio === '9:16' && 'min-h-[480px] max-h-[580px]'
+        )}
+      >
+        <video
+          loop
+          controls
+          muted
+          controlsList='nodownload nofullscreen noremoteplayback noplaybackrate'
+          className='rounded-md object-cover h-full cursor-pointer 
+          [&::-webkit-media-controls-fullscreen-button]:hidden'
+          src={video}
+        />
+      </div>
     </div>
   );
 };

@@ -113,7 +113,10 @@ const CreateThread = () => {
       : createThread({
           text: threadData.text,
           media: mediaUploadUrl
-            ? { fileType, fileUrl: mediaUploadUrl }
+            ? {
+                fileType,
+                fileUrl: mediaUploadUrl,
+              }
             : undefined,
           privacy: threadData.privacy,
           quoteId: quoteInfo?.id,
