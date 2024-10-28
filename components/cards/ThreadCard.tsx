@@ -87,19 +87,26 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
                     className='text-accent-foreground text-[15px] leading-5 mt-[3px] max-md:max-w-full whitespace-pre-line'
                   />
                 )}
-
-                {media && media.fileType && (
-                  <>
-                    {isImageOrVideo(media.fileType) === 'image' && (
-                      <ThreadImageCard image={media.fileUrl} />
-                    )}
-                    {isImageOrVideo(media.fileType) === 'video' && (
-                      <ThreadVideoCard video={media.fileUrl} />
-                    )}
-                  </>
-                )}
-                {quoteId && <ThreadQuoteCard quoteId={quoteId} />}
               </Link>
+              {media && media.fileType && (
+                <>
+                  {isImageOrVideo(media.fileType) === 'image' && (
+                    <Link
+                      href={`/@${author.username}/post/${id}`}
+                      className='w-full'
+                    >
+                      <ThreadImageCard image={media.fileUrl} />
+                    </Link>
+                  )}
+                  {isImageOrVideo(media.fileType) === 'video' && (
+                    <ThreadVideoCard
+                      video={media.fileUrl}
+                      aspectRatio={media.aspectRatio}
+                    />
+                  )}
+                </>
+              )}
+              {quoteId && <ThreadQuoteCard quoteId={quoteId} />}
               <div className='-ml-2 flex-between max-w-[280px] md:max-w-[400px] pt-4'>
                 <ThreadActions
                   id={id}

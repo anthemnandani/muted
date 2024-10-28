@@ -23,6 +23,7 @@ export const postRouter = createTRPCRouter({
           .object({
             fileType: z.string(),
             fileUrl: z.string(),
+            aspectRatio: z.string().optional(),
           })
           .optional(),
         privacy: z.nativeEnum(PostPrivacy).default('ANYONE'),
