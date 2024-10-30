@@ -80,10 +80,7 @@ const RepostButton: React.FC<RepostButtonProps> = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
-          disabled={isLoading}
-          className='flex-center hover:bg-primary rounded-full p-2 w-fit h-fit active:scale-95 outline-none cursor-pointer'
-        >
+        <button disabled={isLoading} className='icon-container-hover'>
           {isRepostedByMe ? (
             <Icons.reposted className='size-5' />
           ) : (

@@ -17,7 +17,7 @@ const ReplyButton: React.FC<ReplyButtonProps> = ({
   const { setOpenDialog, setReplyPostInfo } = useDialog();
   return (
     <div
-      className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95 cursor-pointer'
+      className='icon-container-hover'
       onClick={() => {
         setOpenDialog(true);
         setReplyPostInfo(replyThreadInfo);

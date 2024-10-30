@@ -18,13 +18,13 @@ export type PostProps = ArrayElement<
   isLastThread?: boolean;
   showSeparator?: boolean;
   showLine?: boolean;
-  isNested?: boolean;
 };
 
 export type PostMedia = {
   fileType?: string;
   fileUrl?: string;
   aspectRatio?: string;
+  originalDimensions?: { width: number; height: number };
 } | null;
 
 export type ParentPostInfo = Pick<
@@ -56,7 +56,6 @@ export interface ThreadDisplayProps {
   isLastThread?: boolean;
   showSeparator?: boolean;
   showLine?: boolean;
-  isNested?: boolean;
   isReply?: boolean;
   showUsername?: boolean;
   isTopLevel?: boolean;
@@ -111,7 +110,7 @@ export type ParentPostProps = {
   parentPost?: any;
   author: Author;
   repostedBy?: Author;
-  children?: ParentPostProps[];
+  postChildren?: ParentPostProps[];
   likesCount?: number;
   bookmarksCount?: number;
   repostsCount?: number;

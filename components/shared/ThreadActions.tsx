@@ -23,44 +23,49 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
 }) => {
   return (
     <>
-      <LikeButton
-        likeInfo={{
-          id,
-          likesCount,
-          likes,
-        }}
-        isParentPost={isParentPost}
-      />
+      <div className='flex items-center gap-5'>
+        <LikeButton
+          likeInfo={{
+            id,
+            likesCount,
+            likes,
+          }}
+          isParentPost={isParentPost}
+        />
 
-      <ReplyButton
-        replyThreadInfo={{
-          id,
-          text,
-          media: null,
-          author,
-          createdAt,
-        }}
-        repliesCount={repliesCount}
-        isParentPost={isParentPost}
-      />
-      <RepostButton
-        id={id}
-        text={text}
-        author={author}
-        createdAt={createdAt}
-        reposts={reposts}
-        repostsCount={repostsCount}
-        isParentPost={isParentPost}
-      />
-      <BookmarkButton
-        bookmarkInfo={{
-          id,
-          bookmarksCount,
-          bookmarks,
-        }}
-        isParentPost={isParentPost}
-      />
-      <CopyLinkButton postId={id} username={author.username} />
+        <ReplyButton
+          replyThreadInfo={{
+            id,
+            text,
+            media: null,
+            author,
+            createdAt,
+          }}
+          repliesCount={repliesCount}
+          isParentPost={isParentPost}
+        />
+        <RepostButton
+          id={id}
+          text={text}
+          author={author}
+          createdAt={createdAt}
+          reposts={reposts}
+          repostsCount={repostsCount}
+          isParentPost={isParentPost}
+        />
+      </div>
+
+      <div className='flex items-center gap-5'>
+        <BookmarkButton
+          bookmarkInfo={{
+            id,
+            bookmarksCount,
+            bookmarks,
+          }}
+          isParentPost={isParentPost}
+        />
+        <CopyLinkButton postId={id} username={author.username} />
+      </div>
     </>
   );
 };

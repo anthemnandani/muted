@@ -24,6 +24,12 @@ export const postRouter = createTRPCRouter({
             fileType: z.string(),
             fileUrl: z.string(),
             aspectRatio: z.string().optional(),
+            originalDimensions: z
+              .object({
+                width: z.number(),
+                height: z.number(),
+              })
+              .optional(),
           })
           .optional(),
         privacy: z.nativeEnum(PostPrivacy).default('ANYONE'),
@@ -442,7 +448,7 @@ export const postRouter = createTRPCRouter({
         likesCount: reply._count.likes,
         repostsCount: reply._count.reposts,
         bookmarksCount: reply._count.bookmarks,
-        children: [],
+        postChildren: [],
       });
 
       const replyMap = new Map();
@@ -457,7 +463,7 @@ export const postRouter = createTRPCRouter({
         } else {
           const parentReply = replyMap.get(reply.parentPostId);
           if (parentReply) {
-            parentReply.children.push(formattedReply);
+            parentReply.postChildren.push(formattedReply);
           } else {
             topLevelReplies.push(formattedReply);
           }

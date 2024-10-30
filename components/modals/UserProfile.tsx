@@ -11,7 +11,7 @@ const UserProfile = ({ author }: { author: Author }) => {
     <Dialog>
       <DialogTrigger asChild>
         <button className='relative' type='button'>
-          <div className='size-9 outline outline-1 outline-border rounded-full ml-[1px]'>
+          <div className='size-9 outline outline-1 outline-border rounded-full'>
             <Avatar className='rounded-full w-full h-full '>
               <AvatarImage
                 src={author?.image ?? ''}

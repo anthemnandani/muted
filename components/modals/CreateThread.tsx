@@ -2,6 +2,7 @@
 import usePost from '@/hooks/usePost';
 import useWindow from '@/hooks/useWindow';
 import { useUploadThing } from '@/lib/uploadthing';
+import { getImageDimensions } from '@/lib/utils';
 import useDialog from '@/store/dialog';
 import useFileStore from '@/store/fileStore';
 import { api } from '@/trpc/react';
@@ -92,7 +93,24 @@ const CreateThread = () => {
   async function handleMutation() {
     let mediaUploadUrl = '';
     let fileType = '';
+    let aspectRatio: string | undefined;
+    let originalDimensions: { width: number; height: number } | undefined;
     if (selectedFile.length > 0) {
+      const file = selectedFile[0];
+      if (file.type.startsWith('image/')) {
+        const dimensions = await getImageDimensions(file);
+        const ratio = dimensions.width / dimensions.height;
+
+        if (Math.abs(ratio - 1) < 0.01) {
+          aspectRatio = '1:1';
+        } else if (Math.abs(ratio - 16 / 9) < 0.01) {
+          aspectRatio = '16:9';
+        } else if (Math.abs(ratio - 4 / 5) < 0.01) {
+          aspectRatio = '4:5';
+        } else {
+          originalDimensions = dimensions;
+        }
+      }
       const fileRes = await startUpload(selectedFile);
       if (fileRes && fileRes[0]) {
         mediaUploadUrl = fileRes[0].fileUrl;
@@ -116,6 +134,8 @@ const CreateThread = () => {
             ? {
                 fileType,
                 fileUrl: mediaUploadUrl,
+                aspectRatio,
+                originalDimensions,
               }
             : undefined,
           privacy: threadData.privacy,

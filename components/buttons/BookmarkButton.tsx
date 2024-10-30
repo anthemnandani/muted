@@ -18,12 +18,13 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
     useBookmark({ bookmarkInfo });
 
   return (
-    <div className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95 cursor-pointer'>
+    <div className='icon-container-hover'>
       <button
         type='button'
         disabled={isLoading}
         title={isBookmarkedByMe ? 'Unsave' : 'Save'}
         onClick={() => toggleBookmark({ id: bookmarkInfo.id })}
+        className='flex items-center gap-2 z-[2] relative'
       >
         <Bookmark
           fill={isBookmarkedByMe ? 'currentColor' : 'transparent'}

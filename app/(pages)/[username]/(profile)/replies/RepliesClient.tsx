@@ -48,7 +48,6 @@ const RepliesClient = ({ username }: { username: string }) => {
                   )}
                   <ThreadCard
                     {...reply}
-                    isNested
                     isLastThread={index === allReplies.length - 1}
                   />
                 </div>

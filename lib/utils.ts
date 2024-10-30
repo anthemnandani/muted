@@ -104,7 +104,7 @@ export function buildReplyTree(
 ) {
   const replyMap: { [key: string]: ParentPostProps } = {};
   replies?.forEach((reply) => {
-    reply.children = [];
+    reply.postChildren = [];
     replyMap[reply.id] = reply;
   });
 
@@ -114,7 +114,7 @@ export function buildReplyTree(
       tree.push(reply);
     } else if (reply.parentPostId && replyMap[reply.parentPostId]) {
       if (replyMap[reply.parentPostId]) {
-        replyMap[reply.parentPostId].children?.push(reply);
+        replyMap[reply.parentPostId].postChildren?.push(reply);
       }
     }
   });
@@ -148,3 +148,16 @@ export function isImageOrVideo(fileType: string): 'image' | 'video' | null {
     return null;
   }
 }
+
+export const getImageDimensions = (
+  file: File
+): Promise<{ width: number; height: number }> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      resolve({ width: img.width, height: img.height });
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+};

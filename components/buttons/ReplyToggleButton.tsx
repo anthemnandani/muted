@@ -16,7 +16,7 @@ const ReplyToggleButton: React.FC<ReplyToggleButtonProps> = ({
 }) => {
   return (
     <button
-      className='text-gray-3 hover:text-blue transition-all ease-in-out duration-300 mt-2 text-[15px] flex items-center gap-1'
+      className='text-gray-3 hover:text-blue transition-all ease-in-out duration-300 my-3 text-[15px] flex items-center gap-1'
       onClick={onClick}
     >
       {showReplies ? (

@@ -1,6 +1,5 @@
 'use client';
 
-import { cn } from '@/lib/utils';
 import React from 'react';
 
 interface ThreadVideoCardProps {
@@ -12,22 +11,54 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
   video,
   aspectRatio,
 }) => {
+  const FEED_WIDTH = 470;
+  let containerWidth = FEED_WIDTH;
+  let containerHeight;
+  let videoWidth;
+  let videoHeight;
+
+  switch (aspectRatio) {
+    case '16:9':
+      containerHeight = FEED_WIDTH * (9 / 16);
+      videoWidth = containerWidth;
+      videoHeight = containerHeight;
+      break;
+    case '4:5':
+      containerHeight = FEED_WIDTH * (5 / 4);
+      videoWidth = containerWidth;
+      videoHeight = containerHeight;
+      break;
+    case '9:16':
+      containerHeight = FEED_WIDTH * (5 / 4);
+      videoHeight = containerHeight;
+      videoWidth = videoHeight * (9 / 16);
+      break;
+    default:
+      containerHeight = FEED_WIDTH;
+      videoWidth = containerWidth;
+      videoHeight = containerHeight;
+  }
+
   return (
     <div className='mt-2.5 flex'>
       <div
-        className={cn(
-          'relative w-full flex items-center',
-          aspectRatio === '16:9' && 'h-auto',
-          aspectRatio === '9:16' && 'min-h-[480px] max-h-[580px]'
-        )}
+        className='relative flex items-center'
+        style={{
+          width: containerWidth,
+          height: containerHeight,
+        }}
       >
         <video
           loop
           controls
           muted
           controlsList='nodownload nofullscreen noremoteplayback noplaybackrate'
-          className='rounded-md object-cover h-full cursor-pointer 
-          [&::-webkit-media-controls-fullscreen-button]:hidden'
+          className='rounded-md object-cover cursor-pointer 
+        [&::-webkit-media-controls-fullscreen-button]:hidden'
+          style={{
+            width: videoWidth,
+            height: videoHeight,
+          }}
           src={video}
         />
       </div>

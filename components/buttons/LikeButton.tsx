@@ -57,12 +57,13 @@ const LikeButton: React.FC<LikeButtonProps> = ({ likeInfo, isParentPost }) => {
   });
 
   return (
-    <div className='flex-center hover:bg-primary rounded-full p-2 w-fit h-fit active:scale-95'>
+    <div className='icon-container-hover'>
       <button
         type='button'
         disabled={isLoading}
         title={isLikedByMe ? 'Unlike' : 'Like'}
         onClick={() => toggleLike({ id })}
+        className='flex items-center gap-2 z-[2] relative'
       >
         <Icons.heart
           fill={isLikedByMe ? '#ff3040' : 'transparent'}

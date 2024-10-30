@@ -22,10 +22,7 @@ const CopyLinkButton: React.FC<CopyLinkButtonProps> = ({
     }
   };
   return (
-    <div
-      className='flex-center hover:bg-primary p-2 rounded-full w-fit h-fit active:scale-95 cursor-pointer'
-      onClick={handleCopyLink}
-    >
+    <div className='icon-container-hover' onClick={handleCopyLink}>
       <Icons.copyLink2 className='size-5 transition-colors duration-150' />
     </div>
   );

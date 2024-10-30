@@ -217,6 +217,10 @@
     @apply bg-white dark:bg-gray-6 border dark:border-gray-5 border-gray-1 rounded-full p-1.5 cursor-pointer transition-transform duration-200 ease-in-out hover:scale-110;
   }
 
+  .icon-container-hover {
+    @apply flex-center relative hover:before:content-[""] hover:before:absolute hover:before:bg-primary hover:before:z-[2] hover:before:-inset-2 hover:before:rounded-full cursor-pointer active:scale-95;
+  }
+
   /* Shadcn Component Styles */
 
   /* Tab */
