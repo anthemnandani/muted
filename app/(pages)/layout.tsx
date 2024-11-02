@@ -29,7 +29,7 @@ export default async function PagesLayout({
       <LeftSideBar />
       <main className='flex justify-center h-screen'>
         <section className='w-full'>
-          <div className='w-full md:max-w-[640px] mx-auto relative'>
+          <div className='w-full md:max-w-[550px] mx-auto relative'>
             {children}
           </div>
         </section>
