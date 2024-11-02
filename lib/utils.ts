@@ -161,3 +161,46 @@ export const getImageDimensions = (
     img.src = URL.createObjectURL(file);
   });
 };
+
+export const getVideoDimensions = (
+  file: File
+): Promise<{ width: number; height: number }> => {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+
+    video.onloadedmetadata = () => {
+      URL.revokeObjectURL(video.src);
+      resolve({
+        width: video.videoWidth,
+        height: video.videoHeight,
+      });
+    };
+
+    video.onerror = () => {
+      URL.revokeObjectURL(video.src);
+      reject(new Error('Error loading video metadata'));
+    };
+
+    video.src = URL.createObjectURL(file);
+  });
+};
+
+export const getMediaAspectRatio = (dimensions: {
+  width: number;
+  height: number;
+}): string | undefined => {
+  const ratio = dimensions.width / dimensions.height;
+
+  if (Math.abs(ratio - 1) < 0.01) {
+    return '1:1';
+  } else if (Math.abs(ratio - 16 / 9) < 0.01) {
+    return '16:9';
+  } else if (Math.abs(ratio - 4 / 5) < 0.01) {
+    return '4:5';
+  } else if (Math.abs(ratio - 9 / 16) < 0.01) {
+    return '9:16';
+  }
+
+  return undefined;
+};

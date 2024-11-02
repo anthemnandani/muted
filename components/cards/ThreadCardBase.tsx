@@ -70,6 +70,9 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
             <ThreadVideoCard
               video={media.fileUrl}
               aspectRatio={media.aspectRatio}
+              originalDimensions={media.originalDimensions}
+              username={author.username}
+              postId={id}
             />
           )}
         </>
