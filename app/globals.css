@@ -274,3 +274,7 @@
   .cl-organizationPreviewTextContainer {
   @apply max-sm:hidden;
 }
+
+.infinite-scroll-component {
+  @apply !overflow-hidden;
+}

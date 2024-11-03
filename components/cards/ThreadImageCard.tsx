@@ -14,51 +14,46 @@ const ThreadImageCard: React.FC<ThreadImageCardProps> = ({
   aspectRatio,
   originalDimensions,
 }) => {
-  const FEED_WIDTH = 550;
   const MIN_RATIO = 0.8;
   const MAX_RATIO = 1.91;
-  let displayWidth = FEED_WIDTH;
-  let displayHeight;
+  let targetRatio = 1;
 
   switch (aspectRatio) {
     case '1:1':
-      displayHeight = FEED_WIDTH;
+      targetRatio = 1;
       break;
     case '16:9':
-      displayHeight = Math.round(FEED_WIDTH * (9 / 16));
+      targetRatio = 16 / 9;
       break;
     case '4:5':
-      displayHeight = Math.round(FEED_WIDTH * (5 / 4));
+      targetRatio = 4 / 5;
       break;
     default:
       if (originalDimensions) {
         const originalRatio =
           originalDimensions.width / originalDimensions.height;
-
         if (originalRatio < MIN_RATIO) {
-          displayHeight = Math.round(FEED_WIDTH * (5 / 4));
-          displayWidth = Math.round(displayHeight * MIN_RATIO);
+          targetRatio = MIN_RATIO;
         } else if (originalRatio > MAX_RATIO) {
-          displayHeight = Math.round(FEED_WIDTH / MAX_RATIO);
-          displayWidth = Math.round(displayHeight * MAX_RATIO);
+          targetRatio = MAX_RATIO;
         } else {
-          displayHeight = Math.round(FEED_WIDTH / originalRatio);
+          targetRatio = originalRatio;
         }
-      } else {
-        displayHeight = FEED_WIDTH;
       }
   }
 
   return (
     <div
-      className='relative overflow-hidden mt-2.5 mb-2 bg-black'
-      style={{ height: `${displayHeight}px`, width: `${FEED_WIDTH}px` }}
+      className='relative overflow-hidden mt-2.5 mb-2 bg-black w-full'
+      style={{
+        aspectRatio: `${targetRatio}`,
+      }}
     >
       <Image
         alt='Post'
         loading='lazy'
         fill
-        className='cursor-pointer w-full h-full'
+        className='cursor-pointer'
         src={image ?? ''}
       />
     </div>
