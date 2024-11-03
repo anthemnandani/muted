@@ -18,11 +18,11 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
   username,
   postId,
 }) => {
-  const FEED_WIDTH = 550;
   const MIN_RATIO = 0.8;
-  const MAX_RATIO = 1.91;
-  let displayWidth = FEED_WIDTH;
-  let displayHeight;
+  const MAX_RATIO = 16 / 9;
+  let targetRatio = 16 / 9;
+
+  const is916 = aspectRatio === '9:16';
 
   const router = useRouter();
 
@@ -36,51 +36,49 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
     }
   };
 
-  switch (aspectRatio) {
-    case '16:9':
-      displayHeight = 309;
-      break;
-    case '4:5':
-      displayHeight = 688;
-      break;
-    case '9:16':
-      displayWidth = 387;
-      displayHeight = 688;
-      break;
-    default:
-      if (originalDimensions) {
-        const originalRatio =
-          originalDimensions.width / originalDimensions.height;
-
-        if (originalRatio < MIN_RATIO) {
-          displayHeight = 688;
-        } else if (originalRatio > MAX_RATIO) {
-          displayHeight = 309;
-        } else {
-          displayHeight = Math.round(FEED_WIDTH / originalRatio);
+  if (!is916) {
+    switch (aspectRatio) {
+      case '16:9':
+        targetRatio = 16 / 9;
+        break;
+      case '4:5':
+        targetRatio = 4 / 5;
+        break;
+      default:
+        if (originalDimensions) {
+          const originalRatio =
+            originalDimensions.width / originalDimensions.height;
+          if (originalRatio < MIN_RATIO && originalRatio !== 9 / 16) {
+            targetRatio = 4 / 5;
+          } else if (originalRatio > MAX_RATIO) {
+            targetRatio = 16 / 9;
+          } else {
+            targetRatio = originalRatio;
+          }
         }
-      } else {
-        displayHeight = FEED_WIDTH;
-      }
+    }
   }
 
   return (
     <div
-      className='relative overflow-hidden mt-2.5 mb-2 bg-black flex-center'
+      className='relative overflow-hidden mt-2.5 mb-2 bg-black flex-center w-full'
       style={{
-        width: `${FEED_WIDTH}px`,
-        height: `${displayHeight}px`,
+        aspectRatio: is916 ? '4/5' : `${targetRatio}`,
       }}
     >
       <video
         loop
         controls
         muted
+        playsInline
+        preload='metadata'
         controlsList='nodownload nofullscreen noremoteplayback noplaybackrate'
-        className='cursor-pointer h-full w-full object-cover
-            [&::-webkit-media-controls-fullscreen-button]:hidden'
+        className='cursor-pointer h-full
+        [&::-webkit-media-controls-fullscreen-button]:hidden
+        webkit-playsinline'
         style={{
-          width: `${displayWidth}px`,
+          width: is916 ? '70.36%' : '100%',
+          objectFit: 'cover',
         }}
         onClick={handleVideoClick}
         src={video}
