@@ -131,7 +131,7 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
         controls
         muted
         playsInline
-        preload='metadata'
+        preload='auto'
         controlsList='nodownload nofullscreen noremoteplayback noplaybackrate'
         className='cursor-pointer h-full
         [&::-webkit-media-controls-fullscreen-button]:hidden
