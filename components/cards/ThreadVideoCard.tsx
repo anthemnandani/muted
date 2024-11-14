@@ -44,14 +44,18 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
 
   const router = useRouter();
 
-  const handleVideoClick = (e: React.MouseEvent) => {
-    const target = e.target as HTMLVideoElement;
-    const rect = target.getBoundingClientRect();
-    const y = e.clientY - rect.top;
-
-    if (y < rect.height - 40) {
-      router.push(`/@${username}/post/${postId}`);
+  const handleVideoClick = (e: React.MouseEvent<HTMLVideoElement>) => {
+    const target = e.target as HTMLElement;
+    if (
+      target.closest('.video-controls') ||
+      target.closest('video::-webkit-media-controls-panel') ||
+      target.closest('video::-webkit-media-controls')
+    ) {
+      e.stopPropagation();
+      return;
     }
+
+    router.push(`/${username}/post/${postId}`);
   };
 
   const handleMuteChange = (e: React.SyntheticEvent<HTMLVideoElement>) => {
