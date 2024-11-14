@@ -34,7 +34,7 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
     [username, postId]
   );
   const { ref: intersectionRef, inView } = useInView({
-    threshold: 0.5,
+    threshold: 0.45,
   });
   const MIN_RATIO = 0.8;
   const MAX_RATIO = 16 / 9;

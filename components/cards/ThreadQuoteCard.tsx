@@ -60,14 +60,14 @@ const RenderCard: React.FC<ThreadQuoteCardProps> = ({
   createdAt,
 }) => {
   return (
-    <Card className='overflow-hidden p-4 mt-3 rounded-xl bg-transparent border-border w-full'>
-      <div className='flex-between mb-1.5 '>
+    <Card className='overflow-hidden p-4 mt-3 mb-2 rounded-xl bg-transparent border-border w-full'>
+      <div className='flex-between mb-1.5'>
         <div className='flex items-center gap-2'>
           <UserAvatar
             fullname={author?.fullName}
             image={author?.image}
             username={author?.username ?? ''}
-            className='h-7 w-7'
+            className='size-7'
           />
           <Username author={author!} />
           <time className='text-[15px] text-gray-3 cursor-default'>
