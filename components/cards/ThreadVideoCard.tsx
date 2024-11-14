@@ -38,6 +38,11 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
     }
   };
 
+  const handleMuteChange = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const video = e.target as HTMLVideoElement;
+    setIsMuted(video.muted);
+  };
+
   if (!is916) {
     switch (aspectRatio) {
       case '16:9':
@@ -61,7 +66,8 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
     }
   }
 
-  const { currentlyPlaying, setCurrentlyPlaying } = useVideoPlayer();
+  const { currentlyPlaying, setCurrentlyPlaying, isMuted, setIsMuted } =
+    useVideoPlayer();
   const videoId = `${username}-${postId}`;
 
   React.useEffect(() => {
@@ -118,6 +124,12 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
     };
   }, [currentlyPlaying, videoId, setCurrentlyPlaying]);
 
+  React.useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
+
   return (
     <div
       className='relative overflow-hidden mt-2.5 mb-2 bg-black flex-center w-full'
@@ -129,7 +141,7 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
         ref={videoRef}
         loop
         controls
-        muted
+        muted={isMuted}
         playsInline
         preload='auto'
         controlsList='nodownload nofullscreen noremoteplayback noplaybackrate'
@@ -141,6 +153,7 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
           objectFit: 'cover',
         }}
         onClick={handleVideoClick}
+        onVolumeChange={handleMuteChange}
         src={video}
       />
     </div>
