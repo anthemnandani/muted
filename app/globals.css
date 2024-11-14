@@ -278,3 +278,11 @@
 .infinite-scroll-component {
   @apply !overflow-hidden;
 }
+
+video::-webkit-media-controls-panel {
+  z-index: 2147483647 !important;
+}
+
+video::-webkit-media-controls {
+  z-index: 2147483647 !important;
+}
