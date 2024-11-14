@@ -3,6 +3,7 @@
 import useVideoPlayer from '@/store/videoPlayer';
 import { useRouter } from 'next/navigation';
 import React from 'react';
+import { useInView } from 'react-intersection-observer';
 
 interface ThreadVideoCardProps {
   video: string | undefined;
@@ -19,7 +20,22 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
   username,
   postId,
 }) => {
+  const {
+    currentlyPlaying,
+    setCurrentlyPlaying,
+    isMuted,
+    setIsMuted,
+    timestamps,
+    setTimestamp,
+  } = useVideoPlayer();
   const videoRef = React.useRef<HTMLVideoElement>(null);
+  const videoId = React.useMemo(
+    () => `${username}-${postId}`,
+    [username, postId]
+  );
+  const { ref: intersectionRef, inView } = useInView({
+    threshold: 0.5,
+  });
   const MIN_RATIO = 0.8;
   const MAX_RATIO = 16 / 9;
   let targetRatio = 16 / 9;
@@ -42,6 +58,12 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
     const video = e.target as HTMLVideoElement;
     setIsMuted(video.muted);
   };
+
+  const handleTimeUpdate = React.useCallback(() => {
+    if (videoRef.current && inView) {
+      setTimestamp(videoId, videoRef.current.currentTime);
+    }
+  }, [videoId, setTimestamp, inView]);
 
   if (!is916) {
     switch (aspectRatio) {
@@ -66,63 +88,38 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
     }
   }
 
-  const { currentlyPlaying, setCurrentlyPlaying, isMuted, setIsMuted } =
-    useVideoPlayer();
-  const videoId = `${username}-${postId}`;
-
   React.useEffect(() => {
-    const options = {
-      root: null,
-      rootMargin: '0px',
-      threshold: Array.from({ length: 101 }, (_, i) => i / 100),
-    };
+    const video = videoRef.current;
+    if (!video) return;
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        const rect = entry.boundingClientRect;
-        const windowHeight = window.innerHeight;
-
-        const visibilityThreshold = is916 ? 0.7 : 0.9;
-
-        if (entry.intersectionRatio >= visibilityThreshold) {
-          const isVisible = is916
-            ? rect.top <= windowHeight * 0.3 &&
-              rect.bottom >= windowHeight * 0.3
-            : rect.top >= 0 && rect.bottom <= windowHeight;
-
-          if (isVisible) {
-            if (!currentlyPlaying || currentlyPlaying === videoId) {
-              videoRef.current?.play();
-              setCurrentlyPlaying(videoId);
-            }
-          } else {
-            if (currentlyPlaying === videoId) {
-              videoRef.current?.pause();
-              setCurrentlyPlaying(null);
-            }
-          }
-        } else {
-          if (currentlyPlaying === videoId) {
-            videoRef.current?.pause();
-            setCurrentlyPlaying(null);
-          }
-        }
-      });
-    }, options);
-
-    if (videoRef.current) {
-      observer.observe(videoRef.current);
-    }
-
-    return () => {
-      if (videoRef.current) {
-        observer.unobserve(videoRef.current);
+    if (inView) {
+      if (!currentlyPlaying || currentlyPlaying === videoId) {
+        setCurrentlyPlaying(videoId);
+        video.play().catch(() => {});
       }
+    } else {
+      video.pause();
       if (currentlyPlaying === videoId) {
         setCurrentlyPlaying(null);
       }
-    };
-  }, [currentlyPlaying, videoId, setCurrentlyPlaying]);
+    }
+  }, [inView, videoId, setCurrentlyPlaying, currentlyPlaying]);
+
+  React.useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (currentlyPlaying && currentlyPlaying !== videoId) {
+      video.pause();
+    }
+  }, [currentlyPlaying, videoId]);
+
+  React.useEffect(() => {
+    const video = videoRef.current;
+    if (video && timestamps[videoId]) {
+      video.currentTime = timestamps[videoId];
+    }
+  }, []);
 
   React.useEffect(() => {
     if (videoRef.current) {
@@ -132,6 +129,7 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
 
   return (
     <div
+      ref={intersectionRef}
       className='relative overflow-hidden mt-2.5 mb-2 bg-black flex-center w-full'
       style={{
         aspectRatio: is916 ? '4/5' : `${targetRatio}`,
@@ -154,6 +152,7 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
         }}
         onClick={handleVideoClick}
         onVolumeChange={handleMuteChange}
+        onTimeUpdate={handleTimeUpdate}
         src={video}
       />
     </div>

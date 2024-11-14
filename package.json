@@ -47,6 +47,7 @@
     "react-dropzone": "^14.2.9",
     "react-hook-form": "^7.48.2",
     "react-infinite-scroll-component": "^6.1.0",
+    "react-intersection-observer": "^9.13.1",
     "sonner": "^1.5.0",
     "superjson": "^2.2.1",
     "svix": "^1.14.0",
