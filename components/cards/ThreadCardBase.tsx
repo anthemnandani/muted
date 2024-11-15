@@ -46,25 +46,29 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   const content = (
     <>
       {text && (
-        <div
-          dangerouslySetInnerHTML={{
-            __html: text.replace(/\\n/g, '\n'),
-          }}
-          className={cn(
-            'text-accent-foreground text-[15px] leading-5 whitespace-pre-line px-2 md:px-4 my-3',
-            variant === 'reply' && 'max-md:max-w-full'
-          )}
-        />
+        <Link href={`/${author.username}/post/${id}`}>
+          <div
+            dangerouslySetInnerHTML={{
+              __html: text.replace(/\\n/g, '\n'),
+            }}
+            className={cn(
+              'text-accent-foreground text-[15px] leading-5 whitespace-pre-line px-2 md:px-4 my-3',
+              variant === 'reply' && 'max-md:max-w-full'
+            )}
+          />
+        </Link>
       )}
 
       {media && media.fileType && (
         <>
           {isImageOrVideo(media.fileType) === 'image' && (
-            <ThreadImageCard
-              image={media.fileUrl}
-              aspectRatio={media.aspectRatio}
-              originalDimensions={media.originalDimensions}
-            />
+            <Link href={`/${author.username}/post/${id}`}>
+              <ThreadImageCard
+                image={media.fileUrl}
+                aspectRatio={media.aspectRatio}
+                originalDimensions={media.originalDimensions}
+              />
+            </Link>
           )}
           {isImageOrVideo(media.fileType) === 'video' && (
             <ThreadVideoCard
@@ -79,7 +83,9 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
       )}
       {quoteId && (
         <div className='px-10'>
-          <ThreadQuoteCard quoteId={quoteId} />
+          <Link href={`/${author.username}/post/${quoteId}`}>
+            <ThreadQuoteCard quoteId={quoteId} />
+          </Link>
         </div>
       )}
     </>
@@ -115,9 +121,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
       )}
 
       {variant === 'default' ? (
-        <Link href={`/@${author.username}/post/${id}`} className='w-full'>
-          {content}
-        </Link>
+        <div className='w-full'>{content}</div>
       ) : (
         content
       )}

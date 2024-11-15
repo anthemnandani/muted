@@ -31,6 +31,7 @@
     "@trpc/react-query": "^10.45.2",
     "@trpc/server": "^10.45.2",
     "@uploadthing/react": "^5.2.0",
+    "@videojs/themes": "^1.0.1",
     "bad-words": "^4.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
@@ -54,6 +55,7 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "uploadthing": "^5.2.0",
+    "video.js": "^8.19.1",
     "webhook": "^0.0.2",
     "zod": "^3.22.4",
     "zustand": "^4.5.5"

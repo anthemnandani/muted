@@ -1,9 +1,13 @@
 'use client';
 
-import useVideoPlayer from '@/store/videoPlayer';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
+import videojs from 'video.js';
+import useVideoPlayer from '@/store/videoPlayer';
 import { useInView } from 'react-intersection-observer';
+import Player from 'video.js/dist/types/player';
+import 'video.js/dist/video-js.css';
+import '@videojs/themes/dist/fantasy/index.css';
 
 interface ThreadVideoCardProps {
   video: string | undefined;
@@ -20,6 +24,10 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
   username,
   postId,
 }) => {
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const playerRef = React.useRef<Player | null>(null);
+  const pathname = usePathname();
+
   const {
     currentlyPlaying,
     setCurrentlyPlaying,
@@ -28,34 +36,33 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
     timestamps,
     setTimestamp,
   } = useVideoPlayer();
-  const videoRef = React.useRef<HTMLVideoElement>(null);
+
   const videoId = React.useMemo(
     () => `${username}-${postId}`,
     [username, postId]
   );
+
   const { ref: intersectionRef, inView } = useInView({
     threshold: 0.45,
   });
-  const MIN_RATIO = 0.8;
-  const MAX_RATIO = 16 / 9;
-  let targetRatio = 16 / 9;
-
-  const is916 = aspectRatio === '9:16';
-
-  const router = useRouter();
 
   const handleVideoClick = (e: React.MouseEvent<HTMLVideoElement>) => {
+    e.preventDefault();
     const target = e.target as HTMLElement;
+
     if (
-      target.closest('.video-controls') ||
-      target.closest('video::-webkit-media-controls-panel') ||
-      target.closest('video::-webkit-media-controls')
+      target.closest('.vjs-control-bar') ||
+      target.closest('.vjs-big-play-button') ||
+      target.closest('.vjs-poster') ||
+      target.closest('.vjs-loading-spinner')
     ) {
       e.stopPropagation();
       return;
     }
 
-    router.push(`/${username}/post/${postId}`);
+    if (pathname === '/') {
+      router.push(`/${username}/post/${postId}`);
+    }
   };
 
   const handleMuteChange = (e: React.SyntheticEvent<HTMLVideoElement>) => {
@@ -64,45 +71,109 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
   };
 
   const handleTimeUpdate = React.useCallback(() => {
-    if (videoRef.current && inView) {
-      setTimestamp(videoId, videoRef.current.currentTime);
+    if (playerRef.current && inView) {
+      setTimestamp(videoId, playerRef.current.currentTime() as number);
     }
   }, [videoId, setTimestamp, inView]);
 
-  if (!is916) {
-    switch (aspectRatio) {
-      case '16:9':
-        targetRatio = 16 / 9;
-        break;
-      case '4:5':
-        targetRatio = 4 / 5;
-        break;
-      default:
-        if (originalDimensions) {
-          const originalRatio =
-            originalDimensions.width / originalDimensions.height;
-          if (originalRatio < MIN_RATIO && originalRatio !== 9 / 16) {
-            targetRatio = 4 / 5;
-          } else if (originalRatio > MAX_RATIO) {
-            targetRatio = 16 / 9;
-          } else {
-            targetRatio = originalRatio;
+  const MIN_RATIO = 0.8;
+  const MAX_RATIO = 16 / 9;
+  let targetRatio = 16 / 9;
+
+  const is916 = aspectRatio === '9:16';
+
+  const router = useRouter();
+
+  const CONTAINER_RATIO = 4 / 5;
+
+  let videoStyle = {};
+  let containerStyle = {};
+
+  if (is916) {
+    containerStyle = {
+      aspectRatio: CONTAINER_RATIO,
+    };
+
+    videoStyle = {
+      height: '100%',
+      aspectRatio: '9/16',
+      width: 'auto',
+    };
+  } else {
+    if (!is916) {
+      switch (aspectRatio) {
+        case '16:9':
+          targetRatio = 16 / 9;
+          break;
+        case '4:5':
+          targetRatio = 4 / 5;
+          break;
+        default:
+          if (originalDimensions) {
+            const originalRatio =
+              originalDimensions.width / originalDimensions.height;
+            if (originalRatio < MIN_RATIO && originalRatio !== 9 / 16) {
+              targetRatio = 4 / 5;
+            } else if (originalRatio > MAX_RATIO) {
+              targetRatio = 16 / 9;
+            } else {
+              targetRatio = originalRatio;
+            }
           }
-        }
+      }
     }
+
+    containerStyle = {
+      aspectRatio: targetRatio,
+    };
+
+    videoStyle = {
+      height: '100%',
+      width: '100%',
+      objectFit: 'cover',
+    };
   }
 
   React.useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    const options = {
+      controls: true,
+      responsive: true,
+      fluid: !is916,
+      loop: true,
+      muted: isMuted,
+      userActions: { hotkeys: true, doubleClick: false },
+      controlBar: {
+        pictureInPictureToggle: false,
+        fullscreenToggle: false,
+        volumePanel: {
+          inline: true,
+        },
+      },
+      sources: [{ src: video, type: 'video/mp4' }],
+    };
+
+    if (videoRef.current && !playerRef.current) {
+      const player = videojs(videoRef.current, options);
+
+      player.on('dblclick', function (e: React.MouseEvent<HTMLVideoElement>) {
+        e.preventDefault();
+      });
+
+      playerRef.current = player;
+    }
+  }, [video, is916]);
+
+  React.useEffect(() => {
+    const player = playerRef.current;
+    if (!player) return;
 
     if (inView) {
       if (!currentlyPlaying || currentlyPlaying === videoId) {
         setCurrentlyPlaying(videoId);
-        video.play().catch(() => {});
+        player.play()?.catch(() => {});
       }
     } else {
-      video.pause();
+      player.pause();
       if (currentlyPlaying === videoId) {
         setCurrentlyPlaying(null);
       }
@@ -110,24 +181,24 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
   }, [inView, videoId, setCurrentlyPlaying, currentlyPlaying]);
 
   React.useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    const player = playerRef.current;
+    if (!player) return;
 
     if (currentlyPlaying && currentlyPlaying !== videoId) {
-      video.pause();
+      player.pause();
     }
   }, [currentlyPlaying, videoId]);
 
   React.useEffect(() => {
-    const video = videoRef.current;
-    if (video && timestamps[videoId]) {
-      video.currentTime = timestamps[videoId];
+    const player = playerRef.current;
+    if (player && timestamps[videoId]) {
+      player.currentTime(timestamps[videoId]);
     }
   }, []);
 
   React.useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.muted = isMuted;
+    if (playerRef.current) {
+      playerRef.current.muted(isMuted as boolean);
     }
   }, [isMuted]);
 
@@ -135,29 +206,18 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
     <div
       ref={intersectionRef}
       className='relative overflow-hidden mt-2.5 mb-2 bg-black flex-center w-full'
-      style={{
-        aspectRatio: is916 ? '4/5' : `${targetRatio}`,
-      }}
+      style={containerStyle}
     >
       <video
+        data-vjs-player
         ref={videoRef}
-        loop
-        controls
-        muted={isMuted}
+        className='video-js vjs-theme-fantasy cursor-pointer'
         playsInline
-        preload='auto'
-        controlsList='nodownload nofullscreen noremoteplayback noplaybackrate'
-        className='cursor-pointer h-full
-        [&::-webkit-media-controls-fullscreen-button]:hidden
-        webkit-playsinline'
-        style={{
-          width: is916 ? '70.36%' : '100%',
-          objectFit: 'cover',
-        }}
+        data-setup='{}'
         onClick={handleVideoClick}
-        onVolumeChange={handleMuteChange}
         onTimeUpdate={handleTimeUpdate}
-        src={video}
+        onVolumeChange={handleMuteChange}
+        style={videoStyle}
       />
     </div>
   );
