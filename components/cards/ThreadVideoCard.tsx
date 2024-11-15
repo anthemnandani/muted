@@ -141,6 +141,8 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
       fluid: !is916,
       loop: true,
       muted: isMuted,
+      playsinline: true,
+      disablePictureInPicture: true,
       userActions: { hotkeys: true, doubleClick: false },
       controlBar: {
         pictureInPictureToggle: false,
@@ -148,6 +150,17 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
         volumePanel: {
           inline: true,
         },
+        progressControl: {
+          seekBar: true,
+        },
+        children: [
+          'playToggle',
+          'progressControl',
+          'volumePanel',
+          'currentTimeDisplay',
+          'timeDivider',
+          'durationDisplay',
+        ],
       },
       sources: [{ src: video, type: 'video/mp4' }],
     };
@@ -212,7 +225,6 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
         data-vjs-player
         ref={videoRef}
         className='video-js vjs-theme-fantasy cursor-pointer'
-        playsInline
         data-setup='{}'
         onClick={handleVideoClick}
         onTimeUpdate={handleTimeUpdate}
