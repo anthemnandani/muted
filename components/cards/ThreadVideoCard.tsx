@@ -41,10 +41,9 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
   const playerOptions = React.useMemo(
     () => ({
       controls: true,
-      responsive: true,
-      fluid: aspectRatio !== '9:16',
       loop: true,
       muted: isMuted,
+      fluid: aspectRatio !== '9:16',
       playsinline: true,
       disablePictureInPicture: true,
       userActions: { hotkeys: true, doubleClick: false },
