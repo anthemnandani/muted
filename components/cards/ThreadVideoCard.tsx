@@ -9,8 +9,8 @@ import { VideoPlayer } from '../shared/VideoPlayer';
 
 interface ThreadVideoCardProps {
   video: string;
-  aspectRatio: string;
-  originalDimensions: { width: number; height: number };
+  aspectRatio?: string;
+  originalDimensions?: { width: number; height: number };
   username: string;
   postId: string;
 }

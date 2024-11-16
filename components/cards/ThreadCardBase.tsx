@@ -72,7 +72,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
           )}
           {isImageOrVideo(media.fileType) === 'video' && (
             <ThreadVideoCard
-              video={media.fileUrl}
+              video={media.fileUrl!}
               aspectRatio={media.aspectRatio}
               originalDimensions={media.originalDimensions}
               username={author.username}
