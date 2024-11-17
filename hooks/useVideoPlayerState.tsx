@@ -50,11 +50,21 @@ export const useVideoPlayerState = ({
       }
     };
 
+    const handlePlay = () => {
+      if (currentlyPlaying && currentlyPlaying !== videoId) {
+        player.pause();
+      } else {
+        setCurrentlyPlaying(videoId);
+      }
+    };
+
     handlePlaybackState();
     document.addEventListener('visibilitychange', handlePlaybackState);
+    player.on('play', handlePlay);
 
     return () => {
       document.removeEventListener('visibilitychange', handlePlaybackState);
+      player.off('play', handlePlay);
     };
   }, [player, inView, videoId, currentlyPlaying, setCurrentlyPlaying]);
 
