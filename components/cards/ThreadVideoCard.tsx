@@ -45,6 +45,7 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
       muted: isMuted,
       fluid: aspectRatio !== '9:16',
       playsinline: true,
+      preload: 'auto',
       disablePictureInPicture: true,
       userActions: { hotkeys: true, doubleClick: false },
       controlBar: {
@@ -72,11 +73,15 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
     e.preventDefault();
     const target = e.target as HTMLElement;
 
+    const isVideoElement =
+      target.tagName === 'VIDEO' || target.classList.contains('vjs-tech');
+
     if (
       target.closest('.vjs-control-bar') ||
       target.closest('.vjs-big-play-button') ||
       target.closest('.vjs-poster') ||
-      target.closest('.vjs-loading-spinner')
+      target.closest('.vjs-loading-spinner') ||
+      !isVideoElement
     ) {
       e.stopPropagation();
       return;
