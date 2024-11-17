@@ -1,7 +1,6 @@
 'use client';
 import { useVideoPlayerState } from '@/hooks/useVideoPlayerState';
 import useVideoStyles from '@/hooks/useVideoStyles';
-import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
 import Player from 'video.js/dist/types/player';
 import { VideoContainer } from '../shared/VideoContainer';
@@ -79,6 +78,14 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
     }
   }, [player, setIsMuted]);
 
+  const handleTouchStart = (e: React.TouchEvent<HTMLVideoElement>) => {
+    if (e.currentTarget.classList.contains('vjs-playing')) {
+      player?.pause();
+    } else {
+      player?.play();
+    }
+  };
+
   return (
     <VideoContainer
       aspectRatio={aspectRatio}
@@ -90,6 +97,7 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
         onPlayerReady={setPlayer}
         onTimeUpdate={handleTimeUpdate}
         onVolumeChange={handleMuteChange}
+        onTouchStart={handleTouchStart}
         videoStyle={videoStyle}
       />
     </VideoContainer>

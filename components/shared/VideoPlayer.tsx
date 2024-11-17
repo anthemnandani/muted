@@ -11,6 +11,7 @@ interface VideoPlayerProps {
   onPlayerReady: (player: Player) => void;
   onTimeUpdate?: () => void;
   onVolumeChange?: (e: React.SyntheticEvent<HTMLVideoElement>) => void;
+  onTouchStart?: (e: React.TouchEvent<HTMLVideoElement>) => void;
   videoStyle?: React.CSSProperties;
 }
 
@@ -19,6 +20,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onPlayerReady,
   onTimeUpdate,
   onVolumeChange,
+  onTouchStart,
   videoStyle,
 }) => {
   const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -45,6 +47,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       data-setup='{}'
       onTimeUpdate={onTimeUpdate}
       onVolumeChange={onVolumeChange}
+      onTouchStart={onTouchStart}
       style={videoStyle}
     />
   );
