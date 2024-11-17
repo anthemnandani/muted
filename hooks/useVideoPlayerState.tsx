@@ -76,8 +76,20 @@ export const useVideoPlayerState = ({
 
   React.useEffect(() => {
     if (!player) return;
+
+    const handleVolumeChange = () => {
+      if (player.muted() !== isMuted) {
+        setIsMuted(player.muted() as boolean);
+      }
+    };
+
     player.muted(isMuted);
-  }, [player, isMuted]);
+    player.on('volumechange', handleVolumeChange);
+
+    return () => {
+      player.off('volumechange', handleVolumeChange);
+    };
+  }, [player, isMuted, setIsMuted]);
 
   React.useEffect(() => {
     if (!player) return;
@@ -123,8 +135,6 @@ export const useVideoPlayerState = ({
 
   return {
     isMuted,
-    setIsMuted,
     setTimestamp,
-    currentlyPlaying,
   };
 };

@@ -9,18 +9,16 @@ import '@videojs/themes/dist/fantasy/index.css';
 interface VideoPlayerProps {
   options: any;
   onPlayerReady: (player: Player) => void;
-  onTimeUpdate?: () => void;
-  onVolumeChange?: (e: React.SyntheticEvent<HTMLVideoElement>) => void;
   onTouchStart?: (e: React.TouchEvent<HTMLVideoElement>) => void;
+  onTimeUpdate?: () => void;
   videoStyle?: React.CSSProperties;
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   options,
   onPlayerReady,
-  onTimeUpdate,
-  onVolumeChange,
   onTouchStart,
+  onTimeUpdate,
   videoStyle,
 }) => {
   const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -45,9 +43,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       ref={videoRef}
       className='video-js vjs-theme-fantasy vjs-show-big-play-button-on-pause'
       data-setup='{}'
-      onTimeUpdate={onTimeUpdate}
-      onVolumeChange={onVolumeChange}
       onTouchStart={onTouchStart}
+      onTimeUpdate={onTimeUpdate}
       style={videoStyle}
     />
   );

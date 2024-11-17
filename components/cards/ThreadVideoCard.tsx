@@ -29,7 +29,7 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
     [username, postId]
   );
 
-  const { isMuted, setIsMuted, setTimestamp } = useVideoPlayerState({
+  const { isMuted, setTimestamp } = useVideoPlayerState({
     player,
     videoId,
     inView,
@@ -62,6 +62,11 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
         ],
       },
       sources: [{ src: video, type: 'video/mp4' }],
+      html5: {
+        nativeTextTracks: false,
+        nativeAudioTracks: false,
+        nativeVideoTracks: false,
+      },
     }),
     [video, aspectRatio, isMuted]
   );
@@ -73,12 +78,6 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
       setTimestamp(videoId, player.currentTime() as number);
     }
   }, [videoId, setTimestamp, inView]);
-
-  const handleMuteChange = React.useCallback(() => {
-    if (player) {
-      setIsMuted(player.muted() as boolean);
-    }
-  }, [player, setIsMuted]);
 
   const handleTouchStart = (e: React.TouchEvent<HTMLVideoElement>) => {
     if (e.currentTarget.classList.contains('vjs-playing')) {
@@ -97,9 +96,8 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
       <VideoPlayer
         options={playerOptions}
         onPlayerReady={setPlayer}
-        onTimeUpdate={handleTimeUpdate}
-        onVolumeChange={handleMuteChange}
         onTouchStart={handleTouchStart}
+        onTimeUpdate={handleTimeUpdate}
         videoStyle={videoStyle}
       />
     </VideoContainer>
