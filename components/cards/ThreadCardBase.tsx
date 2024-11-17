@@ -12,6 +12,7 @@ import Username from '../user/Username';
 import ThreadImageCard from './ThreadImageCard';
 import ThreadQuoteCard from './ThreadQuoteCard';
 import ThreadVideoCard from './ThreadVideoCard';
+import { usePathname } from 'next/navigation';
 
 interface ThreadCardBaseProps extends ThreadCardProps {
   variant?: 'default' | 'reply';
@@ -43,32 +44,41 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   className,
   children,
 }) => {
+  const pathname = usePathname();
+
+  const handleContentClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (
+      target.closest('.vjs-control') ||
+      target.closest('.vjs-big-play-button') ||
+      (target.tagName === 'VIDEO' && pathname !== '/')
+    ) {
+      e.preventDefault();
+    }
+  };
+
   const content = (
     <>
       {text && (
-        <Link href={`/${author.username}/post/${id}`}>
-          <div
-            dangerouslySetInnerHTML={{
-              __html: text.replace(/\\n/g, '\n'),
-            }}
-            className={cn(
-              'text-accent-foreground text-[15px] leading-5 whitespace-pre-line px-2 md:px-4 my-3',
-              variant === 'reply' && 'max-md:max-w-full'
-            )}
-          />
-        </Link>
+        <div
+          dangerouslySetInnerHTML={{
+            __html: text.replace(/\\n/g, '\n'),
+          }}
+          className={cn(
+            'text-accent-foreground text-[15px] leading-5 whitespace-pre-line px-2 md:px-4 my-3',
+            variant === 'reply' && 'max-md:max-w-full'
+          )}
+        />
       )}
 
       {media && media.fileType && (
         <>
           {isImageOrVideo(media.fileType) === 'image' && (
-            <Link href={`/${author.username}/post/${id}`}>
-              <ThreadImageCard
-                image={media.fileUrl}
-                aspectRatio={media.aspectRatio}
-                originalDimensions={media.originalDimensions}
-              />
-            </Link>
+            <ThreadImageCard
+              image={media.fileUrl}
+              aspectRatio={media.aspectRatio}
+              originalDimensions={media.originalDimensions}
+            />
           )}
           {isImageOrVideo(media.fileType) === 'video' && (
             <ThreadVideoCard
@@ -83,9 +93,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
       )}
       {quoteId && (
         <div className='px-10'>
-          <Link href={`/${author.username}/post/${quoteId}`}>
-            <ThreadQuoteCard quoteId={quoteId} />
-          </Link>
+          <ThreadQuoteCard quoteId={quoteId} />
         </div>
       )}
     </>
@@ -121,7 +129,13 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
       )}
 
       {variant === 'default' ? (
-        <div className='w-full'>{content}</div>
+        <Link
+          href={`/${author.username}/post/${id}`}
+          className='w-full'
+          onClick={handleContentClick}
+        >
+          {content}
+        </Link>
       ) : (
         content
       )}

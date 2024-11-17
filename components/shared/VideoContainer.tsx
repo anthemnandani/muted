@@ -9,7 +9,6 @@ interface VideoContainerProps {
   aspectRatio?: string;
   originalDimensions?: { width: number; height: number };
   onInViewChange: (inView: boolean) => void;
-  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
 export const VideoContainer: React.FC<VideoContainerProps> = ({
@@ -17,7 +16,6 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
   aspectRatio,
   originalDimensions,
   onInViewChange,
-  onClick,
 }) => {
   const { ref, inView } = useInView({
     threshold: 0.45,
@@ -34,7 +32,6 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
       ref={ref}
       className='relative overflow-hidden mt-2.5 mb-2 bg-black flex-center w-full cursor-pointer'
       style={containerStyle}
-      onClick={onClick}
     >
       {children}
     </div>

@@ -41,7 +41,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     <video
       data-vjs-player
       ref={videoRef}
-      className='video-js vjs-theme-fantasy'
+      className='video-js vjs-theme-fantasy vjs-show-big-play-button-on-pause'
       data-setup='{}'
       onTimeUpdate={onTimeUpdate}
       onVolumeChange={onVolumeChange}

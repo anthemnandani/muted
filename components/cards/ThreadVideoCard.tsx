@@ -22,8 +22,6 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
   username,
   postId,
 }) => {
-  const pathname = usePathname();
-  const router = useRouter();
   const [player, setPlayer] = React.useState<Player | null>(null);
   const [inView, setInView] = React.useState(false);
 
@@ -69,29 +67,6 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
 
   const { videoStyle } = useVideoStyles(aspectRatio, originalDimensions);
 
-  const handleVideoClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const target = e.target as HTMLElement;
-
-    const isVideoElement =
-      target.tagName === 'VIDEO' || target.classList.contains('vjs-tech');
-
-    if (
-      target.closest('.vjs-control-bar') ||
-      target.closest('.vjs-big-play-button') ||
-      target.closest('.vjs-poster') ||
-      target.closest('.vjs-loading-spinner') ||
-      !isVideoElement
-    ) {
-      e.stopPropagation();
-      return;
-    }
-
-    if (pathname === '/') {
-      router.push(`/${username}/post/${postId}`);
-    }
-  };
-
   const handleTimeUpdate = React.useCallback(() => {
     if (player && inView) {
       setTimestamp(videoId, player.currentTime() as number);
@@ -109,7 +84,6 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
       aspectRatio={aspectRatio}
       originalDimensions={originalDimensions}
       onInViewChange={setInView}
-      onClick={handleVideoClick}
     >
       <VideoPlayer
         options={playerOptions}
