@@ -4,15 +4,12 @@ const useVideoStyles = (
 ) => {
   const MIN_RATIO = 0.8;
   const MAX_RATIO = 16 / 9;
-  const CONTAINER_RATIO = 4 / 5;
   const is916 = aspectRatio === '9:16';
 
   let targetRatio = 16 / 9;
-  let containerStyle = {};
   let videoStyle = {};
 
   if (is916) {
-    containerStyle = { aspectRatio: CONTAINER_RATIO };
     videoStyle = {
       height: '100%',
       aspectRatio: '9/16',
@@ -29,16 +26,15 @@ const useVideoStyles = (
       else if (originalRatio > MAX_RATIO) targetRatio = 16 / 9;
       else targetRatio = originalRatio;
     }
-
-    containerStyle = { aspectRatio: targetRatio };
     videoStyle = {
       height: '100%',
       width: '100%',
-      objectFit: 'cover',
+      objectFit: 'contain',
+      margin: 'auto',
     };
   }
 
-  return { containerStyle, videoStyle, is916 };
+  return { videoStyle, is916 };
 };
 
 export default useVideoStyles;

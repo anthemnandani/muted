@@ -42,7 +42,6 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
       controls: true,
       loop: true,
       muted: isMuted,
-      fluid: aspectRatio !== '9:16',
       playsinline: true,
       preload: 'auto',
       disablePictureInPicture: true,
@@ -88,11 +87,7 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
   };
 
   return (
-    <VideoContainer
-      aspectRatio={aspectRatio}
-      originalDimensions={originalDimensions}
-      onInViewChange={setInView}
-    >
+    <VideoContainer onInViewChange={setInView}>
       <VideoPlayer
         options={playerOptions}
         onPlayerReady={setPlayer}
