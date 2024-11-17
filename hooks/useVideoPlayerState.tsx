@@ -1,13 +1,24 @@
 'use client';
 import useVideoPlayer from '@/store/videoPlayer';
+import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
 import Player from 'video.js/dist/types/player';
 
-export const useVideoPlayerState = (
-  player: Player | null,
-  videoId: string,
-  inView: boolean
-) => {
+interface VideoPlayerStateProps {
+  player: Player | null;
+  videoId: string;
+  inView: boolean;
+  username: string;
+  postId: string;
+}
+
+export const useVideoPlayerState = ({
+  player,
+  videoId,
+  inView,
+  username,
+  postId,
+}: VideoPlayerStateProps) => {
   const {
     currentlyPlaying,
     setCurrentlyPlaying,
@@ -16,6 +27,9 @@ export const useVideoPlayerState = (
     timestamps,
     setTimestamp,
   } = useVideoPlayer();
+
+  const pathname = usePathname();
+  const router = useRouter();
 
   React.useEffect(() => {
     if (!player) return;
@@ -78,7 +92,9 @@ export const useVideoPlayerState = (
       const verticalMovement = Math.abs(touchEndY - touchStartY);
 
       if (!isControlElement && verticalMovement < SCROLL_THRESHOLD) {
-        if (player.paused()) {
+        if (pathname === '/') {
+          router.push(`/${username}/post/${postId}`);
+        } else if (player.paused()) {
           player.play();
         } else {
           player.pause();

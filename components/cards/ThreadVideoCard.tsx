@@ -29,11 +29,13 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
     [username, postId]
   );
 
-  const { isMuted, setIsMuted, setTimestamp } = useVideoPlayerState(
+  const { isMuted, setIsMuted, setTimestamp } = useVideoPlayerState({
     player,
     videoId,
-    inView
-  );
+    inView,
+    username,
+    postId,
+  });
 
   const playerOptions = React.useMemo(
     () => ({
