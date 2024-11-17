@@ -27,8 +27,12 @@ export const useVideoPlayerState = (
           setCurrentlyPlaying(null);
         }
       } else {
-        setCurrentlyPlaying(videoId);
-        player.play()?.catch(() => {});
+        if (!currentlyPlaying || currentlyPlaying === videoId) {
+          setCurrentlyPlaying(videoId);
+          player.play()?.catch(() => {});
+        } else {
+          player.pause();
+        }
       }
     };
 
@@ -50,6 +54,46 @@ export const useVideoPlayerState = (
     if (!player) return;
     player.muted(isMuted);
   }, [player, isMuted]);
+
+  React.useEffect(() => {
+    if (!player) return;
+
+    let touchStartY = 0;
+    let touchEndY = 0;
+    const SCROLL_THRESHOLD = 10;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      touchEndY = e.changedTouches[0].clientY;
+
+      const target = e.target as HTMLElement;
+      const isControlElement =
+        target.closest('.vjs-control-bar') ||
+        target.closest('.vjs-play-control') ||
+        target.closest('.vjs-big-play-button');
+
+      const verticalMovement = Math.abs(touchEndY - touchStartY);
+
+      if (!isControlElement && verticalMovement < SCROLL_THRESHOLD) {
+        if (player.paused()) {
+          player.play();
+        } else {
+          player.pause();
+        }
+      }
+    };
+
+    player.on('touchstart', handleTouchStart);
+    player.on('touchend', handleTouchEnd);
+
+    return () => {
+      player.off('touchstart');
+      player.off('touchend');
+    };
+  }, [player, videoId]);
 
   return {
     isMuted,
