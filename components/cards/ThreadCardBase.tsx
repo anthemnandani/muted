@@ -65,7 +65,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
             __html: text.replace(/\\n/g, '\n'),
           }}
           className={cn(
-            'text-accent-foreground text-[15px] leading-5 whitespace-pre-line px-2 md:px-4 my-3',
+            'text-accent-foreground text-[16px] font-normal leading-[1.4em] antialiased whitespace-pre-line px-2 md:px-4 my-3',
             variant === 'reply' && 'max-md:max-w-full'
           )}
         />
