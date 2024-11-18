@@ -40,12 +40,12 @@ const UserProfile = ({ author }: { author: AuthorInfoProps }) => {
         disabled={isLoading || isSameUser}
       >
         {followUpdate.current.isFollowedByMe ? (
-          <div className='bg-black absolute bottom-1 right-1 rounded-2xl cursor-pointer hover:scale-105 active:scale-95'>
-            <Check className='size-5 p-0.5 text-primary-red' />
+          <div className='bg-black absolute bottom-0 right-0 rounded-2xl cursor-pointer hover:scale-105 active:scale-95'>
+            <Check className='size-6 p-0.5 text-primary-red' />
           </div>
         ) : (
-          <div className='bg-primary-red absolute bottom-1 right-1 rounded-2xl cursor-pointer hover:scale-105 active:scale-95'>
-            <Plus className='size-5 p-0.5 text-white' />
+          <div className='bg-primary-red absolute bottom-0 right-0 rounded-2xl cursor-pointer hover:scale-105 active:scale-95'>
+            <Plus className='size-6 p-0.5 text-white' />
           </div>
         )}
       </button>

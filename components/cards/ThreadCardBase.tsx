@@ -118,7 +118,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
                   </li>
 
                   <li className='mr-2 hover:cursor-pointer hover:text-gray-2 xs:mr-0'>
-                    <a href={`/${author.username}`}>@{author.username}</a>
+                    <a href={`/@${author.username}`}>@{author.username}</a>
                   </li>
                   <li>
                     <div className='mr-2 h-1 w-1 rounded-full bg-gray-3 xs:mr-0'></div>
