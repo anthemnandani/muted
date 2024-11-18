@@ -70,7 +70,6 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
           )}
         />
       )}
-
       {media && media.fileType && (
         <>
           {isImageOrVideo(media.fileType) === 'image' && (
@@ -106,25 +105,37 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
       )}
 
       {showHeader && (
-        <div className='flex-between gap-5 py-px w-full max-md:max-w-full max-md:flex-wrap px-2 md:px-4'>
-          <div className='flex items-center gap-2'>
-            <UserProfile author={author} />
-            {variant === 'reply' ? (
-              <>
-                <Username author={author} />
-                <time className='text-[15px] leading-none text-gray-3'>
-                  {formatTimeAgo(createdAt)}
-                </time>
-              </>
-            ) : (
+        <div className='flex justify-between w-full xs:space-x-4 px-2 md:px-4'>
+          <UserProfile author={author} />
+          <div className='flex-between w-full'>
+            <ul className='flex flex-wrap content-center items-center space-y-0.5 text-sm text-gray-3 xs:content-baseline xs:space-y-0 xs:space-x-2'>
               <Username author={author} />
-            )}
+
+              {variant === 'default' && (
+                <>
+                  <li>
+                    <div className='hidden h-1 w-1 rounded-full bg-gray-3 xs:block'></div>
+                  </li>
+
+                  <li className='mr-2 hover:cursor-pointer hover:text-gray-2 xs:mr-0'>
+                    <a href={`/${author.username}`}>@{author.username}</a>
+                  </li>
+                  <li>
+                    <div className='mr-2 h-1 w-1 rounded-full bg-gray-3 xs:mr-0'></div>
+                  </li>
+                </>
+              )}
+              <li className='mr-2 xs:mr-0'>
+                <a href={`/post/${id}`}>{formatTimeAgo(createdAt)}</a>
+              </li>
+            </ul>
+
+            <ThreadActionMenu
+              authorId={author.id}
+              postId={id}
+              repostedBy={repostedBy}
+            />
           </div>
-          <ThreadActionMenu
-            authorId={author.id}
-            postId={id}
-            repostedBy={repostedBy}
-          />
         </div>
       )}
 

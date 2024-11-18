@@ -31,7 +31,7 @@ const ParentReplyCard: React.FC<ThreadCardProps> = ({
           {...props}
           author={author}
           repliesCount={repliesCount ?? 0}
-          variant='default'
+          variant='reply'
           className='w-full'
         />
 

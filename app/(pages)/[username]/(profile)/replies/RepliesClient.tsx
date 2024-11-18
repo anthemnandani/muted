@@ -5,6 +5,7 @@ import ThreadCard from '@/components/cards/ThreadCard';
 import { Icons } from '@/components/icons';
 import Loader from '@/components/shared/Loader';
 import { api } from '@/trpc/react';
+import Link from 'next/link';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
 const RepliesClient = ({ username }: { username: string }) => {
@@ -45,6 +46,16 @@ const RepliesClient = ({ username }: { username: string }) => {
                 <div key={`reply-${reply.id}`}>
                   {reply.parentPost && (
                     <ThreadCard {...reply.parentPost} showUsername />
+                  )}
+                  {reply.parentPost?.author.username && (
+                    <div className='mt-4'>
+                      <Link
+                        href={`/@${reply.parentPost?.author.username}/post/${reply.parentPost?.id}`}
+                        className='text-gray-3 text-[15px] leading-5 px-2 md:px-4'
+                      >
+                        Replying to @{reply.parentPost?.author.username}
+                      </Link>
+                    </div>
                   )}
                   <ThreadCard
                     {...reply}

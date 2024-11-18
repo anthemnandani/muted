@@ -1,37 +1,55 @@
 'use client';
 
-import { Author } from '@/lib/types';
-import { Plus } from 'lucide-react';
+import type { AuthorInfoProps } from '@/lib/types';
+import { Check, Plus } from 'lucide-react';
 import UserProfileCard from '../cards/UserProfileCard';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Dialog, DialogContent, DialogTrigger } from '../ui/dialog';
+import useFollowUser from '@/hooks/useFollowUser';
 
-const UserProfile = ({ author }: { author: Author }) => {
+const UserProfile = ({ author }: { author: AuthorInfoProps }) => {
+  const { handleToggleFollow, isLoading, isSameUser, followUpdate } =
+    useFollowUser({ author });
+
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <button className='relative' type='button'>
-          <div className='size-9 outline outline-1 outline-border rounded-full'>
-            <Avatar className='rounded-full w-full h-full '>
-              <AvatarImage
-                src={author?.image ?? ''}
-                alt={author?.username}
-                className='object-cover'
-              />
-              <AvatarFallback>
-                {author?.username?.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+    <div className='relative'>
+      <Dialog>
+        <DialogTrigger asChild>
+          <button className='relative' type='button'>
+            <div className='size-14 outline outline-1 outline-border rounded-full'>
+              <Avatar className='rounded-full w-full h-full '>
+                <AvatarImage
+                  src={author?.image ?? ''}
+                  alt={author?.username}
+                  className='object-cover'
+                />
+                <AvatarFallback>
+                  {author?.username?.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+          </button>
+        </DialogTrigger>
+        <DialogContent className='!max-w-[360px] w-full p-0 rounded-2xl border-none'>
+          <UserProfileCard {...author} />
+        </DialogContent>
+      </Dialog>
+      <button
+        type='button'
+        onClick={handleToggleFollow}
+        disabled={isLoading || isSameUser}
+      >
+        {followUpdate.current.isFollowedByMe ? (
+          <div className='bg-black absolute bottom-1 right-1 rounded-2xl cursor-pointer hover:scale-105 active:scale-95'>
+            <Check className='size-5 p-0.5 text-primary-red' />
           </div>
-          <div className='bg-foreground absolute -bottom-0.5 -right-0.5 rounded-2xl border-2 border-background text-background hover:scale-105 active:scale-95'>
-            <Plus className='size-4 p-0.5 text-white dark:text-black' />
+        ) : (
+          <div className='bg-primary-red absolute bottom-1 right-1 rounded-2xl cursor-pointer hover:scale-105 active:scale-95'>
+            <Plus className='size-5 p-0.5 text-white' />
           </div>
-        </button>
-      </DialogTrigger>
-      <DialogContent className='!max-w-[360px] w-full p-0 rounded-2xl border-none'>
-        <UserProfileCard {...author} />
-      </DialogContent>
-    </Dialog>
+        )}
+      </button>
+    </div>
   );
 };
 

@@ -61,6 +61,7 @@ export interface ThreadDisplayProps {
   isTopLevel?: boolean;
   isLastChild?: boolean;
   toggleReplies?: () => void;
+  variant?: 'default' | 'reply';
   isChild?: boolean;
 }
 
@@ -80,21 +81,6 @@ export interface MenuItemProps {
   isActionMenuItem?: boolean;
 }
 
-export type Author = {
-  id: string;
-  image: string | null;
-  fullName: string | null;
-  username: string;
-  bio: string | null;
-  link: string | null;
-  createdAt: Date;
-  isAdmin: boolean | null;
-  followers: {
-    id: string;
-    image: string | null;
-  }[];
-};
-
 export type ParentPostProps = {
   id: string;
   createdAt: Date;
@@ -108,8 +94,8 @@ export type ParentPostProps = {
   reposts: { userId: string; postId: string }[];
   parentPostId: string | null;
   parentPost?: any;
-  author: Author;
-  repostedBy?: Author;
+  author: AuthorInfoProps;
+  repostedBy?: AuthorInfoProps;
   postChildren?: ParentPostProps[];
   likesCount?: number;
   bookmarksCount?: number;
@@ -161,7 +147,7 @@ export interface ThreadActionsProps {
   likesCount: number;
   likes: { userId: string }[];
   text: string | null;
-  author: Author;
+  author: AuthorInfoProps;
   createdAt: Date;
   repliesCount: number;
   reposts: { userId: string; postId: string }[];
