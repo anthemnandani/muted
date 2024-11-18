@@ -42,7 +42,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       data-vjs-player
       ref={videoRef}
       className='video-js vjs-theme-fantasy vjs-show-big-play-button-on-pause'
-      data-setup='{}'
+      data-setup='{"inactivityTimeout": 0}'
       onTouchStart={onTouchStart}
       onTimeUpdate={onTimeUpdate}
       style={videoStyle}
