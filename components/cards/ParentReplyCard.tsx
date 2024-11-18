@@ -1,8 +1,6 @@
 'use client';
 import { ThreadCardProps } from '@/lib/types';
 import React, { useMemo, useState } from 'react';
-import UserProfile from '../modals/UserProfile';
-import Line from '../shared/Line';
 import RepliesWrapper from '../shared/RepliesWrapper';
 import { Separator } from '../ui/separator';
 import ThreadCardBase from './ThreadCardBase';

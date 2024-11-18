@@ -61,6 +61,7 @@ const PostInfoClient = ({ id }: { id: string }) => {
             <ParentReplyCard key={reply.id} {...reply} />
           ))}
         </InfiniteScroll>
+        <div className='pb-20 md:pb-10'></div>
       </Wrapper>
     </>
   );

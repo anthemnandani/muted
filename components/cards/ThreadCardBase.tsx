@@ -108,7 +108,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
         <div className='flex justify-between w-full space-x-2 xs:space-x-4 px-2 md:px-4'>
           <UserProfile author={author} />
           <div className='flex-between w-full'>
-            <ul className='flex flex-wrap content-center items-center space-y-0.5 text-sm text-gray-3 sm:content-baseline sm:space-y-0 space-x-1 sm:space-x-2'>
+            <ul className='flex flex-wrap content-center items-center text-sm text-gray-3 sm:content-baseline gap-1 sm:gap-2'>
               <Username author={author} />
 
               {variant === 'default' && (
@@ -117,11 +117,11 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
                     <div className='hidden size-1 rounded-full bg-gray-3 sm:block'></div>
                   </li>
 
-                  <li className='hidden hover:cursor-pointer hover:text-gray-2 mr-0 sm:block'>
+                  <li className='hidden hover:cursor-pointer hover:text-gray-2 sm:block'>
                     <a href={`/@${author.username}`}>@{author.username}</a>
                   </li>
                   <li>
-                    <div className='hidden size-1 rounded-full bg-gray-3 mr-0 sm:block'></div>
+                    <div className='hidden size-1 rounded-full bg-gray-3 sm:block'></div>
                   </li>
                 </>
               )}
