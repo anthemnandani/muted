@@ -1,13 +1,13 @@
-import { Author } from '@/lib/types';
+import type { AuthorInfoProps } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
 import Username from '../user/Username';
 
 interface PostHeaderProps {
-  author: Author;
+  author: AuthorInfoProps;
   createdAt: Date;
   id: string;
-  repostedBy?: Author;
+  repostedBy?: AuthorInfoProps;
 }
 
 const PostHeader: React.FC<PostHeaderProps> = ({

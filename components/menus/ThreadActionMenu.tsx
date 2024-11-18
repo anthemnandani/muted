@@ -1,5 +1,5 @@
 'use client';
-import { Author } from '@/lib/types';
+import type { AuthorInfoProps } from '@/lib/types';
 import { useUser } from '@clerk/nextjs';
 import { MoreHorizontal } from 'lucide-react';
 import { Icons } from '../icons';
@@ -15,7 +15,7 @@ import {
 interface ThreadActionMenuProps {
   authorId: string;
   postId: string;
-  repostedBy?: Author;
+  repostedBy?: AuthorInfoProps;
 }
 
 const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({

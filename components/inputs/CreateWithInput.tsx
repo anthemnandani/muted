@@ -12,7 +12,7 @@ const CreateWithInput = ({ onClick }: { onClick: () => void }) => {
     <div className='flex flex-col w-full select-none' onClick={onClick}>
       <div className='flex w-full my-4 px-6 py-2'>
         <div className='w-full flex select-none'>
-          <Avatar className='rounded-full outline outline-1 outline-border h-9 w-9 mr-4'>
+          <Avatar className='rounded-full outline outline-1 outline-border size-9 mr-4'>
             <AvatarImage
               src={data?.userDetails?.image || ''}
               alt={user?.username ?? ''}
