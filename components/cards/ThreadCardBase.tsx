@@ -105,27 +105,27 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
       )}
 
       {showHeader && (
-        <div className='flex justify-between w-full xs:space-x-4 px-2 md:px-4'>
+        <div className='flex justify-between w-full space-x-2 xs:space-x-4 px-2 md:px-4'>
           <UserProfile author={author} />
           <div className='flex-between w-full'>
-            <ul className='flex flex-wrap content-center items-center space-y-0.5 text-sm text-gray-3 xs:content-baseline xs:space-y-0 xs:space-x-2'>
+            <ul className='flex flex-wrap content-center items-center space-y-0.5 text-sm text-gray-3 sm:content-baseline sm:space-y-0 space-x-1 sm:space-x-2'>
               <Username author={author} />
 
               {variant === 'default' && (
                 <>
                   <li>
-                    <div className='hidden h-1 w-1 rounded-full bg-gray-3 xs:block'></div>
+                    <div className='hidden size-1 rounded-full bg-gray-3 sm:block'></div>
                   </li>
 
-                  <li className='mr-2 hover:cursor-pointer hover:text-gray-2 xs:mr-0'>
+                  <li className='hidden hover:cursor-pointer hover:text-gray-2 mr-0 sm:block'>
                     <a href={`/@${author.username}`}>@{author.username}</a>
                   </li>
                   <li>
-                    <div className='mr-2 h-1 w-1 rounded-full bg-gray-3 xs:mr-0'></div>
+                    <div className='hidden size-1 rounded-full bg-gray-3 mr-0 sm:block'></div>
                   </li>
                 </>
               )}
-              <li className='mr-2 xs:mr-0'>
+              <li className='mr-2 sm:mr-0'>
                 <a href={`/post/${id}`}>{formatTimeAgo(createdAt)}</a>
               </li>
             </ul>
