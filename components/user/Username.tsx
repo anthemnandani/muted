@@ -13,24 +13,27 @@ interface UsernameProps {
   author: AuthorInfoProps;
   isReposted?: boolean;
   repostedAt?: Date;
+  className?: string;
 }
 
 const Username: React.FC<UsernameProps> = ({
   author,
   isReposted,
   repostedAt,
+  className,
 }) => {
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
         <Link
           href={`/@${author.username}`}
-          className='flex-center gap-1.5 w-fit group'
+          className='inline flex-center gap-1.5 w-fit group'
         >
           <span
             className={cn(
               'text-accent-foreground text-[15px] font-semibold leading-[0] group-hover:underline',
-              isReposted && 'text-[13px] text-[#999] dark:text-gray-3'
+              isReposted && 'text-[13px] text-[#999] dark:text-gray-3',
+              className
             )}
           >
             {author.username}

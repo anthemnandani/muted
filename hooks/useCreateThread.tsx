@@ -13,7 +13,9 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import usePost from './usePost';
 
-const useCreateThread = () => {
+const useCreateThread = (
+  setMentions: (mentions: Array<{ userId: string; index: number }>) => void
+) => {
   const router = useRouter();
   const { postPrivacy } = usePost();
   const { selectedFile, setSelectedFile } = useFileStore();
@@ -45,6 +47,7 @@ const useCreateThread = () => {
           ...prev,
           text: '',
         }));
+        setMentions([]);
       },
       onError: () => {
         toast.error('PostingError: Something went wrong!');
@@ -156,6 +159,7 @@ const useCreateThread = () => {
     setSelectedFile([]);
     setReplyPostInfo(null);
     setQuoteInfo(null);
+    setMentions([]);
   };
 
   return {

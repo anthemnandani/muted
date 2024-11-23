@@ -13,6 +13,7 @@ import ThreadImageCard from './ThreadImageCard';
 import ThreadQuoteCard from './ThreadQuoteCard';
 import ThreadVideoCard from './ThreadVideoCard';
 import { usePathname } from 'next/navigation';
+import ThreadText from '../shared/ThreadText';
 
 interface ThreadCardBaseProps extends ThreadCardProps {
   variant?: 'default' | 'reply';
@@ -31,6 +32,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   quoteId,
   repostedBy,
   repostedAt,
+  mentions,
   likes,
   likesCount,
   reposts,
@@ -59,17 +61,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
 
   const content = (
     <>
-      {text && (
-        <div
-          dangerouslySetInnerHTML={{
-            __html: text.replace(/\\n/g, '\n'),
-          }}
-          className={cn(
-            'text-accent-foreground text-[16px] font-normal leading-[1.4em] antialiased whitespace-pre-line px-2 md:px-4 my-3',
-            variant === 'reply' && 'max-md:max-w-full'
-          )}
-        />
-      )}
+      {text && <ThreadText text={text} mentions={mentions} variant={variant} />}
       {media && media.fileType && (
         <>
           {isImageOrVideo(media.fileType) === 'image' && (

@@ -42,7 +42,7 @@ const CreateThread = () => {
     isReplying,
     handleMutation,
     resetState,
-  } = useCreateThread();
+  } = useCreateThread(setMentions);
 
   const handleCreateThread = () => {
     setOpenDialog(false);

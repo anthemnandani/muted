@@ -95,6 +95,10 @@ export type ParentPostProps = {
   reposts: { userId: string; postId: string }[];
   parentPostId: string | null;
   parentPost?: any;
+  mentions: Array<{
+    user: AuthorInfoProps;
+    index: number;
+  }>;
   author: AuthorInfoProps;
   repostedBy?: AuthorInfoProps;
   postChildren?: ParentPostProps[];

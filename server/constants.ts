@@ -71,3 +71,16 @@ export const GET_REPLIES = {
     },
   },
 };
+
+export const GET_MENTIONS = {
+  mentions: {
+    select: {
+      index: true,
+      user: {
+        select: {
+          ...GET_USER,
+        },
+      },
+    },
+  },
+};

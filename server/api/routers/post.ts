@@ -4,6 +4,7 @@ import {
   GET_BOOKMARKS,
   GET_COUNT,
   GET_LIKES,
+  GET_MENTIONS,
   GET_REPOSTS,
   GET_USER,
 } from '@/server/constants';
@@ -36,7 +37,7 @@ export const postRouter = createTRPCRouter({
           .array(
             z.object({
               userId: z.string(),
-              index: z.number(), // Position in text
+              index: z.number(),
             })
           )
           .optional(),
@@ -63,13 +64,7 @@ export const postRouter = createTRPCRouter({
       }
 
       const filter = new Filter();
-
-      console.log('Input Text: ', input.text);
       const filteredText = filter.clean(input.text || '');
-
-      console.log('Mentions: ', input.mentions);
-
-      console.log('Filtered Text: ', filteredText);
 
       const transactionResult = await ctx.db.$transaction(async (prisma) => {
         const postId = createId();
@@ -110,13 +105,12 @@ export const postRouter = createTRPCRouter({
           });
         }
 
-        // Create notifications for mentioned users
         if (input.mentions?.length) {
           await Promise.all(
             input.mentions.map((mention) =>
               prisma.notification.create({
                 data: {
-                  type: 'MENTION', // Add this to NotificationType enum
+                  type: 'MENTION',
                   senderUserId: userId,
                   receiverUserId: mention.userId,
                   postId: newpost.id,
@@ -189,6 +183,7 @@ export const postRouter = createTRPCRouter({
           ...GET_BOOKMARKS,
           ...GET_COUNT,
           ...GET_REPOSTS,
+          ...GET_MENTIONS,
           reposts: {
             select: {
               createdAt: true,
@@ -431,6 +426,7 @@ export const postRouter = createTRPCRouter({
           ...GET_BOOKMARKS,
           ...GET_REPOSTS,
           ...GET_COUNT,
+          ...GET_MENTIONS,
         },
       });
 
@@ -879,6 +875,7 @@ export const postRouter = createTRPCRouter({
               ...GET_REPOSTS,
               ...GET_COUNT,
               ...GET_BOOKMARKS,
+              ...GET_MENTIONS,
             },
           },
         },
@@ -961,6 +958,7 @@ export const postRouter = createTRPCRouter({
               ...GET_REPOSTS,
               ...GET_COUNT,
               ...GET_BOOKMARKS,
+              ...GET_MENTIONS,
             },
           },
         },
@@ -1046,6 +1044,7 @@ export const postRouter = createTRPCRouter({
           ...GET_REPOSTS,
           ...GET_COUNT,
           ...GET_BOOKMARKS,
+          ...GET_MENTIONS,
         },
       });
 
