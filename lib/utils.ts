@@ -204,3 +204,7 @@ export const getMediaAspectRatio = (dimensions: {
 
   return undefined;
 };
+
+export const highlightMentions = (text: string) => {
+  return text.replace(/@(\w+)/g, `<span style="color: #18a3fe;">@$1</span>`);
+};

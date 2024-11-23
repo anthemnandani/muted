@@ -1,8 +1,10 @@
+import { PostMedia } from '@/lib/types';
 import { getUserEmail } from '@/lib/utils';
 import {
   GET_BOOKMARKS,
   GET_COUNT,
   GET_LIKES,
+  GET_MENTIONS,
   GET_REPOSTS,
   GET_USER,
 } from '@/server/constants';
@@ -12,7 +14,6 @@ import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure, publicProcedure } from '../trpc';
-import { PostMedia } from '@/lib/types';
 
 export const postRouter = createTRPCRouter({
   createPost: privateProcedure
@@ -31,6 +32,14 @@ export const postRouter = createTRPCRouter({
               })
               .optional(),
           })
+          .optional(),
+        mentions: z
+          .array(
+            z.object({
+              userId: z.string(),
+              index: z.number(),
+            })
+          )
           .optional(),
         privacy: z.nativeEnum(PostPrivacy).default('ANYONE'),
         quoteId: z.string().optional(),
@@ -69,6 +78,14 @@ export const postRouter = createTRPCRouter({
             privacy: input.privacy,
             quoteId: input.quoteId,
             path,
+            mentions: input.mentions
+              ? {
+                  create: input.mentions.map((mention) => ({
+                    userId: mention.userId,
+                    index: mention.index,
+                  })),
+                }
+              : undefined,
           },
           select: {
             id: true,
@@ -86,6 +103,22 @@ export const postRouter = createTRPCRouter({
               message: filteredText,
             },
           });
+        }
+
+        if (input.mentions?.length) {
+          await Promise.all(
+            input.mentions.map((mention) =>
+              prisma.notification.create({
+                data: {
+                  type: 'MENTION',
+                  senderUserId: userId,
+                  receiverUserId: mention.userId,
+                  postId: newpost.id,
+                  message: filteredText,
+                },
+              })
+            )
+          );
         }
 
         return {
@@ -150,6 +183,7 @@ export const postRouter = createTRPCRouter({
           ...GET_BOOKMARKS,
           ...GET_COUNT,
           ...GET_REPOSTS,
+          ...GET_MENTIONS,
           reposts: {
             select: {
               createdAt: true,
@@ -392,6 +426,7 @@ export const postRouter = createTRPCRouter({
           ...GET_BOOKMARKS,
           ...GET_REPOSTS,
           ...GET_COUNT,
+          ...GET_MENTIONS,
         },
       });
 
@@ -840,6 +875,7 @@ export const postRouter = createTRPCRouter({
               ...GET_REPOSTS,
               ...GET_COUNT,
               ...GET_BOOKMARKS,
+              ...GET_MENTIONS,
             },
           },
         },
@@ -922,6 +958,7 @@ export const postRouter = createTRPCRouter({
               ...GET_REPOSTS,
               ...GET_COUNT,
               ...GET_BOOKMARKS,
+              ...GET_MENTIONS,
             },
           },
         },
@@ -1007,6 +1044,7 @@ export const postRouter = createTRPCRouter({
           ...GET_REPOSTS,
           ...GET_COUNT,
           ...GET_BOOKMARKS,
+          ...GET_MENTIONS,
         },
       });
 

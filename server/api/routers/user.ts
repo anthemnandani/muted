@@ -3,6 +3,7 @@ import {
   GET_BOOKMARKS,
   GET_COUNT,
   GET_LIKES,
+  GET_MENTIONS,
   GET_REPOSTS,
   GET_USER,
 } from '@/server/constants';
@@ -103,6 +104,7 @@ export const userRouter = createTRPCRouter({
           ...GET_BOOKMARKS,
           ...GET_COUNT,
           ...GET_REPOSTS,
+          ...GET_MENTIONS,
         },
       });
 
@@ -129,6 +131,7 @@ export const userRouter = createTRPCRouter({
           quoteId: post.quoteId,
           media: post.media as PostMedia,
           reposts: post.reposts,
+          mentions: post.mentions,
           bookmarks: post.bookmarks,
           bookmarksCount: post._count.bookmarks,
         })),
@@ -258,6 +261,7 @@ export const userRouter = createTRPCRouter({
               ...GET_BOOKMARKS,
               ...GET_COUNT,
               ...GET_REPOSTS,
+              ...GET_MENTIONS,
             },
           },
           quoteId: true,
@@ -272,6 +276,7 @@ export const userRouter = createTRPCRouter({
           ...GET_BOOKMARKS,
           ...GET_COUNT,
           ...GET_REPOSTS,
+          ...GET_MENTIONS,
         },
       });
 
@@ -311,6 +316,7 @@ export const userRouter = createTRPCRouter({
           repostsCount: post._count.reposts,
           bookmarks: post.bookmarks,
           bookmarksCount: post._count.bookmarks,
+          mentions: post.mentions,
           quoteId: post.quoteId,
           path: post.path,
           repliesCount: post.repliesCount,
@@ -382,6 +388,7 @@ export const userRouter = createTRPCRouter({
               ...GET_COUNT,
               ...GET_REPOSTS,
               ...GET_BOOKMARKS,
+              ...GET_MENTIONS,
               reposts: {
                 select: {
                   userId: true,
@@ -416,6 +423,7 @@ export const userRouter = createTRPCRouter({
           likesCount: repost.post._count.likes,
           likes: repost.post.likes,
           reposts: repost.post.reposts,
+          mentions: repost.post.mentions,
           bookmarks: repost.post.bookmarks,
           bookmarksCount: repost.post._count.bookmarks,
           quoteId: repost.post.quoteId,
@@ -577,5 +585,29 @@ export const userRouter = createTRPCRouter({
         allUsers,
         nextCursor,
       };
+    }),
+
+  getMentionSuggestions: privateProcedure
+    .input(
+      z.object({
+        searchQuery: z.string(),
+      })
+    )
+    .query(async ({ input: { searchQuery }, ctx }) => {
+      const allUsers = await ctx.db.user.findMany({
+        where: {
+          username: { contains: searchQuery },
+        },
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          username: true,
+          fullName: true,
+          image: true,
+        },
+      });
+
+      return allUsers;
     }),
 });
