@@ -578,4 +578,28 @@ export const userRouter = createTRPCRouter({
         nextCursor,
       };
     }),
+
+  getMentionSuggestions: privateProcedure
+    .input(
+      z.object({
+        searchQuery: z.string(),
+      })
+    )
+    .query(async ({ input: { searchQuery }, ctx }) => {
+      const allUsers = await ctx.db.user.findMany({
+        where: {
+          username: { contains: searchQuery },
+        },
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          username: true,
+          fullName: true,
+          image: true,
+        },
+      });
+
+      return allUsers;
+    }),
 });

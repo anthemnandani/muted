@@ -28,6 +28,7 @@ model User {
   reposts               Repost[]
   reports               Report[]
   bookmarks             Bookmark[]
+  mentions              Mention[]
   senderNotifications   Notification[] @relation("sender")
   receiverNotifications Notification[] @relation("receiver")
 
@@ -56,6 +57,7 @@ model Post {
   privacy      PostPrivacy    @default(ANYONE)
   reports      Report[]
   bookmarks    Bookmark[]
+  mentions     Mention[]
   repliesCount Int            @default(0)
   path         String?
 
@@ -63,6 +65,19 @@ model Post {
   @@index([authorId])
   @@index([parentPostId])
   @@index([path])
+}
+
+model Mention {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  index     Int
+
+  @@index([postId])
+  @@index([userId])
 }
 
 model Like {
@@ -125,6 +140,7 @@ enum NotificationType {
   FOLLOW
   REPOST
   QUOTE
+  MENTION
   BOOKMARK
 }
 

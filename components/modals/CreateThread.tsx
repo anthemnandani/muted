@@ -1,19 +1,11 @@
 'use client';
-import usePost from '@/hooks/usePost';
+import useCreateThread from '@/hooks/useCreateThread';
 import useWindow from '@/hooks/useWindow';
-import { useUploadThing } from '@/lib/uploadthing';
-import {
-  getImageDimensions,
-  getMediaAspectRatio,
-  getVideoDimensions,
-} from '@/lib/utils';
 import useDialog from '@/store/dialog';
 import useFileStore from '@/store/fileStore';
-import { api } from '@/trpc/react';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 import { toast } from 'sonner';
 import CreateThreadDesktop from '../buttons/CreateThreadDesktop';
@@ -32,131 +24,29 @@ import {
 } from '../ui/dialog';
 
 const CreateThread = () => {
-  const { postPrivacy } = usePost();
-  const router = useRouter();
-
-  const { selectedFile, setSelectedFile } = useFileStore();
-
-  const { startUpload } = useUploadThing('media');
+  const { isMobile } = useWindow();
+  const { selectedFile } = useFileStore();
+  const { openDialog, setOpenDialog, replyPostInfo, quoteInfo } = useDialog();
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+  const [mentions, setMentions] = React.useState<
+    Array<{
+      userId: string;
+      index: number;
+    }>
+  >([]);
 
   const {
-    openDialog,
-    setOpenDialog,
-    replyPostInfo,
-    setReplyPostInfo,
-    quoteInfo,
-    setQuoteInfo,
-  } = useDialog();
+    threadData,
+    setThreadData,
+    isLoading,
+    isReplying,
+    handleMutation,
+    resetState,
+  } = useCreateThread();
 
-  const [threadData, setThreadData] = React.useState({
-    privacy: postPrivacy,
-    text: '',
-  });
-
-  React.useEffect(() => {
-    setThreadData((prevThreadData) => ({
-      ...prevThreadData,
-      privacy: postPrivacy,
-    }));
-  }, [postPrivacy]);
-
-  const trpcUtils = api.useUtils();
-
-  const { isLoading, mutateAsync: createThread } =
-    api.post.createPost.useMutation({
-      onMutate: ({}) => {
-        setThreadData({
-          ...threadData,
-          text: '',
-        });
-      },
-      onError: () => {
-        toast.error('PostingError: Something went wrong!');
-      },
-      onSettled: async () => {
-        await trpcUtils.post.getInfinitePosts.invalidate();
-      },
-      retry: false,
-    });
-
-  const { isLoading: isReplying, mutateAsync: replyToPost } =
-    api.post.replyToPost.useMutation({
-      onError: (err) => {
-        toast.error('ReplyingError: Something went wrong!');
-        if (err.data?.code === 'UNAUTHORIZED') {
-          router.push('/login');
-        }
-      },
-      onSettled: async () => {
-        await trpcUtils.post.getInfinitePosts.invalidate();
-        await trpcUtils.invalidate();
-      },
-      retry: false,
-    });
-
-  async function handleMutation() {
-    let mediaUploadUrl = '';
-    let fileType = '';
-    let aspectRatio: string | undefined;
-    let originalDimensions: { width: number; height: number } | undefined;
-    if (selectedFile.length > 0) {
-      const file = selectedFile[0];
-      try {
-        const dimensions = file.type.startsWith('image/')
-          ? await getImageDimensions(file)
-          : file.type.startsWith('video/')
-          ? await getVideoDimensions(file)
-          : null;
-
-        if (dimensions) {
-          aspectRatio = getMediaAspectRatio(dimensions);
-          if (!aspectRatio) {
-            originalDimensions = dimensions;
-          }
-        }
-
-        const fileRes = await startUpload(selectedFile);
-        if (fileRes && fileRes[0]) {
-          mediaUploadUrl = fileRes[0].fileUrl;
-          fileType = fileRes[0].fileKey.split('.').pop() || '';
-        }
-      } catch (error) {
-        toast.error('Error processing media file');
-        return;
-      }
-    }
-
-    const promise = replyPostInfo
-      ? replyToPost({
-          text: threadData.text,
-          postId: replyPostInfo.id,
-          media: mediaUploadUrl
-            ? { fileType, fileUrl: mediaUploadUrl }
-            : undefined,
-          privacy: threadData.privacy,
-          postAuthor: replyPostInfo.author.id,
-        })
-      : createThread({
-          text: threadData.text,
-          media: mediaUploadUrl
-            ? {
-                fileType,
-                fileUrl: mediaUploadUrl,
-                aspectRatio,
-                originalDimensions,
-              }
-            : undefined,
-          privacy: threadData.privacy,
-          quoteId: quoteInfo?.id,
-          postAuthor: quoteInfo?.author.id,
-        });
-
-    return promise;
-  }
-
-  function handleCreateThread() {
+  const handleCreateThread = () => {
     setOpenDialog(false);
-    const promise = handleMutation();
+    const promise = handleMutation(mentions);
 
     toast.promise(promise, {
       loading: (
@@ -186,7 +76,7 @@ const CreateThread = () => {
       error: 'Error',
       richColors: true,
     });
-  }
+  };
 
   const handleFieldChange = (textValue: string) => {
     setThreadData({
@@ -197,16 +87,9 @@ const CreateThread = () => {
 
   React.useEffect(() => {
     if (!openDialog) {
-      setThreadData({
-        privacy: postPrivacy,
-        text: '',
-      });
-      setSelectedFile([]);
-      setReplyPostInfo(null);
-      setQuoteInfo(null);
+      resetState();
     }
   }, [openDialog]);
-  const { isMobile } = useWindow();
 
   return (
     <Dialog open={openDialog} onOpenChange={setOpenDialog}>
@@ -240,6 +123,10 @@ const CreateThread = () => {
                 isOpen={openDialog}
                 onTextareaChange={handleFieldChange}
                 replyThreadInfo={replyPostInfo}
+                textareaRef={textareaRef}
+                value={threadData.text}
+                setThreadData={setThreadData}
+                setMentions={setMentions}
               />
             )}
             <CreateThreadInput
@@ -251,6 +138,10 @@ const CreateThread = () => {
                   ? `Reply to ${replyPostInfo?.author?.username}...`
                   : 'Start a thread...'
               }
+              textareaRef={textareaRef}
+              value={threadData.text}
+              setThreadData={setThreadData}
+              setMentions={setMentions}
             />
           </div>
           <div className='w-full flex-between p-6'>

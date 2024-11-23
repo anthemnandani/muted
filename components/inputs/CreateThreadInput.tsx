@@ -2,6 +2,7 @@
 
 import { Icons } from '@/components/icons';
 import { ResizeTextarea } from '@/components/ui/resize-textarea';
+import useMentions from '@/hooks/useMentions';
 import type { CreateThreadInputProps } from '@/lib/types';
 import { cn, formatTimeAgo, getFullName } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
@@ -12,6 +13,7 @@ import React from 'react';
 import { useDropzone, type Accept } from 'react-dropzone';
 import ThreadImageCard from '../cards/ThreadImageCard';
 import ThreadQuoteCard from '../cards/ThreadQuoteCard';
+import UsersMenu from '../menus/UsersMenu';
 import UserAvatar from '../shared/UserAvatar';
 import { Button } from '../ui/button';
 import Username from '../user/Username';
@@ -22,19 +24,32 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
   onTextareaChange,
   placeholder,
   quoteInfo,
+  textareaRef,
+  value,
+  setThreadData,
+  setMentions,
 }) => {
   const { user } = useUser();
   const userFullName = React.useMemo(
     () => getFullName(user?.firstName ?? '', user?.lastName ?? ''),
     [user]
   );
+
   const { setSelectedFile } = useFileStore();
+
+  const {
+    mentionSuggestions,
+    showMentionSuggestions,
+    cursorPosition,
+    handleMentionSearch,
+    isLoading,
+    insertMention,
+  } = useMentions({ textareaRef, setThreadData, setMentions });
 
   const maxSize = 512 * 1024 * 1024;
 
   const { data } = api.user.userInfo.useQuery({ username: user?.username! });
 
-  const [inputValue, setInputValue] = React.useState('');
   const [previewType, setPreviewType] = React.useState<
     'image' | 'video' | null
   >(null);
@@ -46,7 +61,8 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
     event: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     const newValue = event.target.value;
-    setInputValue(newValue);
+    handleMentionSearch(newValue, event.target.selectionStart || 0);
+    setThreadData((prev) => ({ ...prev, text: newValue }));
     onTextareaChange(newValue);
   };
 
@@ -155,11 +171,21 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
           <>
             <ResizeTextarea
               name='text'
-              value={inputValue}
+              forwardedRef={textareaRef}
+              value={value}
               onChange={handleResizeTextareaChange}
               placeholder={placeholder}
               maxLength={5000}
             />
+            {showMentionSuggestions && (
+              <UsersMenu
+                showMentionSuggestions={showMentionSuggestions}
+                mentionSuggestions={mentionSuggestions}
+                cursorPosition={cursorPosition}
+                isLoading={isLoading}
+                onSelect={insertMention}
+              />
+            )}
             {previewURL && (
               <div className='relative overflow-hidden rounded-xl border border-border w-fit'>
                 {previewType === 'image' && (

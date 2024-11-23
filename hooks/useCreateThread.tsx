@@ -1,0 +1,171 @@
+import { useUploadThing } from '@/lib/uploadthing';
+import {
+  getImageDimensions,
+  getMediaAspectRatio,
+  getVideoDimensions,
+} from '@/lib/utils';
+import useDialog from '@/store/dialog';
+import useFileStore from '@/store/fileStore';
+import { api } from '@/trpc/react';
+import { PostPrivacy } from '@prisma/client';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import usePost from './usePost';
+
+const useCreateThread = () => {
+  const router = useRouter();
+  const { postPrivacy } = usePost();
+  const { selectedFile, setSelectedFile } = useFileStore();
+  const { startUpload } = useUploadThing('media');
+  const { replyPostInfo, setReplyPostInfo, quoteInfo, setQuoteInfo } =
+    useDialog();
+
+  const [threadData, setThreadData] = useState<{
+    privacy: PostPrivacy;
+    text: string;
+  }>({
+    privacy: postPrivacy,
+    text: '',
+  });
+
+  const trpcUtils = api.useUtils();
+
+  useEffect(() => {
+    setThreadData((prev) => ({
+      ...prev,
+      privacy: postPrivacy,
+    }));
+  }, [postPrivacy]);
+
+  const { isLoading, mutateAsync: createThread } =
+    api.post.createPost.useMutation({
+      onMutate: () => {
+        setThreadData((prev) => ({
+          ...prev,
+          text: '',
+        }));
+      },
+      onError: () => {
+        toast.error('PostingError: Something went wrong!');
+      },
+      onSettled: async () => {
+        await trpcUtils.post.getInfinitePosts.invalidate();
+      },
+      retry: false,
+    });
+
+  const { isLoading: isReplying, mutateAsync: replyToPost } =
+    api.post.replyToPost.useMutation({
+      onError: (err) => {
+        toast.error('ReplyingError: Something went wrong!');
+        if (err.data?.code === 'UNAUTHORIZED') {
+          router.push('/login');
+        }
+      },
+      onSettled: async () => {
+        await trpcUtils.post.getInfinitePosts.invalidate();
+        await trpcUtils.invalidate();
+      },
+      retry: false,
+    });
+
+  const handleMediaUpload = async () => {
+    if (selectedFile.length === 0) return {};
+
+    const file = selectedFile[0];
+    try {
+      const dimensions = file.type.startsWith('image/')
+        ? await getImageDimensions(file)
+        : file.type.startsWith('video/')
+        ? await getVideoDimensions(file)
+        : null;
+
+      let aspectRatio;
+      let originalDimensions;
+
+      if (dimensions) {
+        aspectRatio = getMediaAspectRatio(dimensions);
+        if (!aspectRatio) {
+          originalDimensions = dimensions;
+        }
+      }
+
+      const fileRes = await startUpload(selectedFile);
+      if (!fileRes?.[0]) return {};
+
+      return {
+        fileUrl: fileRes[0].fileUrl,
+        fileType: fileRes[0].fileKey.split('.').pop() || '',
+        aspectRatio,
+        originalDimensions,
+      };
+    } catch (error) {
+      toast.error('Error processing media file');
+      return {};
+    }
+  };
+
+  const handleMutation = async (
+    mentions: Array<{
+      userId: string;
+      index: number;
+    }>
+  ) => {
+    const {
+      fileUrl: mediaUploadUrl,
+      fileType,
+      aspectRatio,
+      originalDimensions,
+    } = await handleMediaUpload();
+
+    const promise = replyPostInfo
+      ? replyToPost({
+          text: threadData.text.trim(),
+          postId: replyPostInfo.id,
+          media: mediaUploadUrl
+            ? { fileType, fileUrl: mediaUploadUrl }
+            : undefined,
+          privacy: threadData.privacy,
+          postAuthor: replyPostInfo.author.id,
+        })
+      : createThread({
+          text: threadData.text.trim(),
+          media: mediaUploadUrl
+            ? {
+                fileType,
+                fileUrl: mediaUploadUrl,
+                aspectRatio,
+                originalDimensions,
+              }
+            : undefined,
+          privacy: threadData.privacy,
+          quoteId: quoteInfo?.id,
+          postAuthor: quoteInfo?.author.id,
+          mentions,
+        });
+
+    return promise;
+  };
+
+  const resetState = () => {
+    setThreadData({
+      privacy: postPrivacy,
+      text: '',
+    });
+    setSelectedFile([]);
+    setReplyPostInfo(null);
+    setQuoteInfo(null);
+  };
+
+  return {
+    threadData,
+    setThreadData,
+    isLoading,
+    isReplying,
+    handleMutation,
+    resetState,
+  };
+};
+
+export default useCreateThread;

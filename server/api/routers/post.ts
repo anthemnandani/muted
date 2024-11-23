@@ -1,3 +1,4 @@
+import { PostMedia } from '@/lib/types';
 import { getUserEmail } from '@/lib/utils';
 import {
   GET_BOOKMARKS,
@@ -12,7 +13,6 @@ import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure, publicProcedure } from '../trpc';
-import { PostMedia } from '@/lib/types';
 
 export const postRouter = createTRPCRouter({
   createPost: privateProcedure
@@ -31,6 +31,14 @@ export const postRouter = createTRPCRouter({
               })
               .optional(),
           })
+          .optional(),
+        mentions: z
+          .array(
+            z.object({
+              userId: z.string(),
+              index: z.number(), // Position in text
+            })
+          )
           .optional(),
         privacy: z.nativeEnum(PostPrivacy).default('ANYONE'),
         quoteId: z.string().optional(),
@@ -55,7 +63,13 @@ export const postRouter = createTRPCRouter({
       }
 
       const filter = new Filter();
+
+      console.log('Input Text: ', input.text);
       const filteredText = filter.clean(input.text || '');
+
+      console.log('Mentions: ', input.mentions);
+
+      console.log('Filtered Text: ', filteredText);
 
       const transactionResult = await ctx.db.$transaction(async (prisma) => {
         const postId = createId();
@@ -69,6 +83,14 @@ export const postRouter = createTRPCRouter({
             privacy: input.privacy,
             quoteId: input.quoteId,
             path,
+            mentions: input.mentions
+              ? {
+                  create: input.mentions.map((mention) => ({
+                    userId: mention.userId,
+                    index: mention.index,
+                  })),
+                }
+              : undefined,
           },
           select: {
             id: true,
@@ -86,6 +108,23 @@ export const postRouter = createTRPCRouter({
               message: filteredText,
             },
           });
+        }
+
+        // Create notifications for mentioned users
+        if (input.mentions?.length) {
+          await Promise.all(
+            input.mentions.map((mention) =>
+              prisma.notification.create({
+                data: {
+                  type: 'MENTION', // Add this to NotificationType enum
+                  senderUserId: userId,
+                  receiverUserId: mention.userId,
+                  postId: newpost.id,
+                  message: filteredText,
+                },
+              })
+            )
+          );
         }
 
         return {

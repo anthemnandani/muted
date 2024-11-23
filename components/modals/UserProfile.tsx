@@ -1,11 +1,11 @@
 'use client';
 
+import useFollowUser from '@/hooks/useFollowUser';
 import type { AuthorInfoProps } from '@/lib/types';
 import { Check, Plus } from 'lucide-react';
 import UserProfileCard from '../cards/UserProfileCard';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Dialog, DialogContent, DialogTrigger } from '../ui/dialog';
-import useFollowUser from '@/hooks/useFollowUser';
 
 const UserProfile = ({ author }: { author: AuthorInfoProps }) => {
   const { handleToggleFollow, isLoading, isSameUser, followUpdate } =
@@ -41,11 +41,11 @@ const UserProfile = ({ author }: { author: AuthorInfoProps }) => {
       >
         {followUpdate.current.isFollowedByMe ? (
           <div className='bg-black absolute bottom-0 right-0 rounded-2xl cursor-pointer hover:scale-105 active:scale-95'>
-            <Check className='size-6 p-0.5 text-primary-red' />
+            <Check className='size-[22px] p-0.5 text-primary-red' />
           </div>
         ) : (
           <div className='bg-primary-red absolute bottom-0 right-0 rounded-2xl cursor-pointer hover:scale-105 active:scale-95'>
-            <Plus className='size-6 p-0.5 text-white' />
+            <Plus className='size-[22px] p-0.5 text-white' />
           </div>
         )}
       </button>

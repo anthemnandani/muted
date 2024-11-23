@@ -3,6 +3,7 @@ import type { User } from '@prisma/client';
 import { Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
 import { LucideIcon } from 'lucide-react';
+import { PostPrivacy as ThreadPrivacy } from '@prisma/client';
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
 type RouterOutput = inferRouterOutputs<AppRouter>;
@@ -127,6 +128,22 @@ export interface CreateThreadInputProps {
     | (Pick<ParentPostInfo, 'id' | 'text' | 'author'> & { createdAt?: Date })
     | null;
   placeholder?: string;
+  textareaRef: React.RefObject<HTMLTextAreaElement>;
+  value: string;
+  setThreadData: React.Dispatch<
+    React.SetStateAction<{
+      privacy: ThreadPrivacy;
+      text: string;
+    }>
+  >;
+  setMentions: React.Dispatch<
+    React.SetStateAction<
+      Array<{
+        userId: string;
+        index: number;
+      }>
+    >
+  >;
 }
 
 export interface ThreadsListProps {
@@ -169,3 +186,8 @@ export enum ThreadFilter {
   LIKED = 'Liked',
   SAVED = 'Saved',
 }
+
+export type MentionSuggestion = Pick<
+  User,
+  'id' | 'username' | 'fullName' | 'image'
+>;
