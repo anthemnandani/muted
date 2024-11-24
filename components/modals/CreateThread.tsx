@@ -1,4 +1,5 @@
 'use client';
+
 import useCreateThread from '@/hooks/useCreateThread';
 import useWindow from '@/hooks/useWindow';
 import useDialog from '@/store/dialog';
@@ -52,7 +53,7 @@ const CreateThread = () => {
       loading: (
         <div className='flex w-[270px] items-center justify-start gap-1.5 p-0'>
           <div>
-            <Icons.loading className='h-8 w-8 ' />
+            <Icons.loading className='size-8' />
           </div>
           Posting...
         </div>
