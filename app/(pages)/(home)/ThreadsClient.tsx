@@ -1,14 +1,15 @@
 'use client';
+
 import Error from '@/app/error';
 import CreateWithInput from '@/components/inputs/CreateWithInput';
+import ThreadFilterMenu from '@/components/menus/ThreadFilterMenu';
+import HeaderWrapper from '@/components/shared/HeaderWrapper';
 import ThreadsList from '@/components/shared/ThreadsList';
 import Wrapper from '@/components/shared/Wrapper';
 import useWindow from '@/hooks/useWindow';
 import useDialog from '@/store/dialog';
 import { api } from '@/trpc/react';
 import Loading from '../loading';
-import ThreadFilterMenu from '@/components/menus/ThreadFilterMenu';
-import HeaderWrapper from '@/components/shared/HeaderWrapper';
 
 const ThreadsClient = () => {
   const { setOpenDialog } = useDialog();

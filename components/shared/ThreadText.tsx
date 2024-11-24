@@ -36,11 +36,11 @@ const ThreadText: React.FC<ThreadTextProps> = ({
 
   const sortedMentions = [...mentions].sort((a, b) => a.index - b.index);
 
-  sortedMentions.forEach((mention) => {
+  sortedMentions.forEach((mention, index) => {
     if (mention.index > lastIndex) {
       parts.push(
         <span
-          key={`text-${lastIndex}`}
+          key={index}
           dangerouslySetInnerHTML={{
             __html: text.slice(lastIndex, mention.index).replace(/\\n/g, '\n'),
           }}
