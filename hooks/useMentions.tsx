@@ -59,40 +59,53 @@ const useMentions = ({
     const cursorPosition = textarea.selectionStart || 0;
     const textContent = textarea.value;
     const textBeforeCursor = textContent.substring(0, cursorPosition);
-
     const lastAtSymbolIndex = textBeforeCursor.lastIndexOf('@');
-    const textBeforeAt = textContent.substring(0, lastAtSymbolIndex);
-
-    const isFirstWord = /^\s*@/.test(textContent);
 
     const div = document.createElement('div');
-    div.style.cssText = window.getComputedStyle(textarea).cssText;
-    div.style.height = 'auto';
-    div.style.width = textarea.offsetWidth + 'px';
+    const computedStyle = window.getComputedStyle(textarea);
+
+    div.style.cssText = computedStyle.cssText;
     div.style.position = 'absolute';
     div.style.visibility = 'hidden';
+    div.style.height = 'auto';
+    div.style.width = `${textarea.clientWidth}px`;
     div.style.whiteSpace = 'pre-wrap';
     div.style.wordBreak = 'break-word';
+    div.style.overflow = 'hidden';
+    div.style.top = '0';
+    div.style.left = '0';
 
-    div.textContent = textBeforeAt;
+    div.style.padding = computedStyle.padding;
+    div.style.border = computedStyle.border;
+    div.style.boxSizing = computedStyle.boxSizing;
+    div.style.lineHeight = computedStyle.lineHeight;
+    div.style.fontFamily = computedStyle.fontFamily;
+    div.style.fontSize = computedStyle.fontSize;
+    div.style.fontWeight = computedStyle.fontWeight;
+
+    const beforeSpan = document.createElement('span');
+    beforeSpan.textContent = textContent.substring(0, lastAtSymbolIndex);
+
+    const atSymbolSpan = document.createElement('span');
+    atSymbolSpan.textContent = '@';
+
+    div.appendChild(beforeSpan);
+    div.appendChild(atSymbolSpan);
     document.body.appendChild(div);
 
-    const lineHeight = parseInt(window.getComputedStyle(textarea).lineHeight);
-    const lines = Math.floor(div.offsetHeight / lineHeight);
+    const atSymbolRect = atSymbolSpan.getBoundingClientRect();
+    const divRect = div.getBoundingClientRect();
+    const scrollTop = textarea.scrollTop;
+    const scrollLeft = textarea.scrollLeft;
 
-    const span = document.createElement('span');
-    span.style.whiteSpace = 'pre';
-    span.textContent = textBeforeAt;
-    div.innerHTML = '';
-    div.appendChild(span);
-
-    const atSymbolLeft = span.offsetWidth;
+    const relativeLeft = atSymbolRect.left - divRect.left;
+    const relativeTop = atSymbolRect.top - divRect.top;
 
     document.body.removeChild(div);
 
     setCursorPosition({
-      top: textareaRect.top + lines * lineHeight + (isFirstWord ? 20 : 0),
-      left: textareaRect.left + atSymbolLeft - 3,
+      top: textareaRect.top + relativeTop - scrollTop + window.scrollY + 20,
+      left: textareaRect.left + relativeLeft - scrollLeft + window.scrollX,
     });
   }, [textareaRef]);
 
@@ -193,7 +206,7 @@ const useMentions = ({
     showMentionSuggestions,
     cursorPosition,
     handleMentionSearch,
-    isLoading,
+    isMentionsLoading: isLoading,
     insertMention,
   };
 };

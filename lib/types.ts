@@ -140,14 +140,7 @@ export interface CreateThreadInputProps {
       text: string;
     }>
   >;
-  setMentions: React.Dispatch<
-    React.SetStateAction<
-      Array<{
-        userId: string;
-        index: number;
-      }>
-    >
-  >;
+  handleMentionSearch: (value: string, cursorPosition: number) => void;
 }
 
 export interface ThreadsListProps {

@@ -23,6 +23,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../ui/dialog';
+import UsersMenu from '../menus/UsersMenu';
+import useMentions from '@/hooks/useMentions';
 
 const CreateThread = () => {
   const { isMobile } = useWindow();
@@ -44,6 +46,15 @@ const CreateThread = () => {
     handleMutation,
     resetState,
   } = useCreateThread(setMentions);
+
+  const {
+    mentionSuggestions,
+    showMentionSuggestions,
+    cursorPosition,
+    handleMentionSearch,
+    isMentionsLoading,
+    insertMention,
+  } = useMentions({ textareaRef, setThreadData, setMentions });
 
   const handleCreateThread = () => {
     setOpenDialog(false);
@@ -127,7 +138,7 @@ const CreateThread = () => {
                 textareaRef={textareaRef}
                 value={threadData.text}
                 setThreadData={setThreadData}
-                setMentions={setMentions}
+                handleMentionSearch={handleMentionSearch}
               />
             )}
             <CreateThreadInput
@@ -142,9 +153,18 @@ const CreateThread = () => {
               textareaRef={textareaRef}
               value={threadData.text}
               setThreadData={setThreadData}
-              setMentions={setMentions}
+              handleMentionSearch={handleMentionSearch}
             />
           </div>
+          {showMentionSuggestions && (
+            <UsersMenu
+              showMentionSuggestions={showMentionSuggestions}
+              mentionSuggestions={mentionSuggestions}
+              cursorPosition={cursorPosition}
+              isLoading={isMentionsLoading}
+              onSelect={insertMention}
+            />
+          )}
           <div className='w-full flex-between p-6'>
             <PostPrivacyMenu />
             <Button
