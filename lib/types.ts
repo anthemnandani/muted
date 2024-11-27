@@ -1,9 +1,9 @@
 import type { AppRouter } from '@/server/api/root';
+import { IGif } from '@giphy/js-types';
 import type { User } from '@prisma/client';
-import { Privacy } from '@prisma/client';
+import { Privacy, PostPrivacy as ThreadPrivacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
 import { LucideIcon } from 'lucide-react';
-import { PostPrivacy as ThreadPrivacy } from '@prisma/client';
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
 type RouterOutput = inferRouterOutputs<AppRouter>;
@@ -21,9 +21,11 @@ export type PostProps = ArrayElement<
   showLine?: boolean;
 };
 
+export type MediaType = 'image' | 'video' | 'gif';
+
 export type PostMedia = {
-  fileType?: string;
-  fileUrl?: string;
+  fileType: MediaType;
+  fileUrl?: string | IGif;
   aspectRatio?: string;
   originalDimensions?: { width: number; height: number };
 } | null;

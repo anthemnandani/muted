@@ -1,6 +1,7 @@
 'use client';
 
 import useCreateThread from '@/hooks/useCreateThread';
+import useMentions from '@/hooks/useMentions';
 import useWindow from '@/hooks/useWindow';
 import useDialog from '@/store/dialog';
 import useFileStore from '@/store/fileStore';
@@ -14,6 +15,7 @@ import CreateThreadMobile from '../buttons/CreateThreadMobile';
 import { Icons } from '../icons';
 import CreateThreadInput from '../inputs/CreateThreadInput';
 import PostPrivacyMenu from '../menus/PostPrivacyMenu';
+import UsersMenu from '../menus/UsersMenu';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import {
@@ -23,8 +25,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../ui/dialog';
-import UsersMenu from '../menus/UsersMenu';
-import useMentions from '@/hooks/useMentions';
 
 const CreateThread = () => {
   const { isMobile } = useWindow();

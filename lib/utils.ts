@@ -137,7 +137,7 @@ export function formatRepostTime(repostTimestamp: Date): string {
 }
 
 export function isImageOrVideo(fileType: string): 'image' | 'video' | null {
-  const imageTypes = ['jpeg', 'jpg', 'png', 'gif', 'webp'];
+  const imageTypes = ['jpeg', 'jpg', 'png', 'webp'];
   const videoTypes = ['mp4', 'mov'];
 
   if (imageTypes.includes(fileType.toLowerCase())) {

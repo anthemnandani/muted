@@ -9,6 +9,7 @@ export const ourFileRouter = {
   media: f({
     image: { maxFileSize: '4MB', maxFileCount: 1 },
     video: { maxFileSize: '512MB', maxFileCount: 1 },
+    'image/gif': { maxFileSize: '4MB', maxFileCount: 1 },
   })
     .middleware(async (req) => {
       const user = await getUser();
