@@ -7,11 +7,13 @@ import { cn, formatTimeAgo, getFullName } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
+import { IGif } from '@giphy/js-types';
 import { X } from 'lucide-react';
 import React from 'react';
 import { useDropzone, type Accept } from 'react-dropzone';
 import ThreadImageCard from '../cards/ThreadImageCard';
 import ThreadQuoteCard from '../cards/ThreadQuoteCard';
+import GifPicker from '../modals/GifPicker';
 import UserAvatar from '../shared/UserAvatar';
 import { Button } from '../ui/button';
 import Username from '../user/Username';
@@ -81,6 +83,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
   const accept: Accept = {
     'image/*': [],
     'video/*': [],
+    'image/gif': [],
   };
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -153,7 +156,9 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
             </div>
             {replyThreadInfo?.media &&
               replyThreadInfo?.media?.fileType === 'image' && (
-                <ThreadImageCard image={replyThreadInfo.media.fileUrl} />
+                <ThreadImageCard
+                  image={replyThreadInfo.media.fileUrl as string}
+                />
               )}
           </>
         ) : (
@@ -203,15 +208,25 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
         )}
 
         {!replyThreadInfo?.text && (
-          <div
-            {...getRootProps()}
-            ref={scrollDownRef}
-            className='space-y-2 mt-1 select-none w-fit'
-          >
-            <div className='text-gray-3 flex gap-1 select-none items-center text-[15px]'>
-              <input {...getInputProps()} />
-              <Icons.image className='size-5 select-none transform active:scale-75 transition-transform cursor-pointer' />
+          <div className='flex items-center gap-2'>
+            <div
+              {...getRootProps()}
+              ref={scrollDownRef}
+              className='space-y-2 mt-1 select-none w-fit'
+            >
+              <div className='text-gray-3 flex gap-1 select-none items-center text-[15px]'>
+                <input {...getInputProps()} />
+                <Icons.image className='size-5 select-none transform active:scale-75 transition-transform cursor-pointer' />
+              </div>
             </div>
+
+            <GifPicker
+              onGifSelect={(gif: IGif) => {
+                setPreviewURL(gif.images.original.url);
+                setSelectedFile([gif]);
+                setPreviewType('image');
+              }}
+            />
           </div>
         )}
 

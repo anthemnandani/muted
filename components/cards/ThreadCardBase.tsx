@@ -2,18 +2,21 @@
 
 import { ThreadCardProps } from '@/lib/types';
 import { cn, formatTimeAgo, isImageOrVideo } from '@/lib/utils';
+import { IGif } from '@giphy/js-types';
+import { Gif } from '@giphy/react-components';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import React from 'react';
 import ThreadActionMenu from '../menus/ThreadActionMenu';
 import UserProfile from '../modals/UserProfile';
 import ThreadActions from '../shared/ThreadActions';
+import ThreadText from '../shared/ThreadText';
 import RepostedBy from '../user/RepostedBy';
 import Username from '../user/Username';
 import ThreadImageCard from './ThreadImageCard';
 import ThreadQuoteCard from './ThreadQuoteCard';
 import ThreadVideoCard from './ThreadVideoCard';
-import { usePathname } from 'next/navigation';
-import ThreadText from '../shared/ThreadText';
+import Image from 'next/image';
 
 interface ThreadCardBaseProps extends ThreadCardProps {
   variant?: 'default' | 'reply';
@@ -66,19 +69,30 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
         <>
           {isImageOrVideo(media.fileType) === 'image' && (
             <ThreadImageCard
-              image={media.fileUrl}
+              image={media.fileUrl as string}
               aspectRatio={media.aspectRatio}
               originalDimensions={media.originalDimensions}
             />
           )}
           {isImageOrVideo(media.fileType) === 'video' && (
             <ThreadVideoCard
-              video={media.fileUrl!}
+              video={media.fileUrl! as string}
               aspectRatio={media.aspectRatio}
               originalDimensions={media.originalDimensions}
               username={author.username}
               postId={id}
             />
+          )}
+          {media.fileType === 'gif' && (
+            <div className='relative px-4 overflow-hidden mt-2.5 mb-2'>
+              <Image
+                src={media.fileUrl as string}
+                alt='GIF'
+                width={250}
+                height={250}
+                loading='lazy'
+              />
+            </div>
           )}
         </>
       )}

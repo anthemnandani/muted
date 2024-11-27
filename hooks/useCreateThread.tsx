@@ -1,3 +1,4 @@
+import type { MediaType } from '@/lib/types';
 import { useUploadThing } from '@/lib/uploadthing';
 import {
   getImageDimensions,
@@ -78,31 +79,49 @@ const useCreateThread = (
 
     const file = selectedFile[0];
     try {
-      const dimensions = file.type.startsWith('image/')
-        ? await getImageDimensions(file)
-        : file.type.startsWith('video/')
-        ? await getVideoDimensions(file)
-        : null;
+      if ('images' in file) {
+        const response = await fetch(file.images.original.url);
+        const blob = await response.blob();
+        const gifFile = new File([blob], `${file.id}.gif`, {
+          type: 'image/gif',
+        });
 
-      let aspectRatio;
-      let originalDimensions;
+        const fileRes = await startUpload([gifFile]);
+        if (!fileRes?.[0]) return {};
 
-      if (dimensions) {
-        aspectRatio = getMediaAspectRatio(dimensions);
-        if (!aspectRatio) {
-          originalDimensions = dimensions;
-        }
+        return {
+          fileUrl: fileRes[0].fileUrl,
+          fileType: 'gif',
+        };
       }
+      if (file instanceof File) {
+        const dimensions = file.type.startsWith('image/')
+          ? await getImageDimensions(file)
+          : file.type.startsWith('video/')
+          ? await getVideoDimensions(file)
+          : null;
 
-      const fileRes = await startUpload(selectedFile);
-      if (!fileRes?.[0]) return {};
+        let aspectRatio;
+        let originalDimensions;
 
-      return {
-        fileUrl: fileRes[0].fileUrl,
-        fileType: fileRes[0].fileKey.split('.').pop() || '',
-        aspectRatio,
-        originalDimensions,
-      };
+        if (dimensions) {
+          aspectRatio = getMediaAspectRatio(dimensions);
+          if (!aspectRatio) {
+            originalDimensions = dimensions;
+          }
+        }
+
+        const fileRes = await startUpload(selectedFile as File[]);
+        if (!fileRes?.[0]) return {};
+
+        return {
+          fileUrl: fileRes[0].fileUrl,
+          fileType: fileRes[0].fileKey.split('.').pop() || '',
+          aspectRatio,
+          originalDimensions,
+        };
+      }
+      return {};
     } catch (error) {
       toast.error('Error processing media file');
       return {};
@@ -136,7 +155,7 @@ const useCreateThread = (
           text: threadData.text.trim(),
           media: mediaUploadUrl
             ? {
-                fileType,
+                fileType: fileType as MediaType,
                 fileUrl: mediaUploadUrl,
                 aspectRatio,
                 originalDimensions,

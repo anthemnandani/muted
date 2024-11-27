@@ -11,6 +11,8 @@
   "dependencies": {
     "@clerk/nextjs": "^4.27.1",
     "@clerk/themes": "^1.7.9",
+    "@giphy/js-fetch-api": "^5.6.0",
+    "@giphy/react-components": "^9.8.0",
     "@hookform/resolvers": "^3.3.2",
     "@paralleldrive/cuid2": "^2.2.2",
     "@prisma/client": "^5.19.0",
