@@ -27,10 +27,14 @@ const useWindow = () => {
 
   const isMobile: boolean =
     typeof windowSize.width === 'number' && windowSize.width < 768;
+  const isTablet: boolean =
+    typeof windowSize.width === 'number' &&
+    windowSize.width >= 768 &&
+    windowSize.width < 1024;
   const isDesktop: boolean =
-    typeof windowSize.width === 'number' && windowSize.width >= 768;
+    typeof windowSize.width === 'number' && windowSize.width >= 1024;
 
-  return { windowSize, isMobile, isDesktop };
+  return { windowSize, isMobile, isTablet, isDesktop };
 };
 
 export default useWindow;

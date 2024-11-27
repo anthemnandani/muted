@@ -1,6 +1,5 @@
 'use client';
 
-import useWindow from '@/hooks/useWindow';
 import useAddGif from '@/store/addGif';
 import { GiphyFetch } from '@giphy/js-fetch-api';
 import { IGif } from '@giphy/js-types';
@@ -10,15 +9,19 @@ import React from 'react';
 interface TrendingGiphyProps {
   onGifSelect: (gif: IGif) => void;
   loader: React.ElementType;
+  gridWidth: number;
 }
 
-const TrendingGiphy = ({ onGifSelect, loader }: TrendingGiphyProps) => {
+const TrendingGiphy = ({
+  onGifSelect,
+  loader,
+  gridWidth,
+}: TrendingGiphyProps) => {
   const giphy = new GiphyFetch(process.env.NEXT_PUBLIC_GIPHY_API_KEY!);
-  const { isMobile } = useWindow();
   const { setOpenGifPicker } = useAddGif();
   return (
     <Grid
-      width={isMobile ? 364 : 668}
+      width={gridWidth}
       columns={2}
       gutter={10}
       fetchGifs={(offset: number) =>
