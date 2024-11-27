@@ -1,6 +1,5 @@
 'use client';
 
-import useWindow from '@/hooks/useWindow';
 import useAddGif from '@/store/addGif';
 import { GiphyFetch } from '@giphy/js-fetch-api';
 import { IGif } from '@giphy/js-types';
@@ -11,16 +10,21 @@ interface SearchGiphyProps {
   searchTerm: string;
   onGifSelect: (gif: IGif) => void;
   loader: React.ElementType;
+  gridWidth: number;
 }
 
-const SearchGiphy = ({ searchTerm, onGifSelect, loader }: SearchGiphyProps) => {
+const SearchGiphy = ({
+  searchTerm,
+  onGifSelect,
+  loader,
+  gridWidth,
+}: SearchGiphyProps) => {
   const giphy = new GiphyFetch(process.env.NEXT_PUBLIC_GIPHY_API_KEY!);
 
-  const { isMobile } = useWindow();
   const { setOpenGifPicker } = useAddGif();
   return (
     <Grid
-      width={isMobile ? 364 : 668}
+      width={gridWidth}
       columns={2}
       gutter={10}
       fetchGifs={(offset: number) =>

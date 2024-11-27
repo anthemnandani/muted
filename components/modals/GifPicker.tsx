@@ -21,6 +21,7 @@ import {
 } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { ScrollArea } from '../ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 interface GifPickerProps {
   onGifSelect: (gif: IGif) => void;
@@ -33,7 +34,7 @@ const LoaderComponent = () => (
 );
 
 const GifPicker: React.FC<GifPickerProps> = ({ onGifSelect }) => {
-  const { isMobile } = useWindow();
+  const { isTablet, isMobile } = useWindow();
   const { openGifPicker, setOpenGifPicker } = useAddGif();
   const [searchTerm, setSearchTerm] = React.useState('');
   const [debouncedTerm, setDebouncedTerm] = React.useState('');
@@ -51,6 +52,16 @@ const GifPicker: React.FC<GifPickerProps> = ({ onGifSelect }) => {
     debouncedSearch(value);
   };
 
+  const getGridWidth = () => {
+    if (isMobile) {
+      return window.innerWidth - 32;
+    }
+    if (isTablet) {
+      return 600;
+    }
+    return Math.min(668, window.innerWidth - 48);
+  };
+
   React.useEffect(() => {
     return () => {
       debouncedSearch.cancel();
@@ -64,7 +75,17 @@ const GifPicker: React.FC<GifPickerProps> = ({ onGifSelect }) => {
           <Icons.gif className='size-5 select-none transform active:scale-75 transition-transform cursor-pointer' />
         </div>
       </DialogTrigger>
-      <DialogContent className='w-full select-none border-none bg-transparent shadow-none outline-none md:max-w-[668px] p-0 md:p-6'>
+      <DialogContent
+        className={cn(
+          'w-full max-w-[calc(100vw-32px)] md:max-w-[668px] p-0 md:p-4',
+          'select-none border-none bg-transparent shadow-none outline-none',
+          'data-[state=open]:animate-in data-[state=closed]:animate-out',
+          'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+          'data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
+          'duration-300 ease-in-out transition-all',
+          'motion-reduce:transition-none motion-reduce:transform-none'
+        )}
+      >
         <DialogHeader>
           <DialogTitle>
             <VisuallyHidden.Root>Add a gif</VisuallyHidden.Root>
@@ -74,7 +95,11 @@ const GifPicker: React.FC<GifPickerProps> = ({ onGifSelect }) => {
         <Card className='rounded-none md:rounded-2xl h-full md:h-auto border-none bg-background shadow-2xl ring-1 ring-[#393939] ring-offset-0 dark:bg-gray-6'>
           <div className='border-b border-border p-4 flex items-center'>
             <Button
-              onClick={() => setOpenGifPicker(false)}
+              onClick={() => {
+                setOpenGifPicker(false);
+                setSearchTerm('');
+                setDebouncedTerm('');
+              }}
               variant='ghost'
               size='icon'
               className='text-foreground'
@@ -99,21 +124,25 @@ const GifPicker: React.FC<GifPickerProps> = ({ onGifSelect }) => {
           </div>
 
           <ScrollArea
-            className='h-[calc(100vh-140px)] md:h-[60vh] overflow-y-auto p-4 flex flex-col'
+            className='h-[calc(100vh-120px)] md:h-[60vh] overflow-y-auto p-4'
             type='always'
           >
-            {debouncedTerm ? (
-              <SearchGiphy
-                searchTerm={debouncedTerm}
-                onGifSelect={onGifSelect}
-                loader={LoaderComponent}
-              />
-            ) : (
-              <TrendingGiphy
-                onGifSelect={onGifSelect}
-                loader={LoaderComponent}
-              />
-            )}
+            <div className='flex justify-center'>
+              {debouncedTerm ? (
+                <SearchGiphy
+                  searchTerm={debouncedTerm}
+                  onGifSelect={onGifSelect}
+                  loader={LoaderComponent}
+                  gridWidth={getGridWidth()}
+                />
+              ) : (
+                <TrendingGiphy
+                  onGifSelect={onGifSelect}
+                  loader={LoaderComponent}
+                  gridWidth={getGridWidth()}
+                />
+              )}
+            </div>
           </ScrollArea>
         </Card>
       </DialogContent>
