@@ -1,6 +1,7 @@
 'use client';
 
 import useWindow from '@/hooks/useWindow';
+import { cn } from '@/lib/utils';
 import useAddGif from '@/store/addGif';
 import { IGif } from '@giphy/js-types';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
@@ -21,7 +22,6 @@ import {
 } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { ScrollArea } from '../ui/scroll-area';
-import { cn } from '@/lib/utils';
 
 interface GifPickerProps {
   onGifSelect: (gif: IGif) => void;
@@ -77,11 +77,8 @@ const GifPicker: React.FC<GifPickerProps> = ({ onGifSelect }) => {
       </DialogTrigger>
       <DialogContent
         className={cn(
-          'w-full max-w-[calc(100vw-32px)] md:max-w-[668px] p-0 md:p-4',
+          'w-full md:max-w-[668px]',
           'select-none border-none bg-transparent shadow-none outline-none',
-          'data-[state=open]:animate-in data-[state=closed]:animate-out',
-          'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-          'data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
           'duration-300 ease-in-out transition-all',
           'motion-reduce:transition-none motion-reduce:transform-none'
         )}

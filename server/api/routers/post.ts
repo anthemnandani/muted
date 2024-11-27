@@ -22,7 +22,7 @@ export const postRouter = createTRPCRouter({
         text: z.string().optional(),
         media: z
           .object({
-            fileType: z.enum(['image', 'video', 'gif']),
+            fileType: z.string(),
             fileUrl: z.string(),
             aspectRatio: z.string().optional(),
             originalDimensions: z
