@@ -1079,4 +1079,163 @@ export const postRouter = createTRPCRouter({
         nextCursor,
       };
     }),
+
+  getPostsByTag: publicProcedure
+    .input(
+      z.object({
+        tag: z.string(),
+        limit: z.number().optional(),
+        cursor: z
+          .object({
+            id: z.string(),
+            createdAt: z.date(),
+          })
+          .optional(),
+      })
+    )
+    .query(async ({ input: { tag, limit = 20, cursor }, ctx }) => {
+      const posts = await ctx.db.post.findMany({
+        where: {
+          hashtags: {
+            some: {
+              name: tag.toLowerCase(),
+            },
+          },
+          OR: [
+            { parentPostId: null },
+            {
+              AND: [{ parentPostId: { not: null } }, { reposts: { some: {} } }],
+            },
+          ],
+        },
+        take: limit + 1,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        select: {
+          id: true,
+          createdAt: true,
+          text: true,
+          media: true,
+          parentPostId: true,
+          quoteId: true,
+          path: true,
+          repliesCount: true,
+          author: {
+            select: {
+              ...GET_USER,
+            },
+          },
+          ...GET_LIKES,
+          ...GET_BOOKMARKS,
+          ...GET_COUNT,
+          ...GET_REPOSTS,
+          ...GET_MENTIONS,
+          reposts: {
+            select: {
+              createdAt: true,
+              user: {
+                select: {
+                  ...GET_USER,
+                },
+              },
+              post: {
+                select: {
+                  id: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const repostsMap = new Map();
+      const flattenedPosts = posts.flatMap((post) => {
+        if (post.parentPostId === null) {
+          const postItem = {
+            ...post,
+            media: post.media as PostMedia,
+            reposts: post.reposts.map((repost) => ({
+              userId: repost.user.id,
+              postId: repost.post.id,
+            })),
+            likesCount: post._count.likes,
+            repostsCount: post._count.reposts,
+            bookmarksCount: post._count.bookmarks,
+            type: 'post' as const,
+          };
+
+          const repostItems = post.reposts.map((repost) => ({
+            ...post,
+            media: post.media as PostMedia,
+            reposts: post.reposts.map((repost) => ({
+              userId: repost.user.id,
+              postId: repost.post.id,
+            })),
+            likesCount: post._count.likes,
+            repostsCount: post._count.reposts,
+            bookmarksCount: post._count.bookmarks,
+            repostedBy: repost.user,
+            repostedAt: repost.createdAt,
+            type: 'repost' as const,
+          }));
+
+          repostItems.forEach((item) =>
+            repostsMap.set(`${item.repostedBy.id}-${post.id}`, item)
+          );
+
+          return [postItem, ...repostItems];
+        } else {
+          return post.reposts.map((repost) => {
+            const repostItem = {
+              ...post,
+              media: post.media as PostMedia,
+              reposts: post.reposts.map((repost) => ({
+                userId: repost.user.id,
+                postId: repost.post.id,
+              })),
+              likesCount: post._count.likes,
+              repostsCount: post._count.reposts,
+              bookmarksCount: post._count.bookmarks,
+              repostedBy: repost.user,
+              repostedAt: repost.createdAt,
+              type: 'repost' as const,
+            };
+            repostsMap.set(`${repost.user.id}-${post.id}`, repostItem);
+            return repostItem;
+          });
+        }
+      });
+
+      const uniqueFlattenedPosts = flattenedPosts.filter((item) => {
+        if (item.type === 'repost') {
+          const key = `${item.repostedBy.id}-${item.id}`;
+          return repostsMap.get(key) === item;
+        }
+        return true;
+      });
+
+      uniqueFlattenedPosts.sort((a, b) => {
+        const aTime =
+          a.type === 'repost' ? a.repostedAt.getTime() : a.createdAt.getTime();
+        const bTime =
+          b.type === 'repost' ? b.repostedAt.getTime() : b.createdAt.getTime();
+        return bTime - aTime;
+      });
+
+      let nextCursor: typeof cursor | undefined;
+
+      if (uniqueFlattenedPosts.length > limit) {
+        const nextItem = uniqueFlattenedPosts[limit];
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
+        };
+        uniqueFlattenedPosts.length = limit;
+      }
+
+      return {
+        posts: uniqueFlattenedPosts,
+        nextCursor,
+      };
+    }),
 });
