@@ -1,8 +1,9 @@
 import { PostMedia } from '@/lib/types';
-import { getUserEmail } from '@/lib/utils';
+import { extractHashtags, getUserEmail } from '@/lib/utils';
 import {
   GET_BOOKMARKS,
   GET_COUNT,
+  GET_HASHTAGS,
   GET_LIKES,
   GET_MENTIONS,
   GET_REPOSTS,
@@ -65,6 +66,7 @@ export const postRouter = createTRPCRouter({
 
       const filter = new Filter();
       const filteredText = filter.clean(input.text || '');
+      const hashtags = extractHashtags(filteredText);
 
       const transactionResult = await ctx.db.$transaction(async (prisma) => {
         const postId = createId();
@@ -78,6 +80,15 @@ export const postRouter = createTRPCRouter({
             privacy: input.privacy,
             quoteId: input.quoteId,
             path,
+            hashtags: {
+              connectOrCreate: hashtags.map((tag) => {
+                const tagName = tag.slice(1);
+                return {
+                  where: { name: tagName },
+                  create: { name: tagName },
+                };
+              }),
+            },
             mentions: input.mentions
               ? {
                   create: input.mentions.map((mention) => ({

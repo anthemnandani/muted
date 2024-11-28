@@ -1,5 +1,6 @@
 import { AuthorInfoProps } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { cn, highlightHashtags } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 import Username from '../user/Username';
 
@@ -17,12 +18,29 @@ const ThreadText: React.FC<ThreadTextProps> = ({
   mentions,
   variant = 'default',
 }) => {
+  const router = useRouter();
+
+  const handleClick = React.useCallback(
+    (e: React.MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'A' && target.classList.contains('hashtag-link')) {
+        e.preventDefault();
+        const href = target.getAttribute('href');
+        if (href) {
+          router.push(href);
+        }
+      }
+    },
+    [router]
+  );
+
   if (!mentions || mentions.length === 0) {
     return (
       <div
         dangerouslySetInnerHTML={{
-          __html: text.replace(/\\n/g, '\n'),
+          __html: highlightHashtags(text.replace(/\\n/g, '\n')),
         }}
+        onClick={handleClick}
         className={cn(
           'text-accent-foreground text-[16px] font-normal leading-[1.4em] antialiased whitespace-pre-line px-2 md:px-4 my-3',
           variant === 'reply' && 'max-md:max-w-full'
@@ -53,13 +71,13 @@ const ThreadText: React.FC<ThreadTextProps> = ({
         ? text.length
         : text.indexOf(' ', mention.index);
 
-    parts.push(<span className='!text-[#18a3fe]'>@</span>);
+    parts.push(<span className='!text-primary-blue'>@</span>);
 
     parts.push(
       <Username
         key={`mention-${mention.index}`}
         author={mention.user}
-        className='!text-[#18a3fe]'
+        className='!text-primary-blue'
       />
     );
 

@@ -40,7 +40,7 @@ const AddLink = ({ userLink }: { userLink: string }) => {
       <DialogTrigger className='w-full'>
         <div className='flex items-center'>
           {profileLink ? (
-            <span className='text-[#18A3FE] text-[15px] break-all'>
+            <span className='text-primary-blue text-[15px] break-all'>
               {profileLink}
             </span>
           ) : (
@@ -69,7 +69,7 @@ const AddLink = ({ userLink }: { userLink: string }) => {
           </span>
           <span className='text-base font-bold text-white'>Edit link</span>
           <span
-            className='text-[#18A3FE] text-[17px] cursor-pointer'
+            className='text-primary-blue text-[17px] cursor-pointer'
             onClick={handleDone}
           >
             Done
@@ -78,7 +78,7 @@ const AddLink = ({ userLink }: { userLink: string }) => {
         <Card className='rounded-2xl border-none bg-background shadow-2xl ring-1 ring-[#393939] ring-offset-0 dark:bg-gray-6'>
           <div className='no-scrollbar h-[215px] overflow-y-auto p-6'>
             <ResizeTextarea
-              className='w-full h-full border-none focus:outline-none text-[#18A3FE]'
+              className='w-full h-full border-none focus:outline-none text-primary-blue'
               placeholder='Add a link...'
               value={link}
               maxLength={240}

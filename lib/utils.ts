@@ -205,6 +205,15 @@ export const getMediaAspectRatio = (dimensions: {
   return undefined;
 };
 
-export const highlightMentions = (text: string) => {
-  return text.replace(/@(\w+)/g, `<span style="color: #18a3fe;">@$1</span>`);
-};
+export function highlightHashtags(text: string) {
+  return text.replace(
+    /#([\w.+?!,@$%&*()-]+[a-zA-Z0-9_$]+)(?=\s|$)/g,
+    '<a href="/feed/$1" class="hashtag-link !text-primary-blue hover:underline hover:decoration-1 hover:transition-all hover:duration-300">#$1</a>'
+  );
+}
+
+export function extractHashtags(text: string): string[] {
+  const HASHTAG_REGEX = /#[\w.+?!,@$%&*()-]+[a-zA-Z0-9_$](?=\s|$)/g;
+  const matches = text.match(HASHTAG_REGEX);
+  return matches ? matches.map((tag) => tag.toLowerCase()) : [];
+}

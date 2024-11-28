@@ -72,6 +72,7 @@ module.exports = {
         'gray-6': '#181818',
         'gray-7': '#393939',
         'primary-red': '#ff3040',
+        'primary-blue': '#18a3fe',
         'border-dark': '#00000026',
         'border-light': '#f3f5f726',
         'hovered-background': 'rgba(255, 255, 255, 0.04)',

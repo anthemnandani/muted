@@ -69,7 +69,7 @@ const AddBio = ({ userBio }: { userBio: string }) => {
           </span>
           <span className='text-base font-bold text-white'>Edit bio</span>
           <span
-            className='text-[#18A3FE] text-[17px] cursor-pointer'
+            className='text-primary-blue text-[17px] cursor-pointer'
             onClick={handleDone}
           >
             Done
