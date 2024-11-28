@@ -1,13 +1,12 @@
 'use client';
 
 import FeedWrapper from '@/components/shared/FeedWrapper';
-import { ThreadFilter } from '@/lib/types';
 import { api } from '@/trpc/react';
 
-const SavedPostsClient = () => {
+const TopicFeedClient = ({ tag }: { tag: string }) => {
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
-    api.post.getSavedPosts.useInfiniteQuery(
-      {},
+    api.post.getPostsByTag.useInfiniteQuery(
+      { tag },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         trpc: { abortOnUnmount: true },
@@ -24,10 +23,14 @@ const SavedPostsClient = () => {
       isError={isError}
       hasNextPage={hasNextPage}
       fetchNextPage={fetchNextPage}
-      selectedFilter={ThreadFilter.SAVED}
-      emptyStateMessage='Posts you save will appear here.'
+      emptyStateMessage={
+        <>
+          No posts found for the tag{' '}
+          <span className='font-bold text-primary-blue'>{tag}</span>.
+        </>
+      }
     />
   );
 };
 
-export default SavedPostsClient;
+export default TopicFeedClient;
