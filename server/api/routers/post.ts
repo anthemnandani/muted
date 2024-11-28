@@ -3,7 +3,6 @@ import { extractHashtags, getUserEmail } from '@/lib/utils';
 import {
   GET_BOOKMARKS,
   GET_COUNT,
-  GET_HASHTAGS,
   GET_LIKES,
   GET_MENTIONS,
   GET_REPOSTS,
