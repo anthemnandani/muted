@@ -55,7 +55,7 @@ export function EmojiPicker({ onChange }: EmojiPickerProps) {
         <div
           ref={pickerRef}
           className={cn(
-            'absolute z-[9999] top-[100px] ',
+            'absolute z-[9999] top-[110px]',
             isMobile ? 'left-16' : 'left-[120px]'
           )}
           onClick={(e) => e.stopPropagation()}
@@ -66,10 +66,9 @@ export function EmojiPicker({ onChange }: EmojiPickerProps) {
               onChange?.(emoji.native);
             }}
             theme={theme}
-            emojiSize={20}
-            emojiButtonSize={28}
+            emojiSize={isMobile ? 20 : 24}
+            emojiButtonSize={isMobile ? 28 : 36}
             perLine={isMobile ? 8 : 9}
-            previewPosition='none'
           />
         </div>
       )}

@@ -117,7 +117,7 @@ const CreateThread = () => {
           </>
         )}
       </DialogTrigger>
-      <DialogContent className='w-full select-none border-none bg-transparent shadow-none outline-none md:max-w-[668px]'>
+      <DialogContent className='w-full top-1/4 select-none border-none bg-transparent shadow-none outline-none md:max-w-[668px]'>
         <DialogHeader>
           <DialogTitle>
             <VisuallyHidden.Root>
