@@ -1,7 +1,6 @@
 'use client';
 import { ThreadCardProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
 import React from 'react';
 import { Separator } from '../ui/separator';
 import ThreadCardBase from './ThreadCardBase';

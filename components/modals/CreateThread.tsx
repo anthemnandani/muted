@@ -128,7 +128,7 @@ const CreateThread = () => {
         <h1 className='mb-2 w-full text-center font-bold text-white'>
           {replyPostInfo ? 'Reply' : 'New thread'}
         </h1>
-        <Card className='rounded-2xl border-none bg-background shadow-2xl ring-1 ring-[#393939] ring-offset-0 dark:bg-gray-6'>
+        <Card className='relative rounded-2xl border-none bg-background shadow-2xl ring-1 ring-[#393939] ring-offset-0 dark:bg-gray-6'>
           <div className='no-scrollbar max-h-[70vh] overflow-y-auto p-6'>
             {replyPostInfo && (
               <CreateThreadInput
