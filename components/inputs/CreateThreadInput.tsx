@@ -4,11 +4,12 @@ import { Icons } from '@/components/icons';
 import { ResizeTextarea } from '@/components/ui/resize-textarea';
 import type { CreateThreadInputProps } from '@/lib/types';
 import { cn, formatTimeAgo, getFullName } from '@/lib/utils';
+import useDialog from '@/store/dialog';
 import useFileStore from '@/store/fileStore';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
 import { IGif } from '@giphy/js-types';
-import { X } from 'lucide-react';
+import { Smile, X } from 'lucide-react';
 import React from 'react';
 import { useDropzone, type Accept } from 'react-dropzone';
 import ThreadImageCard from '../cards/ThreadImageCard';
@@ -17,6 +18,7 @@ import GifPicker from '../modals/GifPicker';
 import UserAvatar from '../shared/UserAvatar';
 import { Button } from '../ui/button';
 import Username from '../user/Username';
+import { EmojiPicker } from '../modals/EmojiPicker';
 
 const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
   isOpen,
@@ -47,6 +49,27 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
   const [previewURL, setPreviewURL] = React.useState<string | undefined>(
     undefined
   );
+
+  const handleEmojiSelect = (emoji: string) => {
+    const cursorPosition = textareaRef.current?.selectionStart || 0;
+    const textBeforeCursor = value.slice(0, cursorPosition);
+    const textAfterCursor = value.slice(cursorPosition);
+
+    const newText = textBeforeCursor + emoji + textAfterCursor;
+
+    handleResizeTextareaChange({
+      target: { value: newText },
+    } as React.ChangeEvent<HTMLTextAreaElement>);
+
+    setTimeout(() => {
+      if (textareaRef.current) {
+        const newPosition = cursorPosition + emoji.length;
+        textareaRef.current.selectionStart = newPosition;
+        textareaRef.current.selectionEnd = newPosition;
+        textareaRef.current.focus();
+      }
+    }, 0);
+  };
 
   const handleResizeTextareaChange = (
     event: React.ChangeEvent<HTMLTextAreaElement>
@@ -227,6 +250,8 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
                 setPreviewType('image');
               }}
             />
+
+            <EmojiPicker onChange={handleEmojiSelect} />
           </div>
         )}
 

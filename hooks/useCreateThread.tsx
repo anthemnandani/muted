@@ -64,7 +64,7 @@ const useCreateThread = (
       onError: (err) => {
         toast.error('ReplyingError: Something went wrong!');
         if (err.data?.code === 'UNAUTHORIZED') {
-          router.push('/login');
+          router.push('/sign-in');
         }
       },
       onSettled: async () => {

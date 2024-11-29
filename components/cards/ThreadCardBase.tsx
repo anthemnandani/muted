@@ -88,8 +88,8 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
               <Image
                 src={media.fileUrl as string}
                 alt='GIF'
-                width={250}
-                height={250}
+                width={200}
+                height={200}
                 loading='lazy'
               />
             </div>
