@@ -66,9 +66,9 @@ export function EmojiPicker({ onChange }: EmojiPickerProps) {
               onChange?.(emoji.native);
             }}
             theme={theme}
-            emojiSize={isMobile ? 20 : 24}
-            emojiButtonSize={isMobile ? 28 : 36}
-            perLine={isMobile ? 8 : 9}
+            perLine={isMobile ? 6 : 9}
+            maxFrequentRows={isMobile ? 1 : 2}
+            skinTonePosition='none'
           />
         </div>
       )}

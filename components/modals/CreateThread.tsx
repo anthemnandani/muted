@@ -25,6 +25,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../ui/dialog';
+import { cn } from '@/lib/utils';
 
 const CreateThread = () => {
   const { isMobile } = useWindow();
@@ -117,7 +118,11 @@ const CreateThread = () => {
           </>
         )}
       </DialogTrigger>
-      <DialogContent className='w-full top-1/4 select-none border-none bg-transparent shadow-none outline-none md:max-w-[668px]'>
+      <DialogContent
+        className={cn(
+          'w-full top-[30%] select-none border-none bg-transparent shadow-none outline-none md:max-w-[668px]'
+        )}
+      >
         <DialogHeader>
           <DialogTitle>
             <VisuallyHidden.Root>
