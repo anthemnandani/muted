@@ -3,6 +3,7 @@
 import useCreateThread from '@/hooks/useCreateThread';
 import useMentions from '@/hooks/useMentions';
 import useWindow from '@/hooks/useWindow';
+import { cn } from '@/lib/utils';
 import useDialog from '@/store/dialog';
 import useFileStore from '@/store/fileStore';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
@@ -25,12 +26,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../ui/dialog';
-import { cn } from '@/lib/utils';
 
 const CreateThread = () => {
   const { isMobile } = useWindow();
   const { selectedFile } = useFileStore();
-  const { openDialog, setOpenDialog, replyPostInfo, quoteInfo } = useDialog();
+  const { openDialog, setOpenDialog, replyPostInfo, quoteInfo, editPostInfo } =
+    useDialog();
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const [mentions, setMentions] = React.useState<
     Array<{
@@ -44,6 +45,7 @@ const CreateThread = () => {
     setThreadData,
     isLoading,
     isReplying,
+    isEditing,
     handleMutation,
     resetState,
   } = useCreateThread(setMentions);
@@ -57,7 +59,7 @@ const CreateThread = () => {
     insertMention,
   } = useMentions({ textareaRef, setThreadData, setMentions });
 
-  const handleCreateThread = () => {
+  const handleSubmit = (isEdit: boolean) => {
     setOpenDialog(false);
     const promise = handleMutation(mentions);
 
@@ -67,18 +69,19 @@ const CreateThread = () => {
           <div>
             <Icons.loading className='size-8' />
           </div>
-          Posting...
+          {isEdit ? 'Editing...' : 'Posting...'}
         </div>
       ),
       success: (data) => {
+        const postInfo = data?.isEdited ? data?.updatedPost : data?.createPost;
         return (
           <div className='flex-between w-[270px] p-0 '>
             <div className='flex-center gap-1.5'>
               <Check className='size-5' />
-              Posted
+              {data?.isEdited ? 'Edited' : 'Posted'}
             </div>
             <Link
-              href={`/${data?.createPost.author.username}/post/${data?.createPost.id}`}
+              href={`/${postInfo.author.username}/post/${postInfo.id}`}
               className='hover:text-blue-900'
             >
               View
@@ -126,12 +129,20 @@ const CreateThread = () => {
         <DialogHeader>
           <DialogTitle>
             <VisuallyHidden.Root>
-              {replyPostInfo ? 'Reply' : 'New thread'}
+              {editPostInfo
+                ? 'Edit thread'
+                : replyPostInfo
+                ? 'Reply'
+                : 'New thread'}
             </VisuallyHidden.Root>
           </DialogTitle>
         </DialogHeader>
         <h1 className='mb-2 w-full text-center font-bold text-white'>
-          {replyPostInfo ? 'Reply' : 'New thread'}
+          {editPostInfo
+            ? 'Edit thread'
+            : replyPostInfo
+            ? 'Reply'
+            : 'New thread'}
         </h1>
         <Card className='relative rounded-2xl border-none bg-background shadow-2xl ring-1 ring-[#393939] ring-offset-0 dark:bg-gray-6'>
           <div className='no-scrollbar max-h-[70vh] overflow-y-auto p-6'>
@@ -173,13 +184,14 @@ const CreateThread = () => {
           <div className='w-full flex-between p-6'>
             <PostPrivacyMenu />
             <Button
-              onClick={handleCreateThread}
+              onClick={() => handleSubmit(!!editPostInfo)}
               variant='ghost'
               className='bg-transparent border border-border-dark dark:border-border-light rounded-lg text-[14px] leading-none flex-center hover:bg-transparent dark:hover:bg-transparent disabled:cursor-not-allowed disabled:pointer-events-auto'
               disabled={
                 (threadData?.text === '' && !selectedFile) ||
                 isLoading ||
-                isReplying
+                isReplying ||
+                isEditing
               }
             >
               {(isLoading || isReplying) && (
@@ -188,7 +200,7 @@ const CreateThread = () => {
                   aria-hidden='true'
                 />
               )}
-              Post
+              {editPostInfo ? 'Edit' : 'Post'}
             </Button>
           </div>
         </Card>

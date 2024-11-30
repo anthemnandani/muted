@@ -1,7 +1,11 @@
 'use client';
+
 import type { AuthorInfoProps } from '@/lib/types';
+import { formatTimeLeft } from '@/lib/utils';
+import useDialog from '@/store/dialog';
 import { useUser } from '@clerk/nextjs';
 import { MoreHorizontal } from 'lucide-react';
+import React from 'react';
 import { Icons } from '../icons';
 import DeletePost from '../modals/DeletePost';
 import MenuItem from '../shared/MenuItem';
@@ -16,14 +20,46 @@ interface ThreadActionMenuProps {
   authorId: string;
   postId: string;
   repostedBy?: AuthorInfoProps;
+  createdAt: Date;
+  currentText: string;
 }
 
 const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
   authorId,
   postId,
   repostedBy,
+  createdAt,
+  currentText,
 }) => {
   const { user } = useUser();
+  const [timeLeft, setTimeLeft] = React.useState<number>(0);
+  const { setEditPostInfo, setOpenDialog } = useDialog();
+
+  React.useEffect(() => {
+    const calculateTimeLeft = () => {
+      const createdTime = new Date(createdAt).getTime();
+      const editDeadline = createdTime + 15 * 60 * 1000;
+      const now = Date.now();
+      const difference = editDeadline - now;
+
+      return Math.max(0, Math.floor(difference / 1000));
+    };
+
+    const timer = setInterval(() => {
+      const remaining = calculateTimeLeft();
+      setTimeLeft(remaining);
+      if (remaining <= 0) {
+        clearInterval(timer);
+      }
+    }, 1000);
+
+    setTimeLeft(calculateTimeLeft());
+    if (timeLeft <= 0) {
+      setEditPostInfo(null);
+    }
+
+    return () => clearInterval(timer);
+  }, [createdAt]);
 
   return (
     <DropdownMenu modal={false}>
@@ -69,6 +105,26 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
           </>
         ) : (
           <>
+            {timeLeft > 0 && (
+              <>
+                <MenuItem
+                  label={
+                    <div className='flex-between w-full'>
+                      <p>Edit</p>
+                      <p className='text-[15px] text-[#999] dark":text-gray-3'>
+                        {formatTimeLeft(timeLeft)}
+                      </p>
+                    </div>
+                  }
+                  onClick={() => {
+                    setEditPostInfo({ id: postId, text: currentText });
+                    setOpenDialog(true);
+                  }}
+                />
+                <DropdownMenuSeparator />
+              </>
+            )}
+
             <MenuItem
               icon={Icons.profilePin}
               label='Pin to profile'

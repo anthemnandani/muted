@@ -21,8 +21,14 @@ const useCreateThread = (
   const { postPrivacy } = usePost();
   const { selectedFile, setSelectedFile } = useFileStore();
   const { startUpload } = useUploadThing('media');
-  const { replyPostInfo, setReplyPostInfo, quoteInfo, setQuoteInfo } =
-    useDialog();
+  const {
+    replyPostInfo,
+    setReplyPostInfo,
+    quoteInfo,
+    setQuoteInfo,
+    editPostInfo,
+    setEditPostInfo,
+  } = useDialog();
 
   const [threadData, setThreadData] = useState<{
     privacy: PostPrivacy;
@@ -41,6 +47,15 @@ const useCreateThread = (
     }));
   }, [postPrivacy]);
 
+  useEffect(() => {
+    if (editPostInfo) {
+      setThreadData((prev) => ({
+        ...prev,
+        text: editPostInfo.text,
+      }));
+    }
+  }, [editPostInfo]);
+
   const { isLoading, mutateAsync: createThread } =
     api.post.createPost.useMutation({
       onMutate: () => {
@@ -57,6 +72,20 @@ const useCreateThread = (
         await trpcUtils.post.getInfinitePosts.invalidate();
       },
       retry: false,
+    });
+
+  const { isLoading: isEditing, mutateAsync: editPost } =
+    api.post.editPost.useMutation({
+      onError: (err) => {
+        if (err.message === 'Edit window has expired') {
+          toast.error('Edit time window has expired');
+        } else {
+          toast.error('Error editing post');
+        }
+      },
+      onSettled: async () => {
+        await trpcUtils.invalidate();
+      },
     });
 
   const { isLoading: isReplying, mutateAsync: replyToPost } =
@@ -151,6 +180,12 @@ const useCreateThread = (
           privacy: threadData.privacy,
           postAuthor: replyPostInfo.author.id,
         })
+      : editPostInfo
+      ? editPost({
+          id: editPostInfo.id,
+          text: threadData.text.trim(),
+          mentions,
+        })
       : createThread({
           text: threadData.text.trim(),
           media: mediaUploadUrl
@@ -167,7 +202,7 @@ const useCreateThread = (
           mentions,
         });
 
-    return promise;
+    return promise as any;
   };
 
   const resetState = () => {
@@ -179,6 +214,7 @@ const useCreateThread = (
     setReplyPostInfo(null);
     setQuoteInfo(null);
     setMentions([]);
+    setEditPostInfo(null);
   };
 
   return {
@@ -187,6 +223,7 @@ const useCreateThread = (
     isLoading,
     isReplying,
     handleMutation,
+    isEditing,
     resetState,
   };
 };

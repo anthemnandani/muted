@@ -1,22 +1,18 @@
 'use client';
 
 import { ThreadCardProps } from '@/lib/types';
-import { cn, formatTimeAgo, isImageOrVideo } from '@/lib/utils';
-import { IGif } from '@giphy/js-types';
-import { Gif } from '@giphy/react-components';
+import { cn, isImageOrVideo } from '@/lib/utils';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
-import ThreadActionMenu from '../menus/ThreadActionMenu';
-import UserProfile from '../modals/UserProfile';
+import PostHeader from '../posts/PostHeader';
 import ThreadActions from '../shared/ThreadActions';
 import ThreadText from '../shared/ThreadText';
 import RepostedBy from '../user/RepostedBy';
-import Username from '../user/Username';
 import ThreadImageCard from './ThreadImageCard';
 import ThreadQuoteCard from './ThreadQuoteCard';
 import ThreadVideoCard from './ThreadVideoCard';
-import Image from 'next/image';
 
 interface ThreadCardBaseProps extends ThreadCardProps {
   variant?: 'default' | 'reply';
@@ -111,38 +107,14 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
       )}
 
       {showHeader && (
-        <div className='flex justify-between w-full space-x-2 xs:space-x-4 px-2 md:px-4'>
-          <UserProfile author={author} />
-          <div className='flex-between w-full'>
-            <ul className='flex flex-wrap content-center items-center text-sm text-gray-3 sm:content-baseline gap-1 sm:gap-2'>
-              <Username author={author} />
-
-              {variant === 'default' && (
-                <>
-                  <li>
-                    <div className='hidden size-1 rounded-full bg-gray-3 sm:block'></div>
-                  </li>
-
-                  <li className='hidden hover:cursor-pointer hover:text-gray-2 sm:block'>
-                    <a href={`/@${author.username}`}>@{author.username}</a>
-                  </li>
-                  <li>
-                    <div className='hidden size-1 rounded-full bg-gray-3 sm:block'></div>
-                  </li>
-                </>
-              )}
-              <li className='mr-2 sm:mr-0'>
-                <a href={`/post/${id}`}>{formatTimeAgo(createdAt)}</a>
-              </li>
-            </ul>
-
-            <ThreadActionMenu
-              authorId={author.id}
-              postId={id}
-              repostedBy={repostedBy}
-            />
-          </div>
-        </div>
+        <PostHeader
+          author={author}
+          createdAt={createdAt}
+          id={id}
+          repostedBy={repostedBy}
+          currentText={text ?? ''}
+          variant={variant}
+        />
       )}
 
       {variant === 'default' ? (

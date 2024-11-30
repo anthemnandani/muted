@@ -19,6 +19,7 @@ import GifPicker from '../modals/GifPicker';
 import UserAvatar from '../shared/UserAvatar';
 import { Button } from '../ui/button';
 import Username from '../user/Username';
+import useDialog from '@/store/dialog';
 
 const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
   isOpen,
@@ -33,6 +34,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
 }) => {
   const { isMobile } = useWindow();
   const { user } = useUser();
+  const { editPostInfo } = useDialog();
   const userFullName = React.useMemo(
     () => getFullName(user?.firstName ?? '', user?.lastName ?? ''),
     [user]
@@ -233,30 +235,31 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
           </>
         )}
 
-        {!replyThreadInfo?.text && (
-          <div className='flex items-center gap-2'>
-            <div
-              {...getRootProps()}
-              ref={scrollDownRef}
-              className='space-y-2 mt-1 select-none w-fit'
-            >
-              <div className='text-gray-3 flex gap-1 select-none items-center text-[15px]'>
-                <input {...getInputProps()} />
-                <Icons.image className='size-5 select-none transform active:scale-75 transition-transform cursor-pointer' />
+        <div className='flex items-center gap-2'>
+          {!replyThreadInfo?.text && !editPostInfo?.text && (
+            <>
+              <div
+                {...getRootProps()}
+                ref={scrollDownRef}
+                className='space-y-2 mt-1 select-none w-fit'
+              >
+                <div className='text-gray-3 flex gap-1 select-none items-center text-[15px]'>
+                  <input {...getInputProps()} />
+                  <Icons.image className='size-5 select-none transform active:scale-75 transition-transform cursor-pointer' />
+                </div>
               </div>
-            </div>
 
-            <GifPicker
-              onGifSelect={(gif: IGif) => {
-                setPreviewURL(gif.images.original.url);
-                setSelectedFile([gif]);
-                setPreviewType('image');
-              }}
-            />
-
-            <EmojiPicker onChange={handleEmojiSelect} />
-          </div>
-        )}
+              <GifPicker
+                onGifSelect={(gif: IGif) => {
+                  setPreviewURL(gif.images.original.url);
+                  setSelectedFile([gif]);
+                  setPreviewType('image');
+                }}
+              />
+            </>
+          )}
+          <EmojiPicker onChange={handleEmojiSelect} />
+        </div>
 
         {quoteInfo && (
           <ThreadQuoteCard {...quoteInfo} createdAt={quoteInfo.createdAt} />

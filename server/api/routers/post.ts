@@ -9,7 +9,7 @@ import {
   GET_USER,
 } from '@/server/constants';
 import { createId } from '@paralleldrive/cuid2';
-import { PostPrivacy } from '@prisma/client';
+import { NotificationType, PostPrivacy } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
 import { z } from 'zod';
@@ -1236,6 +1236,154 @@ export const postRouter = createTRPCRouter({
       return {
         posts: uniqueFlattenedPosts,
         nextCursor,
+      };
+    }),
+
+  editPost: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        text: z.string().min(1, {
+          message: 'Text must be at least 1 character',
+        }),
+        mentions: z
+          .array(
+            z.object({
+              userId: z.string(),
+              index: z.number(),
+            })
+          )
+          .optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { userId } = ctx;
+      const post = await ctx.db.post.findUnique({
+        where: { id: input.id },
+        select: {
+          authorId: true,
+          createdAt: true,
+          mentions: {
+            select: {
+              userId: true,
+            },
+          },
+          hashtags: {
+            select: {
+              name: true,
+            },
+          },
+          text: true,
+        },
+      });
+
+      if (!post) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      if (post.authorId !== userId) {
+        throw new TRPCError({ code: 'FORBIDDEN' });
+      }
+
+      const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+      if (post.createdAt < fifteenMinutesAgo) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Edit window has expired',
+        });
+      }
+
+      const filter = new Filter();
+      const filteredText = filter.clean(input.text);
+
+      const hashtags = extractHashtags(filteredText);
+
+      const existingMentionUserIds = new Set(
+        post.mentions.map((mention) => mention.userId)
+      );
+
+      const newMentionUserIds = new Set(
+        input.mentions?.map((mention) => mention.userId) ?? []
+      );
+
+      const transactionResult = await ctx.db.$transaction(async (prisma) => {
+        await prisma.mention.deleteMany({
+          where: {
+            postId: input.id,
+          },
+        });
+
+        await prisma.post.update({
+          where: { id: input.id },
+          data: {
+            hashtags: {
+              disconnect: post.hashtags.map((tag) => ({ name: tag.name })),
+            },
+          },
+        });
+
+        if (input.mentions && input.mentions.length > 0) {
+          await prisma.mention.createMany({
+            data: input.mentions.map((mention) => ({
+              postId: input.id,
+              userId: mention.userId,
+              index: mention.index,
+            })),
+          });
+        }
+
+        const notificationsToCreate = Array.from(newMentionUserIds)
+          .filter(
+            (userId) =>
+              !existingMentionUserIds.has(userId) && userId !== post.authorId
+          )
+          .map((userId) => ({
+            type: NotificationType.MENTION,
+            message: `@${ctx.user.username} mentioned you in their post`,
+            senderUserId: userId,
+            receiverUserId: userId,
+            postId: input.id,
+            isPublic: true,
+          }));
+
+        if (notificationsToCreate.length > 0) {
+          await prisma.notification.createMany({
+            data: notificationsToCreate,
+          });
+        }
+
+        const updatedPost = await prisma.post.update({
+          where: { id: input.id },
+          data: {
+            text: filteredText,
+            lastEditedAt: new Date(),
+            hashtags: {
+              connectOrCreate: hashtags.map((tag) => {
+                const tagName = tag.slice(1);
+                return {
+                  where: { name: tagName },
+                  create: { name: tagName },
+                };
+              }),
+            },
+          },
+          select: {
+            id: true,
+            author: true,
+          },
+        });
+
+        return { updatedPost };
+      });
+
+      if (!transactionResult) {
+        throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+      }
+
+      return {
+        updatedPost: transactionResult.updatedPost,
+        success: true,
+        isEdited: true,
       };
     }),
 });
