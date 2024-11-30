@@ -2,23 +2,23 @@
 
 import { Icons } from '@/components/icons';
 import { ResizeTextarea } from '@/components/ui/resize-textarea';
+import useWindow from '@/hooks/useWindow';
 import type { CreateThreadInputProps } from '@/lib/types';
 import { cn, formatTimeAgo, getFullName } from '@/lib/utils';
-import useDialog from '@/store/dialog';
 import useFileStore from '@/store/fileStore';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
 import { IGif } from '@giphy/js-types';
-import { Smile, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import React from 'react';
 import { useDropzone, type Accept } from 'react-dropzone';
 import ThreadImageCard from '../cards/ThreadImageCard';
 import ThreadQuoteCard from '../cards/ThreadQuoteCard';
+import { EmojiPicker } from '../modals/EmojiPicker';
 import GifPicker from '../modals/GifPicker';
 import UserAvatar from '../shared/UserAvatar';
 import { Button } from '../ui/button';
 import Username from '../user/Username';
-import { EmojiPicker } from '../modals/EmojiPicker';
 
 const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
   isOpen,
@@ -31,6 +31,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
   setThreadData,
   handleMentionSearch,
 }) => {
+  const { isMobile } = useWindow();
   const { user } = useUser();
   const userFullName = React.useMemo(
     () => getFullName(user?.firstName ?? '', user?.lastName ?? ''),
@@ -61,14 +62,16 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
       target: { value: newText },
     } as React.ChangeEvent<HTMLTextAreaElement>);
 
-    setTimeout(() => {
-      if (textareaRef.current) {
-        const newPosition = cursorPosition + emoji.length;
-        textareaRef.current.selectionStart = newPosition;
-        textareaRef.current.selectionEnd = newPosition;
-        textareaRef.current.focus();
-      }
-    }, 0);
+    if (!isMobile) {
+      setTimeout(() => {
+        if (textareaRef.current) {
+          const newPosition = cursorPosition + emoji.length;
+          textareaRef.current.selectionStart = newPosition;
+          textareaRef.current.selectionEnd = newPosition;
+          textareaRef.current.focus();
+        }
+      }, 0);
+    }
   };
 
   const handleResizeTextareaChange = (
