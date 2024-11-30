@@ -1,6 +1,8 @@
 'use client';
 
+import useWindow from '@/hooks/useWindow';
 import type { MentionSuggestion } from '@/lib/types';
+import { cn } from '@/lib/utils';
 import { UserX } from 'lucide-react';
 import { Icons } from '../icons';
 import UserAvatar from '../shared/UserAvatar';
@@ -25,11 +27,15 @@ const UsersMenu = ({
   isLoading,
   onSelect,
 }: UsersMenuProps) => {
+  const { isMobile } = useWindow();
   return (
     <Popover open={showMentionSuggestions} modal>
       <PopoverTrigger className='hidden'></PopoverTrigger>
       <PopoverContent
-        className='mentions-menu dropdown-content-container absolute rounded-2xl p-0 w-[280px]'
+        className={cn(
+          'mentions-menu dropdown-content-container absolute rounded-2xl p-0',
+          isMobile ? 'w-[200px]' : 'w-[250px]'
+        )}
         style={{
           top: `${cursorPosition.top}px`,
           left: `${cursorPosition.left}px`,
