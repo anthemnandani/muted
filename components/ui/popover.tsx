@@ -24,16 +24,6 @@ const PopoverContent = React.forwardRef<
       )}
       onWheel={(e) => {
         e.stopPropagation();
-        const isScrollingDown = e.deltaY > 0;
-        if (isScrollingDown) {
-          e.currentTarget.dispatchEvent(
-            new KeyboardEvent('keydown', { key: 'ArrowDown' })
-          );
-        } else {
-          e.currentTarget.dispatchEvent(
-            new KeyboardEvent('keydown', { key: 'ArrowUp' })
-          );
-        }
       }}
       {...props}
     />
