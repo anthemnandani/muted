@@ -76,8 +76,8 @@ export interface MenuLinkProps {
 }
 
 export interface MenuItemProps {
-  icon: LucideIcon | ((props: IconProps) => JSX.Element) | null;
-  label: string;
+  icon?: LucideIcon | ((props: IconProps) => JSX.Element) | null;
+  label: string | React.ReactNode;
   onClick?: () => void;
   onSelect?: (e: Event) => void;
   className?: string;

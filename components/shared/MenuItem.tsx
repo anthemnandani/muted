@@ -18,13 +18,13 @@ const MenuItem: React.FC<MenuItemProps> = ({
   >
     {isActionMenuItem ? (
       <>
-        <span>{label}</span>
+        {label}
         {Icon && <Icon className='h-5 w-5' />}
       </>
     ) : (
       <>
         {Icon && <Icon className='mr-2 h-4 w-4' />}
-        <span>{label}</span>
+        {label}
       </>
     )}
   </DropdownMenuItem>

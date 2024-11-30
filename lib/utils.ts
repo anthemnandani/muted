@@ -217,3 +217,9 @@ export function extractHashtags(text: string): string[] {
   const matches = text.match(HASHTAG_REGEX);
   return matches ? matches.map((tag) => tag.toLowerCase()) : [];
 }
+
+export const formatTimeLeft = (seconds: number) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+};

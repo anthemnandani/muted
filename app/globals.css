@@ -238,7 +238,7 @@
   }
 
   .dropdown-menu-item {
-    @apply px-4 tracking-normal select-none font-semibold py-3 cursor-pointer text-[15px] rounded-none focus:bg-hovered-background focus:rounded-lg;
+    @apply px-4 tracking-normal select-none font-semibold py-3 cursor-pointer text-[15px] rounded-none focus:bg-hovered-background;
   }
 
   /* Account Profile  */

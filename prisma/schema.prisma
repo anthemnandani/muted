@@ -61,6 +61,7 @@ model Post {
   hashtags     Hashtag[]      @relation("PostHashtags")
   repliesCount Int            @default(0)
   path         String?
+  lastEditedAt DateTime?
 
   @@unique([createdAt, id])
   @@index([authorId])
