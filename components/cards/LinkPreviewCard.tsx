@@ -76,7 +76,7 @@ const LinkPreviewCard = ({
 
           <div className='flex items-center gap-2 pt-2.5 mt-2 border-t border-border'>
             <Link2 className='size-3.5 text-muted-foreground' />
-            <span className='text-xs text-muted-foreground hover:text-primary transition-colors truncate'>
+            <span className='text-xs text-muted-foreground transition-colors truncate'>
               {domain}
             </span>
           </div>
