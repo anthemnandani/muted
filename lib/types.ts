@@ -1,7 +1,7 @@
 import type { AppRouter } from '@/server/api/root';
 import { IGif } from '@giphy/js-types';
 import type { User } from '@prisma/client';
-import { Privacy, PostPrivacy as ThreadPrivacy } from '@prisma/client';
+import { PostPrivacy, Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
 import { LucideIcon } from 'lucide-react';
 
@@ -101,6 +101,7 @@ export type ParentPostProps = {
     user: AuthorInfoProps;
     index: number;
   }>;
+  linkPreview: LinkPreview | null;
   author: AuthorInfoProps;
   repostedBy?: AuthorInfoProps;
   postChildren?: ParentPostProps[];
@@ -136,12 +137,7 @@ export interface CreateThreadInputProps {
   placeholder?: string;
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   value: string;
-  setThreadData: React.Dispatch<
-    React.SetStateAction<{
-      privacy: ThreadPrivacy;
-      text: string;
-    }>
-  >;
+  setThreadData: React.Dispatch<React.SetStateAction<ThreadData>>;
   handleMentionSearch: (value: string, cursorPosition: number) => void;
 }
 
@@ -173,12 +169,6 @@ export interface ThreadActionsProps {
   isParentPost?: boolean;
 }
 
-export enum PostPrivacy {
-  ANYONE = 'ANYONE',
-  FOLLOWED = 'FOLLOWED',
-  MENTIONED = 'MENTIONED',
-}
-
 export enum ThreadFilter {
   FOR_YOU = 'For you',
   FOLLOWING = 'Following',
@@ -190,3 +180,16 @@ export type MentionSuggestion = Pick<
   User,
   'id' | 'username' | 'fullName' | 'image'
 >;
+
+export interface LinkPreview {
+  url: string;
+  title: string | null;
+  description: string | null;
+  image: string | null;
+}
+
+export type ThreadData = {
+  privacy: PostPrivacy;
+  text: string;
+  linkPreview: LinkPreview | null;
+};

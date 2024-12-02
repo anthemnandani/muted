@@ -84,3 +84,14 @@ export const GET_MENTIONS = {
     },
   },
 };
+
+export const GET_LINK_PREVIEW = {
+  linkPreview: {
+    select: {
+      url: true,
+      title: true,
+      description: true,
+      image: true,
+    },
+  },
+};

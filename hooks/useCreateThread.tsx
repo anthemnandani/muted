@@ -1,4 +1,4 @@
-import type { MediaType } from '@/lib/types';
+import type { MediaType, ThreadData } from '@/lib/types';
 import { useUploadThing } from '@/lib/uploadthing';
 import {
   getImageDimensions,
@@ -8,7 +8,6 @@ import {
 import useDialog from '@/store/dialog';
 import useFileStore from '@/store/fileStore';
 import { api } from '@/trpc/react';
-import { PostPrivacy } from '@prisma/client';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -30,12 +29,10 @@ const useCreateThread = (
     setEditPostInfo,
   } = useDialog();
 
-  const [threadData, setThreadData] = useState<{
-    privacy: PostPrivacy;
-    text: string;
-  }>({
+  const [threadData, setThreadData] = useState<ThreadData>({
     privacy: postPrivacy,
     text: '',
+    linkPreview: null,
   });
 
   const trpcUtils = api.useUtils();
@@ -199,6 +196,7 @@ const useCreateThread = (
           privacy: threadData.privacy,
           quoteId: quoteInfo?.id,
           postAuthor: quoteInfo?.author.id,
+          linkPreview: threadData.linkPreview ?? undefined,
           mentions,
         });
 
@@ -209,6 +207,7 @@ const useCreateThread = (
     setThreadData({
       privacy: postPrivacy,
       text: '',
+      linkPreview: null,
     });
     setSelectedFile([]);
     setReplyPostInfo(null);

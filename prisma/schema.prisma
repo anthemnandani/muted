@@ -41,29 +41,32 @@ enum Privacy {
 }
 
 model Post {
-  id           String         @id @default(cuid())
-  createdAt    DateTime       @default(now())
-  author       User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId     String
-  text         String?
-  media        Json?          @default("{}")
-  likes        Like[]
-  parentPostId String?
-  parentPost   Post?          @relation("rootPost", fields: [parentPostId], references: [id], onDelete: Cascade)
-  replies      Post[]         @relation("rootPost")
-  notification Notification[]
-  reposts      Repost[]
-  quoteId      String?
-  privacy      PostPrivacy    @default(ANYONE)
-  reports      Report[]
-  bookmarks    Bookmark[]
-  mentions     Mention[]
-  hashtags     Hashtag[]      @relation("PostHashtags")
-  repliesCount Int            @default(0)
-  path         String?
-  lastEditedAt DateTime?
+  id             String         @id @default(cuid())
+  createdAt      DateTime       @default(now())
+  author         User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId       String
+  text           String?
+  media          Json?          @default("{}")
+  likes          Like[]
+  parentPostId   String?
+  parentPost     Post?          @relation("rootPost", fields: [parentPostId], references: [id], onDelete: Cascade)
+  replies        Post[]         @relation("rootPost")
+  notification   Notification[]
+  reposts        Repost[]
+  quoteId        String?
+  privacy        PostPrivacy    @default(ANYONE)
+  reports        Report[]
+  bookmarks      Bookmark[]
+  mentions       Mention[]
+  hashtags       Hashtag[]      @relation("PostHashtags")
+  repliesCount   Int            @default(0)
+  path           String?
+  lastEditedAt   DateTime?
+  linkPreviewUrl String?
+  linkPreview    LinkPreview?   @relation(fields: [linkPreviewUrl], references: [url])
 
   @@unique([createdAt, id])
+  @@index([linkPreviewUrl])
   @@index([authorId])
   @@index([parentPostId])
   @@index([path])
@@ -170,4 +173,16 @@ model Hashtag {
   updatedAt DateTime @updatedAt
 
   @@index([name])
+}
+
+model LinkPreview {
+  id          String   @id @default(cuid())
+  url         String   @unique
+  title       String?
+  description String?
+  image       String?
+  createdAt   DateTime @default(now())
+  posts       Post[]
+
+  @@index([url])
 }

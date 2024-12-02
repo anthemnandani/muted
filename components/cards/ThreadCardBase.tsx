@@ -10,6 +10,7 @@ import PostHeader from '../posts/PostHeader';
 import ThreadActions from '../shared/ThreadActions';
 import ThreadText from '../shared/ThreadText';
 import RepostedBy from '../user/RepostedBy';
+import LinkPreviewCard from './LinkPreviewCard';
 import ThreadImageCard from './ThreadImageCard';
 import ThreadQuoteCard from './ThreadQuoteCard';
 import ThreadVideoCard from './ThreadVideoCard';
@@ -39,6 +40,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   bookmarks,
   bookmarksCount,
   repliesCount,
+  linkPreview,
   variant = 'default',
   showHeader = true,
   showActions = true,
@@ -127,6 +129,19 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
         </Link>
       ) : (
         content
+      )}
+
+      {linkPreview && (
+        <div className='mx-2 md:mx-4 my-2'>
+          <a href={linkPreview.url} target='_blank' rel='noreferrer'>
+            <LinkPreviewCard
+              url={linkPreview.url}
+              title={linkPreview.title}
+              description={linkPreview.description}
+              image={linkPreview.image}
+            />
+          </a>
+        </div>
       )}
 
       {showActions && (

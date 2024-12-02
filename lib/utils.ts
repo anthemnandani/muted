@@ -205,8 +205,17 @@ export const getMediaAspectRatio = (dimensions: {
   return undefined;
 };
 
-export function highlightHashtags(text: string) {
-  return text.replace(
+export function highlightHashtagsAndUrls(text: string) {
+  const withUrls = text.replace(
+    /(https?:\/\/[^\s]+)/g,
+    (url) =>
+      `<a href="${url}" class="text-primary-blue hover:underline" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">${url.replace(
+        /^https?:\/\//,
+        ''
+      )}</a>`
+  );
+
+  return withUrls.replace(
     /#([\w.+?!,@$%&*()-]+[a-zA-Z0-9_$]+)(?=\s|$)/g,
     '<a href="/feed/$1" class="hashtag-link !text-primary-blue hover:underline hover:decoration-1 hover:transition-all hover:duration-300">#$1</a>'
   );
