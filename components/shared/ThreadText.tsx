@@ -1,5 +1,5 @@
 import { AuthorInfoProps } from '@/lib/types';
-import { cn, highlightHashtags } from '@/lib/utils';
+import { cn, highlightHashtagsAndUrls } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import Username from '../user/Username';
@@ -38,7 +38,7 @@ const ThreadText: React.FC<ThreadTextProps> = ({
     return (
       <div
         dangerouslySetInnerHTML={{
-          __html: highlightHashtags(text.replace(/\\n/g, '\n')),
+          __html: highlightHashtagsAndUrls(text.replace(/\\n/g, '\n')),
         }}
         onClick={handleClick}
         className={cn(

@@ -1,5 +1,5 @@
+import type { ThreadData } from '@/lib/types';
 import { api } from '@/trpc/react';
-import { PostPrivacy } from '@prisma/client';
 import { debounce } from 'lodash';
 import React from 'react';
 
@@ -10,12 +10,7 @@ interface MentionPosition {
 
 interface UseMentionsProps {
   textareaRef: React.RefObject<HTMLTextAreaElement>;
-  setThreadData: React.Dispatch<
-    React.SetStateAction<{
-      privacy: PostPrivacy;
-      text: string;
-    }>
-  >;
+  setThreadData: React.Dispatch<React.SetStateAction<ThreadData>>;
   setMentions: React.Dispatch<
     React.SetStateAction<
       Array<{

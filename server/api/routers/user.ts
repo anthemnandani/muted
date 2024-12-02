@@ -3,6 +3,7 @@ import {
   GET_BOOKMARKS,
   GET_COUNT,
   GET_LIKES,
+  GET_LINK_PREVIEW,
   GET_MENTIONS,
   GET_REPOSTS,
   GET_USER,
@@ -105,6 +106,7 @@ export const userRouter = createTRPCRouter({
           ...GET_COUNT,
           ...GET_REPOSTS,
           ...GET_MENTIONS,
+          ...GET_LINK_PREVIEW,
         },
       });
 
@@ -132,6 +134,7 @@ export const userRouter = createTRPCRouter({
           media: post.media as PostMedia,
           reposts: post.reposts,
           mentions: post.mentions,
+          linkPreview: post.linkPreview,
           bookmarks: post.bookmarks,
           bookmarksCount: post._count.bookmarks,
         })),
@@ -262,6 +265,7 @@ export const userRouter = createTRPCRouter({
               ...GET_COUNT,
               ...GET_REPOSTS,
               ...GET_MENTIONS,
+              ...GET_LINK_PREVIEW,
             },
           },
           quoteId: true,
@@ -277,6 +281,7 @@ export const userRouter = createTRPCRouter({
           ...GET_COUNT,
           ...GET_REPOSTS,
           ...GET_MENTIONS,
+          ...GET_LINK_PREVIEW,
         },
       });
 
@@ -320,6 +325,7 @@ export const userRouter = createTRPCRouter({
           quoteId: post.quoteId,
           path: post.path,
           repliesCount: post.repliesCount,
+          linkPreview: post.linkPreview,
         })),
         nextCursor,
       };
@@ -389,6 +395,7 @@ export const userRouter = createTRPCRouter({
               ...GET_REPOSTS,
               ...GET_BOOKMARKS,
               ...GET_MENTIONS,
+              ...GET_LINK_PREVIEW,
               reposts: {
                 select: {
                   userId: true,
@@ -430,6 +437,7 @@ export const userRouter = createTRPCRouter({
           path: repost.post.path,
           repliesCount: repost.post.repliesCount,
           repostsCount: repost.post._count.reposts,
+          linkPreview: repost.post.linkPreview,
           repostedBy: repost.user,
           repostedAt: repost.createdAt,
         })),

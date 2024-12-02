@@ -5,6 +5,7 @@ import { ResizeTextarea } from '@/components/ui/resize-textarea';
 import useWindow from '@/hooks/useWindow';
 import type { CreateThreadInputProps } from '@/lib/types';
 import { cn, formatTimeAgo, getFullName } from '@/lib/utils';
+import useDialog from '@/store/dialog';
 import useFileStore from '@/store/fileStore';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
@@ -19,7 +20,6 @@ import GifPicker from '../modals/GifPicker';
 import UserAvatar from '../shared/UserAvatar';
 import { Button } from '../ui/button';
 import Username from '../user/Username';
-import useDialog from '@/store/dialog';
 
 const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
   isOpen,

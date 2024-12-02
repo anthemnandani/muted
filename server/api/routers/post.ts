@@ -4,6 +4,7 @@ import {
   GET_BOOKMARKS,
   GET_COUNT,
   GET_LIKES,
+  GET_LINK_PREVIEW,
   GET_MENTIONS,
   GET_REPOSTS,
   GET_USER,
@@ -45,6 +46,14 @@ export const postRouter = createTRPCRouter({
         quoteId: z.string().optional(),
         postAuthor: z.string().optional(),
         parentPostId: z.string().optional(),
+        linkPreview: z
+          .object({
+            url: z.string(),
+            title: z.string().nullable(),
+            description: z.string().nullable(),
+            image: z.string().nullable(),
+          })
+          .optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -68,9 +77,25 @@ export const postRouter = createTRPCRouter({
       const hashtags = extractHashtags(filteredText);
 
       const transactionResult = await ctx.db.$transaction(async (prisma) => {
+        let linkPreview;
+
+        if (input.linkPreview) {
+          linkPreview = await prisma.linkPreview.upsert({
+            where: { url: input.linkPreview.url },
+            update: {},
+            create: {
+              url: input.linkPreview.url,
+              title: input.linkPreview.title,
+              description: input.linkPreview.description,
+              image: input.linkPreview.image,
+            },
+          });
+        }
+
         const postId = createId();
         const path = `/${postId}/`;
-        const newpost = await ctx.db.post.create({
+
+        const newpost = await prisma.post.create({
           data: {
             id: postId,
             text: filteredText,
@@ -79,6 +104,7 @@ export const postRouter = createTRPCRouter({
             privacy: input.privacy,
             quoteId: input.quoteId,
             path,
+            linkPreviewUrl: linkPreview?.url,
             hashtags: {
               connectOrCreate: hashtags.map((tag) => {
                 const tagName = tag.slice(1);
@@ -194,6 +220,7 @@ export const postRouter = createTRPCRouter({
           ...GET_COUNT,
           ...GET_REPOSTS,
           ...GET_MENTIONS,
+          ...GET_LINK_PREVIEW,
           reposts: {
             select: {
               createdAt: true,
@@ -437,6 +464,7 @@ export const postRouter = createTRPCRouter({
           ...GET_REPOSTS,
           ...GET_COUNT,
           ...GET_MENTIONS,
+          ...GET_LINK_PREVIEW,
         },
       });
 
@@ -483,6 +511,7 @@ export const postRouter = createTRPCRouter({
           ...GET_REPOSTS,
           ...GET_COUNT,
           ...GET_BOOKMARKS,
+          ...GET_LINK_PREVIEW,
         },
         orderBy: [{ path: 'asc' }, { createdAt: 'asc' }],
       });
@@ -886,6 +915,7 @@ export const postRouter = createTRPCRouter({
               ...GET_COUNT,
               ...GET_BOOKMARKS,
               ...GET_MENTIONS,
+              ...GET_LINK_PREVIEW,
             },
           },
         },
@@ -969,6 +999,7 @@ export const postRouter = createTRPCRouter({
               ...GET_COUNT,
               ...GET_BOOKMARKS,
               ...GET_MENTIONS,
+              ...GET_LINK_PREVIEW,
             },
           },
         },
@@ -1055,6 +1086,7 @@ export const postRouter = createTRPCRouter({
           ...GET_COUNT,
           ...GET_BOOKMARKS,
           ...GET_MENTIONS,
+          ...GET_LINK_PREVIEW,
         },
       });
 
@@ -1130,6 +1162,7 @@ export const postRouter = createTRPCRouter({
           ...GET_COUNT,
           ...GET_REPOSTS,
           ...GET_MENTIONS,
+          ...GET_LINK_PREVIEW,
           reposts: {
             select: {
               createdAt: true,
