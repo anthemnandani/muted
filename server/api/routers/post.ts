@@ -210,6 +210,7 @@ export const postRouter = createTRPCRouter({
           quoteId: true,
           path: true,
           repliesCount: true,
+          hideLikes: true,
           author: {
             select: {
               ...GET_USER,
@@ -454,6 +455,7 @@ export const postRouter = createTRPCRouter({
           quoteId: true,
           path: true,
           repliesCount: true,
+          hideLikes: true,
           author: {
             select: {
               ...GET_USER,
@@ -502,6 +504,7 @@ export const postRouter = createTRPCRouter({
           quoteId: true,
           path: true,
           repliesCount: true,
+          hideLikes: true,
           author: {
             select: {
               ...GET_USER,
@@ -748,6 +751,31 @@ export const postRouter = createTRPCRouter({
         return { addedBookmark: false };
       }
     }),
+  toggleHideLikes: privateProcedure
+    .input(
+      z.object({
+        postId: z.string(),
+        hide: z.boolean(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { userId } = ctx;
+      const post = await ctx.db.post.findUnique({
+        where: { id: input.postId },
+        select: { authorId: true },
+      });
+
+      if (!post || post.authorId !== userId) {
+        throw new TRPCError({ code: 'FORBIDDEN' });
+      }
+
+      await ctx.db.post.update({
+        where: { id: input.postId },
+        data: { hideLikes: input.hide },
+      });
+
+      return { success: true };
+    }),
   getQuotedPost: publicProcedure
     .input(
       z.object({
@@ -911,6 +939,7 @@ export const postRouter = createTRPCRouter({
               quoteId: true,
               path: true,
               repliesCount: true,
+              hideLikes: true,
               author: {
                 select: {
                   ...GET_USER,
@@ -995,6 +1024,7 @@ export const postRouter = createTRPCRouter({
               quoteId: true,
               path: true,
               repliesCount: true,
+              hideLikes: true,
               author: {
                 select: {
                   ...GET_USER,
@@ -1082,6 +1112,7 @@ export const postRouter = createTRPCRouter({
           quoteId: true,
           path: true,
           repliesCount: true,
+          hideLikes: true,
           author: {
             select: {
               ...GET_USER,
@@ -1158,6 +1189,7 @@ export const postRouter = createTRPCRouter({
           quoteId: true,
           path: true,
           repliesCount: true,
+          hideLikes: true,
           author: {
             select: {
               ...GET_USER,

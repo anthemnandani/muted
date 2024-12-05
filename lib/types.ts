@@ -87,6 +87,7 @@ export interface MenuItemProps {
   onSelect?: (e: Event) => void;
   className?: string;
   isActionMenuItem?: boolean;
+  disabled?: boolean;
 }
 
 export type ParentPostProps = {
@@ -114,6 +115,7 @@ export type ParentPostProps = {
   bookmarksCount?: number;
   repostsCount?: number;
   repostedAt?: Date;
+  hideLikes: boolean;
   _count?: {
     likes: number;
     reposts: number;
@@ -175,6 +177,7 @@ export interface ThreadActionsProps {
     user: AuthorInfoProps;
     index: number;
   }>;
+  hideLikes: boolean;
   isParentPost?: boolean;
 }
 

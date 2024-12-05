@@ -11,6 +11,7 @@ interface PostHeaderProps {
   repostedBy?: AuthorInfoProps;
   currentText: string;
   variant: 'default' | 'reply';
+  hideLikes: boolean;
 }
 
 const PostHeader: React.FC<PostHeaderProps> = ({
@@ -20,6 +21,7 @@ const PostHeader: React.FC<PostHeaderProps> = ({
   repostedBy,
   currentText,
   variant,
+  hideLikes,
 }) => (
   <div className='flex justify-between w-full space-x-2 xs:space-x-4 px-2 md:px-4'>
     <UserProfile author={author} />
@@ -52,6 +54,7 @@ const PostHeader: React.FC<PostHeaderProps> = ({
         repostedBy={repostedBy}
         createdAt={createdAt}
         currentText={currentText}
+        hideLikes={hideLikes}
       />
     </div>
   </div>

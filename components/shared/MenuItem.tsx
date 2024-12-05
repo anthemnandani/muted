@@ -10,11 +10,13 @@ const MenuItem: React.FC<MenuItemProps> = ({
   onSelect,
   isActionMenuItem,
   className,
+  disabled,
 }) => (
   <DropdownMenuItem
     className={cn('dropdown-menu-item', className)}
     onClick={onClick}
     onSelect={onSelect}
+    disabled={disabled}
   >
     {isActionMenuItem ? (
       <>
