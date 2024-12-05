@@ -10,7 +10,7 @@ import RepostButton from '../buttons/RepostButton';
 import ThreadCardBase from './ThreadCardBase';
 
 const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
-  const { createdAt, repliesCount } = postInfo;
+  const { createdAt, repliesCount, hideLikes } = postInfo;
   const time = format(createdAt, 'h:mm a');
   const date = format(createdAt, 'MMM d, yyyy');
 
@@ -37,12 +37,14 @@ const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
                   repost{postInfo.repostsCount !== 1 ? 's' : ''}
                 </span>
               </div>
-              <div>
-                <span className='font-medium'>{postInfo.likesCount}</span>{' '}
-                <span className='text-gray-3'>
-                  like{postInfo.likesCount !== 1 ? 's' : ''}
-                </span>
-              </div>
+              {!hideLikes && (
+                <div>
+                  <span className='font-medium'>{postInfo.likesCount}</span>{' '}
+                  <span className='text-gray-3'>
+                    like{postInfo.likesCount !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              )}
             </div>
           </ThreadCardBase>
 

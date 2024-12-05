@@ -61,6 +61,7 @@ model Post {
   hashtags       Hashtag[]      @relation("PostHashtags")
   repliesCount   Int            @default(0)
   path           String?
+  hideLikes      Boolean        @default(false)
   lastEditedAt   DateTime?
   linkPreviewUrl String?
   linkPreview    LinkPreview?   @relation(fields: [linkPreviewUrl], references: [url])

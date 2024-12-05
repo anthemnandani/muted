@@ -1,5 +1,6 @@
 'use client';
 
+import useHideLikes from '@/hooks/useHideLikes';
 import type { AuthorInfoProps } from '@/lib/types';
 import { formatTimeLeft } from '@/lib/utils';
 import useDialog from '@/store/dialog';
@@ -22,6 +23,7 @@ interface ThreadActionMenuProps {
   repostedBy?: AuthorInfoProps;
   createdAt: Date;
   currentText: string;
+  hideLikes: boolean;
 }
 
 const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
@@ -30,10 +32,18 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
   repostedBy,
   createdAt,
   currentText,
+  hideLikes,
 }) => {
   const { user } = useUser();
   const [timeLeft, setTimeLeft] = React.useState<number>(0);
+  const [isOpen, setIsOpen] = React.useState(false);
   const { setEditPostInfo, setOpenDialog } = useDialog();
+
+  const { handleToggleHideLikes, isLoading } = useHideLikes({
+    postId,
+    setIsOpen,
+    hideLikes,
+  });
 
   React.useEffect(() => {
     const calculateTimeLeft = () => {
@@ -62,7 +72,7 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
   }, [createdAt]);
 
   return (
-    <DropdownMenu modal={false}>
+    <DropdownMenu modal={false} open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <div className='flex-center relative hover:before:content-[""] hover:before:absolute hover:before:bg-primary hover:before:z-[2] hover:before:-inset-2 hover:before:rounded-full cursor-pointer'>
           <MoreHorizontal className='aspect-square object-cover object-center size-4 overflow-hidden flex-1 text-secondary' />
@@ -134,8 +144,10 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
 
             <MenuItem
               icon={Icons.hide}
-              label='Hide like and share counts'
+              label={hideLikes ? 'Unhide like counts' : 'Hide like counts'}
               className='flex-between py-3.5 px-4'
+              onClick={handleToggleHideLikes}
+              disabled={isLoading}
               isActionMenuItem
             />
 

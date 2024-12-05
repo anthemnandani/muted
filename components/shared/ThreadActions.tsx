@@ -17,6 +17,7 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
   repliesCount,
   reposts,
   repostsCount,
+  hideLikes,
   media,
   linkPreview,
   mentions,
@@ -33,6 +34,7 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
             likesCount,
             likes,
           }}
+          hideLikes={hideLikes}
           isParentPost={isParentPost}
         />
 

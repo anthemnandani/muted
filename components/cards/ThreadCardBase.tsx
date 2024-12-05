@@ -37,6 +37,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   bookmarks,
   bookmarksCount,
   repliesCount,
+  hideLikes,
   linkPreview,
   variant = 'default',
   showHeader = true,
@@ -89,6 +90,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
           repostedBy={repostedBy}
           currentText={text ?? ''}
           variant={variant}
+          hideLikes={hideLikes}
         />
       )}
 
@@ -132,6 +134,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
             media={media}
             linkPreview={linkPreview}
             mentions={mentions}
+            hideLikes={hideLikes}
             bookmarksCount={bookmarksCount ?? 0}
             bookmarks={bookmarks}
           />

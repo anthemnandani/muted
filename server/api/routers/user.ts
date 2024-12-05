@@ -96,6 +96,7 @@ export const userRouter = createTRPCRouter({
           quoteId: true,
           path: true,
           repliesCount: true,
+          hideLikes: true,
           author: {
             select: {
               ...GET_USER,
@@ -130,6 +131,7 @@ export const userRouter = createTRPCRouter({
           likes: post.likes,
           path: post.path,
           repliesCount: post.repliesCount,
+          hideLikes: post.hideLikes,
           quoteId: post.quoteId,
           media: post.media as PostMedia,
           reposts: post.reposts,
@@ -255,6 +257,7 @@ export const userRouter = createTRPCRouter({
                 },
               },
               repliesCount: true,
+              hideLikes: true,
               author: {
                 select: {
                   ...GET_USER,
@@ -271,6 +274,7 @@ export const userRouter = createTRPCRouter({
           quoteId: true,
           path: true,
           repliesCount: true,
+          hideLikes: true,
           author: {
             select: {
               ...GET_USER,
@@ -323,6 +327,7 @@ export const userRouter = createTRPCRouter({
           bookmarksCount: post._count.bookmarks,
           mentions: post.mentions,
           quoteId: post.quoteId,
+          hideLikes: post.hideLikes,
           path: post.path,
           repliesCount: post.repliesCount,
           linkPreview: post.linkPreview,
@@ -385,6 +390,7 @@ export const userRouter = createTRPCRouter({
               quoteId: true,
               path: true,
               repliesCount: true,
+              hideLikes: true,
               author: {
                 select: {
                   ...GET_USER,
@@ -436,6 +442,7 @@ export const userRouter = createTRPCRouter({
           quoteId: repost.post.quoteId,
           path: repost.post.path,
           repliesCount: repost.post.repliesCount,
+          hideLikes: repost.post.hideLikes,
           repostsCount: repost.post._count.reposts,
           linkPreview: repost.post.linkPreview,
           repostedBy: repost.user,
