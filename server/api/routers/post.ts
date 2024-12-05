@@ -49,9 +49,9 @@ export const postRouter = createTRPCRouter({
         linkPreview: z
           .object({
             url: z.string(),
-            title: z.string().nullable(),
-            description: z.string().nullable(),
-            image: z.string().nullable(),
+            title: z.string().nullable().optional(),
+            description: z.string().nullable().optional(),
+            image: z.string().nullable().optional(),
           })
           .optional(),
       })

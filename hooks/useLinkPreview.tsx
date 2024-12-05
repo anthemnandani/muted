@@ -10,7 +10,8 @@ export default function useLinkPreview(
   const cache: Record<string, LinkPreview | null> = {};
 
   useEffect(() => {
-    const urlRegex = /(https?:\/\/[^\s]+)\s/;
+    const urlRegex =
+      /((?:https?:\/\/)?(?:www\.)?[^\s]+\.[a-z]+(?:\/[^\s]*)?)\s/i;
     const matches = text.match(urlRegex);
     const url = matches?.[1];
 
@@ -20,24 +21,26 @@ export default function useLinkPreview(
       return;
     }
 
-    if (url === lastFetchedUrl) {
+    const fullUrl = url.startsWith('http') ? url : `https://${url}`;
+
+    if (fullUrl === lastFetchedUrl) {
       return;
     }
 
     const fetchLinkPreview = async () => {
       setIsLinkPreviewLoading(true);
       try {
-        if (cache[url]) {
+        if (cache[fullUrl]) {
           setThreadData((prev) => ({
             ...prev,
-            linkPreview: cache[url],
+            linkPreview: cache[fullUrl],
           }));
           return;
         }
 
         const response = await fetch('/api/link-preview', {
           method: 'POST',
-          body: JSON.stringify({ url }),
+          body: JSON.stringify({ url: fullUrl }),
         });
 
         if (!response.ok) {
@@ -49,8 +52,8 @@ export default function useLinkPreview(
 
         if (data && (data.title || data.description || data.image)) {
           setThreadData((prev) => ({ ...prev, linkPreview: data }));
-          cache[url] = data;
-          setLastFetchedUrl(url);
+          cache[fullUrl] = data;
+          setLastFetchedUrl(fullUrl);
         } else {
           setThreadData((prev) => ({ ...prev, linkPreview: null }));
         }
