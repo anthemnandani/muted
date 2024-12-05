@@ -42,7 +42,7 @@ const ThreadText: React.FC<ThreadTextProps> = ({
         }}
         onClick={handleClick}
         className={cn(
-          'text-accent-foreground text-[16px] font-normal leading-[1.4em] antialiased whitespace-pre-line px-2 md:px-4 my-3',
+          'text-accent-foreground text-[16px] font-normal leading-[1.4em] antialiased whitespace-pre-line px-2 md:px-4 my-3 break-words',
           variant === 'reply' && 'max-md:max-w-full'
         )}
       />
@@ -98,7 +98,7 @@ const ThreadText: React.FC<ThreadTextProps> = ({
   return (
     <div
       className={cn(
-        'text-accent-foreground text-[16px] font-normal leading-[1.4em] antialiased whitespace-pre-line px-2 md:px-4 my-3',
+        'text-accent-foreground text-[16px] font-normal leading-[1.4em] antialiased whitespace-pre-line px-2 md:px-4 my-3 break-words',
         variant === 'reply' && 'max-md:max-w-full'
       )}
     >
