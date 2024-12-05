@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { AuthorInfoProps } from '@/lib/types';
+import type { AuthorInfoProps, LinkPreview, PostMedia } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
@@ -17,6 +17,12 @@ interface RepostButtonProps {
   id: string;
   text: string | null;
   author: AuthorInfoProps;
+  media: PostMedia | null;
+  linkPreview: LinkPreview | null;
+  mentions: Array<{
+    user: AuthorInfoProps;
+    index: number;
+  }>;
   createdAt?: Date;
   reposts: {
     userId: string;
@@ -32,6 +38,9 @@ const RepostButton: React.FC<RepostButtonProps> = ({
   author,
   createdAt,
   reposts,
+  media,
+  linkPreview,
+  mentions,
   repostsCount,
   isParentPost,
 }) => {
@@ -118,6 +127,9 @@ const RepostButton: React.FC<RepostButtonProps> = ({
             id,
             author,
             createdAt,
+            media,
+            linkPreview,
+            mentions,
           }}
         />
       </DropdownMenuContent>

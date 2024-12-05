@@ -153,7 +153,7 @@ const CreateThread = () => {
             : 'New thread'}
         </h1>
         <Card className='relative rounded-2xl border-none bg-background shadow-2xl ring-1 ring-[#393939] ring-offset-0 dark:bg-gray-6'>
-          <ScrollArea className='max-h-[calc(100vh-100px)] flex flex-col overflow-y-auto rounded-2xl'>
+          <div className='max-h-[calc(100vh-100px)] overflow-y-auto'>
             <div
               className={cn(
                 'p-6',
@@ -231,7 +231,7 @@ const CreateThread = () => {
                 {editPostInfo ? 'Edit' : 'Post'}
               </Button>
             </div>
-          </ScrollArea>
+          </div>
         </Card>
       </DialogContent>
     </Dialog>

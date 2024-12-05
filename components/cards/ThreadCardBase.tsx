@@ -1,19 +1,16 @@
 'use client';
 
 import { ThreadCardProps } from '@/lib/types';
-import { cn, isImageOrVideo } from '@/lib/utils';
-import Image from 'next/image';
+import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
 import PostHeader from '../posts/PostHeader';
 import ThreadActions from '../shared/ThreadActions';
-import ThreadText from '../shared/ThreadText';
+import ThreadContent from '../shared/ThreadContent';
 import RepostedBy from '../user/RepostedBy';
 import LinkPreviewCard from './LinkPreviewCard';
-import ThreadImageCard from './ThreadImageCard';
 import ThreadQuoteCard from './ThreadQuoteCard';
-import ThreadVideoCard from './ThreadVideoCard';
 
 interface ThreadCardBaseProps extends ThreadCardProps {
   variant?: 'default' | 'reply';
@@ -62,38 +59,14 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
 
   const content = (
     <>
-      {text && <ThreadText text={text} mentions={mentions} variant={variant} />}
-      {media && media.fileType && (
-        <>
-          {isImageOrVideo(media.fileType) === 'image' && (
-            <ThreadImageCard
-              image={media.fileUrl as string}
-              aspectRatio={media.aspectRatio}
-              originalDimensions={media.originalDimensions}
-            />
-          )}
-          {isImageOrVideo(media.fileType) === 'video' && (
-            <ThreadVideoCard
-              video={media.fileUrl! as string}
-              aspectRatio={media.aspectRatio}
-              originalDimensions={media.originalDimensions}
-              username={author.username}
-              postId={id}
-            />
-          )}
-          {media.fileType === 'gif' && (
-            <div className='relative px-4 overflow-hidden mt-2.5 mb-2'>
-              <Image
-                src={media.fileUrl as string}
-                alt='GIF'
-                width={200}
-                height={200}
-                loading='lazy'
-              />
-            </div>
-          )}
-        </>
-      )}
+      <ThreadContent
+        id={id}
+        text={text}
+        author={author}
+        mentions={mentions}
+        media={media}
+        variant={variant}
+      />
       {quoteId && (
         <div className='px-10'>
           <ThreadQuoteCard quoteId={quoteId} />
@@ -156,6 +129,9 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
             repliesCount={repliesCount ?? 0}
             repostsCount={repostsCount ?? 0}
             reposts={reposts}
+            media={media}
+            linkPreview={linkPreview}
+            mentions={mentions}
             bookmarksCount={bookmarksCount ?? 0}
             bookmarks={bookmarks}
           />

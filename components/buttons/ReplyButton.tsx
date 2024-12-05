@@ -1,10 +1,10 @@
 import React from 'react';
 import { Icons } from '@/components/icons';
 import useDialog from '@/store/dialog';
-import { ParentPostInfo } from '@/lib/types';
+import type { ReplyPostInfo } from '@/lib/types';
 
 interface ReplyButtonProps {
-  replyThreadInfo: ParentPostInfo;
+  replyThreadInfo: ReplyPostInfo;
   repliesCount: number;
   isParentPost?: boolean;
 }

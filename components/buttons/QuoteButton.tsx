@@ -1,13 +1,11 @@
 import { Icons } from '@/components/icons';
-import type { PostProps } from '@/lib/types';
+import type { ParentPostInfo } from '@/lib/types';
 import useDialog from '@/store/dialog';
 import React from 'react';
 import { DropdownMenuItem } from '../ui/dropdown-menu';
 
 interface QuoteButtonProps {
-  quoteInfo: Pick<PostProps, 'id' | 'text' | 'author'> & {
-    createdAt?: Date;
-  };
+  quoteInfo: ParentPostInfo;
 }
 
 const QuoteButton: React.FC<QuoteButtonProps> = ({ quoteInfo }) => {

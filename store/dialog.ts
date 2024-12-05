@@ -1,19 +1,13 @@
-import type { ParentPostInfo } from '@/lib/types';
+import type { ReplyPostInfo, ParentPostInfo } from '@/lib/types';
 import { create } from 'zustand';
 
 interface ToggleState {
   openDialog: boolean;
   setOpenDialog: (open: boolean) => void;
-  replyPostInfo: ParentPostInfo | null;
-  setReplyPostInfo: (reply: ParentPostInfo | null) => void;
-  quoteInfo:
-    | (Pick<ParentPostInfo, 'id' | 'text' | 'author'> & { createdAt?: Date })
-    | null;
-  setQuoteInfo: (
-    quote:
-      | (Pick<ParentPostInfo, 'id' | 'text' | 'author'> & { createdAt?: Date })
-      | null
-  ) => void;
+  replyPostInfo: ReplyPostInfo | null;
+  setReplyPostInfo: (reply: ReplyPostInfo | null) => void;
+  quoteInfo: ParentPostInfo | null;
+  setQuoteInfo: (quote: ParentPostInfo | null) => void;
   editPostInfo: { id: string; text: string } | null;
   setEditPostInfo: (edit: { id: string; text: string } | null) => void;
 }

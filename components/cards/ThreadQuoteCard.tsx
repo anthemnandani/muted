@@ -1,23 +1,28 @@
 'use client';
 
-import React from 'react';
-import { Card } from '@/components/ui/card';
-
-import { api } from '@/trpc/react';
 import { Icons } from '@/components/icons';
+import { Card } from '@/components/ui/card';
 import type { ParentPostInfo } from '@/lib/types';
-import Link from 'next/link';
 import { formatTimeAgo } from '@/lib/utils';
+import { api } from '@/trpc/react';
+import Link from 'next/link';
+import React from 'react';
+import ThreadContent from '../shared/ThreadContent';
 import UserAvatar from '../shared/UserAvatar';
 import Username from '../user/Username';
+import LinkPreviewCard from './LinkPreviewCard';
 
-type ThreadQuoteCardProps = Partial<
-  Pick<ParentPostInfo, 'id' | 'text' | 'author'>
-> & { createdAt?: Date };
+type ThreadQuoteCardProps = Partial<ParentPostInfo> & { quoteId?: string };
 
-const ThreadQuoteCard: React.FC<
-  ThreadQuoteCardProps & { quoteId?: string }
-> = ({ author, text, quoteId, createdAt }) => {
+const ThreadQuoteCard: React.FC<ThreadQuoteCardProps> = ({
+  author,
+  text,
+  quoteId,
+  media,
+  mentions,
+  createdAt,
+  linkPreview,
+}) => {
   if (quoteId) {
     const { data, isLoading } = api.post.getQuotedPost.useQuery(
       { id: quoteId },
@@ -42,22 +47,40 @@ const ThreadQuoteCard: React.FC<
         className='w-full'
       >
         <RenderCard
+          id={data.postInfo.id}
           author={data?.postInfo.user}
           text={data?.postInfo.text}
+          media={data?.postInfo.media}
           createdAt={data.postInfo.createdAt}
+          mentions={data.postInfo.mentions}
+          linkPreview={data.postInfo.linkPreview}
         />
       </Link>
     );
   }
-  return <RenderCard author={author} text={text} createdAt={createdAt} />;
+
+  return (
+    <RenderCard
+      author={author}
+      text={text}
+      createdAt={createdAt}
+      media={media}
+      mentions={mentions}
+      linkPreview={linkPreview}
+    />
+  );
 };
 
 export default ThreadQuoteCard;
 
 const RenderCard: React.FC<ThreadQuoteCardProps> = ({
+  id,
   author,
   text,
+  media,
   createdAt,
+  mentions,
+  linkPreview,
 }) => {
   return (
     <Card className='overflow-hidden p-4 mt-3 mb-2 rounded-xl bg-transparent border-border w-full'>
@@ -75,14 +98,26 @@ const RenderCard: React.FC<ThreadQuoteCardProps> = ({
           </time>
         </div>
       </div>
-      {text && (
-        <span className='flex-grow resize-none overflow-hidden outline-none text-[15px] text-accent-foreground break-words placeholder:text-gray-3 w-full tracking-normal whitespace-pre-line truncate'>
-          <div
-            dangerouslySetInnerHTML={{
-              __html: text.replace(/\\n/g, '\n'),
-            }}
-          />
-        </span>
+
+      <ThreadContent
+        id={id}
+        text={text}
+        author={author}
+        media={media}
+        mentions={mentions}
+      />
+
+      {linkPreview && (
+        <div className='mx-2 my-2'>
+          <a href={linkPreview.url} target='_blank' rel='noreferrer'>
+            <LinkPreviewCard
+              url={linkPreview.url}
+              title={linkPreview.title}
+              description={linkPreview.description}
+              image={linkPreview.image}
+            />
+          </a>
+        </div>
       )}
     </Card>
   );

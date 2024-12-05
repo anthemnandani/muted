@@ -32,7 +32,12 @@ export type PostMedia = {
 
 export type ParentPostInfo = Pick<
   PostProps,
-  'id' | 'text' | 'media' | 'author' | 'createdAt'
+  'id' | 'text' | 'media' | 'author' | 'linkPreview' | 'mentions'
+> & { createdAt?: Date };
+
+export type ReplyPostInfo = Pick<
+  PostProps,
+  'id' | 'text' | 'author' | 'media' | 'createdAt'
 >;
 
 export type UserProfileInfoProps =
@@ -129,11 +134,9 @@ export interface UserAvatarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export interface CreateThreadInputProps {
   isOpen: boolean;
-  replyThreadInfo?: ParentPostInfo | null;
+  replyThreadInfo?: ReplyPostInfo | null;
   onTextareaChange: (textValue: string) => void;
-  quoteInfo?:
-    | (Pick<ParentPostInfo, 'id' | 'text' | 'author'> & { createdAt?: Date })
-    | null;
+  quoteInfo?: ParentPostInfo | null;
   placeholder?: string;
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   value: string;
@@ -166,6 +169,12 @@ export interface ThreadActionsProps {
   repostsCount: number;
   bookmarks: { userId: string }[];
   bookmarksCount: number;
+  media: PostMedia;
+  linkPreview: LinkPreview | null;
+  mentions: Array<{
+    user: AuthorInfoProps;
+    index: number;
+  }>;
   isParentPost?: boolean;
 }
 

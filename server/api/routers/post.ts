@@ -763,7 +763,6 @@ export const postRouter = createTRPCRouter({
           id: true,
           createdAt: true,
           text: true,
-          ...GET_LIKES,
           media: true,
           path: true,
           repliesCount: true,
@@ -772,7 +771,11 @@ export const postRouter = createTRPCRouter({
               ...GET_USER,
             },
           },
+
+          ...GET_LIKES,
           ...GET_COUNT,
+          ...GET_LINK_PREVIEW,
+          ...GET_MENTIONS,
         },
       });
 
@@ -789,6 +792,9 @@ export const postRouter = createTRPCRouter({
           user: postInfo.author,
           likes: postInfo.likes,
           repliesCount: postInfo.repliesCount,
+          media: postInfo.media as PostMedia,
+          linkPreview: postInfo.linkPreview,
+          mentions: postInfo.mentions,
         },
       };
     }),
