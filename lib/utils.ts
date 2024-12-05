@@ -206,14 +206,12 @@ export const getMediaAspectRatio = (dimensions: {
 };
 
 export function highlightHashtagsAndUrls(text: string) {
-  const withUrls = text.replace(
-    /(https?:\/\/[^\s]+)/g,
-    (url) =>
-      `<a href="${url}" class="text-primary-blue hover:underline" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">${url.replace(
-        /^https?:\/\//,
-        ''
-      )}</a>`
-  );
+  const withUrls = text.replace(/(https?:\/\/[^\s]+)/g, (url) => {
+    const displayUrl = url.replace(/^https?:\/\//, '').slice(0, 25);
+    return `<a href="${url}" class="text-primary-blue hover:underline break-all" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">${displayUrl}${
+      displayUrl.length < url.replace(/^https?:\/\//, '').length ? '...' : ''
+    }</a>`;
+  });
 
   return withUrls.replace(
     /#([\w.+?!,@$%&*()-]+[a-zA-Z0-9_$]+)(?=\s|$)/g,

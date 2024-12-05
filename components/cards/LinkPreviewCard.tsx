@@ -30,7 +30,7 @@ const LinkPreviewCard = ({
   }
   const domain = url ? new URL(url).hostname.replace('www.', '') : '';
   return (
-    <Card className='overflow-hidden transition-colors z-[1003] border-border-dark dark:border-border-light rounded-2xl'>
+    <Card className='overflow-hidden transition-colors border-border-dark dark:border-border-light rounded-2xl'>
       <div className='flex flex-col relative'>
         {image && (
           <div className='relative aspect-[1.91/1] w-full overflow-hidden'>
@@ -63,7 +63,7 @@ const LinkPreviewCard = ({
 
         <div className='flex flex-col gap-2 p-4'>
           {title && (
-            <h3 className='font-semibold leading-snug tracking-tight line-clamp-2'>
+            <h3 className='font-semibold leading-snug tracking-tight line-clamp-2 break-words'>
               {title}
             </h3>
           )}
