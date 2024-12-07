@@ -1,5 +1,6 @@
 'use client';
 
+import useCopyLink from '@/hooks/useCopyLink';
 import useHideLikes from '@/hooks/useHideLikes';
 import type { AuthorInfoProps } from '@/lib/types';
 import { formatTimeLeft } from '@/lib/utils';
@@ -23,6 +24,7 @@ interface ThreadActionMenuProps {
   repostedBy?: AuthorInfoProps;
   createdAt: Date;
   currentText: string;
+  username: string;
   hideLikes: boolean;
 }
 
@@ -32,6 +34,7 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
   repostedBy,
   createdAt,
   currentText,
+  username,
   hideLikes,
 }) => {
   const { user } = useUser();
@@ -44,6 +47,8 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
     setIsOpen,
     hideLikes,
   });
+
+  const { handleCopyLink } = useCopyLink({ postId, username });
 
   React.useEffect(() => {
     const calculateTimeLeft = () => {
@@ -155,6 +160,14 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
             <DeletePost postId={postId} isRepost={!!repostedBy} />
           </>
         )}
+        <DropdownMenuSeparator />
+        <MenuItem
+          icon={Icons.copyLink}
+          label='Copy link'
+          className='flex-between py-3.5 px-4'
+          onClick={handleCopyLink}
+          isActionMenuItem
+        />
       </DropdownMenuContent>
     </DropdownMenu>
   );

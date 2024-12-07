@@ -1,6 +1,6 @@
+import useCopyLink from '@/hooks/useCopyLink';
 import React from 'react';
 import { Icons } from '../icons';
-import { toast } from 'sonner';
 
 interface CopyLinkButtonProps {
   postId: string;
@@ -11,16 +11,7 @@ const CopyLinkButton: React.FC<CopyLinkButtonProps> = ({
   postId,
   username,
 }) => {
-  const copyLink = `${process.env.NEXT_PUBLIC_APP_URL}/@${username}/post/${postId}`;
-
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(copyLink);
-      toast.success('Copied');
-    } catch (error) {
-      toast.error('Failed to copy link');
-    }
-  };
+  const { handleCopyLink } = useCopyLink({ postId, username });
   return (
     <div className='icon-container-hover' onClick={handleCopyLink}>
       <Icons.copyLink2 className='size-5 transition-colors duration-150' />
