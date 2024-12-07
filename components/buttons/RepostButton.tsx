@@ -36,6 +36,7 @@ const RepostButton: React.FC<RepostButtonProps> = ({
   const { isLoading: isCheckingPermissions, canInteract } = usePostInteraction({
     authorId: author.id,
     privacy,
+    mentions,
   });
 
   const trpcUtils = api.useUtils();
@@ -51,6 +52,7 @@ const RepostButton: React.FC<RepostButtonProps> = ({
     });
 
   const handleToggleRepost = async () => {
+    if (!canInteract) return toast.success('You cannot repost this post');
     const promise = toggleRepost({ id });
 
     toast.promise(promise, {
@@ -76,11 +78,8 @@ const RepostButton: React.FC<RepostButtonProps> = ({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          disabled={isLoading}
-          className='icon-container-hover focus-visible:outline-none'
-        >
+      <DropdownMenuTrigger>
+        <button disabled={isLoading} className='icon-container-hover'>
           {isRepostedByMe ? (
             <Icons.reposted className='size-5' />
           ) : (

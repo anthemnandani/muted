@@ -36,10 +36,10 @@ const Username: React.FC<UsernameProps> = ({
               className
             )}
           >
-            {author.username}
+            {author.username}{' '}
           </span>
           {isReposted && (
-            <span className='-ml-[2px] text-[13px] text-[#999] dark:text-gray-3'>
+            <span className='text-[13px] text-[#999] dark:text-gray-3'>
               reposted {formatRepostTime(repostedAt!)}
             </span>
           )}
