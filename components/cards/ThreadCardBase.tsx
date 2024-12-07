@@ -38,6 +38,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   bookmarksCount,
   repliesCount,
   hideLikes,
+  privacy,
   linkPreview,
   variant = 'default',
   showHeader = true,
@@ -137,6 +138,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
             hideLikes={hideLikes}
             bookmarksCount={bookmarksCount ?? 0}
             bookmarks={bookmarks}
+            privacy={privacy}
           />
         </div>
       )}

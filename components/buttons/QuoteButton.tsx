@@ -6,17 +6,19 @@ import { DropdownMenuItem } from '../ui/dropdown-menu';
 
 interface QuoteButtonProps {
   quoteInfo: ParentPostInfo;
+  disabled?: boolean;
 }
 
-const QuoteButton: React.FC<QuoteButtonProps> = ({ quoteInfo }) => {
+const QuoteButton: React.FC<QuoteButtonProps> = ({ quoteInfo, disabled }) => {
   const { setOpenDialog, setQuoteInfo } = useDialog();
   return (
     <DropdownMenuItem
-      className='dropdown-menu-item flex-between py-3.5 px-4'
       onClick={() => {
         setOpenDialog(true);
         setQuoteInfo(quoteInfo);
       }}
+      disabled={disabled}
+      className='dropdown-menu-item flex-between py-3.5 px-4 data-[disabled]:pointer-events-auto'
     >
       Quote
       <Icons.quote className='size-5' />

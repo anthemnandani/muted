@@ -23,6 +23,7 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
   mentions,
   bookmarks,
   bookmarksCount,
+  privacy,
   isParentPost = false,
 }) => {
   return (
@@ -60,6 +61,7 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
           media={media}
           linkPreview={linkPreview}
           mentions={mentions}
+          privacy={privacy}
         />
       </div>
 

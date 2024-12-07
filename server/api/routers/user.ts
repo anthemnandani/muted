@@ -1,3 +1,4 @@
+import { PostMedia } from '@/lib/types';
 import { getUserEmail } from '@/lib/utils';
 import {
   GET_BOOKMARKS,
@@ -11,7 +12,6 @@ import {
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '../trpc';
-import { PostMedia } from '@/lib/types';
 
 export const userRouter = createTRPCRouter({
   userInfo: privateProcedure
@@ -37,6 +37,7 @@ export const userRouter = createTRPCRouter({
         },
         include: {
           followers: true,
+          following: true,
         },
       });
 
@@ -56,6 +57,7 @@ export const userRouter = createTRPCRouter({
           createdAt: userProfileInfo.createdAt,
           isAdmin: userProfileInfo.isAdmin,
           followers: userProfileInfo.followers,
+          following: userProfileInfo.following,
         },
       };
     }),
