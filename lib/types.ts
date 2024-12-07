@@ -116,6 +116,7 @@ export type ParentPostProps = {
   repostsCount?: number;
   repostedAt?: Date;
   hideLikes: boolean;
+  privacy: PostPrivacy;
   _count?: {
     likes: number;
     reposts: number;
@@ -161,6 +162,7 @@ export interface EditProfileProps {
 
 export interface ThreadActionsProps {
   id: string;
+  privacy: PostPrivacy;
   likesCount: number;
   likes: { userId: string }[];
   text: string | null;
@@ -205,3 +207,23 @@ export type ThreadData = {
   text: string;
   linkPreview: LinkPreview | null;
 };
+
+export interface RepostButtonProps {
+  id: string;
+  text: string | null;
+  author: AuthorInfoProps;
+  media: PostMedia | null;
+  linkPreview: LinkPreview | null;
+  mentions: Array<{
+    user: AuthorInfoProps;
+    index: number;
+  }>;
+  createdAt?: Date;
+  reposts: {
+    userId: string;
+    postId: string;
+  }[];
+  repostsCount: number;
+  isParentPost?: boolean;
+  privacy: PostPrivacy;
+}

@@ -7,11 +7,11 @@ import {
 } from '@/lib/utils';
 import useDialog from '@/store/dialog';
 import useFileStore from '@/store/fileStore';
+import usePost from '@/store/post';
 import { api } from '@/trpc/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import usePost from './usePost';
 
 const useCreateThread = (
   setMentions: (mentions: Array<{ userId: string; index: number }>) => void

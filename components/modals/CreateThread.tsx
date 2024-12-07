@@ -28,7 +28,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../ui/dialog';
-import { ScrollArea } from '../ui/scroll-area';
 
 const CreateThread = () => {
   const { isMobile } = useWindow();

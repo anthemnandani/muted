@@ -211,6 +211,7 @@ export const postRouter = createTRPCRouter({
           path: true,
           repliesCount: true,
           hideLikes: true,
+          privacy: true,
           author: {
             select: {
               ...GET_USER,
@@ -456,6 +457,7 @@ export const postRouter = createTRPCRouter({
           path: true,
           repliesCount: true,
           hideLikes: true,
+          privacy: true,
           author: {
             select: {
               ...GET_USER,
@@ -505,6 +507,7 @@ export const postRouter = createTRPCRouter({
           path: true,
           repliesCount: true,
           hideLikes: true,
+          privacy: true,
           author: {
             select: {
               ...GET_USER,
@@ -794,6 +797,7 @@ export const postRouter = createTRPCRouter({
           media: true,
           path: true,
           repliesCount: true,
+          privacy: true,
           author: {
             select: {
               ...GET_USER,
@@ -940,6 +944,7 @@ export const postRouter = createTRPCRouter({
               path: true,
               repliesCount: true,
               hideLikes: true,
+              privacy: true,
               author: {
                 select: {
                   ...GET_USER,
@@ -1025,6 +1030,7 @@ export const postRouter = createTRPCRouter({
               path: true,
               repliesCount: true,
               hideLikes: true,
+              privacy: true,
               author: {
                 select: {
                   ...GET_USER,
@@ -1113,6 +1119,7 @@ export const postRouter = createTRPCRouter({
           path: true,
           repliesCount: true,
           hideLikes: true,
+          privacy: true,
           author: {
             select: {
               ...GET_USER,
@@ -1190,6 +1197,7 @@ export const postRouter = createTRPCRouter({
           path: true,
           repliesCount: true,
           hideLikes: true,
+          privacy: true,
           author: {
             select: {
               ...GET_USER,

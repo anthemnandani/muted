@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,21 +5,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-// import usePost from '@/store/post';
+import usePost from '@/store/post';
+import React from 'react';
 
 const PostPrivacyMenu: React.FC = ({}) => {
-  //   const { postPrivacy, setPostPrivacy } = usePost();
+  const { postPrivacy, setPostPrivacy } = usePost();
 
   const privacyText = {
+    ['ANYONE']: 'Anyone can reply & quote',
     ['FOLLOWERS']: 'Your followers can reply & quote',
     ['FOLLOWED']: 'Profiles you follow can reply & quote',
     ['MENTIONED']: 'Profiles you mention can reply & quote',
   };
 
-  //   const privacyDisplayText = React.useMemo(() => {
-  //     return privacyText[postPrivacy];
-  //     // eslint-disable-next-line react-hooks/exhaustive-deps
-  //   }, [postPrivacy]);
+  const privacyDisplayText = React.useMemo(() => {
+    return privacyText[postPrivacy];
+  }, [postPrivacy]);
 
   return (
     <DropdownMenu>
@@ -29,7 +29,7 @@ const PostPrivacyMenu: React.FC = ({}) => {
           type='button'
           className='text-[15px] text-gray-3 tracking-normal z-50 cursor-pointer select-none outline-none'
         >
-          {privacyText.FOLLOWERS}
+          {privacyDisplayText}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -38,21 +38,27 @@ const PostPrivacyMenu: React.FC = ({}) => {
       >
         <DropdownMenuItem
           className='dropdown-menu-item'
-          //   onClick={() => setPostPrivacy('ANYONE')}
+          onClick={() => setPostPrivacy('ANYONE')}
         >
           Anyone
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className='dropdown-menu-item'
+          onClick={() => setPostPrivacy('FOLLOWERS')}
+        >
+          Followers only
         </DropdownMenuItem>
         <DropdownMenuSeparator className=' h-[1.2px] my-0' />
         <DropdownMenuItem
           className='dropdown-menu-item'
-          //   onClick={() => setPostPrivacy('FOLLOWED')}
+          onClick={() => setPostPrivacy('FOLLOWED')}
         >
           Profiles you follow
         </DropdownMenuItem>
         <DropdownMenuSeparator className=' h-[1.2px] my-0' />
         <DropdownMenuItem
           className='dropdown-menu-item'
-          //   onClick={() => setPostPrivacy('MENTIONED')}
+          onClick={() => setPostPrivacy('MENTIONED')}
         >
           Mentioned only
         </DropdownMenuItem>

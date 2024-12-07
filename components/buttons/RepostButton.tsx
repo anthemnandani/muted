@@ -5,32 +5,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { AuthorInfoProps, LinkPreview, PostMedia } from '@/lib/types';
+import { usePostInteraction } from '@/hooks/usePostInteraction';
+import type { RepostButtonProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
 import React from 'react';
 import { toast } from 'sonner';
 import QuoteButton from './QuoteButton';
-
-interface RepostButtonProps {
-  id: string;
-  text: string | null;
-  author: AuthorInfoProps;
-  media: PostMedia | null;
-  linkPreview: LinkPreview | null;
-  mentions: Array<{
-    user: AuthorInfoProps;
-    index: number;
-  }>;
-  createdAt?: Date;
-  reposts: {
-    userId: string;
-    postId: string;
-  }[];
-  repostsCount: number;
-  isParentPost?: boolean;
-}
 
 const RepostButton: React.FC<RepostButtonProps> = ({
   id,
@@ -43,12 +25,19 @@ const RepostButton: React.FC<RepostButtonProps> = ({
   mentions,
   repostsCount,
   isParentPost,
+  privacy,
 }) => {
   const { user: loggedUser } = useUser();
 
   const isRepostedByMe = React.useMemo(() => {
     return reposts.some((repost) => repost.userId === loggedUser?.id);
   }, [reposts, loggedUser?.id]);
+
+  const { isLoading: isCheckingPermissions, canInteract } = usePostInteraction({
+    authorId: author.id,
+    privacy,
+    mentions,
+  });
 
   const trpcUtils = api.useUtils();
 
@@ -63,6 +52,7 @@ const RepostButton: React.FC<RepostButtonProps> = ({
     });
 
   const handleToggleRepost = async () => {
+    if (!canInteract) return toast.success('You cannot repost this post');
     const promise = toggleRepost({ id });
 
     toast.promise(promise, {
@@ -88,7 +78,7 @@ const RepostButton: React.FC<RepostButtonProps> = ({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger>
         <button disabled={isLoading} className='icon-container-hover'>
           {isRepostedByMe ? (
             <Icons.reposted className='size-5' />
@@ -106,32 +96,44 @@ const RepostButton: React.FC<RepostButtonProps> = ({
         align='start'
         className='dropdown-content-container p-2 rounded-2xl w-[240px]'
       >
-        <DropdownMenuItem
-          disabled={isLoading}
-          onClick={handleToggleRepost}
-          className={cn('dropdown-menu-item flex-between py-3.5 px-4', {
-            'text-red-600 focus:text-red-600': isRepostedByMe,
-          })}
-        >
-          {isRepostedByMe ? 'Remove' : 'Repost'}
-          <Icons.repost
-            className={cn('size-5', {
-              'text-red-600': isRepostedByMe,
-            })}
-          />
-        </DropdownMenuItem>
+        {isCheckingPermissions ? (
+          <div className='flex-center py-3.5 px-4'>
+            <Icons.loading className='size-8 animate-spin' />
+          </div>
+        ) : (
+          <>
+            <DropdownMenuItem
+              disabled={!canInteract || isLoading}
+              onClick={handleToggleRepost}
+              className={cn(
+                'dropdown-menu-item flex-between py-3.5 px-4 data-[disabled]:pointer-events-auto',
+                {
+                  'text-red-600 focus:text-red-600': isRepostedByMe,
+                }
+              )}
+            >
+              {isRepostedByMe ? 'Remove' : 'Repost'}
+              <Icons.repost
+                className={cn('size-5', {
+                  'text-red-600': isRepostedByMe,
+                })}
+              />
+            </DropdownMenuItem>
 
-        <QuoteButton
-          quoteInfo={{
-            text,
-            id,
-            author,
-            createdAt,
-            media,
-            linkPreview,
-            mentions,
-          }}
-        />
+            <QuoteButton
+              quoteInfo={{
+                text,
+                id,
+                author,
+                createdAt,
+                media,
+                linkPreview,
+                mentions,
+              }}
+              disabled={!canInteract}
+            />
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
