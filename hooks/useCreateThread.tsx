@@ -9,6 +9,7 @@ import useDialog from '@/store/dialog';
 import useFileStore from '@/store/fileStore';
 import usePost from '@/store/post';
 import { api } from '@/trpc/react';
+import { PostPrivacy } from '@prisma/client';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -205,7 +206,7 @@ const useCreateThread = (
 
   const resetState = () => {
     setThreadData({
-      privacy: postPrivacy,
+      privacy: PostPrivacy.ANYONE,
       text: '',
       linkPreview: null,
     });

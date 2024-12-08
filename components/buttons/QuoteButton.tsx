@@ -14,7 +14,7 @@ const QuoteButton: React.FC<QuoteButtonProps> = ({ quoteInfo, disabled }) => {
   const { setOpenDialog, setQuoteInfo } = useDialog();
 
   const handleQuoteClick = () => {
-    if (disabled) return toast.success('You cannot quote this post');
+    if (disabled) return toast.error('You cannot quote this post');
     setOpenDialog(true);
     setQuoteInfo(quoteInfo);
   };

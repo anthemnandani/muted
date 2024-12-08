@@ -5,7 +5,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { usePostInteraction } from '@/hooks/usePostInteraction';
 import type { RepostButtonProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { api } from '@/trpc/react';
@@ -25,19 +24,14 @@ const RepostButton: React.FC<RepostButtonProps> = ({
   mentions,
   repostsCount,
   isParentPost,
-  privacy,
+  isCheckingPermissions,
+  canInteract,
 }) => {
   const { user: loggedUser } = useUser();
 
   const isRepostedByMe = React.useMemo(() => {
     return reposts.some((repost) => repost.userId === loggedUser?.id);
   }, [reposts, loggedUser?.id]);
-
-  const { isLoading: isCheckingPermissions, canInteract } = usePostInteraction({
-    authorId: author.id,
-    privacy,
-    mentions,
-  });
 
   const trpcUtils = api.useUtils();
 
@@ -52,7 +46,6 @@ const RepostButton: React.FC<RepostButtonProps> = ({
     });
 
   const handleToggleRepost = async () => {
-    if (!canInteract) return toast.success('You cannot repost this post');
     const promise = toggleRepost({ id });
 
     toast.promise(promise, {
@@ -98,12 +91,12 @@ const RepostButton: React.FC<RepostButtonProps> = ({
       >
         {isCheckingPermissions ? (
           <div className='flex-center py-3.5 px-4'>
-            <Icons.loading className='size-8 animate-spin' />
+            <Icons.loading className='size-8' />
           </div>
         ) : (
           <>
             <DropdownMenuItem
-              disabled={!canInteract || isLoading}
+              disabled={isLoading}
               onClick={handleToggleRepost}
               className={cn(
                 'dropdown-menu-item flex-between py-3.5 px-4 data-[disabled]:pointer-events-auto',

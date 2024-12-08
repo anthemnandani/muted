@@ -37,7 +37,7 @@ export type ParentPostInfo = Pick<
 
 export type ReplyPostInfo = Pick<
   PostProps,
-  'id' | 'text' | 'author' | 'media' | 'createdAt'
+  'id' | 'text' | 'author' | 'media' | 'mentions' | 'privacy' | 'createdAt'
 >;
 
 export type UserProfileInfoProps =
@@ -225,5 +225,6 @@ export interface RepostButtonProps {
   }[];
   repostsCount: number;
   isParentPost?: boolean;
-  privacy: PostPrivacy;
+  isCheckingPermissions: boolean;
+  canInteract: boolean;
 }
