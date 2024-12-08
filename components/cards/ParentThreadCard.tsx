@@ -1,4 +1,5 @@
 'use client';
+import { usePostInteraction } from '@/hooks/usePostInteraction';
 import { ParentThreadCardProps } from '@/lib/types';
 import { format } from 'date-fns';
 import React from 'react';
@@ -13,6 +14,11 @@ const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
   const { createdAt, repliesCount, hideLikes } = postInfo;
   const time = format(createdAt, 'h:mm a');
   const date = format(createdAt, 'MMM d, yyyy');
+  const { isLoading: isCheckingPermissions, canInteract } = usePostInteraction({
+    authorId: postInfo.author.id,
+    privacy: postInfo.privacy,
+    mentions: postInfo.mentions,
+  });
 
   return (
     <div className='flex flex-col w-full pt-2'>
@@ -64,9 +70,12 @@ const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
                 text: postInfo.text,
                 media: null,
                 author: postInfo.author,
+                privacy: postInfo.privacy,
+                mentions: postInfo.mentions,
                 createdAt: postInfo.createdAt,
               }}
               repliesCount={repliesCount}
+              canInteract={canInteract}
               isParentPost
             />
             <RepostButton
@@ -79,8 +88,9 @@ const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
               media={postInfo.media}
               linkPreview={postInfo.linkPreview}
               mentions={postInfo.mentions}
-              privacy={postInfo.privacy}
               isParentPost
+              isCheckingPermissions={isCheckingPermissions}
+              canInteract={canInteract}
             />
             <BookmarkButton
               bookmarkInfo={{

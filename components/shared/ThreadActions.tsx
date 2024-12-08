@@ -1,5 +1,6 @@
 'use client';
 
+import { usePostInteraction } from '@/hooks/usePostInteraction';
 import { ThreadActionsProps } from '@/lib/types';
 import BookmarkButton from '../buttons/BookmarkButton';
 import CopyLinkButton from '../buttons/CopyLinkButton';
@@ -26,6 +27,11 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
   privacy,
   isParentPost = false,
 }) => {
+  const { isLoading: isCheckingPermissions, canInteract } = usePostInteraction({
+    authorId: author.id,
+    privacy,
+    mentions,
+  });
   return (
     <>
       <div className='flex items-center gap-5'>
@@ -46,10 +52,14 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
             media: null,
             author,
             createdAt,
+            privacy,
+            mentions,
           }}
           repliesCount={repliesCount}
           isParentPost={isParentPost}
+          canInteract={canInteract}
         />
+
         <RepostButton
           id={id}
           text={text}
@@ -61,7 +71,8 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
           media={media}
           linkPreview={linkPreview}
           mentions={mentions}
-          privacy={privacy}
+          isCheckingPermissions={isCheckingPermissions}
+          canInteract={canInteract}
         />
       </div>
 
