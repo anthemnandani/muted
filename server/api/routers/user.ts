@@ -629,6 +629,8 @@ export const userRouter = createTRPCRouter({
           username: true,
           fullName: true,
           image: true,
+          followers: true,
+          following: true,
         },
       });
 

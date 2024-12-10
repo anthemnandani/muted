@@ -13,6 +13,12 @@ export const GET_USER = {
       image: true,
     },
   },
+  following: {
+    select: {
+      id: true,
+      image: true,
+    },
+  },
 };
 
 export const GET_COUNT = {

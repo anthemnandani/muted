@@ -3,10 +3,11 @@ import Link from 'next/link';
 import FollowButton from '../buttons/FollowButton';
 import { Icons } from '../icons';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import UserFollowers from '../user/UserFollowers';
+import UserStats from '../user/UserStats';
 
 const UserProfileCard: React.FC<AuthorInfoProps> = (props) => {
-  const { bio, image, username, followers, fullName, isAdmin } = props;
+  const { bio, image, username, followers, fullName, following, isAdmin } =
+    props;
   return (
     <div className='z-[10] flex  flex-col space-y-4 h-fit  rounded-2xl p-6 bg-background shadow-xl dark:bg-gray-6'>
       <Link href={`/@${username}`} className='flex w-full items-center '>
@@ -38,9 +39,11 @@ const UserProfileCard: React.FC<AuthorInfoProps> = (props) => {
         </span>
       )}
       <div className='flex items-center'>
-        <UserFollowers followers={followers} showImage={true} />
-
-        {followers.length > 0 && <span className='mx-2 text-gray-3'> · </span>}
+        <UserStats
+          username={username}
+          following={following.length}
+          followers={followers.length}
+        />
       </div>
       <FollowButton variant='default' author={props} />
     </div>

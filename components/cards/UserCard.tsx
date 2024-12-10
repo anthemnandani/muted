@@ -5,8 +5,8 @@ import type { UserCardProps } from '@/lib/types';
 import Link from 'next/link';
 import React from 'react';
 import FollowButton from '../buttons/FollowButton';
-import UserFollowers from '../user/UserFollowers';
 import Username from '../user/Username';
+import UserStats from '../user/UserStats';
 
 const UserCard: React.FC<UserCardProps> = ({
   id,
@@ -18,6 +18,7 @@ const UserCard: React.FC<UserCardProps> = ({
   isAdmin,
   username,
   followers,
+  following,
 }) => {
   return (
     <div className='flex flex-col w-full'>
@@ -53,6 +54,7 @@ const UserCard: React.FC<UserCardProps> = ({
                       link,
                       bio,
                       followers,
+                      following,
                     }}
                   />
                   {/* TODO: This is temp solution */}
@@ -78,13 +80,14 @@ const UserCard: React.FC<UserCardProps> = ({
                 link,
                 bio,
                 followers,
+                following,
               }}
             />
           </div>
-          <UserFollowers
-            followers={followers}
-            showImage={false}
-            className='text-black dark:text-white pl-0 mt-1 text-[16px]'
+          <UserStats
+            username={username}
+            following={following.length}
+            followers={followers.length}
           />
           <Separator className='mt-4' />
         </div>
