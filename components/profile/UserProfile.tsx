@@ -3,17 +3,19 @@
 import { Icons } from '@/components/icons';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { UserProfileInfoProps } from '@/lib/types';
-import { cn, formatURL } from '@/lib/utils';
+import { formatURL, parseUsernamePath } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
 import { Privacy } from '@prisma/client';
+import { Link2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import React from 'react';
 import FollowButton from '../buttons/FollowButton';
 import UserProfileMenu from '../menus/UserProfileMenu';
 import EditProfile from '../modals/EditProfile';
+import ProfileTabItem from '../shared/ProfileTabItem';
 import { Button } from '../ui/button';
-import UserFollowers from './UserFollowers';
+import UserStats from './UserStats';
 
 const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
   const {
@@ -26,16 +28,13 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
     privacy,
     isAdmin,
     followers,
+    following,
   } = props;
   const path = usePathname();
   const { user } = useUser();
 
   const params = useParams<{ username: string }>();
-  const usernamePath = decodeURIComponent(params.username).substring(1);
-  const basePath = `@${usernamePath}`;
-
-  const segments = path.split('/');
-  const lastSegment = segments[segments.length - 1];
+  const { basePath, lastSegment } = parseUsernamePath(path, params.username);
 
   return (
     <div className='z-[10] mt-4 flex w-full flex-col space-y-4'>
@@ -65,25 +64,24 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
         </div>
 
         <p className='text-[15px] whitespace-pre-line mt-6'>{bio}</p>
-        <div className='flex-between mt-3'>
-          <div className='flex -space-x-1 overflow-hidden w-full items-center'>
-            <div className='flex items-center'>
-              <UserFollowers followers={followers} showImage={true} />
-              {followers.length > 0 && link && (
-                <span className='mx-2 text-gray-3'> · </span>
-              )}
-
-              {link && (
-                <Link
-                  href={link}
-                  className='text-gray-3 text-[15px] hover:underline cursor-pointer active:text-[#4d4d4d]'
-                  target='_blank'
-                >
+        {link && (
+          <div className='flex flex-wrap items-center gap-x-3 pt-1'>
+            <div className='group flex hover:cursor-pointer'>
+              <Link href={link} target='_blank' rel='noreferrer'>
+                <Link2 className='inline h-4 w-4 stroke-sky-600' />
+                <span className='ml-2 break-all text-sm text-sky-600 group-hover:text-sky-500'>
                   {formatURL(link)}
-                </Link>
-              )}
+                </span>
+              </Link>
             </div>
           </div>
+        )}
+        <div className='flex-between mt-3'>
+          <UserStats
+            username={username}
+            following={following.length}
+            followers={followers.length}
+          />
           {user?.id != id && <UserProfileMenu />}
         </div>
       </div>
@@ -99,7 +97,7 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
             <Button
               size='sm'
               variant='outline'
-              className='w-full border-[#333333] sm:w-auto rounded-xl cursor-not-allowed py-1 font-semibold tracking-normal text-[16px] active:scale-95 '
+              className='w-full border-[#333333] sm:w-auto rounded-xl cursor-not-allowed py-1 font-semibold tracking-normal active:scale-95 '
             >
               Mention
             </Button>
@@ -115,42 +113,21 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
         )}
       </div>
       <div className='w-full flex border-b border-border'>
-        <Link
+        <ProfileTabItem
           href={`/${basePath}`}
-          className={cn(
-            'flex-center w-full h-12 font-medium duration-200 text-centertext-neutral-600',
-            {
-              'border-b-2 border-foreground text-foreground':
-                lastSegment === basePath,
-            }
-          )}
-        >
-          Threads
-        </Link>
-        <Link
+          isActive={lastSegment === basePath}
+          label='Threads'
+        />
+        <ProfileTabItem
           href={`/${basePath}/replies`}
-          className={cn(
-            'flex-center w-full h-12 font-medium duration-200 text-centertext-neutral-600',
-            {
-              'border-b-2 border-foreground text-foreground':
-                lastSegment === 'replies',
-            }
-          )}
-        >
-          Replies
-        </Link>
-        <Link
+          isActive={lastSegment === 'replies'}
+          label='Replies'
+        />
+        <ProfileTabItem
           href={`/${basePath}/reposts`}
-          className={cn(
-            'flex-center w-full h-12 font-medium duration-200 text-centertext-neutral-600',
-            {
-              'border-b-2 border-foreground text-foreground':
-                lastSegment === 'reposts',
-            }
-          )}
-        >
-          Reposts
-        </Link>
+          isActive={lastSegment === 'reposts'}
+          label='Reposts'
+        />
       </div>
     </div>
   );

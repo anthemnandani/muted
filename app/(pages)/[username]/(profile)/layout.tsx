@@ -1,29 +1,16 @@
 'use client';
 
-import Loading from '@/app/(pages)/loading';
-import NotFound from '@/app/not-found';
 import PinToHome from '@/components/menus/PinToHome';
 import HeaderWrapper from '@/components/shared/HeaderWrapper';
 import Wrapper from '@/components/shared/Wrapper';
-import UserProfile from '@/components/user/UserDetails';
 import useWindow from '@/hooks/useWindow';
-import { api } from '@/trpc/react';
-import { useParams } from 'next/navigation';
 
 interface ProfileLayoutProps {
   children: React.ReactNode;
 }
 
 export default function ProfileLayout({ children }: ProfileLayoutProps) {
-  const params = useParams<{ username: string }>();
-  const username = decodeURIComponent(params.username).substring(1);
   const { isMobile } = useWindow();
-
-  const { data, isLoading, isError } = api.user.userInfo.useQuery({ username });
-
-  if (isLoading) return <Loading />;
-  if (isError) return <NotFound />;
-
   return (
     <>
       {!isMobile && (
@@ -37,10 +24,7 @@ export default function ProfileLayout({ children }: ProfileLayoutProps) {
         </HeaderWrapper>
       )}
 
-      <Wrapper>
-        <UserProfile {...data.userDetails} />
-        {children}
-      </Wrapper>
+      <Wrapper>{children}</Wrapper>
     </>
   );
 }

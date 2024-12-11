@@ -629,9 +629,119 @@ export const userRouter = createTRPCRouter({
           username: true,
           fullName: true,
           image: true,
+          followers: true,
+          following: true,
         },
       });
 
       return allUsers;
+    }),
+
+  getUserFollowers: privateProcedure
+    .input(
+      z.object({
+        username: z.string(),
+        limit: z.number().optional(),
+        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
+        sortBy: z.enum(['latest', 'earliest']).optional().default('latest'),
+      })
+    )
+    .query(async ({ input: { username, limit = 20, cursor, sortBy }, ctx }) => {
+      const user = await ctx.db.user.findUnique({
+        where: { username },
+        select: { id: true },
+      });
+
+      if (!user) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const followers = await ctx.db.user.findMany({
+        where: {
+          following: {
+            some: {
+              id: user.id,
+            },
+          },
+        },
+        take: limit + 1,
+        cursor: cursor
+          ? { id: cursor.id, createdAt: cursor.createdAt }
+          : undefined,
+        orderBy: [{ createdAt: sortBy === 'latest' ? 'desc' : 'asc' }],
+        select: {
+          ...GET_USER,
+        },
+      });
+
+      let nextCursor: typeof cursor | undefined;
+
+      if (followers.length > limit) {
+        const nextItem = followers.pop();
+        if (nextItem != null) {
+          nextCursor = {
+            id: nextItem.id,
+            createdAt: nextItem.createdAt,
+          };
+        }
+      }
+
+      return {
+        followers,
+        nextCursor,
+      };
+    }),
+
+  getUserFollowing: privateProcedure
+    .input(
+      z.object({
+        username: z.string(),
+        limit: z.number().optional(),
+        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
+        sortBy: z.enum(['latest', 'earliest']).optional().default('latest'),
+      })
+    )
+    .query(async ({ input: { username, limit = 20, cursor, sortBy }, ctx }) => {
+      const user = await ctx.db.user.findUnique({
+        where: { username },
+        select: { id: true },
+      });
+
+      if (!user) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const following = await ctx.db.user.findMany({
+        where: {
+          followers: {
+            some: {
+              id: user.id,
+            },
+          },
+        },
+        take: limit + 1,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        orderBy: [{ createdAt: sortBy === 'latest' ? 'desc' : 'asc' }],
+        select: {
+          ...GET_USER,
+        },
+      });
+
+      let nextCursor: typeof cursor | undefined;
+
+      if (following.length > limit) {
+        const nextItem = following.pop();
+        if (nextItem != null) {
+          nextCursor = {
+            id: nextItem.id,
+            createdAt: nextItem.createdAt,
+          };
+        }
+      }
+
+      return {
+        following,
+        nextCursor,
+      };
     }),
 });

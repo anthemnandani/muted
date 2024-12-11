@@ -234,3 +234,32 @@ export const formatTimeLeft = (seconds: number) => {
   const remainingSeconds = seconds % 60;
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 };
+
+export function formatCount(count: number): string {
+  if (count === 0) return '0';
+
+  const formatter = Intl.NumberFormat('en', {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  });
+  return formatter.format(count);
+}
+
+export function parseUsernamePath(
+  path: string,
+  username: string
+): {
+  basePath: string;
+  lastSegment: string;
+} {
+  const cleanUsername = decodeURIComponent(username).substring(1);
+  const basePath = `@${cleanUsername}`;
+
+  const segments = path.split('/');
+  const lastSegment = segments[segments.length - 1];
+
+  return {
+    basePath,
+    lastSegment,
+  };
+}
