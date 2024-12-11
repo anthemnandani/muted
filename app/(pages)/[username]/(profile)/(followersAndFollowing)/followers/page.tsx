@@ -1,7 +1,9 @@
-import React from 'react';
+import FollowersClient from './FollowersClient';
 
-const page = () => {
-  return <div>page</div>;
+const FollowersPage = ({ params }: { params: { username: string } }) => {
+  const { username } = params;
+  const cleanedUsername = decodeURIComponent(username).substring(1);
+  return <FollowersClient username={cleanedUsername} />;
 };
 
-export default page;
+export default FollowersPage;

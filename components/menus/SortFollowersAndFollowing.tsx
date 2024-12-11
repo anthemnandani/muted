@@ -7,8 +7,16 @@ import {
 import useSortBy from '@/store/sortBy';
 import { ArrowUpDown } from 'lucide-react';
 
-const SortFollowersAndFollowing = () => {
-  const { setSortBy } = useSortBy();
+interface SortFollowersAndFollowingProps {
+  username: string;
+}
+
+const SortFollowersAndFollowing = ({
+  username,
+}: SortFollowersAndFollowingProps) => {
+  const { sortBy, setSortBy } = useSortBy();
+  const currentSort = sortBy[username] || 'latest';
+
   return (
     <div className='flex items-center gap-2'>
       <span className='text-sm text-muted-foreground'>Sort by:</span>
@@ -16,18 +24,24 @@ const SortFollowersAndFollowing = () => {
         <DropdownMenuTrigger asChild>
           <ArrowUpDown className='size-5 cursor-pointer hover:opacity-70 transition-opacity' />
         </DropdownMenuTrigger>
-        <DropdownMenuContent className='min-w-[180px] p-0' align='end'>
+        <DropdownMenuContent className='min-w-[190px] p-0' align='end'>
           <DropdownMenuItem
             className='px-4 py-3 cursor-pointer'
-            onClick={() => setSortBy('latest')}
+            onClick={() => setSortBy(username, 'latest')}
           >
-            <span className='text-sm font-normal'>Date followed: latest</span>
+            <span className='text-sm font-normal'>
+              Date followed: latest
+              {currentSort === 'latest' && ' ✓'}
+            </span>
           </DropdownMenuItem>
           <DropdownMenuItem
             className='px-4 py-3 cursor-pointer'
-            onClick={() => setSortBy('earliest')}
+            onClick={() => setSortBy(username, 'earliest')}
           >
-            <span className='text-sm font-normal'>Date followed: earliest</span>
+            <span className='text-sm font-normal'>
+              Date followed: earliest
+              {currentSort === 'earliest' && ' ✓'}
+            </span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

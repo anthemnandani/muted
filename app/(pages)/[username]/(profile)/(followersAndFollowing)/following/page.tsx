@@ -1,7 +1,9 @@
-import React from 'react';
+import FollowingClient from './FollowingClient';
 
-const page = () => {
-  return <div>page</div>;
+const FollowingPage = ({ params }: { params: { username: string } }) => {
+  const { username } = params;
+  const cleanedUsername = decodeURIComponent(username).substring(1);
+  return <FollowingClient username={cleanedUsername} />;
 };
 
-export default page;
+export default FollowingPage;

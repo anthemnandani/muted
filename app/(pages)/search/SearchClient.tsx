@@ -1,13 +1,10 @@
 'use client';
 
 import Error from '@/app/error';
-import UserCard from '@/components/cards/UserCard';
-import { Icons } from '@/components/icons';
 import SearchInput from '@/components/inputs/SearchInput';
+import UsersList from '@/components/user/UsersList';
 import { api } from '@/trpc/react';
 import React from 'react';
-import InfiniteScroll from 'react-infinite-scroll-component';
-import Loading from '../loading';
 
 const SearchClient = () => {
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -34,31 +31,13 @@ const SearchClient = () => {
       <div className='mt-4 text-gray-3 font-semibold text-[15px]'>
         Follow suggestions
       </div>
-      {!isLoading && allUsers?.length === 0 && (
-        <div className='h-[50vh] w-full flex-center text-gray-3'>
-          <p>No users found.</p>
-        </div>
-      )}
-      <div className='mt-4'>
-        {isLoading ? (
-          <Loading className='md:!h-[80vh]' />
-        ) : (
-          <InfiniteScroll
-            dataLength={allUsers ? allUsers.length : 0}
-            next={fetchNextPage}
-            hasMore={hasNextPage ?? false}
-            loader={
-              <div className='h-[100px] w-full flex-center mb-[10vh] sm:mb-0'>
-                <Icons.loading className='size-11' />
-              </div>
-            }
-          >
-            {allUsers?.map((user) => {
-              return <UserCard key={user.id} {...user} />;
-            })}
-          </InfiniteScroll>
-        )}
-      </div>
+      <UsersList
+        isLoading={isLoading}
+        users={allUsers}
+        fetchNextPage={fetchNextPage}
+        hasNextPage={hasNextPage}
+        type='users'
+      />
     </>
   );
 };
