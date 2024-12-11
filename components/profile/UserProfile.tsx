@@ -3,7 +3,7 @@
 import { Icons } from '@/components/icons';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { UserProfileInfoProps } from '@/lib/types';
-import { cn, formatURL } from '@/lib/utils';
+import { formatURL, parseUsernamePath } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
 import { Privacy } from '@prisma/client';
 import { Link2 } from 'lucide-react';
@@ -13,6 +13,7 @@ import React from 'react';
 import FollowButton from '../buttons/FollowButton';
 import UserProfileMenu from '../menus/UserProfileMenu';
 import EditProfile from '../modals/EditProfile';
+import ProfileTabItem from '../shared/ProfileTabItem';
 import { Button } from '../ui/button';
 import UserStats from './UserStats';
 
@@ -33,11 +34,7 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
   const { user } = useUser();
 
   const params = useParams<{ username: string }>();
-  const usernamePath = decodeURIComponent(params.username).substring(1);
-  const basePath = `@${usernamePath}`;
-
-  const segments = path.split('/');
-  const lastSegment = segments[segments.length - 1];
+  const { basePath, lastSegment } = parseUsernamePath(path, params.username);
 
   return (
     <div className='z-[10] mt-4 flex w-full flex-col space-y-4'>
@@ -116,42 +113,21 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
         )}
       </div>
       <div className='w-full flex border-b border-border'>
-        <Link
+        <ProfileTabItem
           href={`/${basePath}`}
-          className={cn(
-            'flex-center w-full h-12 font-medium duration-200 text-centertext-neutral-600',
-            {
-              'border-b-2 border-foreground text-foreground':
-                lastSegment === basePath,
-            }
-          )}
-        >
-          Threads
-        </Link>
-        <Link
+          isActive={lastSegment === basePath}
+          label='Threads'
+        />
+        <ProfileTabItem
           href={`/${basePath}/replies`}
-          className={cn(
-            'flex-center w-full h-12 font-medium duration-200 text-centertext-neutral-600',
-            {
-              'border-b-2 border-foreground text-foreground':
-                lastSegment === 'replies',
-            }
-          )}
-        >
-          Replies
-        </Link>
-        <Link
+          isActive={lastSegment === 'replies'}
+          label='Replies'
+        />
+        <ProfileTabItem
           href={`/${basePath}/reposts`}
-          className={cn(
-            'flex-center w-full h-12 font-medium duration-200 text-centertext-neutral-600',
-            {
-              'border-b-2 border-foreground text-foreground':
-                lastSegment === 'reposts',
-            }
-          )}
-        >
-          Reposts
-        </Link>
+          isActive={lastSegment === 'reposts'}
+          label='Reposts'
+        />
       </div>
     </div>
   );

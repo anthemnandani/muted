@@ -6,7 +6,7 @@ import Link from 'next/link';
 import React from 'react';
 import FollowButton from '../buttons/FollowButton';
 import Username from '../user/Username';
-import UserStats from '../user/UserStats';
+import UserStats from '../profile/UserStats';
 
 const UserCard: React.FC<UserCardProps> = ({
   id,

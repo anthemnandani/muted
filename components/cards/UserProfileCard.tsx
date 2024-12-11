@@ -3,7 +3,7 @@ import Link from 'next/link';
 import FollowButton from '../buttons/FollowButton';
 import { Icons } from '../icons';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import UserStats from '../user/UserStats';
+import UserStats from '../profile/UserStats';
 
 const UserProfileCard: React.FC<AuthorInfoProps> = (props) => {
   const { bio, image, username, followers, fullName, following, isAdmin } =

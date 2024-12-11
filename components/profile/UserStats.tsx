@@ -36,12 +36,12 @@ const UserStats = ({
       <StatItem
         count={following}
         label='Following'
-        href={`/${username}/following`}
+        href={`/@${username}/following`}
       />
       <StatItem
         count={followers}
         label='Followers'
-        href={`/${username}/followers`}
+        href={`/@${username}/followers`}
       />
     </div>
   );

@@ -244,3 +244,22 @@ export function formatCount(count: number): string {
   });
   return formatter.format(count);
 }
+
+export function parseUsernamePath(
+  path: string,
+  username: string
+): {
+  basePath: string;
+  lastSegment: string;
+} {
+  const cleanUsername = decodeURIComponent(username).substring(1);
+  const basePath = `@${cleanUsername}`;
+
+  const segments = path.split('/');
+  const lastSegment = segments[segments.length - 1];
+
+  return {
+    basePath,
+    lastSegment,
+  };
+}
