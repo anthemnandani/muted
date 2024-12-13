@@ -85,6 +85,11 @@ export const userRouter = createTRPCRouter({
         where: {
           authorId: isUser.id,
           parentPostId: null,
+          hiddenBy: {
+            none: {
+              userId: ctx.userId,
+            },
+          },
         },
         take: limit + 1,
         cursor: cursor ? { createdAt_id: cursor } : undefined,
@@ -229,6 +234,11 @@ export const userRouter = createTRPCRouter({
           parentPostId: {
             not: null,
           },
+          hiddenBy: {
+            none: {
+              userId: ctx.userId,
+            },
+          },
         },
         take: limit + 1,
         cursor: cursor ? { createdAt_id: cursor } : undefined,
@@ -367,6 +377,13 @@ export const userRouter = createTRPCRouter({
       const userReposts = await ctx.db.repost.findMany({
         where: {
           userId: isUser.id,
+          post: {
+            hiddenBy: {
+              none: {
+                userId: ctx.userId,
+              },
+            },
+          },
         },
         take: limit + 1,
         cursor: cursor

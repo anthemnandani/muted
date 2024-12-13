@@ -29,6 +29,7 @@ model User {
   reports               Report[]
   bookmarks             Bookmark[]
   mentions              Mention[]
+  hiddenPosts           HiddenPost[]
   senderNotifications   Notification[] @relation("sender")
   receiverNotifications Notification[] @relation("receiver")
 
@@ -62,6 +63,7 @@ model Post {
   repliesCount   Int            @default(0)
   path           String?
   hideLikes      Boolean        @default(false)
+  hiddenBy       HiddenPost[]
   lastEditedAt   DateTime?
   linkPreviewUrl String?
   linkPreview    LinkPreview?   @relation(fields: [linkPreviewUrl], references: [url])
@@ -187,4 +189,15 @@ model LinkPreview {
   posts       Post[]
 
   @@index([url])
+}
+
+model HiddenPost {
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  @@id([postId, userId])
+  @@index([userId])
 }

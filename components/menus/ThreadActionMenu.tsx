@@ -2,6 +2,7 @@
 
 import useCopyLink from '@/hooks/useCopyLink';
 import useHideLikes from '@/hooks/useHideLikes';
+import useToggleHidePost from '@/hooks/useToggleHidePost';
 import type { AuthorInfoProps } from '@/lib/types';
 import { formatTimeLeft } from '@/lib/utils';
 import useDialog from '@/store/dialog';
@@ -47,6 +48,13 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
     setIsOpen,
     hideLikes,
   });
+
+  const { handleToggleHidePost, isLoading: isLoadingHidePost } =
+    useToggleHidePost({
+      postId,
+      setIsOpen,
+      isHiding: true,
+    });
 
   const { handleCopyLink } = useCopyLink({ postId, username });
 
@@ -95,6 +103,8 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
               icon={Icons.notInterested}
               label='Not interested'
               className='flex-between py-3.5 px-4'
+              onClick={() => handleToggleHidePost({ postId })}
+              disabled={isLoadingHidePost}
               isActionMenuItem
             />
 

@@ -172,7 +172,7 @@ export const postRouter = createTRPCRouter({
       };
     }),
 
-  getInfinitePosts: publicProcedure
+  getInfinitePosts: privateProcedure
     .input(
       z.object({
         searchQuery: z.string().optional(),
@@ -190,6 +190,11 @@ export const postRouter = createTRPCRouter({
         where: {
           text: {
             contains: searchQuery,
+          },
+          hiddenBy: {
+            none: {
+              userId: ctx.userId,
+            },
           },
           OR: [
             { parentPostId: null },
@@ -446,7 +451,9 @@ export const postRouter = createTRPCRouter({
       const { id, limit, cursor } = input;
 
       const post = await ctx.db.post.findUnique({
-        where: { id },
+        where: {
+          id,
+        },
         select: {
           id: true,
           createdAt: true,
@@ -461,6 +468,14 @@ export const postRouter = createTRPCRouter({
           author: {
             select: {
               ...GET_USER,
+            },
+          },
+          hiddenBy: {
+            where: {
+              userId: ctx.userId,
+            },
+            select: {
+              userId: true,
             },
           },
           ...GET_LIKES,
@@ -513,6 +528,14 @@ export const postRouter = createTRPCRouter({
               ...GET_USER,
             },
           },
+          hiddenBy: {
+            where: {
+              userId: ctx.userId,
+            },
+            select: {
+              userId: true,
+            },
+          },
           ...GET_LIKES,
           ...GET_REPOSTS,
           ...GET_COUNT,
@@ -528,6 +551,7 @@ export const postRouter = createTRPCRouter({
         likesCount: reply._count.likes,
         repostsCount: reply._count.reposts,
         bookmarksCount: reply._count.bookmarks,
+        isHidden: reply.hiddenBy.length > 0,
         postChildren: [],
       });
 
@@ -567,6 +591,7 @@ export const postRouter = createTRPCRouter({
           likesCount: post._count.likes,
           repostsCount: post._count.reposts,
           bookmarksCount: post._count.bookmarks,
+          isHidden: post.hiddenBy.length > 0,
         },
         replies: topLevelReplies,
         nextCursor,
@@ -664,6 +689,7 @@ export const postRouter = createTRPCRouter({
         return { createdRepost: false };
       }
     }),
+
   toggleBookmark: privateProcedure
     .input(
       z.object({
@@ -754,6 +780,7 @@ export const postRouter = createTRPCRouter({
         return { addedBookmark: false };
       }
     }),
+
   toggleHideLikes: privateProcedure
     .input(
       z.object({
@@ -779,6 +806,7 @@ export const postRouter = createTRPCRouter({
 
       return { success: true };
     }),
+
   getQuotedPost: publicProcedure
     .input(
       z.object({
@@ -789,6 +817,11 @@ export const postRouter = createTRPCRouter({
       const postInfo = await ctx.db.post.findUnique({
         where: {
           id: input.id,
+          hiddenBy: {
+            none: {
+              userId: ctx.userId,
+            },
+          },
         },
         select: {
           id: true,
@@ -917,6 +950,13 @@ export const postRouter = createTRPCRouter({
       const savedPosts = await ctx.db.bookmark.findMany({
         where: {
           userId,
+          post: {
+            hiddenBy: {
+              none: {
+                userId: ctx.userId,
+              },
+            },
+          },
         },
         take: limit + 1,
         cursor: cursor
@@ -1003,6 +1043,13 @@ export const postRouter = createTRPCRouter({
       const likedPosts = await ctx.db.like.findMany({
         where: {
           userId,
+          post: {
+            hiddenBy: {
+              none: {
+                userId: ctx.userId,
+              },
+            },
+          },
         },
         take: limit + 1,
         cursor: cursor
@@ -1095,6 +1142,11 @@ export const postRouter = createTRPCRouter({
             },
           },
           parentPostId: null,
+          hiddenBy: {
+            none: {
+              userId: ctx.userId,
+            },
+          },
         },
         take: limit + 1,
         cursor: cursor ? { createdAt_id: cursor } : undefined,
@@ -1183,6 +1235,11 @@ export const postRouter = createTRPCRouter({
               AND: [{ parentPostId: { not: null } }, { reposts: { some: {} } }],
             },
           ],
+          hiddenBy: {
+            none: {
+              userId: ctx.userId,
+            },
+          },
         },
         take: limit + 1,
         cursor: cursor ? { createdAt_id: cursor } : undefined,
@@ -1464,5 +1521,37 @@ export const postRouter = createTRPCRouter({
         success: true,
         isEdited: true,
       };
+    }),
+
+  toggleHidePost: privateProcedure
+    .input(
+      z.object({
+        postId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { userId } = ctx;
+
+      const data = { postId: input.postId, userId };
+
+      const existingHiddenPost = await ctx.db.hiddenPost.findUnique({
+        where: {
+          postId_userId: data,
+        },
+      });
+
+      if (existingHiddenPost == null) {
+        await ctx.db.hiddenPost.create({
+          data,
+        });
+        return { hidden: true };
+      } else {
+        await ctx.db.hiddenPost.delete({
+          where: {
+            postId_userId: data,
+          },
+        });
+        return { hidden: false };
+      }
     }),
 });

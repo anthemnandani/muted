@@ -1,5 +1,6 @@
 'use client';
 import { ThreadCardProps } from '@/lib/types';
+import { useHiddenPosts } from '@/store/hiddenPosts';
 import React, { useMemo, useState } from 'react';
 import RepliesWrapper from '../shared/RepliesWrapper';
 import { Separator } from '../ui/separator';
@@ -12,6 +13,7 @@ const ParentReplyCard: React.FC<ThreadCardProps> = ({
   ...props
 }) => {
   const [showReplies, setShowReplies] = useState(false);
+  const { isTemporarilyHidden } = useHiddenPosts();
 
   const sortedChildren = useMemo(() => {
     if (!postChildren) return [];
@@ -32,13 +34,14 @@ const ParentReplyCard: React.FC<ThreadCardProps> = ({
           variant='reply'
           className='w-full'
         />
-
-        <RepliesWrapper
-          showReplies={showReplies}
-          toggleReplies={() => setShowReplies(!showReplies)}
-          repliesCount={repliesCount ?? 0}
-          children={sortedChildren}
-        />
+        {!isTemporarilyHidden(props.id) && (
+          <RepliesWrapper
+            showReplies={showReplies}
+            toggleReplies={() => setShowReplies(!showReplies)}
+            repliesCount={repliesCount ?? 0}
+            children={sortedChildren}
+          />
+        )}
       </article>
     </>
   );

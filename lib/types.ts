@@ -116,6 +116,7 @@ export type ParentPostProps = {
   repostsCount?: number;
   repostedAt?: Date;
   hideLikes: boolean;
+  isHidden?: boolean;
   privacy: PostPrivacy;
   _count?: {
     likes: number;

@@ -1,18 +1,22 @@
+import { currentUser } from '@clerk/nextjs';
 import { TRPCError, initTRPC } from '@trpc/server';
 import { type NextRequest } from 'next/server';
 import superjson from 'superjson';
 import { ZodError } from 'zod';
-import { currentUser } from '@clerk/nextjs';
 import { db } from '../db';
 
 interface CreateContextOptions {
   headers: Headers;
+  user?: Awaited<ReturnType<typeof currentUser>>;
 }
 
-export const createInnerTRPCContext = (opts: CreateContextOptions) => {
+export const createInnerTRPCContext = async (opts: CreateContextOptions) => {
+  const user = opts.user ?? (await currentUser());
   return {
     headers: opts.headers,
     db,
+    userId: user?.id,
+    user,
   };
 };
 

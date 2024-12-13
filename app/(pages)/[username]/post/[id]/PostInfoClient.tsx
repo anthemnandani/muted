@@ -1,4 +1,5 @@
 'use client';
+
 import Loading from '@/app/(pages)/loading';
 import NotFound from '@/app/not-found';
 import ParentReplyCard from '@/components/cards/ParentReplyCard';
@@ -8,13 +9,24 @@ import PinToHome from '@/components/menus/PinToHome';
 import HeaderWrapper from '@/components/shared/HeaderWrapper';
 import Wrapper from '@/components/shared/Wrapper';
 import useWindow from '@/hooks/useWindow';
+import { useHiddenPosts } from '@/store/hiddenPosts';
 import { api } from '@/trpc/react';
 import { useRouter } from 'next/navigation';
+import React from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
 const PostInfoClient = ({ id }: { id: string }) => {
   const { isMobile } = useWindow();
   const router = useRouter();
+  const { hidePost, unhidePost } = useHiddenPosts();
+
+  const processPostHiddenStates = (post: any) => {
+    if (post.isHidden) {
+      hidePost(post.id);
+    } else {
+      unhidePost(post.id);
+    }
+  };
 
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
     api.post.getNestedPosts.useInfiniteQuery(
@@ -26,11 +38,24 @@ const PostInfoClient = ({ id }: { id: string }) => {
       }
     );
 
+  const allReplies = data?.pages.flatMap((page) => page.replies);
+  const postInfo = data?.pages[0].postInfo;
+
+  React.useEffect(() => {
+    if (postInfo) {
+      const { isHidden, id } = postInfo;
+      if (isHidden) {
+        hidePost(id);
+      } else {
+        unhidePost(id);
+      }
+    }
+
+    allReplies?.forEach(processPostHiddenStates);
+  }, [data]);
+
   if (isLoading) return <Loading />;
   if (isError || !data) return <NotFound />;
-
-  const allReplies = data.pages.flatMap((page) => page.replies);
-  const postInfo = data.pages[0].postInfo;
 
   return (
     <>
@@ -48,7 +73,7 @@ const PostInfoClient = ({ id }: { id: string }) => {
       <Wrapper>
         <ParentThreadCard postInfo={postInfo!} />
         <InfiniteScroll
-          dataLength={allReplies.length}
+          dataLength={allReplies?.length ?? 0}
           next={fetchNextPage}
           hasMore={hasNextPage ?? false}
           loader={
@@ -57,7 +82,7 @@ const PostInfoClient = ({ id }: { id: string }) => {
             </div>
           }
         >
-          {allReplies.map((reply) => (
+          {allReplies?.map((reply) => (
             <ParentReplyCard key={reply.id} {...reply} />
           ))}
         </InfiniteScroll>

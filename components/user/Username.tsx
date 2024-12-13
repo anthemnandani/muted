@@ -38,7 +38,7 @@ const Username: React.FC<UsernameProps> = ({
               className
             )}
           >
-            {addAt ? `@${author.username}` : author.username}
+            {addAt ? `@${author.username}` : author.username}{' '}
           </span>
           {isReposted && (
             <span className='text-[13px] text-[#999] dark:text-gray-3'>
