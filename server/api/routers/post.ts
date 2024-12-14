@@ -8,6 +8,7 @@ import {
   GET_MENTIONS,
   GET_REPOSTS,
   GET_USER,
+  getAuthorAndHiddenSelect,
 } from '@/server/constants';
 import { createId } from '@paralleldrive/cuid2';
 import { NotificationType, PostPrivacy } from '@prisma/client';
@@ -191,11 +192,24 @@ export const postRouter = createTRPCRouter({
           text: {
             contains: searchQuery,
           },
-          hiddenBy: {
-            none: {
-              userId: ctx.userId,
+          AND: [
+            {
+              hiddenBy: {
+                none: {
+                  userId: ctx.userId,
+                },
+              },
             },
-          },
+            {
+              author: {
+                mutedByUsers: {
+                  none: {
+                    mutedByUserId: ctx.userId,
+                  },
+                },
+              },
+            },
+          ],
           OR: [
             { parentPostId: null },
             {
@@ -465,19 +479,7 @@ export const postRouter = createTRPCRouter({
           repliesCount: true,
           hideLikes: true,
           privacy: true,
-          author: {
-            select: {
-              ...GET_USER,
-            },
-          },
-          hiddenBy: {
-            where: {
-              userId: ctx.userId,
-            },
-            select: {
-              userId: true,
-            },
-          },
+          ...getAuthorAndHiddenSelect(ctx.userId!),
           ...GET_LIKES,
           ...GET_BOOKMARKS,
           ...GET_REPOSTS,
@@ -511,11 +513,7 @@ export const postRouter = createTRPCRouter({
           parentPost: {
             select: {
               id: true,
-              author: {
-                select: {
-                  ...GET_USER,
-                },
-              },
+              ...getAuthorAndHiddenSelect(ctx.userId!),
             },
           },
           quoteId: true,
@@ -523,19 +521,7 @@ export const postRouter = createTRPCRouter({
           repliesCount: true,
           hideLikes: true,
           privacy: true,
-          author: {
-            select: {
-              ...GET_USER,
-            },
-          },
-          hiddenBy: {
-            where: {
-              userId: ctx.userId,
-            },
-            select: {
-              userId: true,
-            },
-          },
+          ...getAuthorAndHiddenSelect(ctx.userId!),
           ...GET_LIKES,
           ...GET_REPOSTS,
           ...GET_COUNT,
@@ -552,6 +538,7 @@ export const postRouter = createTRPCRouter({
         repostsCount: reply._count.reposts,
         bookmarksCount: reply._count.bookmarks,
         isHidden: reply.hiddenBy.length > 0,
+        isMuted: reply.author.mutedByUsers?.length > 0,
         postChildren: [],
       });
 
@@ -592,6 +579,7 @@ export const postRouter = createTRPCRouter({
           repostsCount: post._count.reposts,
           bookmarksCount: post._count.bookmarks,
           isHidden: post.hiddenBy.length > 0,
+          isMuted: post.author.mutedByUsers?.length > 0,
         },
         replies: topLevelReplies,
         nextCursor,
@@ -817,11 +805,6 @@ export const postRouter = createTRPCRouter({
       const postInfo = await ctx.db.post.findUnique({
         where: {
           id: input.id,
-          hiddenBy: {
-            none: {
-              userId: ctx.userId,
-            },
-          },
         },
         select: {
           id: true,
@@ -951,11 +934,24 @@ export const postRouter = createTRPCRouter({
         where: {
           userId,
           post: {
-            hiddenBy: {
-              none: {
-                userId: ctx.userId,
+            AND: [
+              {
+                hiddenBy: {
+                  none: {
+                    userId: ctx.userId,
+                  },
+                },
               },
-            },
+              {
+                author: {
+                  mutedByUsers: {
+                    none: {
+                      mutedByUserId: ctx.userId,
+                    },
+                  },
+                },
+              },
+            ],
           },
         },
         take: limit + 1,
@@ -1044,11 +1040,24 @@ export const postRouter = createTRPCRouter({
         where: {
           userId,
           post: {
-            hiddenBy: {
-              none: {
-                userId: ctx.userId,
+            AND: [
+              {
+                hiddenBy: {
+                  none: {
+                    userId: ctx.userId,
+                  },
+                },
               },
-            },
+              {
+                author: {
+                  mutedByUsers: {
+                    none: {
+                      mutedByUserId: ctx.userId,
+                    },
+                  },
+                },
+              },
+            ],
           },
         },
         take: limit + 1,
@@ -1142,11 +1151,24 @@ export const postRouter = createTRPCRouter({
             },
           },
           parentPostId: null,
-          hiddenBy: {
-            none: {
-              userId: ctx.userId,
+          AND: [
+            {
+              hiddenBy: {
+                none: {
+                  userId: ctx.userId,
+                },
+              },
             },
-          },
+            {
+              author: {
+                mutedByUsers: {
+                  none: {
+                    mutedByUserId: ctx.userId,
+                  },
+                },
+              },
+            },
+          ],
         },
         take: limit + 1,
         cursor: cursor ? { createdAt_id: cursor } : undefined,
@@ -1235,11 +1257,24 @@ export const postRouter = createTRPCRouter({
               AND: [{ parentPostId: { not: null } }, { reposts: { some: {} } }],
             },
           ],
-          hiddenBy: {
-            none: {
-              userId: ctx.userId,
+          AND: [
+            {
+              hiddenBy: {
+                none: {
+                  userId: ctx.userId,
+                },
+              },
             },
-          },
+            {
+              author: {
+                mutedByUsers: {
+                  none: {
+                    mutedByUserId: ctx.userId,
+                  },
+                },
+              },
+            },
+          ],
         },
         take: limit + 1,
         cursor: cursor ? { createdAt_id: cursor } : undefined,

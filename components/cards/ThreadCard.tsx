@@ -10,11 +10,12 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
   showUsername,
   parentPost,
   variant = 'default',
+  showMuted = true,
   ...props
 }) => {
   return (
     <article className={cn('w-full pt-4', isLastThread && 'mb-20 md:mb-10')}>
-      <ThreadCardBase {...props} variant={variant} />
+      <ThreadCardBase {...props} showMuted={showMuted} variant={variant} />
       {!isLastThread && !showUsername && <Separator />}
     </article>
   );

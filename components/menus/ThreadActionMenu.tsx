@@ -3,9 +3,11 @@
 import useCopyLink from '@/hooks/useCopyLink';
 import useHideLikes from '@/hooks/useHideLikes';
 import useToggleHidePost from '@/hooks/useToggleHidePost';
+import useToggleMuteUser from '@/hooks/useToggleMuteUser';
 import type { AuthorInfoProps } from '@/lib/types';
 import { formatTimeLeft } from '@/lib/utils';
 import useDialog from '@/store/dialog';
+import { useMutedUsers } from '@/store/mutedUsers';
 import { useUser } from '@clerk/nextjs';
 import { MoreHorizontal } from 'lucide-react';
 import React from 'react';
@@ -20,28 +22,27 @@ import {
 } from '../ui/dropdown-menu';
 
 interface ThreadActionMenuProps {
-  authorId: string;
+  author: AuthorInfoProps;
   postId: string;
   repostedBy?: AuthorInfoProps;
   createdAt: Date;
   currentText: string;
-  username: string;
   hideLikes: boolean;
 }
 
 const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
-  authorId,
+  author,
   postId,
   repostedBy,
   createdAt,
   currentText,
-  username,
   hideLikes,
 }) => {
   const { user } = useUser();
   const [timeLeft, setTimeLeft] = React.useState<number>(0);
   const [isOpen, setIsOpen] = React.useState(false);
   const { setEditPostInfo, setOpenDialog } = useDialog();
+  const { isMutedUser } = useMutedUsers();
 
   const { handleToggleHideLikes, isLoading } = useHideLikes({
     postId,
@@ -53,10 +54,15 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
     useToggleHidePost({
       postId,
       setIsOpen,
-      isHiding: true,
     });
 
-  const { handleCopyLink } = useCopyLink({ postId, username });
+  const { handleToggleMuteUser, isLoading: isLoadingMuteUser } =
+    useToggleMuteUser({
+      userId: author.id,
+      setIsOpen,
+    });
+
+  const { handleCopyLink } = useCopyLink({ postId, username: author.username });
 
   React.useEffect(() => {
     const calculateTimeLeft = () => {
@@ -96,7 +102,7 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
         align='end'
         className='dropdown-content-container rounded-xl p-0 w-[220px]'
       >
-        {(!repostedBy && user?.id !== authorId) ||
+        {(!repostedBy && user?.id !== author.id) ||
         (repostedBy && user?.id !== repostedBy?.id) ? (
           <>
             <MenuItem
@@ -110,10 +116,13 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
 
             <MenuItem
               icon={Icons.mute}
-              label='Mute'
+              label={isMutedUser(author.id) ? 'Unmute' : 'Mute'}
               className='flex-between py-3.5 px-4'
+              onClick={() => handleToggleMuteUser({ userId: author.id })}
+              disabled={isLoadingMuteUser}
               isActionMenuItem
             />
+
             <MenuItem
               icon={Icons.block}
               label='Block'

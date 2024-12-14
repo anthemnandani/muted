@@ -49,8 +49,7 @@ const PostHeader: React.FC<PostHeaderProps> = ({
       </ul>
 
       <ThreadActionMenu
-        authorId={author.id}
-        username={author.username}
+        author={author}
         postId={id}
         repostedBy={repostedBy}
         createdAt={createdAt}

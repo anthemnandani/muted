@@ -71,6 +71,7 @@ export interface ThreadDisplayProps {
   toggleReplies?: () => void;
   variant?: 'default' | 'reply';
   isChild?: boolean;
+  showMuted?: boolean;
 }
 
 export interface MenuLinkProps {
@@ -117,6 +118,7 @@ export type ParentPostProps = {
   repostedAt?: Date;
   hideLikes: boolean;
   isHidden?: boolean;
+  isMuted?: boolean;
   privacy: PostPrivacy;
   _count?: {
     likes: number;
@@ -152,6 +154,7 @@ export interface ThreadsListProps {
   posts?: ParentPostProps[];
   fetchNextPage: () => void;
   hasNextPage?: boolean;
+  showMuted?: boolean;
 }
 
 export interface EditProfileProps {

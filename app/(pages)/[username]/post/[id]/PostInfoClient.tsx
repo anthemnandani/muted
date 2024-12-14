@@ -10,6 +10,7 @@ import HeaderWrapper from '@/components/shared/HeaderWrapper';
 import Wrapper from '@/components/shared/Wrapper';
 import useWindow from '@/hooks/useWindow';
 import { useHiddenPosts } from '@/store/hiddenPosts';
+import { useMutedUsers } from '@/store/mutedUsers';
 import { api } from '@/trpc/react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -19,13 +20,12 @@ const PostInfoClient = ({ id }: { id: string }) => {
   const { isMobile } = useWindow();
   const router = useRouter();
   const { hidePost, unhidePost } = useHiddenPosts();
+  const { muteUser, unmuteUser } = useMutedUsers();
 
-  const processPostHiddenStates = (post: any) => {
-    if (post.isHidden) {
-      hidePost(post.id);
-    } else {
-      unhidePost(post.id);
-    }
+  const syncPostStates = (post: any) => {
+    console.log('post', post);
+    post.isHidden ? hidePost(post.id) : unhidePost(post.id);
+    post.isMuted ? muteUser(post.author.id) : unmuteUser(post.author.id);
   };
 
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
@@ -43,15 +43,9 @@ const PostInfoClient = ({ id }: { id: string }) => {
 
   React.useEffect(() => {
     if (postInfo) {
-      const { isHidden, id } = postInfo;
-      if (isHidden) {
-        hidePost(id);
-      } else {
-        unhidePost(id);
-      }
+      syncPostStates(postInfo);
+      allReplies?.forEach(syncPostStates);
     }
-
-    allReplies?.forEach(processPostHiddenStates);
   }, [data]);
 
   if (isLoading) return <Loading />;

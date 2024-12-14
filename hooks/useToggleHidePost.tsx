@@ -5,27 +5,30 @@ import { toast } from 'sonner';
 interface UseToggleHidePostProps {
   postId: string;
   setIsOpen?: (open: boolean) => void;
-  isHiding?: boolean;
 }
 
 export default function useToggleHidePost({
   postId,
   setIsOpen,
-  isHiding = false,
 }: UseToggleHidePostProps) {
   const { hidePost, unhidePost } = useHiddenPosts();
+  const trpcUtils = api.useUtils();
 
   const { mutateAsync: toggleHidePost, isLoading } =
     api.post.toggleHidePost.useMutation({
       onMutate: () => {
         setIsOpen?.(false);
-        isHiding ? hidePost(postId) : unhidePost(postId);
+        const isCurrentlyHidden = useHiddenPosts
+          .getState()
+          .isTemporarilyHidden(postId);
+        isCurrentlyHidden ? unhidePost(postId) : hidePost(postId);
       },
       onError: () => {
         toast.error('Something went wrong!');
       },
-      onSettled: () => {
-        toast.success(isHiding ? 'Hidden' : 'Unhidden');
+      onSettled: async (data) => {
+        toast.success(data?.hidden ? 'Hidden' : 'Unhidden');
+        await trpcUtils.invalidate();
       },
     });
 

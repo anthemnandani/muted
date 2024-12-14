@@ -101,3 +101,27 @@ export const GET_LINK_PREVIEW = {
     },
   },
 };
+
+export const getAuthorAndHiddenSelect = (userId: string) => ({
+  author: {
+    select: {
+      ...GET_USER,
+      mutedByUsers: {
+        where: {
+          mutedByUserId: userId,
+        },
+        select: {
+          mutedByUserId: true,
+        },
+      },
+    },
+  },
+  hiddenBy: {
+    where: {
+      userId,
+    },
+    select: {
+      userId: true,
+    },
+  },
+});

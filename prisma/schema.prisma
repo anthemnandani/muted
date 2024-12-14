@@ -30,6 +30,8 @@ model User {
   bookmarks             Bookmark[]
   mentions              Mention[]
   hiddenPosts           HiddenPost[]
+  mutedUsers            MutedUser[]    @relation("mutedBy")
+  mutedByUsers          MutedUser[]    @relation("muted")
   senderNotifications   Notification[] @relation("sender")
   receiverNotifications Notification[] @relation("receiver")
 
@@ -200,4 +202,15 @@ model HiddenPost {
 
   @@id([postId, userId])
   @@index([userId])
+}
+
+model MutedUser {
+  createdAt     DateTime @default(now())
+  mutedUser     User     @relation("muted", fields: [mutedUserId], references: [id], onDelete: Cascade)
+  mutedUserId   String
+  mutedByUser   User     @relation("mutedBy", fields: [mutedByUserId], references: [id], onDelete: Cascade)
+  mutedByUserId String
+
+  @@id([mutedUserId, mutedByUserId])
+  @@index([mutedByUserId])
 }

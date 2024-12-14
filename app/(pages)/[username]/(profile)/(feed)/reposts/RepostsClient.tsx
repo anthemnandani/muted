@@ -2,9 +2,12 @@
 import NotFound from '@/app/not-found';
 import Loader from '@/components/shared/Loader';
 import ThreadsList from '@/components/shared/ThreadsList';
+import { useSyncPostStates } from '@/hooks/useSyncPostStates';
 import { api } from '@/trpc/react';
+import React from 'react';
 
 const RepostsClient = ({ username }: { username: string }) => {
+  const { syncMultiplePosts } = useSyncPostStates();
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
     api.user.repostsInfo.useInfiniteQuery(
       { username },
@@ -15,11 +18,16 @@ const RepostsClient = ({ username }: { username: string }) => {
       }
     );
 
+  const allReposts = data?.pages.flatMap((page) => page.reposts);
+
+  React.useEffect(() => {
+    if (!allReposts?.length) return;
+    syncMultiplePosts(allReposts);
+  }, [data]);
+
   if (isLoading) return <Loader />;
 
   if (isError) return <NotFound />;
-
-  const allReposts = data?.pages.flatMap((page) => page.reposts);
 
   return (
     <div>
@@ -30,6 +38,7 @@ const RepostsClient = ({ username }: { username: string }) => {
               posts={allReposts}
               fetchNextPage={fetchNextPage}
               hasNextPage={hasNextPage}
+              showMuted={false}
             />
           </section>
         ) : (

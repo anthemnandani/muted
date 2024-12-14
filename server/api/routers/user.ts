@@ -8,6 +8,7 @@ import {
   GET_MENTIONS,
   GET_REPOSTS,
   GET_USER,
+  getAuthorAndHiddenSelect,
 } from '@/server/constants';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
@@ -85,11 +86,6 @@ export const userRouter = createTRPCRouter({
         where: {
           authorId: isUser.id,
           parentPostId: null,
-          hiddenBy: {
-            none: {
-              userId: ctx.userId,
-            },
-          },
         },
         take: limit + 1,
         cursor: cursor ? { createdAt_id: cursor } : undefined,
@@ -105,11 +101,7 @@ export const userRouter = createTRPCRouter({
           repliesCount: true,
           hideLikes: true,
           privacy: true,
-          author: {
-            select: {
-              ...GET_USER,
-            },
-          },
+          ...getAuthorAndHiddenSelect(ctx.userId),
           ...GET_LIKES,
           ...GET_BOOKMARKS,
           ...GET_COUNT,
@@ -148,6 +140,8 @@ export const userRouter = createTRPCRouter({
           bookmarks: post.bookmarks,
           bookmarksCount: post._count.bookmarks,
           privacy: post.privacy,
+          isHidden: post.hiddenBy.length > 0,
+          isMuted: post.author.mutedByUsers.length > 0,
         })),
         nextCursor,
       };
@@ -234,11 +228,6 @@ export const userRouter = createTRPCRouter({
           parentPostId: {
             not: null,
           },
-          hiddenBy: {
-            none: {
-              userId: ctx.userId,
-            },
-          },
         },
         take: limit + 1,
         cursor: cursor ? { createdAt_id: cursor } : undefined,
@@ -263,21 +252,13 @@ export const userRouter = createTRPCRouter({
               parentPost: {
                 select: {
                   id: true,
-                  author: {
-                    select: {
-                      ...GET_USER,
-                    },
-                  },
+                  ...getAuthorAndHiddenSelect(ctx.userId),
                 },
               },
               repliesCount: true,
               hideLikes: true,
               privacy: true,
-              author: {
-                select: {
-                  ...GET_USER,
-                },
-              },
+              ...getAuthorAndHiddenSelect(ctx.userId),
               ...GET_LIKES,
               ...GET_BOOKMARKS,
               ...GET_COUNT,
@@ -291,11 +272,7 @@ export const userRouter = createTRPCRouter({
           repliesCount: true,
           hideLikes: true,
           privacy: true,
-          author: {
-            select: {
-              ...GET_USER,
-            },
-          },
+          ...getAuthorAndHiddenSelect(ctx.userId),
           ...GET_LIKES,
           ...GET_BOOKMARKS,
           ...GET_COUNT,
@@ -332,6 +309,8 @@ export const userRouter = createTRPCRouter({
                 likesCount: post.parentPost._count.likes,
                 bookmarksCount: post.parentPost._count.bookmarks,
                 repostsCount: post.parentPost._count.reposts,
+                isMuted: post.parentPost.author.mutedByUsers.length > 0,
+                isHidden: post.parentPost.hiddenBy.length > 0,
               }
             : null,
           author: post.author,
@@ -348,6 +327,8 @@ export const userRouter = createTRPCRouter({
           repliesCount: post.repliesCount,
           linkPreview: post.linkPreview,
           privacy: post.privacy,
+          isMuted: post.author.mutedByUsers.length > 0,
+          isHidden: post.hiddenBy.length > 0,
         })),
         nextCursor,
       };
@@ -377,13 +358,6 @@ export const userRouter = createTRPCRouter({
       const userReposts = await ctx.db.repost.findMany({
         where: {
           userId: isUser.id,
-          post: {
-            hiddenBy: {
-              none: {
-                userId: ctx.userId,
-              },
-            },
-          },
         },
         take: limit + 1,
         cursor: cursor
@@ -416,11 +390,7 @@ export const userRouter = createTRPCRouter({
               repliesCount: true,
               hideLikes: true,
               privacy: true,
-              author: {
-                select: {
-                  ...GET_USER,
-                },
-              },
+              ...getAuthorAndHiddenSelect(ctx.userId),
               ...GET_LIKES,
               ...GET_COUNT,
               ...GET_REPOSTS,
@@ -473,6 +443,8 @@ export const userRouter = createTRPCRouter({
           repostedBy: repost.user,
           repostedAt: repost.createdAt,
           privacy: repost.post.privacy,
+          isMuted: repost.post.author.mutedByUsers.length > 0,
+          isHidden: repost.post.hiddenBy.length > 0,
         })),
         nextCursor,
       };
@@ -760,5 +732,47 @@ export const userRouter = createTRPCRouter({
         following,
         nextCursor,
       };
+    }),
+
+  toggleMuteUser: privateProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { userId: currentUserId } = ctx;
+
+      if (currentUserId === input.userId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'You cannot mute yourself',
+        });
+      }
+
+      const data = {
+        mutedUserId: input.userId,
+        mutedByUserId: currentUserId,
+      };
+
+      const existingMute = await ctx.db.mutedUser.findUnique({
+        where: {
+          mutedUserId_mutedByUserId: data,
+        },
+      });
+
+      if (existingMute == null) {
+        await ctx.db.mutedUser.create({
+          data,
+        });
+        return { muted: true };
+      } else {
+        await ctx.db.mutedUser.delete({
+          where: {
+            mutedUserId_mutedByUserId: data,
+          },
+        });
+        return { muted: false };
+      }
     }),
 });

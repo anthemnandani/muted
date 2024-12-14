@@ -9,6 +9,7 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
   posts,
   fetchNextPage,
   hasNextPage,
+  showMuted,
 }) => {
   const uniquePosts = useMemo(() => {
     if (!posts) return [];
@@ -44,6 +45,7 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
         >
           <ThreadCard
             {...post}
+            showMuted={showMuted}
             isLastThread={index === uniquePosts.length - 1}
           />
         </div>
