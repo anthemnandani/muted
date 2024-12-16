@@ -8,9 +8,8 @@ import { Icons } from '@/components/icons';
 import PinToHome from '@/components/menus/PinToHome';
 import HeaderWrapper from '@/components/shared/HeaderWrapper';
 import Wrapper from '@/components/shared/Wrapper';
+import { useSyncPostStates } from '@/hooks/useSyncPostStates';
 import useWindow from '@/hooks/useWindow';
-import { useHiddenPosts } from '@/store/hiddenPosts';
-import { useMutedUsers } from '@/store/mutedUsers';
 import { api } from '@/trpc/react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -19,13 +18,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 const PostInfoClient = ({ id }: { id: string }) => {
   const { isMobile } = useWindow();
   const router = useRouter();
-  const { hidePost, unhidePost } = useHiddenPosts();
-  const { muteUser, unmuteUser } = useMutedUsers();
-
-  const syncPostStates = (post: any) => {
-    post.isHidden ? hidePost(post.id) : unhidePost(post.id);
-    post.isMuted ? muteUser(post.author.id) : unmuteUser(post.author.id);
-  };
+  const { syncPostStates } = useSyncPostStates();
 
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
     api.post.getNestedPosts.useInfiniteQuery(

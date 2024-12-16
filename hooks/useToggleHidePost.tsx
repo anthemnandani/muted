@@ -26,6 +26,7 @@ export default function useToggleHidePost({
       onError: () => {
         toast.error('Something went wrong!');
       },
+
       onSettled: async (data) => {
         toast.success(data?.hidden ? 'Hidden' : 'Unhidden');
         await Promise.all([

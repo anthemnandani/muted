@@ -13,6 +13,7 @@ export default function useToggleMuteUser({
 }: UseToggleMuteUserProps) {
   const { muteUser, unmuteUser } = useMutedUsers();
   const trpcUtils = api.useUtils();
+
   const { mutateAsync: toggleMuteUser, isLoading } =
     api.user.toggleMuteUser.useMutation({
       onMutate: () => {
@@ -25,8 +26,12 @@ export default function useToggleMuteUser({
       },
       onSettled: async (data) => {
         toast.success(data?.muted ? 'Muted' : 'Unmuted');
-        await trpcUtils.post.invalidate();
-        await trpcUtils.user.invalidate();
+        await Promise.all([
+          trpcUtils.post.getNestedPosts.invalidate(),
+          trpcUtils.user.postInfo.invalidate(),
+          trpcUtils.user.repliesInfo.invalidate(),
+          trpcUtils.user.repostsInfo.invalidate(),
+        ]);
       },
     });
 
