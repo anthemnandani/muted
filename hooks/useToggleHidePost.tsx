@@ -28,35 +28,14 @@ export default function useToggleHidePost({
       },
       onSettled: async (data) => {
         toast.success(data?.hidden ? 'Hidden' : 'Unhidden');
-        await trpcUtils.invalidate();
+        await Promise.all([
+          trpcUtils.post.getNestedPosts.invalidate(),
+          trpcUtils.user.postInfo.invalidate(),
+          trpcUtils.user.repliesInfo.invalidate(),
+          trpcUtils.user.repostsInfo.invalidate(),
+        ]);
       },
     });
-
-  // const handleToggleHidePost = () => {
-  //   toast.promise(toggleHidePost({ postId }), {
-  //     loading: (
-  //       <div className='flex w-[270px] items-center justify-start gap-1.5 p-0'>
-  //         <div>
-  //           <Icons.loading className='size-8' />
-  //         </div>
-  //         {isHiding ? `Hiding ${type}...` : `Unhiding ${type}...`}
-  //       </div>
-  //     ),
-  //     success: () => (
-  //       <div className='flex-center p-0'>
-  //         {isHiding
-  //           ? `${
-  //               type.charAt(0).toUpperCase() + type.slice(1)
-  //             } hidden successfully`
-  //           : `${
-  //               type.charAt(0).toUpperCase() + type.slice(1)
-  //             } unhidden successfully`}
-  //       </div>
-  //     ),
-  //     error: isHiding ? `Error hiding ${type}` : `Error unhiding ${type}`,
-  //     richColors: true,
-  //   });
-  // };
 
   return {
     handleToggleHidePost: toggleHidePost,

@@ -23,7 +23,6 @@ const PostInfoClient = ({ id }: { id: string }) => {
   const { muteUser, unmuteUser } = useMutedUsers();
 
   const syncPostStates = (post: any) => {
-    console.log('post', post);
     post.isHidden ? hidePost(post.id) : unhidePost(post.id);
     post.isMuted ? muteUser(post.author.id) : unmuteUser(post.author.id);
   };
