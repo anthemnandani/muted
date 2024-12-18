@@ -8,7 +8,7 @@ import React from 'react';
 
 const SearchClient = () => {
   const [searchQuery, setSearchQuery] = React.useState('');
-  const { data, isLoading, isError, hasNextPage, fetchNextPage } =
+  const { data, isLoading, isRefetching, isError, hasNextPage, fetchNextPage } =
     api.user.allUsers.useInfiniteQuery(
       { searchQuery },
       {
@@ -28,15 +28,18 @@ const SearchClient = () => {
   return (
     <>
       <SearchInput onSearch={handleSearch} />
-      <div className='mt-4 text-gray-3 font-semibold text-[15px]'>
-        Follow suggestions
-      </div>
+      {!searchQuery && (
+        <div className='mt-4 text-[#999] dark:text-gray-3 font-semibold text-[15px]'>
+          Follow suggestions
+        </div>
+      )}
       <UsersList
-        isLoading={isLoading}
+        isLoading={isLoading || isRefetching}
         users={allUsers}
         fetchNextPage={fetchNextPage}
         hasNextPage={hasNextPage}
         type='users'
+        showDetails={!searchQuery}
       />
     </>
   );

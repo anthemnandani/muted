@@ -20,13 +20,15 @@ const FollowingClient = ({ username }: { username: string }) => {
   const allFollowing = data?.pages.flatMap((page) => page.following);
 
   return (
-    <UsersList
-      isLoading={isLoading || isRefetching}
-      users={allFollowing}
-      fetchNextPage={fetchNextPage}
-      hasNextPage={hasNextPage}
-      type='followings'
-    />
+    <div className='px-2 md:px-4'>
+      <UsersList
+        isLoading={isLoading || isRefetching}
+        users={allFollowing}
+        fetchNextPage={fetchNextPage}
+        hasNextPage={hasNextPage}
+        type='followings'
+      />
+    </div>
   );
 };
 

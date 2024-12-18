@@ -569,15 +569,19 @@ export const userRouter = createTRPCRouter({
     )
     .query(async ({ input: { limit = 20, cursor, searchQuery }, ctx }) => {
       const allUsers = await ctx.db.user.findMany({
-        where: {
-          OR: [
-            { fullName: { contains: searchQuery, mode: 'insensitive' } },
-            { username: { contains: searchQuery, mode: 'insensitive' } },
-          ],
-        },
+        where: searchQuery
+          ? {
+              OR: [
+                { fullName: { contains: searchQuery, mode: 'insensitive' } },
+                { username: { contains: searchQuery, mode: 'insensitive' } },
+              ],
+            }
+          : undefined,
         take: limit + 1,
         cursor: cursor ? { createdAt_id: cursor } : undefined,
-        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        orderBy: searchQuery
+          ? [{ createdAt: 'desc' }, { id: 'desc' }]
+          : [{ followers: { _count: 'desc' } }, { createdAt: 'desc' }],
         select: {
           ...GET_USER,
         },

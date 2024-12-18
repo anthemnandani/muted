@@ -11,6 +11,7 @@ interface UsersListProps {
   fetchNextPage: () => void;
   hasNextPage: boolean | undefined;
   type: 'users' | 'followings' | 'followers';
+  showDetails?: boolean;
 }
 
 const UsersList: React.FC<UsersListProps> = ({
@@ -19,6 +20,7 @@ const UsersList: React.FC<UsersListProps> = ({
   fetchNextPage,
   hasNextPage,
   type,
+  showDetails,
 }) => {
   return (
     <>
@@ -27,7 +29,7 @@ const UsersList: React.FC<UsersListProps> = ({
           <p>No {type} found.</p>
         </div>
       )}
-      <div className='mt-4'>
+      <div>
         {isLoading ? (
           <Loading className='md:!h-[80vh]' />
         ) : (
@@ -41,8 +43,13 @@ const UsersList: React.FC<UsersListProps> = ({
               </div>
             }
           >
-            {users?.map((user) => (
-              <UserCard key={user.id} {...user} />
+            {users?.map((user, index) => (
+              <UserCard
+                key={user.id}
+                {...user}
+                showDetails={showDetails}
+                isLastUser={index === users.length - 1}
+              />
             ))}
           </InfiniteScroll>
         )}

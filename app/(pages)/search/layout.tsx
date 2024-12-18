@@ -26,7 +26,9 @@ export default function SearchLayout({ children }: SearchLayoutProps) {
       )}
 
       <Wrapper>
-        <div className='max-w-xl mx-auto w-full mt-[18px]'>{children}</div>
+        <div className='max-w-xl mx-auto w-full mt-[18px] px-2 md:px-4'>
+          {children}
+        </div>
       </Wrapper>
     </>
   );

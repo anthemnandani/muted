@@ -45,7 +45,10 @@ export type UserProfileInfoProps =
 
 export type UserCardProps = ArrayElement<
   RouterOutput['user']['allUsers']['allUsers']
->;
+> & {
+  isLastUser?: boolean;
+  showDetails?: boolean;
+};
 
 export type UserSetupProps = Pick<User, 'bio' | 'link' | 'privacy'>;
 

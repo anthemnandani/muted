@@ -26,9 +26,13 @@ const FollowButton: React.FC<FollowButtonProps> = ({
       disabled={isLoading || isSameUser}
       onClick={handleToggleFollow}
       variant={!followUpdate.current.isFollowedByMe ? variant : 'outline'}
-      className={cn('rounded-xl py-1.5 px-4 select-none', className, {
-        'opacity-80': followUpdate.current.isFollowedByMe,
-      })}
+      className={cn(
+        'rounded-xl px-6 !text-[14px] py-1.5 h-8 select-none',
+        className,
+        {
+          'opacity-80': followUpdate.current.isFollowedByMe,
+        }
+      )}
     >
       {followUpdate.current.isFollowedByMe ? 'Following' : 'Follow'}
     </Follow>

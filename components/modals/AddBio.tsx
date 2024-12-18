@@ -40,7 +40,7 @@ const AddBio = ({ userBio }: { userBio: string }) => {
       <DialogTrigger className='w-full'>
         <div className='flex items-center'>
           {profileBio ? (
-            <span className='text-start text-[15px] break-all'>
+            <span className='text-start text-[15px] whitespace-pre-line break-words'>
               {profileBio}
             </span>
           ) : (
