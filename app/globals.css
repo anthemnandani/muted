@@ -187,6 +187,18 @@
   .logo {
     @apply font-semibold tracking-wide cursor-pointer active:scale-95 transform transition-all ease-out hover:scale-105 z-[50] py-4;
   }
+
+  .sort-btn-base {
+    @apply flex-1 w-full rounded-[10px] font-semibold text-[15px];
+  }
+
+  .sort-btn-top {
+    @apply sort-btn-base bg-black dark:bg-white text-white dark:text-black hover:!bg-black hover:!text-white hover:dark:!bg-white hover:dark:!text-black;
+  }
+
+  .sort-btn-latest {
+    @apply sort-btn-base bg-transparent border border-border-dark dark:border-border-light hover:!bg-transparent;
+  }
 }
 
 @layer utilities {

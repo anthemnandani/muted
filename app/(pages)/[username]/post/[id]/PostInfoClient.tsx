@@ -5,8 +5,8 @@ import NotFound from '@/app/not-found';
 import ParentReplyCard from '@/components/cards/ParentReplyCard';
 import ParentThreadCard from '@/components/cards/ParentThreadCard';
 import { Icons } from '@/components/icons';
-import PinToHome from '@/components/menus/PinToHome';
 import HeaderWrapper from '@/components/shared/HeaderWrapper';
+import TopHeader from '@/components/shared/TopHeader';
 import Wrapper from '@/components/shared/Wrapper';
 import { useSyncPostStates } from '@/hooks/useSyncPostStates';
 import useWindow from '@/hooks/useWindow';
@@ -47,13 +47,7 @@ const PostInfoClient = ({ id }: { id: string }) => {
     <>
       {!isMobile && (
         <HeaderWrapper>
-          <div className='flex-between h-[60px] px-4'>
-            <div className='icon-container' onClick={() => router.back()}>
-              <Icons.back className='size-3' />
-            </div>
-            <span className='text-[15px] font-semibold'>Thread</span>
-            <PinToHome />
-          </div>
+          <TopHeader title='Thread' showBack />
         </HeaderWrapper>
       )}
       <Wrapper>

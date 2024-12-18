@@ -158,6 +158,7 @@ export interface ThreadsListProps {
   fetchNextPage: () => void;
   hasNextPage?: boolean;
   showMuted?: boolean;
+  isLoading?: boolean;
 }
 
 export interface EditProfileProps {

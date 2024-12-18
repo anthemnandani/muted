@@ -40,7 +40,7 @@ const UserCard: React.FC<UserCardProps> = (props) => {
         </Avatar>
 
         <div className='flex flex-col w-full ml-3'>
-          <div className='flex justify-between w-full pb-1'>
+          <div className='flex justify-between w-full pb-1 pr-2 md:pr-4'>
             <div className='flex flex-col gap-1.5 w-full'>
               <div className='flex flex-col w-full'>
                 <Username
@@ -55,7 +55,7 @@ const UserCard: React.FC<UserCardProps> = (props) => {
             <FollowButton variant='outline' author={authorProps} />
           </div>
           {showDetails && bio && (
-            <span className='text-[15px] text-black dark:text-[#f3f5f7] line-clamp-3 w-full whitespace-pre-line break-words antialiased'>
+            <span className='text-[15px] text-black dark:text-[#f3f5f7] line-clamp-3 w-full whitespace-pre-line break-words antialiased pr-2 md:pr-4'>
               {bio}
             </span>
           )}
@@ -69,9 +69,10 @@ const UserCard: React.FC<UserCardProps> = (props) => {
               {followers.length !== 1 ? 's' : ''}
             </Link>
           )}
+
+          {!isLastUser && <Separator className='mt-4' />}
         </div>
       </div>
-      {!isLastUser && <Separator className='mt-4' />}
     </Link>
   );
 };

@@ -30,9 +30,9 @@ const SearchInput: React.FC<SearchInputProps> = ({ onSearch }) => {
   };
 
   return (
-    <div className='rounded-2xl border border-border bg-primary-foreground mb-3 transition-transform duration-300'>
+    <div className='rounded-2xl border border-border bg-primary-foreground mb-3 transition-transform duration-300 mr-2 md:mr-4'>
       <div className='relative w-full flex px-3 py-2 ring-offset-background placeholder:text-muted-foreground pl-14 pr-14 h-[44px]'>
-        <Icons.search className='size-4 text-[#4D4D4D] absolute left-6 top-1/2 -translate-y-1/2' />
+        <Icons.search className='size-4 text-[#b8b8b8] dark:text-[#4d4d4d] absolute left-6 top-1/2 -translate-y-1/2' />
 
         <input
           value={searchValue}

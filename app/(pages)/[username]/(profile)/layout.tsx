@@ -1,7 +1,7 @@
 'use client';
 
-import PinToHome from '@/components/menus/PinToHome';
 import HeaderWrapper from '@/components/shared/HeaderWrapper';
+import TopHeader from '@/components/shared/TopHeader';
 import Wrapper from '@/components/shared/Wrapper';
 import useWindow from '@/hooks/useWindow';
 
@@ -15,12 +15,7 @@ export default function ProfileLayout({ children }: ProfileLayoutProps) {
     <>
       {!isMobile && (
         <HeaderWrapper>
-          <div className='flex-between h-[60px] px-4'>
-            <span className='text-[15px] font-semibold flex-1 text-center'>
-              Profile
-            </span>
-            <PinToHome />
-          </div>
+          <TopHeader title='Profile' />
         </HeaderWrapper>
       )}
 
