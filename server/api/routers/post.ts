@@ -198,12 +198,13 @@ export const postRouter = createTRPCRouter({
               searchQuery
                 ? {
                     OR: [
-                      { text: { contains: searchQuery } },
+                      { text: { contains: searchQuery, mode: 'insensitive' } },
                       {
                         hashtags: {
                           some: {
                             name: {
                               contains: searchQuery,
+                              mode: 'insensitive',
                             },
                           },
                         },
