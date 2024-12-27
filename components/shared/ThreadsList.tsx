@@ -2,6 +2,7 @@
 
 import Loading from '@/app/(pages)/loading';
 import { ThreadsListProps } from '@/lib/types';
+import Link from 'next/link';
 import React, { useMemo } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import ThreadCard from '../cards/ThreadCard';
@@ -55,9 +56,30 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
                   : `post-${post.id}`
               }
             >
+              {post.parentPostId && (
+                <>
+                  {post.parentPost && (
+                    <ThreadCard
+                      {...post.parentPost}
+                      showMuted={showMuted}
+                      variant='reply'
+                      showUsername
+                    />
+                  )}
+                  <div className='mt-4 px-2 md:px-4'>
+                    <Link
+                      href={`/@${post.parentPost?.author.username}/post/${post.parentPost?.id}`}
+                      className='text-gray-3 text-[15px] leading-5'
+                    >
+                      Replying to @{post.parentPost?.author.username}
+                    </Link>
+                  </div>
+                </>
+              )}
               <ThreadCard
                 {...post}
                 showMuted={showMuted}
+                variant={post.parentPostId ? 'reply' : 'default'}
                 isLastThread={index === uniquePosts.length - 1}
               />
             </div>

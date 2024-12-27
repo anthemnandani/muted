@@ -9,10 +9,7 @@ interface StatItemProps {
 }
 
 const StatItem = ({ count, label, href, className }: StatItemProps) => (
-  <Link
-    href={href}
-    className={cn('hover:opacity-80 transition-opacity', className)}
-  >
+  <Link href={href} className={className}>
     <span className='font-semibold text-foreground'>{formatCount(count)}</span>{' '}
     <span className='text-zinc-600 dark:text-gray-3'>{label}</span>
   </Link>

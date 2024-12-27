@@ -236,3 +236,5 @@ export interface RepostButtonProps {
   isCheckingPermissions: boolean;
   canInteract: boolean;
 }
+
+export type PostFilter = 'ALL' | 'TEXT' | 'REPLIES' | 'REPOSTS';

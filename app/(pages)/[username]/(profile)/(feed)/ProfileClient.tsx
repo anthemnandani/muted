@@ -1,17 +1,20 @@
 'use client';
 
 import NotFound from '@/app/not-found';
+import PostFilters from '@/components/posts/PostFilters';
 import Loader from '@/components/shared/Loader';
 import ThreadsList from '@/components/shared/ThreadsList';
 import { useSyncPostStates } from '@/hooks/useSyncPostStates';
+import { PostFilter } from '@/lib/types';
 import { api } from '@/trpc/react';
 import React from 'react';
 
 const ProfileClient = ({ username }: { username: string }) => {
   const { syncFirstPost } = useSyncPostStates();
-  const { data, isLoading, isError, hasNextPage, fetchNextPage } =
+  const [filters, setFilters] = React.useState<PostFilter[]>(['ALL']);
+  const { data, isLoading, isRefetching, isError, hasNextPage, fetchNextPage } =
     api.user.postInfo.useInfiniteQuery(
-      { username },
+      { username, filters },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         trpc: { abortOnUnmount: true },
@@ -26,15 +29,28 @@ const ProfileClient = ({ username }: { username: string }) => {
     syncFirstPost(allPosts);
   }, [data]);
 
-  if (isLoading) {
-    return <Loader />;
-  }
-
   if (isError) return <NotFound />;
 
+  const handleFilterToggle = (filter: PostFilter) => {
+    setFilters((prev) => {
+      if (filter === 'ALL') return ['ALL'];
+
+      if (prev.includes('ALL')) {
+        return [filter];
+      }
+      const newFilters = prev.includes(filter)
+        ? prev.filter((f) => f !== filter)
+        : [...prev, filter];
+      return newFilters.length === 0 ? ['ALL'] : newFilters;
+    });
+  };
+
   return (
-    <div>
-      {allPosts ? (
+    <React.Fragment>
+      <PostFilters filters={filters} handleFilterToggle={handleFilterToggle} />
+      {isLoading || isRefetching ? (
+        <Loader />
+      ) : allPosts ? (
         allPosts?.length > 0 ? (
           <section className='flex flex-col justify-start w-full'>
             <ThreadsList
@@ -46,13 +62,13 @@ const ProfileClient = ({ username }: { username: string }) => {
           </section>
         ) : (
           <div className='h-[50vh] w-full flex-center text-gray-3'>
-            <p>No threads yet.</p>
+            <p>Nothing here yet</p>
           </div>
         )
       ) : (
         <NotFound />
       )}
-    </div>
+    </React.Fragment>
   );
 };
 

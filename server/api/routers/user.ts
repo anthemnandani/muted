@@ -67,85 +67,191 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         username: z.string(),
+        filters: z
+          .array(z.enum(['ALL', 'TEXT', 'REPLIES', 'REPOSTS']))
+          .default(['ALL']),
         limit: z.number().optional(),
         cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
       })
     )
-    .query(async ({ input: { username, limit = 20, cursor }, ctx }) => {
-      const isUser = await ctx.db.user.findUnique({
-        where: {
-          username,
-        },
-      });
-
-      if (!isUser) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
-      }
-
-      const userProfileInfo = await ctx.db.post.findMany({
-        where: {
-          authorId: isUser.id,
-          parentPostId: null,
-        },
-        take: limit + 1,
-        cursor: cursor ? { createdAt_id: cursor } : undefined,
-        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-        select: {
-          id: true,
-          createdAt: true,
-          text: true,
-          media: true,
-          parentPostId: true,
-          quoteId: true,
-          path: true,
-          repliesCount: true,
-          hideLikes: true,
-          privacy: true,
-          ...getAuthorAndHiddenSelect(ctx.userId),
-          ...GET_LIKES,
-          ...GET_BOOKMARKS,
-          ...GET_COUNT,
-          ...GET_REPOSTS,
-          ...GET_MENTIONS,
-          ...GET_LINK_PREVIEW,
-        },
-      });
-
-      let nextCursor: typeof cursor | undefined;
-
-      if (userProfileInfo.length > limit) {
-        const nextItem = userProfileInfo.pop();
-        if (nextItem != null) {
-          nextCursor = { id: nextItem.id, createdAt: nextItem.createdAt };
+    .query(
+      async ({ input: { username, filters, limit = 20, cursor }, ctx }) => {
+        if (filters.includes('ALL') || filters.length === 0) {
+          filters = ['ALL'];
         }
-      }
+        const user = await ctx.db.user.findUnique({
+          where: {
+            username,
+          },
+          select: {
+            id: true,
+          },
+        });
 
-      return {
-        posts: userProfileInfo.map((post) => ({
-          id: post.id,
-          createdAt: post.createdAt,
-          text: post.text,
-          parentPostId: post.parentPostId,
-          author: post.author,
-          likesCount: post._count.likes,
-          likes: post.likes,
-          path: post.path,
-          repliesCount: post.repliesCount,
-          hideLikes: post.hideLikes,
-          quoteId: post.quoteId,
-          media: post.media as PostMedia,
-          reposts: post.reposts,
-          mentions: post.mentions,
-          linkPreview: post.linkPreview,
-          bookmarks: post.bookmarks,
-          bookmarksCount: post._count.bookmarks,
-          privacy: post.privacy,
-          isHidden: post.hiddenBy.length > 0,
-          isMuted: post.author.mutedByUsers.length > 0,
-        })),
-        nextCursor,
-      };
-    }),
+        if (!user) {
+          throw new TRPCError({ code: 'NOT_FOUND' });
+        }
+
+        const filterConditions = filters.map((filter) => {
+          switch (filter) {
+            case 'TEXT':
+              return {
+                AND: [{ parentPostId: null }, { media: {} }],
+              };
+            case 'REPLIES':
+              return {
+                parentPostId: { not: null },
+              };
+            case 'REPOSTS':
+              return {
+                reposts: {
+                  some: {
+                    userId: user.id,
+                  },
+                },
+              };
+            default:
+              return {};
+          }
+        });
+
+        const posts = await ctx.db.post.findMany({
+          where: {
+            AND: [
+              {
+                OR: [
+                  { authorId: user.id },
+                  {
+                    reposts: {
+                      some: {
+                        userId: user.id,
+                      },
+                    },
+                  },
+                ],
+              },
+              ...(filters[0] !== 'ALL' ? [{ OR: filterConditions }] : []),
+            ],
+          },
+          take: limit + 1,
+          cursor: cursor ? { createdAt_id: cursor } : undefined,
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+          select: {
+            id: true,
+            createdAt: true,
+            text: true,
+            media: true,
+            parentPostId: true,
+            parentPost: {
+              select: {
+                id: true,
+                createdAt: true,
+                text: true,
+                media: true,
+                parentPostId: true,
+                quoteId: true,
+                path: true,
+                parentPost: {
+                  select: {
+                    id: true,
+                    ...getAuthorAndHiddenSelect(ctx.userId),
+                  },
+                },
+                repliesCount: true,
+                hideLikes: true,
+                privacy: true,
+                ...getAuthorAndHiddenSelect(ctx.userId),
+                ...GET_LIKES,
+                ...GET_BOOKMARKS,
+                ...GET_COUNT,
+                ...GET_REPOSTS,
+                ...GET_MENTIONS,
+                ...GET_LINK_PREVIEW,
+              },
+            },
+            quoteId: true,
+            path: true,
+            repliesCount: true,
+            hideLikes: true,
+            privacy: true,
+            ...getAuthorAndHiddenSelect(ctx.userId),
+            ...GET_LIKES,
+            ...GET_BOOKMARKS,
+            ...GET_COUNT,
+            ...GET_MENTIONS,
+            ...GET_LINK_PREVIEW,
+            reposts: {
+              select: {
+                createdAt: true,
+                userId: true,
+                postId: true,
+                user: {
+                  select: {
+                    ...GET_USER,
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        let nextCursor: typeof cursor | undefined;
+
+        if (posts.length > limit) {
+          const nextItem = posts.pop();
+          if (nextItem != null) {
+            nextCursor = { id: nextItem.id, createdAt: nextItem.createdAt };
+          }
+        }
+
+        return {
+          posts: posts.map((post) => {
+            const userRepost = post.reposts.find(
+              (repost) => repost.userId === user.id
+            );
+            return {
+              id: post.id,
+              createdAt: post.createdAt,
+              text: post.text,
+              parentPostId: post.parentPostId,
+              parentPost: post.parentPost
+                ? {
+                    ...post.parentPost,
+                    media: post.parentPost.media as PostMedia,
+                    likesCount: post.parentPost._count.likes,
+                    bookmarksCount: post.parentPost._count.bookmarks,
+                    repostsCount: post.parentPost._count.reposts,
+                    isMuted: post.parentPost.author.mutedByUsers.length > 0,
+                    isHidden: post.parentPost.hiddenBy.length > 0,
+                  }
+                : null,
+              author: post.author,
+              likesCount: post._count.likes,
+              likes: post.likes,
+              path: post.path,
+              repliesCount: post.repliesCount,
+              hideLikes: post.hideLikes,
+              quoteId: post.quoteId,
+              media: post.media as PostMedia,
+              reposts: post.reposts,
+              mentions: post.mentions,
+              linkPreview: post.linkPreview,
+              bookmarks: post.bookmarks,
+              bookmarksCount: post._count.bookmarks,
+              privacy: post.privacy,
+              isHidden: post.hiddenBy.length > 0,
+              isMuted: post.author.mutedByUsers.length > 0,
+              repostsCount: post._count.reposts,
+              ...(userRepost && {
+                repostedBy: userRepost.user,
+                repostedAt: userRepost.createdAt,
+              }),
+            };
+          }),
+          nextCursor,
+        };
+      }
+    ),
 
   updateProfile: privateProcedure
     .input(
@@ -397,12 +503,6 @@ export const userRouter = createTRPCRouter({
               ...GET_BOOKMARKS,
               ...GET_MENTIONS,
               ...GET_LINK_PREVIEW,
-              reposts: {
-                select: {
-                  userId: true,
-                  postId: true,
-                },
-              },
             },
           },
         },

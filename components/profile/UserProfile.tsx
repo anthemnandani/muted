@@ -116,17 +116,17 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
         <ProfileTabItem
           href={`/${basePath}`}
           isActive={lastSegment === basePath}
-          label='Threads'
+          label='All Posts'
         />
         <ProfileTabItem
-          href={`/${basePath}/replies`}
-          isActive={lastSegment === 'replies'}
-          label='Replies'
+          href={`/${basePath}/portfolio`}
+          isActive={lastSegment === 'portfolio'}
+          label='Portfolio'
         />
         <ProfileTabItem
-          href={`/${basePath}/reposts`}
-          isActive={lastSegment === 'reposts'}
-          label='Reposts'
+          href={`/${basePath}/likes`}
+          isActive={lastSegment === 'likes'}
+          label='Likes'
         />
       </div>
     </div>
