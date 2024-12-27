@@ -92,47 +92,51 @@ export const userRouter = createTRPCRouter({
           throw new TRPCError({ code: 'NOT_FOUND' });
         }
 
-        const filterConditions = filters.map((filter) => {
-          switch (filter) {
-            case 'TEXT':
-              return {
-                AND: [{ parentPostId: null }, { media: {} }],
-              };
-            case 'REPLIES':
-              return {
-                parentPostId: { not: null },
-              };
-            case 'REPOSTS':
-              return {
-                reposts: {
-                  some: {
-                    userId: user.id,
-                  },
+        let whereCondition = {};
+
+        if (filters.includes('ALL')) {
+          whereCondition = {
+            authorId: user.id,
+            parentPostId: null,
+            NOT: {
+              reposts: {
+                some: {
+                  userId: user.id,
                 },
-              };
-            default:
-              return {};
+              },
+            },
+          };
+        } else {
+          const conditions = [];
+
+          if (filters.includes('TEXT')) {
+            conditions.push({
+              authorId: user.id,
+              parentPostId: null,
+              media: {},
+            });
           }
-        });
+
+          if (filters.includes('REPLIES')) {
+            conditions.push({
+              authorId: user.id,
+              parentPostId: { not: null },
+            });
+          }
+
+          if (filters.includes('REPOSTS')) {
+            conditions.push({
+              reposts: {
+                some: { userId: user.id },
+              },
+            });
+          }
+
+          whereCondition = { OR: conditions };
+        }
 
         const posts = await ctx.db.post.findMany({
-          where: {
-            AND: [
-              {
-                OR: [
-                  { authorId: user.id },
-                  {
-                    reposts: {
-                      some: {
-                        userId: user.id,
-                      },
-                    },
-                  },
-                ],
-              },
-              ...(filters[0] !== 'ALL' ? [{ OR: filterConditions }] : []),
-            ],
-          },
+          where: whereCondition,
           take: limit + 1,
           cursor: cursor ? { createdAt_id: cursor } : undefined,
           orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
