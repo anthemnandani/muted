@@ -68,14 +68,20 @@ export const userRouter = createTRPCRouter({
       z.object({
         username: z.string(),
         filters: z
-          .array(z.enum(['ALL', 'TEXT', 'REPLIES', 'REPOSTS']))
+          .array(
+            z.enum(['ALL', 'TEXT', 'REPLIES', 'REPOSTS', 'PORTFOLIO', 'REELS'])
+          )
           .default(['ALL']),
+        view: z.enum(['LIST', 'GRID']).default('LIST'),
         limit: z.number().optional(),
         cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
       })
     )
     .query(
-      async ({ input: { username, filters, limit = 20, cursor }, ctx }) => {
+      async ({
+        input: { username, filters, view, limit = 21, cursor },
+        ctx,
+      }) => {
         if (filters.includes('ALL') || filters.length === 0) {
           filters = ['ALL'];
         }
@@ -113,7 +119,6 @@ export const userRouter = createTRPCRouter({
             conditions.push({
               authorId: user.id,
               parentPostId: null,
-              media: {},
             });
           }
 
@@ -133,6 +138,19 @@ export const userRouter = createTRPCRouter({
           }
 
           whereCondition = { OR: conditions };
+        }
+
+        if (view === 'GRID') {
+          whereCondition = {
+            AND: [
+              whereCondition,
+              {
+                media: {
+                  not: null,
+                },
+              },
+            ],
+          };
         }
 
         const posts = await ctx.db.post.findMany({

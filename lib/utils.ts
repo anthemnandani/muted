@@ -149,6 +149,11 @@ export function isImageOrVideo(fileType: string): 'image' | 'video' | null {
   }
 }
 
+export function isVideo(fileType: string): boolean {
+  const videoTypes = ['mp4', 'mov'];
+  return videoTypes.includes(fileType.toLowerCase());
+}
+
 export const getImageDimensions = (
   file: File
 ): Promise<{ width: number; height: number }> => {

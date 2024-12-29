@@ -3,18 +3,20 @@
 import NotFound from '@/app/not-found';
 import PostFilters from '@/components/posts/PostFilters';
 import Loader from '@/components/shared/Loader';
+import ThreadsGrid from '@/components/shared/ThreadsGrid';
 import ThreadsList from '@/components/shared/ThreadsList';
 import { useSyncPostStates } from '@/hooks/useSyncPostStates';
-import { PostFilter } from '@/lib/types';
+import type { PostFilter, PostView } from '@/lib/types';
 import { api } from '@/trpc/react';
 import React from 'react';
 
 const ProfileClient = ({ username }: { username: string }) => {
   const { syncFirstPost } = useSyncPostStates();
   const [filters, setFilters] = React.useState<PostFilter[]>(['ALL']);
+  const [view, setView] = React.useState<PostView>('LIST');
   const { data, isLoading, isRefetching, isError, hasNextPage, fetchNextPage } =
     api.user.postInfo.useInfiniteQuery(
-      { username, filters },
+      { username, filters, view },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         trpc: { abortOnUnmount: true },
@@ -47,18 +49,32 @@ const ProfileClient = ({ username }: { username: string }) => {
 
   return (
     <React.Fragment>
-      <PostFilters filters={filters} handleFilterToggle={handleFilterToggle} />
+      <PostFilters
+        filters={filters}
+        handleFilterToggle={handleFilterToggle}
+        view={view}
+        onViewChange={setView}
+      />
       {isLoading || isRefetching ? (
         <Loader />
       ) : allPosts ? (
         allPosts?.length > 0 ? (
           <section className='flex flex-col justify-start w-full'>
-            <ThreadsList
-              posts={allPosts}
-              fetchNextPage={fetchNextPage}
-              hasNextPage={hasNextPage}
-              showMuted={false}
-            />
+            {view === 'LIST' ? (
+              <ThreadsList
+                posts={allPosts}
+                fetchNextPage={fetchNextPage}
+                hasNextPage={hasNextPage}
+                showMuted={false}
+              />
+            ) : (
+              <ThreadsGrid
+                posts={allPosts}
+                fetchNextPage={fetchNextPage}
+                hasNextPage={hasNextPage}
+                showMuted={false}
+              />
+            )}
           </section>
         ) : (
           <div className='h-[50vh] w-full flex-center text-gray-3'>

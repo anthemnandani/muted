@@ -124,9 +124,9 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
           label='Portfolio'
         />
         <ProfileTabItem
-          href={`/${basePath}/likes`}
-          isActive={lastSegment === 'likes'}
-          label='Likes'
+          href={`/${basePath}/bookmarks`}
+          isActive={lastSegment === 'bookmarks'}
+          label='Bookmarks'
         />
       </div>
     </div>

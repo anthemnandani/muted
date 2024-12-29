@@ -1,12 +1,36 @@
-import React from 'react';
+import type { PostView } from '@/lib/types';
+import { cn } from '@/lib/utils';
 import { Icons } from '../icons';
 
-const PostViewSelector = () => {
+interface PostViewSelectorProps {
+  view: PostView;
+  onViewChange: (view: PostView) => void;
+}
+
+const PostViewSelector = ({ view, onViewChange }: PostViewSelectorProps) => {
   return (
-    <div className='flex items-end'>
-      <div className='mr-3 text-gray-3 dark:text-zinc-200'>View:</div>
-      <Icons.list className='mr-2 h-5 w-5 flex-shrink-0 stroke-2 transition hover:cursor-pointer text-gray-3 dark:text-zinc-200' />
-      <Icons.grid className='h-5 w-5 flex-shrink-0 stroke-2 transition hover:cursor-pointer text-zinc-500 dark:text-gray-3' />
+    <div>
+      <div className='flex items-center'>
+        <div className='mr-3 text-gray-3 dark:text-zinc-200'>View:</div>
+        <Icons.list
+          className={cn(
+            'mr-2 size-5 flex-shrink-0 stroke-2 transition hover:cursor-pointer',
+            view === 'LIST'
+              ? 'text-gray-3 dark:text-zinc-200'
+              : 'text-zinc-300 hover:text-zinc-400 dark:text-gray-3 dark:hover:text-zinc-400'
+          )}
+          onClick={() => onViewChange('LIST')}
+        />
+        <Icons.grid
+          className={cn(
+            'size-5 flex-shrink-0 stroke-2 transition hover:cursor-pointer',
+            view === 'GRID'
+              ? 'text-gray-3 dark:text-zinc-200'
+              : 'text-zinc-300 hover:text-zinc-400 dark:text-gray-3 dark:hover:text-zinc-400'
+          )}
+          onClick={() => onViewChange('GRID')}
+        />
+      </div>
     </div>
   );
 };
