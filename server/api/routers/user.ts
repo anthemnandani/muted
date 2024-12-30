@@ -137,6 +137,30 @@ export const userRouter = createTRPCRouter({
             });
           }
 
+          if (filters.includes('REELS')) {
+            conditions.push({
+              authorId: user.id,
+              parentPostId: null,
+              media: {
+                not: null,
+              },
+              OR: [
+                {
+                  media: {
+                    path: ['fileType'],
+                    string_ends_with: 'mp4',
+                  },
+                },
+                {
+                  media: {
+                    path: ['fileType'],
+                    string_ends_with: 'mov',
+                  },
+                },
+              ],
+            });
+          }
+
           whereCondition = { OR: conditions };
         }
 
