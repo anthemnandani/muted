@@ -30,7 +30,7 @@ export const authRouter = createTRPCRouter({
       }
 
       await ctx.db.$transaction(async (prisma) => {
-        const updatedUser = await prisma.user.update({
+        await prisma.user.update({
           where: {
             id: dbUser.id,
           },
@@ -42,15 +42,15 @@ export const authRouter = createTRPCRouter({
           },
         });
 
-        await prisma.notification.create({
-          data: {
-            isPublic: false,
-            type: 'ADMIN',
-            senderUserId: process.env.ADMIN_USER_ID!,
-            receiverUserId: updatedUser.id,
-            message: `Hey ${updatedUser.fullName}! Welcome to Muted.`,
-          },
-        });
+        // await prisma.notification.create({
+        //   data: {
+        //     isPublic: false,
+        //     type: 'ADMIN',
+        //     senderUserId: process.env.ADMIN_USER_ID!,
+        //     receiverUserId: updatedUser.id,
+        //     message: `Hey ${updatedUser.fullName}! Welcome to Muted.`,
+        //   },
+        // });
       });
 
       return {
