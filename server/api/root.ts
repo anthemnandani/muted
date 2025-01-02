@@ -1,4 +1,5 @@
 import { authRouter } from './routers/auth';
+import { collectionRouter } from './routers/collection';
 import { likeRouter } from './routers/like';
 import { postRouter } from './routers/post';
 import { userRouter } from './routers/user';
@@ -9,6 +10,7 @@ export const appRouter = createTRPCRouter({
   user: userRouter,
   post: postRouter,
   like: likeRouter,
+  collection: collectionRouter,
 });
 
 export type AppRouter = typeof appRouter;

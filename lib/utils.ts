@@ -149,6 +149,12 @@ export function isImageOrVideo(fileType: string): 'image' | 'video' | null {
   }
 }
 
+export function isImage(fileType: string): boolean {
+  if (!fileType) return false;
+  const imageTypes = ['jpeg', 'jpg', 'png', 'webp', 'gif'];
+  return imageTypes.includes(fileType.toLowerCase());
+}
+
 export function isVideo(fileType: string): boolean {
   const videoTypes = ['mp4', 'mov'];
   return videoTypes.includes(fileType.toLowerCase());

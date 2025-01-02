@@ -705,97 +705,6 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
-  toggleBookmark: privateProcedure
-    .input(
-      z.object({
-        id: z.string(),
-      })
-    )
-    .mutation(async ({ input: { id }, ctx }) => {
-      const { userId } = ctx;
-
-      const data = { postId: id, userId };
-
-      const existingBookmark = await ctx.db.bookmark.findUnique({
-        where: {
-          postId_userId: data,
-        },
-      });
-
-      if (existingBookmark == null) {
-        const transactionResult = await ctx.db.$transaction(async (prisma) => {
-          const createdBookmark = await prisma.bookmark.create({
-            data,
-            select: {
-              post: {
-                select: {
-                  text: true,
-                  author: true,
-                },
-              },
-            },
-          });
-
-          const createdNotification = await prisma.notification.create({
-            data: {
-              type: 'BOOKMARK',
-              senderUserId: userId,
-              receiverUserId: createdBookmark.post.author.id,
-              postId: data.postId,
-              message: createdBookmark.post.text || '',
-            },
-          });
-
-          return {
-            createdBookmark,
-            createdNotification,
-          };
-        });
-
-        if (!transactionResult) {
-          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
-        }
-
-        return { addedBookmark: true };
-      } else {
-        const transactionResult = await ctx.db.$transaction(async (prisma) => {
-          const removeBookmark = await prisma.bookmark.delete({
-            where: {
-              postId_userId: data,
-            },
-          });
-
-          const notification = await prisma.notification.findFirst({
-            where: {
-              senderUserId: userId,
-              postId: data.postId,
-              type: 'BOOKMARK',
-            },
-            select: {
-              id: true,
-            },
-          });
-
-          if (notification) {
-            await prisma.notification.delete({
-              where: {
-                id: notification.id,
-              },
-            });
-          }
-          return {
-            removeBookmark,
-          };
-        });
-
-        if (!transactionResult) {
-          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
-        }
-
-        return { addedBookmark: false };
-      }
-    }),
-
   toggleHideLikes: privateProcedure
     .input(
       z.object({
@@ -951,99 +860,121 @@ export const postRouter = createTRPCRouter({
           .object({
             postId: z.string(),
             userId: z.string(),
+            collectionId: z.string(),
           })
           .optional(),
       })
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
       const { userId } = ctx;
-      const savedPosts = await ctx.db.bookmark.findMany({
+
+      const collections = await ctx.db.collection.findMany({
         where: {
           userId,
-          post: {
-            AND: [
-              {
-                hiddenBy: {
-                  none: {
-                    userId: ctx.userId,
-                  },
-                },
-              },
-              {
-                author: {
-                  mutedByUsers: {
-                    none: {
-                      mutedByUserId: ctx.userId,
+        },
+        select: {
+          id: true,
+          bookmarks: {
+            where: {
+              post: {
+                AND: [
+                  {
+                    hiddenBy: {
+                      none: {
+                        userId: ctx.userId,
+                      },
                     },
                   },
-                },
+                  {
+                    author: {
+                      mutedByUsers: {
+                        none: {
+                          mutedByUserId: ctx.userId,
+                        },
+                      },
+                    },
+                  },
+                ],
               },
-            ],
-          },
-        },
-        take: limit + 1,
-        cursor: cursor
-          ? { postId_userId: { postId: cursor.postId, userId } }
-          : undefined,
-        select: {
-          post: {
+            },
+            orderBy: {
+              createdAt: 'desc',
+            },
+            take: cursor ? undefined : limit + 1,
+            cursor: cursor
+              ? {
+                  postId_userId_collectionId: {
+                    postId: cursor.postId,
+                    userId: cursor.userId,
+                    collectionId: cursor.collectionId,
+                  },
+                }
+              : undefined,
             select: {
-              id: true,
-              text: true,
               createdAt: true,
-              media: true,
-              parentPostId: true,
-              parentPost: {
+              collectionId: true,
+              post: {
                 select: {
                   id: true,
+                  text: true,
+                  createdAt: true,
+                  media: true,
+                  parentPostId: true,
+                  parentPost: {
+                    select: {
+                      id: true,
+                      author: {
+                        select: {
+                          ...GET_USER,
+                        },
+                      },
+                    },
+                  },
+                  quoteId: true,
+                  path: true,
+                  repliesCount: true,
+                  hideLikes: true,
+                  privacy: true,
                   author: {
                     select: {
                       ...GET_USER,
                     },
                   },
+                  ...GET_LIKES,
+                  ...GET_REPOSTS,
+                  ...GET_COUNT,
+                  ...GET_BOOKMARKS,
+                  ...GET_MENTIONS,
+                  ...GET_LINK_PREVIEW,
                 },
               },
-              quoteId: true,
-              path: true,
-              repliesCount: true,
-              hideLikes: true,
-              privacy: true,
-              author: {
-                select: {
-                  ...GET_USER,
-                },
-              },
-              ...GET_LIKES,
-              ...GET_REPOSTS,
-              ...GET_COUNT,
-              ...GET_BOOKMARKS,
-              ...GET_MENTIONS,
-              ...GET_LINK_PREVIEW,
             },
           },
         },
-        orderBy: {
-          createdAt: 'desc',
-        },
       });
 
+      const allBookmarks = collections
+        .flatMap((collection) => collection.bookmarks)
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
       let nextCursor: typeof cursor | undefined;
-      if (savedPosts.length > limit) {
-        const nextItem = savedPosts[limit];
+      if (allBookmarks.length > limit) {
+        const nextItem = allBookmarks[limit];
         nextCursor = {
           postId: nextItem.post.id,
           userId,
+          collectionId: nextItem.collectionId,
         };
-        savedPosts.length = limit;
+        allBookmarks.length = limit;
       }
 
       return {
-        posts: savedPosts.map((savedPost) => ({
-          ...savedPost.post,
-          media: savedPost.post.media as PostMedia,
-          likesCount: savedPost.post._count.likes,
-          repostsCount: savedPost.post._count.reposts,
-          bookmarksCount: savedPost.post._count.bookmarks,
+        posts: allBookmarks.map((bookmark) => ({
+          ...bookmark.post,
+          media: bookmark.post.media as PostMedia,
+          likesCount: bookmark.post._count.likes,
+          repostsCount: bookmark.post._count.reposts,
+          bookmarksCount: bookmark.post._count.bookmarks,
         })),
         nextCursor,
       };

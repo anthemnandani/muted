@@ -34,6 +34,7 @@ model User {
   mutedByUsers          MutedUser[]    @relation("muted")
   senderNotifications   Notification[] @relation("sender")
   receiverNotifications Notification[] @relation("receiver")
+  collections           Collection[]
 
   @@unique([createdAt, id])
 }
@@ -49,7 +50,7 @@ model Post {
   author         User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId       String
   text           String?
-  media          Json?           
+  media          Json?
   likes          Like[]
   parentPostId   String?
   parentPost     Post?          @relation("rootPost", fields: [parentPostId], references: [id], onDelete: Cascade)
@@ -114,13 +115,36 @@ model Repost {
 }
 
 model Bookmark {
-  createdAt DateTime @default(now())
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
+  createdAt    DateTime   @default(now())
+  post         Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
 
-  @@id([postId, userId])
+  @@id([postId, userId, collectionId])
+  @@index([userId])
+  @@index([postId])
+  @@index([collectionId])
+}
+
+enum CollectionPrivacy {
+  PUBLIC
+  PRIVATE
+}
+
+model Collection {
+  id         String            @id @default(cuid())
+  name       String
+  privacy    CollectionPrivacy @default(PUBLIC)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  userId     String
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookmarks  Bookmark[]
+
+  @@unique([name, userId])
   @@index([userId])
 }
 

@@ -230,7 +230,7 @@
   }
 
   .icon-container-hover {
-    @apply flex-center relative hover:before:content-[""] hover:before:absolute hover:before:bg-primary hover:before:z-[2] hover:before:-inset-2 hover:before:rounded-full cursor-pointer focus-visible:outline-none active:scale-95;
+    @apply flex-center relative hover:before:content-[""] hover:before:absolute hover:before:bg-primary hover:before:z-[2] hover:before:-inset-2 hover:before:rounded-full hover:before:pointer-events-none cursor-pointer focus-visible:outline-none active:scale-95;
   }
 
   /* Shadcn Component Styles */

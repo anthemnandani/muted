@@ -3,11 +3,11 @@ import { usePostInteraction } from '@/hooks/usePostInteraction';
 import { ParentThreadCardProps } from '@/lib/types';
 import { format } from 'date-fns';
 import React from 'react';
-import BookmarkButton from '../buttons/BookmarkButton';
 import CopyLinkButton from '../buttons/CopyLinkButton';
 import LikeButton from '../buttons/LikeButton';
 import ReplyButton from '../buttons/ReplyButton';
 import RepostButton from '../buttons/RepostButton';
+import Bookmark from '../modals/Bookmark';
 import ThreadCardBase from './ThreadCardBase';
 
 const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
@@ -30,7 +30,7 @@ const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
               <div className='size-1 rounded-full bg-gray-3'></div>
               <p>{date}</p>
             </div>
-            <div className='flex items-center space-x-6 border-t border-b border-zinc-800 py-3 px-2 md:px-4'>
+            <div className='flex items-center space-x-6 border-t border-b border-border-dark dark:border-border-light py-3 px-2 md:px-4'>
               <div>
                 <span className='font-medium'>{repliesCount}</span>{' '}
                 <span className='text-gray-3'>
@@ -54,7 +54,7 @@ const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
             </div>
           </ThreadCardBase>
 
-          <div className='flex-around border-b border-zinc-800 py-3'>
+          <div className='flex-around border-b border-border-dark dark:border-border-light py-3'>
             <LikeButton
               likeInfo={{
                 id: postInfo.id,
@@ -92,7 +92,8 @@ const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
               isCheckingPermissions={isCheckingPermissions}
               canInteract={canInteract}
             />
-            <BookmarkButton
+
+            <Bookmark
               bookmarkInfo={{
                 id: postInfo.id,
                 bookmarksCount: postInfo.bookmarksCount ?? 0,

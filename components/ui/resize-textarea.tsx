@@ -36,7 +36,7 @@ const ResizeTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         style={{ height: 0 }}
         className={cn(
           'flex-grow resize-none overflow-hidden outline-none text-[15px] text-accent-foreground break-words placeholder:text-gray-3 w-full bg-transparent tracking-normal',
-          'focus:relative focus:z-[1] focus-visible:outline-none',
+          'focus:relative focus:z-[1] focus-visible:outline-none focus-visible:ring-transparent',
           className
         )}
         ref={inputRef}

@@ -2,11 +2,11 @@
 
 import { usePostInteraction } from '@/hooks/usePostInteraction';
 import { ThreadActionsProps } from '@/lib/types';
-import BookmarkButton from '../buttons/BookmarkButton';
 import CopyLinkButton from '../buttons/CopyLinkButton';
 import LikeButton from '../buttons/LikeButton';
 import ReplyButton from '../buttons/ReplyButton';
 import RepostButton from '../buttons/RepostButton';
+import Bookmark from '../modals/Bookmark';
 
 const ThreadActions: React.FC<ThreadActionsProps> = ({
   id,
@@ -77,7 +77,7 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
       </div>
 
       <div className='flex items-center gap-5'>
-        <BookmarkButton
+        <Bookmark
           bookmarkInfo={{
             id,
             bookmarksCount,

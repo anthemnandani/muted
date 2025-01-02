@@ -1,6 +1,6 @@
 import type { AppRouter } from '@/server/api/root';
 import { IGif } from '@giphy/js-types';
-import type { User } from '@prisma/client';
+import type { CollectionPrivacy, User } from '@prisma/client';
 import { PostPrivacy, Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
 import { LucideIcon } from 'lucide-react';
@@ -244,4 +244,16 @@ export type PostFilter =
   | 'REPOSTS'
   | 'PORTFOLIO'
   | 'REELS';
+
 export type PostView = 'LIST' | 'GRID';
+
+export type Collection = {
+  id: string;
+  name: string;
+  privacy: CollectionPrivacy;
+  bookmarks: {
+    id: string;
+    media: PostMedia | null;
+  }[];
+  postsCount: number;
+};
