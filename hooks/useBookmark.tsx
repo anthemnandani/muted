@@ -1,66 +1,35 @@
-// 'use client';
-// import { PostProps } from '@/lib/types';
-// import { api } from '@/trpc/react';
-// import { useUser } from '@clerk/nextjs';
-// import React from 'react';
-// import { toast } from 'sonner';
+'use client';
 
-// const useBookmark = ({
-//   bookmarkInfo,
-// }: {
-//   bookmarkInfo: Pick<PostProps, 'id' | 'bookmarks' | 'bookmarksCount'>;
-// }) => {
-//   const { user: loggedUser } = useUser();
+import { PostProps } from '@/lib/types';
+import { api } from '@/trpc/react';
+import { useUser } from '@clerk/nextjs';
 
-//   const { bookmarksCount: initialBookmarksCount, id, bookmarks } = bookmarkInfo;
-//   const isBookmarkedByMeInitial =
-//     bookmarks?.some((bookmark) => bookmark.userId === loggedUser?.id) || false;
+const useBookmark = ({
+  bookmarkInfo,
+}: {
+  bookmarkInfo: Pick<PostProps, 'id' | 'bookmarks' | 'bookmarksCount'>;
+}) => {
+  const trpcUtils = api.useUtils();
+  const { bookmarksCount, bookmarks } = bookmarkInfo;
+  const { user: loggedUser } = useUser();
 
-//   const [isBookmarkedByMe, setIsBookmarkedByMe] = React.useState(
-//     isBookmarkedByMeInitial
-//   );
-//   const [bookmarksCount, setBookmarksCount] = React.useState(
-//     initialBookmarksCount || 0
-//   );
+  const isBookmarkedByMe =
+    bookmarks?.some((bookmark) => bookmark.userId === loggedUser?.id) || false;
 
-//   React.useEffect(() => {
-//     setIsBookmarkedByMe(isBookmarkedByMeInitial);
-//     setBookmarksCount(initialBookmarksCount || 0);
-//   }, [isBookmarkedByMeInitial, initialBookmarksCount]);
-//   const trpcUtils = api.useUtils();
+  const { mutate: toggleBookmark, isLoading } =
+    api.collection.toggleBookmark.useMutation({
+      onSettled: async () => {
+        await trpcUtils.post.getInfinitePosts.invalidate();
+        await trpcUtils.post.getNestedPosts.invalidate({
+          id: bookmarkInfo.id as string,
+        });
+        await trpcUtils.user.postInfo.invalidate({});
+        await trpcUtils.post.getSavedPosts.invalidate();
+        await trpcUtils.collection.getUserCollections.invalidate();
+      },
+    });
 
-//   const { mutate: toggleBookmark, isLoading } =
-//     api.post.toggleBookmark.useMutation({
-//       onMutate: async () => {
-//         setIsBookmarkedByMe((prev) => !prev);
-//         setBookmarksCount((prev) => (isBookmarkedByMe ? prev - 1 : prev + 1));
+  return { toggleBookmark, isBookmarkedByMe, bookmarksCount, isLoading };
+};
 
-//         return {
-//           previousIsBookmarkedByMe: isBookmarkedByMe,
-//           previousBookmarksCount: bookmarksCount,
-//         };
-//       },
-//       onError: (error, variables, context) => {
-//         if (
-//           context?.previousIsBookmarkedByMe !== undefined &&
-//           context?.previousBookmarksCount !== undefined
-//         ) {
-//           setIsBookmarkedByMe(context.previousIsBookmarkedByMe);
-//           setBookmarksCount(context.previousBookmarksCount);
-//         }
-//         toast.error('Something went wrong!');
-//       },
-//       onSuccess: () => {
-//         toast.success(isBookmarkedByMe ? 'Saved!' : 'Unsaved!', {
-//           richColors: true,
-//         });
-//       },
-//       onSettled: async () => {
-//         await trpcUtils.invalidate();
-//       },
-//     });
-
-//   return { toggleBookmark, isBookmarkedByMe, bookmarksCount, isLoading };
-// };
-
-// export default useBookmark;
+export default useBookmark;

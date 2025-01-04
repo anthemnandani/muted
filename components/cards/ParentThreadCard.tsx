@@ -3,11 +3,11 @@ import { usePostInteraction } from '@/hooks/usePostInteraction';
 import { ParentThreadCardProps } from '@/lib/types';
 import { format } from 'date-fns';
 import React from 'react';
+import BookmarkButton from '../buttons/BookmarkButton';
 import CopyLinkButton from '../buttons/CopyLinkButton';
 import LikeButton from '../buttons/LikeButton';
 import ReplyButton from '../buttons/ReplyButton';
 import RepostButton from '../buttons/RepostButton';
-import Bookmark from '../modals/Bookmark';
 import ThreadCardBase from './ThreadCardBase';
 
 const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
@@ -93,7 +93,7 @@ const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
               canInteract={canInteract}
             />
 
-            <Bookmark
+            <BookmarkButton
               bookmarkInfo={{
                 id: postInfo.id,
                 bookmarksCount: postInfo.bookmarksCount ?? 0,

@@ -84,13 +84,56 @@ export const collectionRouter = createTRPCRouter({
     .input(
       z.object({
         postId: z.string(),
-        collectionId: z.string(),
+        collectionId: z.string().optional(),
+        isDefault: z.boolean().optional(),
       })
     )
-    .mutation(async ({ input: { postId, collectionId }, ctx }) => {
+    .mutation(async ({ input: { postId, collectionId, isDefault }, ctx }) => {
       const { userId } = ctx;
+      const targetCollectionId = await ctx.db.$transaction(async (tx) => {
+        if (isDefault) {
+          const defaultCollection = await tx.collection.findFirst({
+            where: {
+              userId,
+              isDefault: true,
+            },
+          });
 
-      const data = { postId, userId, collectionId };
+          if (!defaultCollection) {
+            throw new TRPCError({
+              code: 'NOT_FOUND',
+              message: 'Default collection not found',
+            });
+          }
+
+          return defaultCollection.id;
+        }
+
+        if (!collectionId) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Collection ID is required for non-default collections',
+          });
+        }
+
+        const collection = await tx.collection.findFirst({
+          where: {
+            id: collectionId,
+            userId,
+          },
+        });
+
+        if (!collection) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Collection not found',
+          });
+        }
+
+        return collectionId;
+      });
+
+      const data = { postId, userId, collectionId: targetCollectionId };
 
       const existingBookmark = await ctx.db.bookmark.findUnique({
         where: {
