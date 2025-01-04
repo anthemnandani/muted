@@ -1,9 +1,3 @@
-/* eslint-disable camelcase */
-// Resource: https://clerk.com/docs/users/sync-data-to-your-backend
-// Above article shows why we need webhooks i.e., to sync data to our backend
-
-// Resource: https://docs.svix.com/receiving/verifying-payloads/why
-// It's a good practice to verify webhooks. Above article shows why we should do it
 import { headers } from 'next/headers';
 import { Webhook, WebhookRequiredHeaders } from 'svix';
 
@@ -13,8 +7,6 @@ import { getFullName } from '@/lib/utils';
 import { db } from '@/server/db';
 import { NextResponse } from 'next/server';
 
-// Resource: https://clerk.com/docs/integration/webhooks#supported-events
-// Above document lists the supported events
 type EventType = 'user.created' | 'user.deleted';
 
 type Event = {
@@ -34,8 +26,6 @@ export const POST = async (request: Request) => {
     'svix-signature': header.get('svix-signature'),
   };
 
-  // Activitate Webhook in the Clerk Dashboard.
-  // After adding the endpoint, you'll see the secret on the right side.
   const wh = new Webhook(process.env.NEXT_CLERK_WEBHOOK_SECRET || '');
 
   let evnt: Event | null = null;
@@ -66,29 +56,33 @@ export const POST = async (request: Request) => {
       const fullName = getFullName(first_name, last_name);
       const email = email_addresses[0].email_address;
 
-      await db.user.upsert({
-        where: { id },
-        update: {
-          fullName,
-          username,
-          email,
-          image: image_url,
-        },
-        create: {
-          id,
-          fullName,
-          username,
-          email,
-          image: image_url,
-        },
+      await db.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: {
+            id,
+            fullName,
+            username,
+            email,
+            image: image_url,
+          },
+        });
+
+        await tx.collection.create({
+          data: {
+            name: 'All Posts',
+            userId: user.id,
+            isDefault: true,
+            privacy: 'PUBLIC',
+          },
+        });
       });
+
       return NextResponse.json(
-        { message: 'User created successfully' },
+        { message: 'User and default collection created successfully' },
         { status: 201 }
       );
     } catch (error) {
       console.log(error);
-
       return NextResponse.json(
         { message: 'Internal Server Error' },
         { status: 500 }
