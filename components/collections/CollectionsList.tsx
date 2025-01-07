@@ -33,8 +33,10 @@ const CollectionsList = ({ postId }: { postId: string }) => {
       </div>
     );
 
-  if (!collections)
-    return <div className='flex-center h-20'>No collections found</div>;
+  if (collections?.length === 0)
+    return (
+      <div className='flex-center h-20 text-gray-3'>No collections found</div>
+    );
 
   const handleCollectionClick = async (collectionId: string) => {
     try {
