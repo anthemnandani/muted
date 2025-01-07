@@ -126,7 +126,6 @@ export type ParentPostProps = {
   _count?: {
     likes: number;
     reposts: number;
-    bookmarks: number;
   };
   path: string | null;
   repliesCount: number;
@@ -254,6 +253,7 @@ export type Collection = {
   bookmarks: {
     id: string;
     media: PostMedia | null;
+    author: AuthorInfoProps;
   }[];
   postsCount: number;
 };

@@ -5,19 +5,18 @@ import NotFound from '@/app/not-found';
 import ParentReplyCard from '@/components/cards/ParentReplyCard';
 import ParentThreadCard from '@/components/cards/ParentThreadCard';
 import { Icons } from '@/components/icons';
+import NewCollection from '@/components/modals/NewCollection';
 import HeaderWrapper from '@/components/shared/HeaderWrapper';
 import TopHeader from '@/components/shared/TopHeader';
 import Wrapper from '@/components/shared/Wrapper';
+import useDevice from '@/hooks/useDevice';
 import { useSyncPostStates } from '@/hooks/useSyncPostStates';
-import useWindow from '@/hooks/useWindow';
 import { api } from '@/trpc/react';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
 const PostInfoClient = ({ id }: { id: string }) => {
-  const { isMobile } = useWindow();
-  const router = useRouter();
+  const { isMobile } = useDevice();
   const { syncPostStates } = useSyncPostStates();
 
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
@@ -67,6 +66,7 @@ const PostInfoClient = ({ id }: { id: string }) => {
           ))}
         </InfiniteScroll>
         <div className='pb-20 md:pb-10'></div>
+        <NewCollection />
       </Wrapper>
     </>
   );

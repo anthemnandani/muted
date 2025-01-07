@@ -1,0 +1,89 @@
+'use client';
+
+import useDevice from '@/hooks/useDevice';
+import { cn } from '@/lib/utils';
+import useAddCollection from '@/store/addCollection';
+import { Plus } from 'lucide-react';
+import React from 'react';
+import CollectionsList from './CollectionsList';
+
+interface CollectionsMenuProps {
+  postId: string;
+  isOpen: boolean;
+  onClose: () => void;
+  anchorRect: DOMRect | null;
+}
+
+const CollectionsMenu = ({
+  postId,
+  isOpen,
+  onClose,
+  anchorRect,
+}: CollectionsMenuProps) => {
+  const menuRef = React.useRef<HTMLDivElement>(null);
+  const { setOpenCollectionDialog, setPostId } = useAddCollection();
+  const { isMobile, isSmallMobile } = useDevice();
+
+  const handleNewCollection = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPostId(postId);
+    setOpenCollectionDialog(true);
+    onClose();
+  };
+
+  const getMenuPosition = () => {
+    if (!anchorRect) return {};
+
+    const MENU_WIDTH = isSmallMobile ? 175 : isMobile ? 200 : 250;
+    const MENU_MARGIN = 10;
+
+    return {
+      bottom: `${window.innerHeight - anchorRect.top + MENU_MARGIN}px`,
+      left: `${anchorRect.left - MENU_WIDTH / 2 + anchorRect.width / 2}px`,
+    };
+  };
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      onClose();
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      ref={menuRef}
+      className={cn(
+        'fixed z-50 bg-background dark:bg-black border border-border-dark dark:border-border-light rounded-lg shadow-lg',
+        'transform -translate-y-2',
+        "after:content-[''] after:absolute after:bottom-[-10px] after:left-0 after:w-full after:h-[10px]",
+        isSmallMobile ? 'w-[175px]' : isMobile ? 'w-[200px]' : 'w-[250px]'
+      )}
+      style={getMenuPosition()}
+    >
+      <div
+        className={cn(
+          'flex items-center justify-between w-full',
+          isMobile ? 'p-2.5' : 'p-3'
+        )}
+      >
+        <h3 className='font-medium'>Collections</h3>
+        <button
+          className='hover:bg-accent rounded-full p-1.5 transition-colors'
+          onClick={handleNewCollection}
+        >
+          <Plus className='size-5' />
+        </button>
+      </div>
+
+      <CollectionsList postId={postId} />
+    </div>
+  );
+};
+
+export default CollectionsMenu;

@@ -4,7 +4,9 @@ import useBookmark from '@/hooks/useBookmark';
 import { PostProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Bookmark } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import React from 'react';
+import CollectionsMenu from '../collections/CollectionsMenu';
 
 interface BookmarkButtonProps {
   bookmarkInfo: Pick<PostProps, 'id' | 'bookmarks' | 'bookmarksCount'>;
@@ -15,36 +17,70 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
   bookmarkInfo,
   isParentPost,
 }) => {
+  const pathname = usePathname();
+  const [showMenu, setShowMenu] = React.useState(false);
+  const { id: postId } = bookmarkInfo;
+  const timeoutRef = React.useRef<NodeJS.Timeout>();
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
+  const [anchorRect, setAnchorRect] = React.useState<DOMRect | null>(null);
   const { isBookmarkedByMe, isLoading, toggleBookmark, bookmarksCount } =
     useBookmark({
       bookmarkInfo,
     });
 
+  const isPostDetailPage = /^\/[^/]+\/post\/[^/]+$/.test(pathname);
+
+  const handleClick = () => {
+    toggleBookmark({ postId, isDefault: true });
+  };
+
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    if (isPostDetailPage) {
+      if (buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect();
+        setAnchorRect(rect);
+      }
+      setShowMenu(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setShowMenu(false);
+    }, 300);
+  };
   return (
-    <div className='icon-container-hover'>
-      <button
-        type='button'
-        disabled={isLoading}
-        title={isBookmarkedByMe ? 'Unsave' : 'Save'}
-        onClick={() =>
-          toggleBookmark({ postId: bookmarkInfo.id!, isDefault: true })
-        }
-        className='flex items-center gap-2 z-[2] relative'
-      >
-        <Bookmark
-          fill={isBookmarkedByMe ? 'currentColor' : 'transparent'}
-          className={cn(
-            'size-5 transition-colors',
-            isLoading && 'opacity-50',
-            isBookmarkedByMe && 'text-primary-blue'
-          )}
-        />
-      </button>
-      {bookmarksCount > 0 && !isParentPost && (
-        <span className='text-[13px] text-gray-4 dark:text-gray-2 ml-2'>
-          {bookmarksCount}
-        </span>
-      )}
+    <div
+      className='relative inline-block'
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div className='icon-container-hover'>
+        <button ref={buttonRef} onClick={handleClick}>
+          <Bookmark
+            fill={isBookmarkedByMe ? 'currentColor' : 'transparent'}
+            className={cn(
+              'size-5 transition-colors',
+              isLoading && 'opacity-50',
+              isBookmarkedByMe && 'text-primary-blue'
+            )}
+          />
+        </button>
+        {bookmarksCount > 0 && !isParentPost && (
+          <span className='text-[13px] text-gray-4 dark:text-gray-2 ml-2'>
+            {bookmarksCount}
+          </span>
+        )}
+      </div>
+      <CollectionsMenu
+        postId={postId}
+        isOpen={showMenu}
+        onClose={() => setShowMenu(false)}
+        anchorRect={anchorRect}
+      />
     </div>
   );
 };

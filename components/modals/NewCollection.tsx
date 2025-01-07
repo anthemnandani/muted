@@ -7,9 +7,10 @@ import { toast } from 'sonner';
 import { Icons } from '../icons';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-import { Dialog, DialogContent, DialogTrigger } from '../ui/dialog';
+import { Dialog, DialogContent } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { ResizeTextarea } from '../ui/resize-textarea';
 import { Separator } from '../ui/separator';
 import { Switch } from '../ui/switch';
 
@@ -22,6 +23,8 @@ const NewCollection = () => {
     setCollectionData,
     error,
     setError,
+    postId,
+    resetCollectionData,
   } = useAddCollection();
   const trpcUtils = api.useContext();
 
@@ -32,22 +35,27 @@ const NewCollection = () => {
       },
       onSuccess: (result) => {
         if (!result.success) {
-          setError(result.warning as string);
+          setError(result.warning || 'Something went wrong');
           return;
         }
         toast.success('Collection added successfully');
         setError('');
-        setCollectionData({ name: '', privacy: 'PUBLIC' });
+        resetCollectionData();
         setOpenCollectionDialog(false);
       },
       onSettled: async () => {
         await trpcUtils.collection.getUserCollections.invalidate();
+        await trpcUtils.post.getInfinitePosts.invalidate();
+        await trpcUtils.post.getNestedPosts.invalidate({ id: postId });
       },
       retry: false,
     });
 
   const handleCreateCollection = async () => {
-    await createCollection(collectionData);
+    await createCollection({
+      postId,
+      ...collectionData,
+    });
   };
 
   React.useEffect(() => {
@@ -55,33 +63,11 @@ const NewCollection = () => {
       setTimeout(() => {
         inputRef.current?.focus();
       }, 0);
-      setError('');
-      setCollectionData({ name: '', privacy: 'PUBLIC' });
     }
   }, [openCollectionDialog]);
 
   return (
     <Dialog open={openCollectionDialog} onOpenChange={setOpenCollectionDialog}>
-      <DialogTrigger className='w-full'>
-        <button className='flex rounded-3xl border border-zinc-600 bg-black py-2 px-4 text-sm text-white hover:bg-zinc-800 focus:outline-none focus:ring focus:ring-blue-600'>
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            fill='none'
-            viewBox='0 0 24 24'
-            strokeWidth='1.5'
-            stroke='currentColor'
-            aria-hidden='true'
-            className='mt-0.5 mr-1 h-4 w-4'
-          >
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              d='M12 4.5v15m7.5-7.5h-15'
-            ></path>
-          </svg>
-          <span className='mr-1'>New Collection</span>
-        </button>
-      </DialogTrigger>
       <DialogContent
         isSecondDialog
         className='!max-w-md select-none border-none bg-transparent shadow-none outline-none z-[1001]'
@@ -116,6 +102,29 @@ const NewCollection = () => {
                 }
               />
               {error && <p className='text-red-500 text-sm'>{error}</p>}
+              <Separator className='bg-border-dark dark:bg-border-light h-[0.5px]' />
+            </div>
+
+            <div className='flex flex-col w-full'>
+              <Label
+                htmlFor='description'
+                className='text-[15px] font-semibold'
+              >
+                Description (Optional)
+              </Label>
+              <div className='no-scrollbar h-[215px] overflow-y-auto'>
+                <ResizeTextarea
+                  className='w-full h-full border-none focus:outline-none'
+                  value={collectionData.description}
+                  maxLength={5000}
+                  onChange={(e) =>
+                    setCollectionData({
+                      ...collectionData,
+                      description: e.target.value,
+                    })
+                  }
+                />
+              </div>
               <Separator className='bg-border-dark dark:bg-border-light h-[0.5px]' />
             </div>
 

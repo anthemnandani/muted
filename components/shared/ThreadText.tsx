@@ -22,16 +22,14 @@ const ThreadText: React.FC<ThreadTextProps> = ({
   const router = useRouter();
   const MAX_LENGTH = 275;
 
-  console.log('Text Length: ', text.length);
-
   const shouldTruncate = text.length > MAX_LENGTH;
 
   const displayText =
     !isExpanded && shouldTruncate ? text.slice(0, MAX_LENGTH) + '...' : text;
 
   const handleShowMoreClick = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigation
-    e.stopPropagation(); // Stop event bubbling
+    e.preventDefault();
+    e.stopPropagation();
     setIsExpanded(!isExpanded);
   };
 

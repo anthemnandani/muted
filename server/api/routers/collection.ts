@@ -1,5 +1,6 @@
 import { PostMedia } from '@/lib/types';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
+import { GET_USER } from '@/server/constants';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
@@ -9,42 +10,51 @@ export const collectionRouter = createTRPCRouter({
       z.object({
         name: z.string().min(1, { message: 'Name is required' }),
         privacy: z.enum(['PUBLIC', 'PRIVATE']),
+        description: z.string().optional(),
+        postId: z.string(),
       })
     )
-    .mutation(async ({ input: { name, privacy }, ctx }) => {
-      const { userId } = ctx;
+    .mutation(
+      async ({ input: { name, privacy, description, postId }, ctx }) => {
+        const { userId } = ctx;
 
-      const existingCollection = await ctx.db.collection.findUnique({
-        where: {
-          name_userId: {
-            name,
-            userId,
-          },
-        },
-      });
+        const post = await ctx.db.post.findUnique({
+          where: { id: postId },
+        });
 
-      if (existingCollection) {
-        return {
-          success: false,
-          warning: 'Collection with this name already exists',
-          collection: null,
-        };
+        if (!post) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Post not found',
+          });
+        }
+
+        return await ctx.db.$transaction(async (tx) => {
+          const createdCollection = await tx.collection.create({
+            data: {
+              name,
+              privacy,
+              description,
+              userId,
+            },
+          });
+
+          await tx.bookmark.create({
+            data: {
+              postId,
+              userId,
+              collectionId: createdCollection.id,
+            },
+          });
+
+          return {
+            success: true,
+            warning: null,
+            collection: createdCollection,
+          };
+        });
       }
-
-      const createdCollection = await ctx.db.collection.create({
-        data: {
-          name,
-          privacy,
-          userId,
-        },
-      });
-
-      return {
-        success: true,
-        warning: null,
-        collection: createdCollection,
-      };
-    }),
+    ),
 
   getUserCollections: privateProcedure.query(async ({ ctx }) => {
     const { userId } = ctx;
@@ -57,11 +67,13 @@ export const collectionRouter = createTRPCRouter({
               select: {
                 id: true,
                 media: true,
+                author: {
+                  select: {
+                    ...GET_USER,
+                  },
+                },
               },
             },
-          },
-          orderBy: {
-            createdAt: 'desc',
           },
         },
       },
@@ -72,6 +84,7 @@ export const collectionRouter = createTRPCRouter({
         bookmarks: collection.bookmarks.map((bookmark) => ({
           id: bookmark.post.id,
           media: bookmark.post.media as PostMedia,
+          author: bookmark.post.author,
         })),
         postsCount: collection.bookmarks.length,
       };

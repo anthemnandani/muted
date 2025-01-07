@@ -156,6 +156,7 @@ export function isImage(fileType: string): boolean {
 }
 
 export function isVideo(fileType: string): boolean {
+  if (!fileType) return false;
   const videoTypes = ['mp4', 'mov'];
   return videoTypes.includes(fileType.toLowerCase());
 }

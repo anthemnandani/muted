@@ -265,7 +265,11 @@ export const userRouter = createTRPCRouter({
                     ...post.parentPost,
                     media: post.parentPost.media as PostMedia,
                     likesCount: post.parentPost._count.likes,
-                    bookmarksCount: post.parentPost._count.bookmarks,
+                    bookmarksCount: new Set(
+                      post.parentPost.bookmarks.map(
+                        (bookmark) => bookmark.userId
+                      )
+                    ).size,
                     repostsCount: post.parentPost._count.reposts,
                     isMuted: post.parentPost.author.mutedByUsers.length > 0,
                     isHidden: post.parentPost.hiddenBy.length > 0,
@@ -283,7 +287,9 @@ export const userRouter = createTRPCRouter({
               mentions: post.mentions,
               linkPreview: post.linkPreview,
               bookmarks: post.bookmarks,
-              bookmarksCount: post._count.bookmarks,
+              bookmarksCount: new Set(
+                post.bookmarks.map((bookmark) => bookmark.userId)
+              ).size,
               privacy: post.privacy,
               isHidden: post.hiddenBy.length > 0,
               isMuted: post.author.mutedByUsers.length > 0,
@@ -459,7 +465,9 @@ export const userRouter = createTRPCRouter({
                 ...post.parentPost,
                 media: post.parentPost.media as PostMedia,
                 likesCount: post.parentPost._count.likes,
-                bookmarksCount: post.parentPost._count.bookmarks,
+                bookmarksCount: new Set(
+                  post.parentPost.bookmarks.map((bookmark) => bookmark.userId)
+                ).size,
                 repostsCount: post.parentPost._count.reposts,
                 isMuted: post.parentPost.author.mutedByUsers.length > 0,
                 isHidden: post.parentPost.hiddenBy.length > 0,
@@ -471,7 +479,9 @@ export const userRouter = createTRPCRouter({
           reposts: post.reposts,
           repostsCount: post._count.reposts,
           bookmarks: post.bookmarks,
-          bookmarksCount: post._count.bookmarks,
+          bookmarksCount: new Set(
+            post.bookmarks.map((bookmark) => bookmark.userId)
+          ).size,
           mentions: post.mentions,
           quoteId: post.quoteId,
           hideLikes: post.hideLikes,
@@ -579,7 +589,9 @@ export const userRouter = createTRPCRouter({
           reposts: repost.post.reposts,
           mentions: repost.post.mentions,
           bookmarks: repost.post.bookmarks,
-          bookmarksCount: repost.post._count.bookmarks,
+          bookmarksCount: new Set(
+            repost.post.bookmarks.map((bookmark) => bookmark.userId)
+          ).size,
           quoteId: repost.post.quoteId,
           path: repost.post.path,
           repliesCount: repost.post.repliesCount,

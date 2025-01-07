@@ -26,7 +26,6 @@ export const GET_COUNT = {
     select: {
       likes: true,
       reposts: true,
-      bookmarks: true,
     },
   },
 };
