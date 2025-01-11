@@ -2,6 +2,7 @@
 
 import NotFound from '@/app/not-found';
 import CollectionCard from '@/components/collections/CollectionCard';
+import NewCollection from '@/components/modals/NewCollection';
 import Loader from '@/components/shared/Loader';
 import { api } from '@/trpc/react';
 
@@ -23,7 +24,11 @@ const BookmarksClient = ({ username }: { username: string }) => {
     <div className='px-2 sm:px-4 pt-4 pb-20 md:pb-10'>
       <div className='grid grid-cols-3 gap-2 sm:gap-3 md:gap-4'>
         {collections.map((collection) => (
-          <CollectionCard key={collection.id} collection={collection} />
+          <CollectionCard
+            key={collection.id}
+            collection={collection}
+            username={username}
+          />
         ))}
       </div>
       {collections.length === 0 && (
@@ -31,6 +36,7 @@ const BookmarksClient = ({ username }: { username: string }) => {
           <p>No collections found</p>
         </div>
       )}
+      <NewCollection />
     </div>
   );
 };

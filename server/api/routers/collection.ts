@@ -313,4 +313,33 @@ export const collectionRouter = createTRPCRouter({
 
       return { success: true };
     }),
+
+  editCollection: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        description: z.string(),
+        privacy: z.enum(['PUBLIC', 'PRIVATE']),
+      })
+    )
+    .mutation(async ({ input: { id, name, description, privacy }, ctx }) => {
+      const { userId } = ctx;
+      const collection = await ctx.db.collection.findUnique({
+        where: { id, userId },
+      });
+
+      if (!collection) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Collection not found',
+        });
+      }
+
+      await ctx.db.collection.update({
+        where: { id },
+        data: { name, description, privacy, createdAt: collection.createdAt },
+      });
+      return { success: true };
+    }),
 });

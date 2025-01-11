@@ -1,48 +1,23 @@
 'use client';
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Collection } from '@/lib/types';
 import { isImage, isVideo } from '@/lib/utils';
-import { api } from '@/trpc/react';
-import { MoreHorizontal } from 'lucide-react';
+import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 import { Card, CardFooter, CardHeader } from '../ui/card';
+import CollectionActions from './CollectionActions';
 import DefaultCollectionCover from './DefaultCollectionCover';
 import TextPostCover from './TextPostCover';
 
 interface CollectionCardProps {
   collection: Collection;
+  username: string;
 }
 
-const CollectionCard = ({ collection }: CollectionCardProps) => {
-  const router = useRouter();
-  const utils = api.useUtils();
-
-  const { mutate: deleteCollection } =
-    api.collection.deleteCollection.useMutation({
-      onSuccess: () => {
-        utils.collection.getUserCollections.invalidate();
-        toast.success('Collection deleted');
-      },
-      onError: () => toast.error('Failed to delete collection'),
-    });
-
-  const handleEdit = () => {
-    router.push(`/collections/${collection.id}/edit`);
-  };
-
-  const handleDelete = () => {
-    deleteCollection({ id: collection.id });
-  };
-
+const CollectionCard = ({ collection, username }: CollectionCardProps) => {
+  const { user } = useUser();
+  const isOwner = username === user?.username;
   const renderCover = () => {
     const firstBookmark = collection.bookmarks[0];
 
@@ -117,23 +92,8 @@ const CollectionCard = ({ collection }: CollectionCardProps) => {
             </span>
           </div>
 
-          {!collection.isDefault && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className='hover:bg-accent rounded-full p-0.5 sm:p-1'>
-                  <MoreHorizontal className='h-3 w-3 sm:h-4 sm:w-4' />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align='end' className='w-28 sm:w-32'>
-                <DropdownMenuItem onClick={handleEdit}>Edit</DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={handleDelete}
-                  className='text-destructive focus:text-destructive'
-                >
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          {!collection.isDefault && isOwner && (
+            <CollectionActions collection={collection} />
           )}
         </div>
       </CardFooter>

@@ -24,6 +24,7 @@ const NewCollection = () => {
     error,
     setError,
     postId,
+    isEditing,
     resetCollectionData,
   } = useAddCollection();
   const trpcUtils = api.useContext();
@@ -44,18 +45,43 @@ const NewCollection = () => {
         setOpenCollectionDialog(false);
       },
       onSettled: async () => {
-        await trpcUtils.collection.getUserCollections.invalidate();
-        await trpcUtils.post.getInfinitePosts.invalidate();
-        await trpcUtils.post.getNestedPosts.invalidate({ id: postId });
+        await trpcUtils.invalidate();
+      },
+      retry: false,
+    });
+
+  const { mutateAsync: editCollection, isLoading: isEditingLoading } =
+    api.collection.editCollection.useMutation({
+      onMutate: () => {
+        setError('');
+      },
+      onSuccess: (result) => {
+        if (!result.success) {
+          setError('Something went wrong');
+          return;
+        }
+        toast.success('Success');
+        setError('');
+        setOpenCollectionDialog(false);
+      },
+      onSettled: async () => {
+        await trpcUtils.invalidate();
       },
       retry: false,
     });
 
   const handleCreateCollection = async () => {
-    await createCollection({
-      postId,
-      ...collectionData,
-    });
+    if (isEditing) {
+      await editCollection({
+        id: collectionData.id!,
+        ...collectionData,
+      });
+    } else {
+      await createCollection({
+        postId,
+        ...collectionData,
+      });
+    }
   };
 
   React.useEffect(() => {
@@ -81,7 +107,7 @@ const NewCollection = () => {
               <Icons.close className='size-6 hover:cursor-pointer' />
             </button>
             <h2 className='pb-2 text-xl font-medium leading-6'>
-              New Collection
+              {isEditing ? 'Edit Collection' : 'New Collection'}
             </h2>
           </div>
           <div className='pt-4 flex flex-col gap-4'>
@@ -115,7 +141,7 @@ const NewCollection = () => {
               <div className='no-scrollbar h-[215px] overflow-y-auto'>
                 <ResizeTextarea
                   className='w-full h-full border-none focus:outline-none'
-                  value={collectionData.description}
+                  value={collectionData.description || ''}
                   maxLength={5000}
                   onChange={(e) =>
                     setCollectionData({
@@ -149,14 +175,18 @@ const NewCollection = () => {
             <Button
               className='w-full h-[52px] flex-center px-4 mt-4 rounded-xl bg-foreground hover:bg-foreground select-none text-white dark:text-black dark:hover:bg-slate-50 disabled:cursor-not-allowed disabled:pointer-events-auto disabled:opacity-100'
               onClick={handleCreateCollection}
-              disabled={isLoading || collectionData.name.length === 0}
+              disabled={
+                isLoading ||
+                isEditingLoading ||
+                collectionData.name.length === 0
+              }
             >
-              {isLoading ? (
+              {isLoading || isEditingLoading ? (
                 <Icons.loading className='size-8' />
               ) : (
-                <span>Add</span>
+                <span>{isEditing ? 'Edit' : 'Add'}</span>
               )}
-              <span className='sr-only'>Add</span>
+              <span className='sr-only'>{isEditing ? 'Edit' : 'Add'}</span>
             </Button>
           </div>
         </Card>
