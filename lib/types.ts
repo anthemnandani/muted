@@ -178,7 +178,7 @@ export interface ThreadActionsProps {
   repliesCount: number;
   reposts: { userId: string; postId: string }[];
   repostsCount: number;
-  bookmarks: { userId: string }[];
+  bookmarks: { userId: string; collection: { isDefault: boolean } }[];
   bookmarksCount: number;
   media: PostMedia;
   linkPreview: LinkPreview | null;
