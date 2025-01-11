@@ -1,5 +1,6 @@
 'use client';
 
+import useBookmark from '@/hooks/useBookmark';
 import useDevice from '@/hooks/useDevice';
 import { cn } from '@/lib/utils';
 import { api } from '@/trpc/react';
@@ -10,20 +11,10 @@ import CollectionCover from './CollectionCover';
 
 const CollectionsList = ({ postId }: { postId: string }) => {
   const { isMobile } = useDevice();
-  const utils = api.useContext();
+  const { toggleBookmark } = useBookmark();
   const { data: collections, isLoading } =
     api.collection.getUserCollections.useQuery(undefined, {
       select: (data) => data.filter((c) => !c.isDefault),
-    });
-
-  const { mutateAsync: toggleBookmark } =
-    api.collection.toggleBookmark.useMutation({
-      onSettled: async () => {
-        await utils.collection.getUserCollections.invalidate();
-        await utils.post.getInfinitePosts.invalidate();
-        await utils.post.getNestedPosts.invalidate({ id: postId });
-      },
-      retry: false,
     });
 
   if (isLoading)

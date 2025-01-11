@@ -3,33 +3,45 @@
 import { PostProps } from '@/lib/types';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
+import { useMemo } from 'react';
 
-const useBookmark = ({
-  bookmarkInfo,
-}: {
-  bookmarkInfo: Pick<PostProps, 'id' | 'bookmarks' | 'bookmarksCount'>;
-}) => {
+const useBookmark = (
+  bookmarkInfo?: Pick<PostProps, 'id' | 'bookmarks' | 'bookmarksCount'>
+) => {
   const trpcUtils = api.useUtils();
-  const { bookmarksCount, bookmarks } = bookmarkInfo;
+  const { bookmarksCount, bookmarks } = bookmarkInfo || {};
   const { user: loggedUser } = useUser();
 
-  const isBookmarkedByMe =
-    bookmarks?.some((bookmark) => bookmark.userId === loggedUser?.id) || false;
+  const isBookmarkedByMe = useMemo(() => {
+    return (
+      bookmarks?.some((bookmark) => bookmark.userId === loggedUser?.id) || false
+    );
+  }, [bookmarks, loggedUser?.id]);
 
-  const { mutate: toggleBookmark, isLoading } =
+  const hasNonDefaultBookmarks = useMemo(() => {
+    return (
+      bookmarks?.some(
+        (bookmark) =>
+          bookmark.userId === loggedUser?.id && !bookmark?.collection?.isDefault
+      ) || false
+    );
+  }, [bookmarks, loggedUser?.id]);
+
+  const { mutateAsync: toggleBookmark, isLoading } =
     api.collection.toggleBookmark.useMutation({
       onSettled: async () => {
-        await trpcUtils.post.getInfinitePosts.invalidate();
-        await trpcUtils.post.getNestedPosts.invalidate({
-          id: bookmarkInfo.id as string,
-        });
-        await trpcUtils.user.postInfo.invalidate({});
-        await trpcUtils.post.getSavedPosts.invalidate();
-        await trpcUtils.collection.getUserCollections.invalidate();
+        await trpcUtils.invalidate();
       },
+      retry: false,
     });
 
-  return { toggleBookmark, isBookmarkedByMe, bookmarksCount, isLoading };
+  return {
+    toggleBookmark,
+    isBookmarkedByMe,
+    bookmarksCount,
+    hasNonDefaultBookmarks,
+    isLoading,
+  };
 };
 
 export default useBookmark;

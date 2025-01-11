@@ -51,6 +51,11 @@ export const GET_BOOKMARKS = {
   bookmarks: {
     select: {
       userId: true,
+      collection: {
+        select: {
+          isDefault: true,
+        },
+      },
     },
   },
 };

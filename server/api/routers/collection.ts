@@ -29,6 +29,18 @@ export const collectionRouter = createTRPCRouter({
           });
         }
 
+        // Get default collection
+        const defaultCollection = await ctx.db.collection.findFirst({
+          where: { userId, isDefault: true },
+        });
+
+        if (!defaultCollection) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Default collection not found',
+          });
+        }
+
         return await ctx.db.$transaction(async (tx) => {
           const createdCollection = await tx.collection.create({
             data: {
@@ -39,12 +51,30 @@ export const collectionRouter = createTRPCRouter({
             },
           });
 
+          // Create bookmark in new collection
           await tx.bookmark.create({
             data: {
               postId,
               userId,
               collectionId: createdCollection.id,
             },
+          });
+
+          // Add to default collection using upsert to prevent duplicates
+          await tx.bookmark.upsert({
+            where: {
+              postId_userId_collectionId: {
+                postId,
+                userId,
+                collectionId: defaultCollection.id,
+              },
+            },
+            create: {
+              postId,
+              userId,
+              collectionId: defaultCollection.id,
+            },
+            update: {}, // Do nothing if exists
           });
 
           return {
@@ -99,137 +129,133 @@ export const collectionRouter = createTRPCRouter({
         postId: z.string(),
         collectionId: z.string().optional(),
         isDefault: z.boolean().optional(),
+        removeFromAll: z.boolean().optional(),
       })
     )
-    .mutation(async ({ input: { postId, collectionId, isDefault }, ctx }) => {
-      const { userId } = ctx;
-      const targetCollectionId = await ctx.db.$transaction(async (tx) => {
+    .mutation(
+      async ({
+        input: { postId, collectionId, isDefault, removeFromAll },
+        ctx,
+      }) => {
+        const { userId } = ctx;
+
+        // Get default collection
+        const defaultCollection = await ctx.db.collection.findFirst({
+          where: { userId, isDefault: true },
+        });
+
+        if (!defaultCollection) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Default collection not found',
+          });
+        }
+
+        // Case 1: Remove from all collections
+        if (removeFromAll) {
+          await ctx.db.bookmark.deleteMany({
+            where: { postId, userId },
+          });
+          return { addedBookmark: false };
+        }
+
+        // Case 2: Default collection operation (bookmark button click)
         if (isDefault) {
-          const defaultCollection = await tx.collection.findFirst({
+          const existingBookmark = await ctx.db.bookmark.findUnique({
             where: {
-              userId,
-              isDefault: true,
+              postId_userId_collectionId: {
+                postId,
+                userId,
+                collectionId: defaultCollection.id,
+              },
             },
           });
 
-          if (!defaultCollection) {
-            throw new TRPCError({
-              code: 'NOT_FOUND',
-              message: 'Default collection not found',
+          if (!existingBookmark) {
+            // Add to default collection
+            await ctx.db.bookmark.create({
+              data: {
+                postId,
+                userId,
+                collectionId: defaultCollection.id,
+              },
             });
+            return { addedBookmark: true };
+          } else {
+            // Remove from default collection
+            await ctx.db.bookmark.delete({
+              where: {
+                postId_userId_collectionId: {
+                  postId,
+                  userId,
+                  collectionId: defaultCollection.id,
+                },
+              },
+            });
+            return { addedBookmark: false };
           }
-
-          return defaultCollection.id;
         }
 
+        // Case 3: Non-default collection operation
         if (!collectionId) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
-            message: 'Collection ID is required for non-default collections',
+            message: 'Collection ID is required',
           });
         }
 
-        const collection = await tx.collection.findFirst({
+        const existingBookmark = await ctx.db.bookmark.findUnique({
           where: {
-            id: collectionId,
-            userId,
+            postId_userId_collectionId: {
+              postId,
+              userId,
+              collectionId,
+            },
           },
         });
 
-        if (!collection) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'Collection not found',
-          });
-        }
-
-        return collectionId;
-      });
-
-      const data = { postId, userId, collectionId: targetCollectionId };
-
-      const existingBookmark = await ctx.db.bookmark.findUnique({
-        where: {
-          postId_userId_collectionId: data,
-        },
-      });
-
-      if (!existingBookmark) {
-        const transactionResult = await ctx.db.$transaction(async (prisma) => {
-          const createdBookmark = await prisma.bookmark.create({
-            data,
-            select: {
-              post: {
-                select: {
-                  text: true,
-                  author: {
-                    select: {
-                      id: true,
-                    },
-                  },
-                },
-              },
-            },
-          });
-
-          const createdNotification = await prisma.notification.create({
-            data: {
-              type: 'BOOKMARK',
-              senderUserId: userId,
-              receiverUserId: createdBookmark.post.author.id,
-              postId,
-              message: createdBookmark.post.text || '',
-            },
-          });
-
-          return {
-            createdBookmark,
-            createdNotification,
-          };
-        });
-
-        if (!transactionResult) {
-          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
-        }
-
-        return { addedBookmark: true };
-      } else {
-        const transactionResult = await ctx.db.$transaction(async (prisma) => {
-          const removeBookmark = await prisma.bookmark.delete({
-            where: {
-              postId_userId_collectionId: data,
-            },
-          });
-
-          const notification = await prisma.notification.findFirst({
-            where: {
-              senderUserId: userId,
-              postId,
-              type: 'BOOKMARK',
-            },
-            select: {
-              id: true,
-            },
-          });
-
-          if (notification) {
-            await prisma.notification.delete({
-              where: {
-                id: notification.id,
+        if (!existingBookmark) {
+          await ctx.db.$transaction(async (tx) => {
+            // Add to selected collection
+            await tx.bookmark.create({
+              data: {
+                postId,
+                userId,
+                collectionId,
               },
             });
-          }
 
-          return {
-            removeBookmark,
-          };
-        });
-
-        if (!transactionResult) {
-          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+            // Add to default collection if not already there
+            await tx.bookmark.upsert({
+              where: {
+                postId_userId_collectionId: {
+                  postId,
+                  userId,
+                  collectionId: defaultCollection.id,
+                },
+              },
+              create: {
+                postId,
+                userId,
+                collectionId: defaultCollection.id,
+              },
+              update: {}, // Do nothing if exists
+            });
+          });
+          return { addedBookmark: true };
+        } else {
+          // Remove from selected collection only
+          await ctx.db.bookmark.delete({
+            where: {
+              postId_userId_collectionId: {
+                postId,
+                userId,
+                collectionId,
+              },
+            },
+          });
+          return { addedBookmark: false };
         }
-
-        return { addedBookmark: false };
       }
-    }),
+    ),
 });

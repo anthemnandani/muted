@@ -3,10 +3,13 @@
 import useBookmark from '@/hooks/useBookmark';
 import { PostProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import useDeleteBookmark from '@/store/deleteBookmark';
 import { Bookmark } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import React from 'react';
+import { toast } from 'sonner';
 import CollectionsMenu from '../collections/CollectionsMenu';
+import DeleteBookmark from '../modals/DeleteBookmark';
 
 interface BookmarkButtonProps {
   bookmarkInfo: Pick<PostProps, 'id' | 'bookmarks' | 'bookmarksCount'>;
@@ -19,19 +22,32 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
 }) => {
   const pathname = usePathname();
   const [showMenu, setShowMenu] = React.useState(false);
+  const { setOpenDeleteDialog } = useDeleteBookmark();
   const { id: postId } = bookmarkInfo;
   const timeoutRef = React.useRef<NodeJS.Timeout>();
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const [anchorRect, setAnchorRect] = React.useState<DOMRect | null>(null);
-  const { isBookmarkedByMe, isLoading, toggleBookmark, bookmarksCount } =
-    useBookmark({
-      bookmarkInfo,
-    });
+  const {
+    isBookmarkedByMe,
+    isLoading,
+    toggleBookmark,
+    bookmarksCount,
+    hasNonDefaultBookmarks,
+  } = useBookmark(bookmarkInfo);
 
   const isPostDetailPage = /^\/[^/]+\/post\/[^/]+$/.test(pathname);
 
-  const handleClick = () => {
-    toggleBookmark({ postId, isDefault: true });
+  const handleClick = async () => {
+    try {
+      if (hasNonDefaultBookmarks) {
+        setShowMenu(false);
+        setOpenDeleteDialog(postId);
+      } else {
+        await toggleBookmark({ postId, isDefault: true });
+      }
+    } catch (error) {
+      toast.error('Error: Something went wrong!');
+    }
   };
 
   const handleMouseEnter = () => {
@@ -69,7 +85,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
             )}
           />
         </button>
-        {bookmarksCount > 0 && !isParentPost && (
+        {bookmarksCount && bookmarksCount > 0 && !isParentPost && (
           <span className='text-[13px] text-gray-4 dark:text-gray-2 ml-2'>
             {bookmarksCount}
           </span>
@@ -81,6 +97,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
         onClose={() => setShowMenu(false)}
         anchorRect={anchorRect}
       />
+      <DeleteBookmark postId={postId} />
     </div>
   );
 };

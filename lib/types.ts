@@ -102,7 +102,7 @@ export type ParentPostProps = {
   likes: {
     userId: string;
   }[];
-  bookmarks: { userId: string }[];
+  bookmarks: { userId: string; collection: { isDefault: boolean } }[];
   quoteId: string | null;
   reposts: { userId: string; postId: string }[];
   parentPostId: string | null;

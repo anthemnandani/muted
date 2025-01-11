@@ -40,7 +40,8 @@ const CollectionCover = ({
 
   const renderContent = () => (
     <div className='flex-between w-full mb-3'>
-      <div
+      <button
+        type='button'
         className={cn(
           'flex items-center gap-3 w-full transition-opacity duration-200',
           isSaving && 'opacity-50'
@@ -103,7 +104,7 @@ const CollectionCover = ({
         <h2 className='overflow-hidden text-ellipsis whitespace-nowrap text-sm font-semibold'>
           {name}
         </h2>
-      </div>
+      </button>
 
       {isBookmarked && <Check className='size-4 text-primary-blue' />}
     </div>
