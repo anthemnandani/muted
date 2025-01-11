@@ -8,14 +8,19 @@ import { toast } from 'sonner';
 import { Icons } from '../icons';
 import { ScrollArea } from '../ui/scroll-area';
 import CollectionCover from './CollectionCover';
+import { useUser } from '@clerk/nextjs';
 
 const CollectionsList = ({ postId }: { postId: string }) => {
   const { isMobile } = useDevice();
+  const { user } = useUser();
   const { toggleBookmark } = useBookmark();
   const { data: collections, isLoading } =
-    api.collection.getUserCollections.useQuery(undefined, {
-      select: (data) => data.filter((c) => !c.isDefault),
-    });
+    api.collection.getUserCollections.useQuery(
+      { username: user?.username || '' },
+      {
+        select: (data) => data.filter((c) => !c.isDefault),
+      }
+    );
 
   if (isLoading)
     return (

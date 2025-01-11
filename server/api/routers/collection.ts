@@ -86,42 +86,77 @@ export const collectionRouter = createTRPCRouter({
       }
     ),
 
-  getUserCollections: privateProcedure.query(async ({ ctx }) => {
-    const { userId } = ctx;
-    const collections = await ctx.db.collection.findMany({
-      where: { userId },
-      include: {
-        bookmarks: {
-          include: {
-            post: {
-              select: {
-                id: true,
-                media: true,
-                author: {
-                  select: {
-                    ...GET_USER,
+  getUserCollections: privateProcedure
+    .input(
+      z.object({
+        sortBy: z.enum(['latest', 'oldest']).default('latest'),
+        username: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { sortBy, username } = input;
+      const orderBy = sortBy === 'latest' ? 'desc' : 'asc';
+
+      const user = await ctx.db.user.findUnique({
+        where: { username },
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'User not found',
+        });
+      }
+
+      const isOwner = ctx.userId === user.id;
+
+      const collections = await ctx.db.collection.findMany({
+        where: {
+          userId: user.id,
+          ...(!isOwner && { privacy: 'PUBLIC' }),
+        },
+        include: {
+          bookmarks: {
+            include: {
+              post: {
+                select: {
+                  id: true,
+                  media: true,
+                  text: true,
+                  author: {
+                    select: {
+                      ...GET_USER,
+                    },
                   },
                 },
               },
             },
+            orderBy: {
+              createdAt: orderBy,
+            },
           },
         },
-      },
-    });
-    const formattedCollections = collections.map((collection) => {
-      return {
-        ...collection,
-        bookmarks: collection.bookmarks.map((bookmark) => ({
-          id: bookmark.post.id,
-          media: bookmark.post.media as PostMedia,
-          author: bookmark.post.author,
-        })),
-        postsCount: collection.bookmarks.length,
-      };
-    });
+      });
 
-    return formattedCollections;
-  }),
+      const formattedCollections = collections.map((collection) => {
+        return {
+          id: collection.id,
+          name: collection.name,
+          description: collection.description,
+          privacy: collection.privacy,
+          isDefault: collection.isDefault,
+          bookmarks: collection.bookmarks.map((bookmark) => ({
+            id: bookmark.post.id,
+            media: bookmark.post.media as PostMedia,
+            author: bookmark.post.author,
+            text: bookmark.post.text,
+          })),
+          postsCount: collection.bookmarks.length,
+        };
+      });
+
+      return formattedCollections;
+    }),
 
   toggleBookmark: privateProcedure
     .input(
@@ -258,4 +293,24 @@ export const collectionRouter = createTRPCRouter({
         }
       }
     ),
+
+  deleteCollection: privateProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input: { id }, ctx }) => {
+      const { userId } = ctx;
+      const collection = await ctx.db.collection.findUnique({
+        where: { id, userId },
+      });
+
+      if (!collection) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Collection not found',
+        });
+      }
+
+      await ctx.db.collection.delete({ where: { id } });
+
+      return { success: true };
+    }),
 });

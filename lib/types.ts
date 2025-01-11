@@ -249,11 +249,14 @@ export type PostView = 'LIST' | 'GRID';
 export type Collection = {
   id: string;
   name: string;
+  description: string | null;
   privacy: CollectionPrivacy;
   bookmarks: {
     id: string;
     media: PostMedia | null;
+    text: string | null;
     author: AuthorInfoProps;
   }[];
   postsCount: number;
+  isDefault: boolean;
 };
