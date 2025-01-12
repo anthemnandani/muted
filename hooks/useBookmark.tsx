@@ -38,7 +38,7 @@ const useBookmark = (
   return {
     toggleBookmark,
     isBookmarkedByMe,
-    bookmarksCount,
+    bookmarksCount: bookmarksCount ?? 0,
     hasNonDefaultBookmarks,
     isLoading,
   };

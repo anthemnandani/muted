@@ -85,7 +85,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
             )}
           />
         </button>
-        {bookmarksCount && bookmarksCount > 0 && !isParentPost && (
+        {bookmarksCount > 0 && !isParentPost && (
           <span className='text-[13px] text-gray-4 dark:text-gray-2 ml-2'>
             {bookmarksCount}
           </span>
