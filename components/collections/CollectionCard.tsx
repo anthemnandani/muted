@@ -1,15 +1,15 @@
 'use client';
 
 import { Collection } from '@/lib/types';
-import { isImage, isVideo, parseUsernamePath } from '@/lib/utils';
+import { isImage, isVideo } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Card, CardFooter, CardHeader } from '../ui/card';
 import CollectionActions from './CollectionActions';
 import DefaultCollectionCover from './DefaultCollectionCover';
 import TextPostCover from './TextPostCover';
-import { usePathname } from 'next/navigation';
 
 interface CollectionCardProps {
   collection: Collection;
@@ -22,7 +22,9 @@ const CollectionCard = ({ collection, username }: CollectionCardProps) => {
 
   const isOwner = username === user?.username;
   const renderCover = () => {
-    const firstBookmark = collection.bookmarks[0];
+    const firstBookmark = collection.isDefault
+      ? collection.bookmarks[collection.bookmarks.length - 1]
+      : collection.bookmarks[0];
 
     if (!firstBookmark) {
       return (
