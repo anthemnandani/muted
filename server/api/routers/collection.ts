@@ -1,6 +1,14 @@
 import { PostMedia } from '@/lib/types';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
-import { GET_USER } from '@/server/constants';
+import {
+  GET_BOOKMARKS,
+  GET_COUNT,
+  GET_LIKES,
+  GET_LINK_PREVIEW,
+  GET_MENTIONS,
+  GET_REPOSTS,
+  GET_USER,
+} from '@/server/constants';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
@@ -341,5 +349,209 @@ export const collectionRouter = createTRPCRouter({
         data: { name, description, privacy, createdAt: collection.createdAt },
       });
       return { success: true };
+    }),
+
+  getCollection: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        limit: z.number().optional().default(20),
+        cursor: z
+          .object({
+            id: z.string(),
+            createdAt: z.date(),
+          })
+          .optional(),
+      })
+    )
+    .query(async ({ input: { id, limit, cursor }, ctx }) => {
+      const collection = await ctx.db.collection.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          privacy: true,
+          isDefault: true,
+          bookmarks: {
+            take: limit + 1,
+            cursor: cursor
+              ? {
+                  postId_userId_collectionId: {
+                    postId: cursor.id,
+                    userId: ctx.userId,
+                    collectionId: id,
+                  },
+                }
+              : undefined,
+            select: {
+              createdAt: true,
+              post: {
+                select: {
+                  id: true,
+                  text: true,
+                  createdAt: true,
+                  media: true,
+                  parentPostId: true,
+                  parentPost: {
+                    select: {
+                      id: true,
+                      author: {
+                        select: {
+                          ...GET_USER,
+                        },
+                      },
+                    },
+                  },
+                  quoteId: true,
+                  path: true,
+                  repliesCount: true,
+                  hideLikes: true,
+                  privacy: true,
+                  author: {
+                    select: {
+                      ...GET_USER,
+                    },
+                  },
+                  ...GET_LIKES,
+                  ...GET_REPOSTS,
+                  ...GET_COUNT,
+                  ...GET_BOOKMARKS,
+                  ...GET_MENTIONS,
+                  ...GET_LINK_PREVIEW,
+                  reposts: {
+                    select: {
+                      createdAt: true,
+                      user: {
+                        select: {
+                          ...GET_USER,
+                        },
+                      },
+                      post: {
+                        select: {
+                          id: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
+        },
+      });
+
+      if (!collection) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Collection not found',
+        });
+      }
+
+      const repostsMap = new Map();
+      const flattenedPosts = collection.bookmarks.flatMap((bookmark) => {
+        const post = bookmark.post;
+        if (post.parentPostId === null) {
+          const postItem = {
+            ...post,
+            media: post.media as PostMedia,
+            reposts: post.reposts.map((repost) => ({
+              userId: repost.user.id,
+              postId: repost.post.id,
+            })),
+            likesCount: post._count.likes,
+            repostsCount: post._count.reposts,
+            bookmarksCount: new Set(
+              post.bookmarks.map((bookmark) => bookmark.userId)
+            ).size,
+            type: 'post' as const,
+          };
+
+          const repostItems = post.reposts.map((repost) => ({
+            ...post,
+            media: post.media as PostMedia,
+            reposts: post.reposts.map((repost) => ({
+              userId: repost.user.id,
+              postId: repost.post.id,
+            })),
+            likesCount: post._count.likes,
+            repostsCount: post._count.reposts,
+            bookmarksCount: new Set(
+              post.bookmarks.map((bookmark) => bookmark.userId)
+            ).size,
+            repostedBy: repost.user,
+            repostedAt: repost.createdAt,
+            type: 'repost' as const,
+          }));
+
+          repostItems.forEach((item) =>
+            repostsMap.set(`${item.repostedBy.id}-${post.id}`, item)
+          );
+
+          return [postItem, ...repostItems];
+        } else {
+          return post.reposts.map((repost) => {
+            const repostItem = {
+              ...post,
+              media: post.media as PostMedia,
+              reposts: post.reposts.map((repost) => ({
+                userId: repost.user.id,
+                postId: repost.post.id,
+              })),
+              likesCount: post._count.likes,
+              repostsCount: post._count.reposts,
+              bookmarksCount: new Set(
+                post.bookmarks.map((bookmark) => bookmark.userId)
+              ).size,
+              repostedBy: repost.user,
+              repostedAt: repost.createdAt,
+              type: 'repost' as const,
+            };
+            repostsMap.set(`${repost.user.id}-${post.id}`, repostItem);
+            return repostItem;
+          });
+        }
+      });
+
+      const uniqueFlattenedPosts = flattenedPosts.filter((item) => {
+        if (item.type === 'repost') {
+          const key = `${item.repostedBy.id}-${item.id}`;
+          return repostsMap.get(key) === item;
+        }
+        return true;
+      });
+
+      uniqueFlattenedPosts.sort((a, b) => {
+        const aTime =
+          a.type === 'repost' ? a.repostedAt.getTime() : a.createdAt.getTime();
+        const bTime =
+          b.type === 'repost' ? b.repostedAt.getTime() : b.createdAt.getTime();
+        return bTime - aTime;
+      });
+
+      let nextCursor: typeof cursor | undefined;
+      if (uniqueFlattenedPosts.length > limit) {
+        const nextItem = uniqueFlattenedPosts[limit];
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
+        };
+        uniqueFlattenedPosts.length = limit;
+      }
+
+      return {
+        collection: {
+          id: collection.id,
+          name: collection.name,
+          description: collection.description,
+          privacy: collection.privacy,
+          isDefault: collection.isDefault,
+        },
+        posts: uniqueFlattenedPosts,
+        nextCursor,
+      };
     }),
 });

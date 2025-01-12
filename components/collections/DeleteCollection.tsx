@@ -15,6 +15,7 @@ import {
   DialogHeader,
   DialogTrigger,
 } from '../ui/dialog';
+import { DropdownMenuItem } from '../ui/dropdown-menu';
 
 const DeleteCollection = ({ collectionId }: { collectionId: string }) => {
   const { openDeleteDialog, setOpenDeleteDialog } = useDeleteCollection();
@@ -49,13 +50,13 @@ const DeleteCollection = ({ collectionId }: { collectionId: string }) => {
       onOpenChange={(open) => setOpenDeleteDialog(open ? collectionId : null)}
     >
       <DialogTrigger asChild className='w-full'>
-        <MenuItem
-          icon={Icons.delete}
-          label='Delete'
-          className='flex-between py-2 px-4 text-primary-red focus:text-primary-red'
+        <DropdownMenuItem
           onSelect={(e) => e.preventDefault()}
-          isActionMenuItem
-        />
+          className='px-4 cursor-pointer flex items-center gap-2 text-primary-red focus:text-primary-red'
+        >
+          <Icons.delete className='size-4' />
+          <span className='text-sm'>Delete</span>
+        </DropdownMenuItem>
       </DialogTrigger>
       <DialogContent
         isSecondDialog

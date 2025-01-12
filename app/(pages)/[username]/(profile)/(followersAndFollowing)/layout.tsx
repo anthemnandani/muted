@@ -5,6 +5,7 @@ import NotFound from '@/app/not-found';
 import { Icons } from '@/components/icons';
 import SortFollowersAndFollowing from '@/components/menus/SortFollowersAndFollowing';
 import ProfileTabItem from '@/components/shared/ProfileTabItem';
+import Wrapper from '@/components/shared/Wrapper';
 import { parseUsernamePath } from '@/lib/utils';
 import useSortBy from '@/store/sortBy';
 import { api } from '@/trpc/react';
@@ -37,7 +38,7 @@ export default function FollowersAndFollowingLayout({
   if (isError) return <NotFound />;
 
   return (
-    <>
+    <Wrapper>
       <div className='flex-between px-6 pt-8 pb-4'>
         <div className='flex items-center gap-4'>
           <div className='cursor-pointer' onClick={() => router.back()}>
@@ -68,6 +69,6 @@ export default function FollowersAndFollowingLayout({
         />
       </div>
       {children}
-    </>
+    </Wrapper>
   );
 }

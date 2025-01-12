@@ -3,6 +3,7 @@
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -34,16 +35,16 @@ const CollectionActions = ({ collection }: { collection: Collection }) => {
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent
+        className='dropdown-content-container min-w-[150px] p-0'
         align='end'
-        className='dropdown-content-container rounded-xl p-0 w-40 sm:w-44'
       >
-        <MenuItem
-          icon={Pencil}
-          label='Edit'
-          className='flex-between py-2 px-4'
+        <DropdownMenuItem
+          className='px-4 cursor-pointer flex items-center gap-2'
           onClick={handleEdit}
-          isActionMenuItem
-        />
+        >
+          <Pencil className='size-4' />
+          <span className='text-sm font-normal'>Edit</span>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DeleteCollection collectionId={id} />
       </DropdownMenuContent>
