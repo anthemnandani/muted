@@ -68,9 +68,7 @@ export const userRouter = createTRPCRouter({
       z.object({
         username: z.string(),
         filters: z
-          .array(
-            z.enum(['ALL', 'TEXT', 'REPLIES', 'REPOSTS', 'PORTFOLIO', 'REELS'])
-          )
+          .array(z.enum(['ALL', 'TEXT', 'REPLIES', 'REPOSTS']))
           .default(['ALL']),
         view: z.enum(['LIST', 'GRID']).default('LIST'),
         limit: z.number().optional(),
@@ -134,30 +132,6 @@ export const userRouter = createTRPCRouter({
               reposts: {
                 some: { userId: user.id },
               },
-            });
-          }
-
-          if (filters.includes('REELS')) {
-            conditions.push({
-              authorId: user.id,
-              parentPostId: null,
-              media: {
-                not: null,
-              },
-              OR: [
-                {
-                  media: {
-                    path: ['fileType'],
-                    string_ends_with: 'mp4',
-                  },
-                },
-                {
-                  media: {
-                    path: ['fileType'],
-                    string_ends_with: 'mov',
-                  },
-                },
-              ],
             });
           }
 

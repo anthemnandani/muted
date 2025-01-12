@@ -236,13 +236,7 @@ export interface RepostButtonProps {
   canInteract: boolean;
 }
 
-export type PostFilter =
-  | 'ALL'
-  | 'TEXT'
-  | 'REPLIES'
-  | 'REPOSTS'
-  | 'PORTFOLIO'
-  | 'REELS';
+export type PostFilter = 'ALL' | 'TEXT' | 'REPLIES' | 'REPOSTS';
 
 export type PostView = 'LIST' | 'GRID';
 
