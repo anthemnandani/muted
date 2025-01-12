@@ -119,14 +119,9 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
           label='All Posts'
         />
         <ProfileTabItem
-          href={`/${basePath}/portfolio`}
-          isActive={lastSegment === 'portfolio'}
-          label='Portfolio'
-        />
-        <ProfileTabItem
-          href={`/${basePath}/bookmarks`}
-          isActive={lastSegment === 'bookmarks'}
-          label='Bookmarks'
+          href={`/${basePath}/collections`}
+          isActive={lastSegment === 'collections'}
+          label='Collections'
         />
       </div>
     </div>

@@ -8,7 +8,7 @@ import Loader from '@/components/shared/Loader';
 import { api } from '@/trpc/react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
-const BookmarksClient = ({ username }: { username: string }) => {
+const CollectionsClient = ({ username }: { username: string }) => {
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
     api.collection.getUserCollections.useInfiniteQuery(
       { username, sortBy: 'oldest' },
@@ -57,4 +57,4 @@ const BookmarksClient = ({ username }: { username: string }) => {
   );
 };
 
-export default BookmarksClient;
+export default CollectionsClient;

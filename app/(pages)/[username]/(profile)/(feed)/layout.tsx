@@ -26,17 +26,17 @@ export default function ProfileFeedLayout({
   if (isLoading) return <Loading />;
   if (isError) return <NotFound />;
 
-  const isBookmarkDetails = pathname.split('/bookmarks/').length > 1;
+  const isCollectionDetails = pathname.split('/collections/').length > 1;
 
   return (
     <>
-      {!isMobile && !isBookmarkDetails && (
+      {!isMobile && !isCollectionDetails && (
         <HeaderWrapper>
           <TopHeader title='Profile' />
         </HeaderWrapper>
       )}
 
-      {isBookmarkDetails ? (
+      {isCollectionDetails ? (
         children
       ) : (
         <Wrapper>
