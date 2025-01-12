@@ -25,6 +25,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
   const { setOpenDeleteDialog } = useDeleteBookmark();
   const { id: postId } = bookmarkInfo;
   const timeoutRef = React.useRef<NodeJS.Timeout>();
+  const showTimeoutRef = React.useRef<NodeJS.Timeout>();
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const [anchorRect, setAnchorRect] = React.useState<DOMRect | null>(null);
   const {
@@ -55,19 +56,32 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
       clearTimeout(timeoutRef.current);
     }
     if (isPostDetailPage) {
-      if (buttonRef.current) {
-        const rect = buttonRef.current.getBoundingClientRect();
-        setAnchorRect(rect);
-      }
-      setShowMenu(true);
+      showTimeoutRef.current = setTimeout(() => {
+        if (buttonRef.current) {
+          const rect = buttonRef.current.getBoundingClientRect();
+          setAnchorRect(rect);
+        }
+        setShowMenu(true);
+      }, 1000);
     }
   };
 
   const handleMouseLeave = () => {
+    if (showTimeoutRef.current) {
+      clearTimeout(showTimeoutRef.current);
+    }
     timeoutRef.current = setTimeout(() => {
       setShowMenu(false);
     }, 300);
   };
+
+  React.useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (showTimeoutRef.current) clearTimeout(showTimeoutRef.current);
+    };
+  }, []);
+
   return (
     <div
       className='relative inline-block'

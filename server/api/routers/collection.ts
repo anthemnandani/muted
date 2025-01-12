@@ -99,10 +99,17 @@ export const collectionRouter = createTRPCRouter({
       z.object({
         sortBy: z.enum(['latest', 'oldest']).default('latest'),
         username: z.string(),
+        limit: z.number().optional().default(21),
+        cursor: z
+          .object({
+            name: z.string(),
+            userId: z.string(),
+          })
+          .optional(),
       })
     )
     .query(async ({ ctx, input }) => {
-      const { sortBy, username } = input;
+      const { sortBy, username, limit, cursor } = input;
       const orderBy = sortBy === 'latest' ? 'desc' : 'asc';
 
       const user = await ctx.db.user.findUnique({
@@ -119,10 +126,13 @@ export const collectionRouter = createTRPCRouter({
       const isOwner = ctx.userId === user.id;
 
       const collections = await ctx.db.collection.findMany({
+        take: limit + 1,
+        cursor: cursor ? { name_userId: cursor } : undefined,
         where: {
           userId: user.id,
           ...(!isOwner && { privacy: 'PUBLIC' }),
         },
+        orderBy: [{ createdAt: orderBy }, { id: orderBy }],
         include: {
           bookmarks: {
             include: {
@@ -146,6 +156,16 @@ export const collectionRouter = createTRPCRouter({
         },
       });
 
+      let nextCursor: typeof cursor | undefined;
+      if (collections.length > limit) {
+        const nextItem = collections[limit];
+        nextCursor = {
+          name: nextItem.name,
+          userId: nextItem.userId,
+        };
+        collections.length = limit;
+      }
+
       const formattedCollections = collections.map((collection) => {
         return {
           id: collection.id,
@@ -163,7 +183,10 @@ export const collectionRouter = createTRPCRouter({
         };
       });
 
-      return formattedCollections;
+      return {
+        collections: formattedCollections,
+        nextCursor,
+      };
     }),
 
   toggleBookmark: privateProcedure

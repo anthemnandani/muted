@@ -4,23 +4,28 @@ import useBookmark from '@/hooks/useBookmark';
 import useDevice from '@/hooks/useDevice';
 import { cn } from '@/lib/utils';
 import { api } from '@/trpc/react';
+import { useUser } from '@clerk/nextjs';
+import InfiniteScroll from 'react-infinite-scroll-component';
 import { toast } from 'sonner';
 import { Icons } from '../icons';
 import { ScrollArea } from '../ui/scroll-area';
 import CollectionCover from './CollectionCover';
-import { useUser } from '@clerk/nextjs';
 
 const CollectionsList = ({ postId }: { postId: string }) => {
   const { isMobile } = useDevice();
   const { user } = useUser();
   const { toggleBookmark } = useBookmark();
-  const { data: collections, isLoading } =
-    api.collection.getUserCollections.useQuery(
-      { username: user?.username || '' },
+  const { data, isLoading, hasNextPage, fetchNextPage } =
+    api.collection.getUserCollections.useInfiniteQuery(
+      { username: user?.username ?? '' },
       {
-        select: (data) => data.filter((c) => !c.isDefault),
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+        trpc: { abortOnUnmount: true },
+        staleTime: 10 * 60 * 1000,
       }
     );
+
+  const allCollections = data?.pages.flatMap((page) => page.collections);
 
   if (isLoading)
     return (
@@ -29,7 +34,7 @@ const CollectionsList = ({ postId }: { postId: string }) => {
       </div>
     );
 
-  if (collections?.length === 0)
+  if (allCollections?.length === 0)
     return (
       <div className='flex-center h-20 text-gray-3'>No collections found</div>
     );
@@ -50,14 +55,27 @@ const CollectionsList = ({ postId }: { postId: string }) => {
       )}
       type='always'
     >
-      {collections?.map((collection) => (
-        <CollectionCover
-          key={collection.id}
-          collection={collection}
-          postId={postId}
-          onClick={() => handleCollectionClick(collection.id)}
-        />
-      ))}
+      <InfiniteScroll
+        dataLength={allCollections?.length ?? 0}
+        next={fetchNextPage}
+        hasMore={hasNextPage ?? false}
+        loader={
+          <div className='h-[80px] w-full flex-center mb-[10vh] sm:mb-0'>
+            <Icons.loading className='size-11' />
+          </div>
+        }
+      >
+        {allCollections
+          ?.filter((c) => !c.isDefault)
+          .map((collection) => (
+            <CollectionCover
+              key={collection.id}
+              collection={collection}
+              postId={postId}
+              onClick={() => handleCollectionClick(collection.id)}
+            />
+          ))}
+      </InfiniteScroll>
     </ScrollArea>
   );
 };
