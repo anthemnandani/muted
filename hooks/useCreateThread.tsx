@@ -68,6 +68,7 @@ const useCreateThread = (
       },
       onSettled: async () => {
         await trpcUtils.post.getInfinitePosts.invalidate();
+        await trpcUtils.user.postInfo.invalidate();
       },
       retry: false,
     });
@@ -95,7 +96,6 @@ const useCreateThread = (
         }
       },
       onSettled: async () => {
-        await trpcUtils.post.getInfinitePosts.invalidate();
         await trpcUtils.invalidate();
       },
       retry: false,

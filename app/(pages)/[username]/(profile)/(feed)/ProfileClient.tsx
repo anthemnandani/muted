@@ -16,7 +16,7 @@ const ProfileClient = ({ username }: { username: string }) => {
   const [view, setView] = React.useState<PostView>('LIST');
   const { data, isLoading, isRefetching, isError, hasNextPage, fetchNextPage } =
     api.user.postInfo.useInfiniteQuery(
-      { username, filters, view },
+      { username, filters },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         trpc: { abortOnUnmount: true },

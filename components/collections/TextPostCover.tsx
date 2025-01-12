@@ -1,12 +1,14 @@
 'use client';
 
-import Image from 'next/image';
+import { Card } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { cn, getInitials } from '@/lib/utils';
 
 interface TextPostCoverProps {
   author: {
-    image: string;
-    fullName: string;
-    username: string;
+    image: string | null;
+    fullName: string | null;
+    username: string | null;
   };
   content: string;
 }
@@ -15,33 +17,37 @@ const TextPostCover = ({ author, content }: TextPostCoverProps) => {
   const { image, fullName, username } = author;
 
   return (
-    <div className='flex h-full w-full flex-col overflow-hidden transition-transform duration-300 group-hover:scale-105'>
-      <div className='m-2 flex items-center space-x-2'>
-        <div className='size-8 min-w-max sm:size-10 xl:size-12'>
-          <Image
-            alt={`${fullName}'s profile picture`}
-            loading='lazy'
-            width='50'
-            height='50'
-            decoding='async'
-            className='size-6 content-center rounded-full border-2 border-border-dark dark:border-border-light object-cover sm:size-8 xl:size-10'
-            src={image}
-            style={{ color: 'transparent' }}
+    <Card className='h-full w-full border-0 rounded-none bg-muted p-3 transition-all duration-300 group-hover:scale-[1.02]'>
+      <div className='flex items-start space-x-3'>
+        <Avatar className='size-8 border-2 border-border-dark dark:border-border-light sm:size-10'>
+          <AvatarImage
+            src={image ?? ''}
+            alt={fullName ?? 'Profile picture'}
+            className='object-cover'
           />
-        </div>
-        <div className='flex flex-col min-w-0'>
-          <div className='mr-2 text-xs sm:text-sm font-medium'>{fullName}</div>
-          <div className='text-xs text-muted-foreground truncate'>
-            @{username}
-          </div>
+          <AvatarFallback>{getInitials(fullName)}</AvatarFallback>
+        </Avatar>
+
+        <div className='flex-1 min-w-0'>
+          <p className='text-sm font-medium leading-none mb-1 truncate'>
+            {fullName}
+          </p>
+          <p className='text-xs text-muted-foreground truncate'>@{username}</p>
         </div>
       </div>
-      <div className='relative mx-2 mb-1 h-full overflow-hidden'>
-        <div className='absolute text-xs sm:text-sm line-clamp-3'>
+
+      <div className='mt-3 relative h-[calc(100%-3.5rem)]'>
+        <p
+          className={cn(
+            'text-sm',
+            'line-clamp-4 sm:line-clamp-5',
+            'break-words whitespace-pre-wrap'
+          )}
+        >
           {content}
-        </div>
+        </p>
       </div>
-    </div>
+    </Card>
   );
 };
 

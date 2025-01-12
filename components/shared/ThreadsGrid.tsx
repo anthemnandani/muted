@@ -1,13 +1,14 @@
 'use client';
 
 import Loading from '@/app/(pages)/loading';
-import { ThreadsListProps } from '@/lib/types';
+import type { ParentPostProps, ThreadsListProps } from '@/lib/types';
+import { isImage, isVideo } from '@/lib/utils';
+import { Play } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import TextPostCover from '../collections/TextPostCover';
 import { Icons } from '../icons';
-import { Play } from 'lucide-react';
-import { isVideo } from '@/lib/utils';
 
 const ThreadsGrid = ({
   isLoading,
@@ -15,6 +16,37 @@ const ThreadsGrid = ({
   fetchNextPage,
   hasNextPage,
 }: ThreadsListProps) => {
+  const renderPostContent = (post: ParentPostProps) => {
+    if (post.media) {
+      if (isVideo(post.media.fileType)) {
+        return (
+          <div className='absolute inset-0 flex-center'>
+            <video
+              src={post.media?.fileUrl as string}
+              className='absolute w-full h-full object-cover'
+              style={{
+                objectFit: 'cover',
+                objectPosition: 'center',
+              }}
+            />
+            <div className='absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors' />
+            <Play className='size-6 text-white z-10' />
+          </div>
+        );
+      }
+      if (isImage(post.media.fileType)) {
+        return (
+          <Image
+            src={post.media?.fileUrl as string}
+            alt={post.text || ''}
+            fill
+            className='object-cover transition-transform group-hover:scale-105'
+          />
+        );
+      }
+    }
+    return <TextPostCover author={post.author} content={post.text || ''} />;
+  };
   return (
     <>
       {!isLoading && posts?.length === 0 && (
@@ -35,34 +67,14 @@ const ThreadsGrid = ({
             </div>
           }
         >
-          <div className='grid grid-cols-3 gap-0.5'>
+          <div className='grid grid-cols-3 pb-20 md:pb-0'>
             {posts?.map((post) => (
               <Link
                 key={post.id}
                 href={`/${post.author.username}/post/${post.id}`}
-                className='aspect-square relative group overflow-hidden border border-gray-1 dark:border-gray-5 border-x-0'
+                className='aspect-square relative group overflow-hidden border border-gray-1 dark:border-gray-5'
               >
-                {post.media && isVideo(post.media.fileType) ? (
-                  <div className='absolute inset-0 flex-center'>
-                    <video
-                      src={post.media?.fileUrl as string}
-                      className='absolute w-full h-full object-cover'
-                      style={{
-                        objectFit: 'cover',
-                        objectPosition: 'center',
-                      }}
-                    />
-                    <div className='absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors' />
-                    <Play className='size-6 text-white z-10' />
-                  </div>
-                ) : (
-                  <Image
-                    src={post.media?.fileUrl as string}
-                    alt={post.text || ''}
-                    fill
-                    className='object-cover transition-transform group-hover:scale-105'
-                  />
-                )}
+                {renderPostContent(post)}
               </Link>
             ))}
           </div>
