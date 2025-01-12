@@ -10,12 +10,10 @@ import {
 import type { Collection } from '@/lib/types';
 import useAddCollection from '@/store/addCollection';
 import { MoreVertical, Pencil } from 'lucide-react';
-import MenuItem from '../shared/MenuItem';
 import DeleteCollection from './DeleteCollection';
 
 const CollectionActions = ({ collection }: { collection: Collection }) => {
   const { id, name, description, privacy } = collection;
-
   const { editCollection } = useAddCollection();
 
   const handleEdit = () => {

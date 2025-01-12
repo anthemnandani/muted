@@ -9,9 +9,9 @@ export type CollectionData = {
 };
 
 interface ToggleState {
-  openCollectionDialog: boolean;
+  isOpen: boolean;
   isEditing: boolean;
-  setOpenCollectionDialog: (open: boolean) => void;
+  setIsOpen: (open: boolean) => void;
   collectionData: CollectionData;
   setCollectionData: (data: CollectionData) => void;
   error: string;
@@ -23,16 +23,13 @@ interface ToggleState {
 }
 
 const useAddCollection = create<ToggleState>((set) => ({
-  openCollectionDialog: false,
+  isOpen: false,
   isEditing: false,
-  setOpenCollectionDialog: (open) =>
+  setIsOpen: (open) =>
     set((state) => ({
-      openCollectionDialog: open,
+      isOpen: open,
       ...(open
-        ? {
-            isEditing: state.isEditing,
-            collectionData: state.collectionData,
-          }
+        ? {}
         : {
             isEditing: false,
             error: '',
@@ -65,11 +62,12 @@ const useAddCollection = create<ToggleState>((set) => ({
         privacy: 'PUBLIC',
       },
       postId: '',
+      error: '',
     }),
   editCollection: (collection) =>
     set({
       isEditing: true,
-      openCollectionDialog: true,
+      isOpen: true,
       collectionData: collection,
     }),
 }));

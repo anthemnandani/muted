@@ -4,13 +4,16 @@ import Loading from '@/app/(pages)/loading';
 import NotFound from '@/app/not-found';
 import { Icons } from '@/components/icons';
 import SortFollowersAndFollowing from '@/components/menus/SortFollowersAndFollowing';
+import HeaderWrapper from '@/components/shared/HeaderWrapper';
 import ProfileTabItem from '@/components/shared/ProfileTabItem';
+import TopHeader from '@/components/shared/TopHeader';
 import Wrapper from '@/components/shared/Wrapper';
+import useDevice from '@/hooks/useDevice';
 import { parseUsernamePath } from '@/lib/utils';
 import useSortBy from '@/store/sortBy';
 import { api } from '@/trpc/react';
 import { useParams, usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import React from 'react';
 
 interface FollowersAndFollowingLayoutProps {
   children: React.ReactNode;
@@ -21,6 +24,7 @@ export default function FollowersAndFollowingLayout({
 }: FollowersAndFollowingLayoutProps) {
   const router = useRouter();
   const { resetSortBy } = useSortBy();
+  const { isMobile } = useDevice();
   const params = useParams<{ username: string }>();
   const username = decodeURIComponent(params.username).substring(1);
   const path = usePathname();
@@ -28,7 +32,7 @@ export default function FollowersAndFollowingLayout({
 
   const { data, isLoading, isError } = api.user.userInfo.useQuery({ username });
 
-  useEffect(() => {
+  React.useEffect(() => {
     return () => {
       resetSortBy(username);
     };
@@ -38,37 +42,44 @@ export default function FollowersAndFollowingLayout({
   if (isError) return <NotFound />;
 
   return (
-    <Wrapper>
-      <div className='flex-between px-6 pt-8 pb-4'>
-        <div className='flex items-center gap-4'>
-          <div className='cursor-pointer' onClick={() => router.back()}>
-            <Icons.back className='size-6' />
+    <React.Fragment>
+      {!isMobile && (
+        <HeaderWrapper>
+          <TopHeader title='Profile' />
+        </HeaderWrapper>
+      )}
+      <Wrapper>
+        <div className='flex-between px-6 pt-8 pb-4'>
+          <div className='flex items-center gap-4'>
+            <div className='cursor-pointer' onClick={() => router.back()}>
+              <Icons.back className='size-6' />
+            </div>
+            <div className='flex flex-col'>
+              <span className='text-lg font-medium'>
+                {data.userDetails.fullName}
+              </span>
+              <span className='text-sm text-muted-foreground'>
+                @{data.userDetails.username}
+              </span>
+            </div>
           </div>
-          <div className='flex flex-col'>
-            <span className='text-lg font-medium'>
-              {data.userDetails.fullName}
-            </span>
-            <span className='text-sm text-muted-foreground'>
-              @{data.userDetails.username}
-            </span>
-          </div>
-        </div>
 
-        <SortFollowersAndFollowing username={username} />
-      </div>
-      <div className='w-full flex border-b border-border'>
-        <ProfileTabItem
-          href={`/${basePath}/following`}
-          isActive={lastSegment === 'following'}
-          label='Following'
-        />
-        <ProfileTabItem
-          href={`/${basePath}/followers`}
-          isActive={lastSegment === 'followers'}
-          label='Followers'
-        />
-      </div>
-      {children}
-    </Wrapper>
+          <SortFollowersAndFollowing username={username} />
+        </div>
+        <div className='w-full flex border-b border-border'>
+          <ProfileTabItem
+            href={`/${basePath}/following`}
+            isActive={lastSegment === 'following'}
+            label='Following'
+          />
+          <ProfileTabItem
+            href={`/${basePath}/followers`}
+            isActive={lastSegment === 'followers'}
+            label='Followers'
+          />
+        </div>
+        {children}
+      </Wrapper>
+    </React.Fragment>
   );
 }

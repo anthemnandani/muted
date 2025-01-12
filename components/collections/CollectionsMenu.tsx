@@ -6,7 +6,6 @@ import useAddCollection from '@/store/addCollection';
 import { Plus } from 'lucide-react';
 import React from 'react';
 import CollectionsList from './CollectionsList';
-import useDeleteBookmark from '@/store/deleteBookmark';
 
 interface CollectionsMenuProps {
   postId: string;
@@ -22,15 +21,18 @@ const CollectionsMenu = ({
   anchorRect,
 }: CollectionsMenuProps) => {
   const menuRef = React.useRef<HTMLDivElement>(null);
-  const { setOpenCollectionDialog, setPostId } = useAddCollection();
-  const { openDeleteDialog } = useDeleteBookmark();
+  const {
+    setIsOpen,
+    isOpen: isAddCollectionOpen,
+    setPostId,
+  } = useAddCollection();
   const { isMobile, isSmallMobile } = useDevice();
 
   const handleNewCollection = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setPostId(postId);
-    setOpenCollectionDialog(true);
+    setIsOpen(true);
     onClose();
   };
 
@@ -55,7 +57,7 @@ const CollectionsMenu = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, [onClose]);
 
-  if (!isOpen || openDeleteDialog) return null;
+  if (!isOpen || isAddCollectionOpen) return null;
 
   return (
     <div
