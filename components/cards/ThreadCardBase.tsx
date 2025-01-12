@@ -4,8 +4,7 @@ import { ThreadCardProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useHiddenPosts } from '@/store/hiddenPosts';
 import { useMutedUsers } from '@/store/mutedUsers';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
 import PostHeader from '../posts/PostHeader';
 import ThreadActions from '../shared/ThreadActions';
@@ -54,6 +53,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   const pathname = usePathname();
   const { isTemporarilyHidden } = useHiddenPosts();
   const { isMutedUser } = useMutedUsers();
+  const router = useRouter();
 
   const handleContentClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
@@ -64,6 +64,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
     ) {
       e.preventDefault();
     }
+    router.push(`/${author.username}/post/${id}`);
   };
 
   const content = (
@@ -123,13 +124,9 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
       )}
 
       {variant === 'default' ? (
-        <Link
-          href={`/${author.username}/post/${id}`}
-          className='w-full'
-          onClick={handleContentClick}
-        >
+        <div className='w-full cursor-pointer' onClick={handleContentClick}>
           {content}
-        </Link>
+        </div>
       ) : (
         content
       )}
