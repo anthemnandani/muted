@@ -1,7 +1,7 @@
 'use client';
 
 import { Collection } from '@/lib/types';
-import { isImage, isVideo } from '@/lib/utils';
+import { isGif, isImage, isVideo } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -37,7 +37,7 @@ const CollectionCard = ({ collection, username }: CollectionCardProps) => {
     const { media, author, text } = firstBookmark;
     const fileType = media?.fileType;
 
-    if (isImage(fileType as string)) {
+    if (isImage(fileType as string) || isGif(fileType as string)) {
       return (
         <Image
           src={media?.fileUrl as string}

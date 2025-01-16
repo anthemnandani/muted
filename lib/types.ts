@@ -37,7 +37,14 @@ export type ParentPostInfo = Pick<
 
 export type ReplyPostInfo = Pick<
   PostProps,
-  'id' | 'text' | 'author' | 'media' | 'mentions' | 'privacy' | 'createdAt'
+  | 'id'
+  | 'text'
+  | 'author'
+  | 'media'
+  | 'mentions'
+  | 'privacy'
+  | 'createdAt'
+  | 'linkPreview'
 >;
 
 export type UserProfileInfoProps =
@@ -150,6 +157,7 @@ export interface CreateThreadInputProps {
   value: string;
   setThreadData: React.Dispatch<React.SetStateAction<ThreadData>>;
   handleMentionSearch: (value: string, cursorPosition: number) => void;
+  isReply?: boolean;
 }
 
 export interface ThreadsListProps {

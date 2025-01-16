@@ -29,7 +29,14 @@ const PostInfoClient = ({ id }: { id: string }) => {
       }
     );
 
-  const allReplies = data?.pages.flatMap((page) => page.replies);
+  const allReplies = React.useMemo(() => {
+    const replies = data?.pages.flatMap((page) => page.replies) ?? [];
+    return [...replies].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }, [data?.pages]);
+
   const postInfo = data?.pages[0].postInfo;
 
   React.useEffect(() => {

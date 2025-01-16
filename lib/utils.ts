@@ -151,8 +151,13 @@ export function isImageOrVideo(fileType: string): 'image' | 'video' | null {
 
 export function isImage(fileType: string): boolean {
   if (!fileType) return false;
-  const imageTypes = ['jpeg', 'jpg', 'png', 'webp', 'gif'];
+  const imageTypes = ['jpeg', 'jpg', 'png', 'webp'];
   return imageTypes.includes(fileType.toLowerCase());
+}
+
+export function isGif(fileType: string): boolean {
+  if (!fileType) return false;
+  return fileType.toLowerCase() === 'gif';
 }
 
 export function isVideo(fileType: string): boolean {
@@ -232,6 +237,29 @@ export function highlightHashtagsAndUrls(text: string) {
   return withUrls.replace(
     /#([\w.+?!,@$%&*()-]+[a-zA-Z0-9_$]+)(?=\s|$)/g,
     '<a href="/feed/$1" class="hashtag-link !text-primary-blue hover:underline hover:decoration-1 hover:transition-all hover:duration-300">#$1</a>'
+  );
+}
+
+export function highlightTextContent(text: string) {
+  const withUrls = text.replace(
+    /(https?:\/\/)?([a-zA-Z0-9-]+(?:\.[a-zA-Z]{2,})+(?:\/[^\s]*)?)/g,
+    (match, protocol, domain) => {
+      const fullUrl = protocol ? match : `https://${match}`;
+      const displayUrl = domain.slice(0, 25);
+      return `<a href="${fullUrl}" class="text-primary-blue hover:underline break-all" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">${displayUrl}${
+        displayUrl.length < domain.length ? '...' : ''
+      }</a>`;
+    }
+  );
+
+  const withHashtags = withUrls.replace(
+    /#([\w.+?!,@$%&*()-]+[a-zA-Z0-9_$]+)(?=\s|$)/g,
+    '<a href="/feed/$1" class="hashtag-link !text-primary-blue hover:underline hover:decoration-1 hover:transition-all hover:duration-300">#$1</a>'
+  );
+
+  return withHashtags.replace(
+    /@(\w+)/g,
+    '<a href="/@$1" class="text-primary-blue hover:underline">@$1</a>'
   );
 }
 

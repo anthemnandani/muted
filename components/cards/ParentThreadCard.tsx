@@ -68,7 +68,8 @@ const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
               replyThreadInfo={{
                 id: postInfo.id,
                 text: postInfo.text,
-                media: null,
+                media: postInfo.media,
+                linkPreview: postInfo.linkPreview,
                 author: postInfo.author,
                 privacy: postInfo.privacy,
                 mentions: postInfo.mentions,

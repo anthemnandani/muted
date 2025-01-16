@@ -49,11 +49,12 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
           replyThreadInfo={{
             id,
             text,
-            media: null,
+            media,
             author,
             createdAt,
             privacy,
             mentions,
+            linkPreview,
           }}
           repliesCount={repliesCount}
           isParentPost={isParentPost}

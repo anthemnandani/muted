@@ -182,6 +182,7 @@ const CreateThread = () => {
                       value={threadData.text}
                       setThreadData={setThreadData}
                       handleMentionSearch={handleMentionSearch}
+                      isReply
                     />
                   )}
                   <CreateThreadInput
@@ -196,6 +197,7 @@ const CreateThread = () => {
                     textareaRef={textareaRef}
                     value={threadData.text}
                     setThreadData={setThreadData}
+                    isReply={!!replyPostInfo?.text || !!replyPostInfo?.media}
                     handleMentionSearch={handleMentionSearch}
                   />
                 </div>

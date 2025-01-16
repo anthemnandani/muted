@@ -1,7 +1,7 @@
 'use client';
 
 import type { Collection } from '@/lib/types';
-import { cn, isImage, isVideo } from '@/lib/utils';
+import { cn, isGif, isImage, isVideo } from '@/lib/utils';
 import { Check } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react';
@@ -21,7 +21,9 @@ const CollectionCover = ({
 }: CollectionCoverProps) => {
   const [isSaving, setIsSaving] = React.useState(false);
   const { bookmarks, name } = collection;
-  const isImageMedia = isImage(bookmarks[0]?.media?.fileType as string);
+  const isImageMedia =
+    isImage(bookmarks[0]?.media?.fileType as string) ||
+    isGif(bookmarks[0]?.media?.fileType as string);
   const isVideoMedia = isVideo(bookmarks[0]?.media?.fileType as string);
 
   const isBookmarked = bookmarks.some((bookmark) => bookmark.id === postId);

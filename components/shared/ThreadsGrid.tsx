@@ -2,7 +2,7 @@
 
 import Loading from '@/app/(pages)/loading';
 import type { ParentPostProps, ThreadsListProps } from '@/lib/types';
-import { isImage, isVideo } from '@/lib/utils';
+import { isGif, isImage, isVideo } from '@/lib/utils';
 import { Play } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -34,7 +34,7 @@ const ThreadsGrid = ({
           </div>
         );
       }
-      if (isImage(post.media.fileType)) {
+      if (isImage(post.media.fileType) || isGif(post.media.fileType)) {
         return (
           <Image
             src={post.media?.fileUrl as string}
