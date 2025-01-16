@@ -3,7 +3,7 @@
 import Loading from '@/app/(pages)/loading';
 import { ThreadsListProps } from '@/lib/types';
 import Link from 'next/link';
-import React, { useMemo } from 'react';
+import React from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import ThreadCard from '../cards/ThreadCard';
 import { Icons } from '../icons';
@@ -14,8 +14,9 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
   fetchNextPage,
   hasNextPage,
   showMuted,
+  emptyStateMessage,
 }) => {
-  const uniquePosts = useMemo(() => {
+  const uniquePosts = React.useMemo(() => {
     if (!posts) return [];
     const seenPosts = new Set();
     return posts.filter((post) => {
@@ -29,10 +30,10 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
   }, [posts]);
 
   return (
-    <>
-      {!isLoading && uniquePosts?.length === 0 && (
-        <div className='h-[50vh] w-full flex-center text-gray-3'>
-          <p>No posts found.</p>
+    <React.Fragment>
+      {!isLoading && uniquePosts.length === 0 && (
+        <div className='flex-center w-full h-screen'>
+          <p className='text-gray-3'>{emptyStateMessage || 'No posts found'}</p>
         </div>
       )}
       {isLoading ? (
@@ -86,7 +87,7 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
           ))}
         </InfiniteScroll>
       )}
-    </>
+    </React.Fragment>
   );
 };
 

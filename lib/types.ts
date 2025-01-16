@@ -166,6 +166,7 @@ export interface ThreadsListProps {
   hasNextPage?: boolean;
   showMuted?: boolean;
   isLoading?: boolean;
+  emptyStateMessage?: string;
 }
 
 export interface EditProfileProps {

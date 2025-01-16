@@ -1,6 +1,7 @@
 'use client';
 
 import FeedWrapper from '@/components/shared/FeedWrapper';
+import { ThreadFilter } from '@/lib/types';
 import { api } from '@/trpc/react';
 
 const LikedPostsClient = () => {
@@ -23,6 +24,7 @@ const LikedPostsClient = () => {
       isError={isError}
       hasNextPage={hasNextPage}
       fetchNextPage={fetchNextPage}
+      selectedFilter={ThreadFilter.LIKED}
       emptyStateMessage='Posts you like will appear here.'
     />
   );

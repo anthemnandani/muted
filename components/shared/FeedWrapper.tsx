@@ -7,9 +7,10 @@ import ThreadFilterMenu from '@/components/menus/ThreadFilterMenu';
 import HeaderWrapper from '@/components/shared/HeaderWrapper';
 import ThreadsList from '@/components/shared/ThreadsList';
 import Wrapper from '@/components/shared/Wrapper';
-import useWindow from '@/hooks/useWindow';
+import useDevice from '@/hooks/useDevice';
 import { ParentPostProps, ThreadFilter } from '@/lib/types';
 import useDialog from '@/store/dialog';
+import React from 'react';
 
 interface FeedWrapperProps {
   posts?: ParentPostProps[];
@@ -18,7 +19,7 @@ interface FeedWrapperProps {
   hasNextPage?: boolean;
   fetchNextPage?: any;
   selectedFilter?: ThreadFilter;
-  emptyStateMessage: string | React.ReactNode;
+  emptyStateMessage: string;
 }
 
 const FeedWrapper = ({
@@ -31,39 +32,32 @@ const FeedWrapper = ({
   emptyStateMessage,
 }: FeedWrapperProps) => {
   const { setOpenDialog } = useDialog();
-  const { isMobile } = useWindow();
+  const { isMobile } = useDevice();
 
   if (isLoading) return <Loading />;
   if (isError) return <Error />;
 
   return (
-    <>
+    <React.Fragment>
       {!isMobile && (
         <HeaderWrapper>
           <ThreadFilterMenu selectedFilter={selectedFilter} />
         </HeaderWrapper>
       )}
       <Wrapper>
-        {!posts || posts.length === 0 ? (
-          <div className='flex items-center justify-center w-full h-screen'>
-            <p className='text-gray-3'>{emptyStateMessage}</p>
-          </div>
-        ) : (
-          <>
-            <div className='w-full md:flex hidden'>
-              <CreateWithInput onClick={() => setOpenDialog(true)} />
-            </div>
-            <section className='flex flex-col gap-4 justify-start w-full'>
-              <ThreadsList
-                posts={posts}
-                fetchNextPage={fetchNextPage}
-                hasNextPage={hasNextPage}
-              />
-            </section>
-          </>
-        )}
+        <div className='w-full md:flex hidden'>
+          <CreateWithInput onClick={() => setOpenDialog(true)} />
+        </div>
+        <section className='flex flex-col gap-4 justify-start w-full'>
+          <ThreadsList
+            posts={posts}
+            fetchNextPage={fetchNextPage}
+            hasNextPage={hasNextPage}
+            emptyStateMessage={emptyStateMessage}
+          />
+        </section>
       </Wrapper>
-    </>
+    </React.Fragment>
   );
 };
 

@@ -1,6 +1,7 @@
 'use client';
 
 import FeedWrapper from '@/components/shared/FeedWrapper';
+import { ThreadFilter } from '@/lib/types';
 import { api } from '@/trpc/react';
 
 const FollowingClient = () => {
@@ -23,6 +24,7 @@ const FollowingClient = () => {
       isError={isError}
       hasNextPage={hasNextPage}
       fetchNextPage={fetchNextPage}
+      selectedFilter={ThreadFilter.FOLLOWING}
       emptyStateMessage='Follow more profiles to get your feed going.'
     />
   );

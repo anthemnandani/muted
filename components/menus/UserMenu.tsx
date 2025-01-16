@@ -1,8 +1,10 @@
 'use client';
+
 import useWindow from '@/hooks/useWindow';
 import { useAuth } from '@clerk/nextjs';
 import { AlertCircle, Bookmark, Heart, LogOut, Settings } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { useRouter } from 'next/navigation';
 import { Icons } from '../icons';
 import MenuItem from '../shared/MenuItem';
 import {
@@ -16,6 +18,7 @@ import AppearanceMenu from './AppearanceMenu';
 const UserMenu = () => {
   const { signOut } = useAuth();
   const { theme, setTheme } = useTheme();
+  const router = useRouter();
   const { isMobile } = useWindow();
   return (
     <DropdownMenu modal={false}>
@@ -33,10 +36,20 @@ const UserMenu = () => {
           className='py-2'
         />
         {isMobile && (
-          <MenuItem icon={Bookmark} label='Saved' className='py-2' />
+          <MenuItem
+            icon={Bookmark}
+            label='Saved'
+            className='py-2'
+            onClick={() => router.push('/saved')}
+          />
         )}
         {isMobile && (
-          <MenuItem icon={Heart} label='Your likes' className='py-2' />
+          <MenuItem
+            icon={Heart}
+            label='Liked'
+            className='py-2'
+            onClick={() => router.push('/liked')}
+          />
         )}
 
         <DropdownMenuSeparator />

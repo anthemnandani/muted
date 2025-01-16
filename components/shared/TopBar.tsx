@@ -1,5 +1,6 @@
 'use client';
-import useWindow from '@/hooks/useWindow';
+
+import useDevice from '@/hooks/useDevice';
 import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
@@ -8,7 +9,7 @@ import { useEffect, useState } from 'react';
 import UserMenu from '../menus/UserMenu';
 
 const TopBar = () => {
-  const { isMobile } = useWindow();
+  const { isMobile } = useDevice();
   const [isScrolled, setIsScrolled] = useState(false);
   const { theme } = useTheme();
 
@@ -40,9 +41,6 @@ const TopBar = () => {
               width={34}
               height={34}
             />
-            {/* <p className='max-sm:hidden flex font-bold text-[20px] text-light-1'>
-          Muted
-        </p> */}
           </Link>
           <div className='absolute right-0 -translate-y-1/2 top-1/2 z-[999]'>
             <UserMenu />
