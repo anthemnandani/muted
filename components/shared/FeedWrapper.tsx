@@ -19,7 +19,7 @@ interface FeedWrapperProps {
   hasNextPage?: boolean;
   fetchNextPage?: any;
   selectedFilter?: ThreadFilter;
-  emptyStateMessage: string;
+  emptyStateMessage: string | React.ReactNode;
 }
 
 const FeedWrapper = ({

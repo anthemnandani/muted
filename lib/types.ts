@@ -166,7 +166,7 @@ export interface ThreadsListProps {
   hasNextPage?: boolean;
   showMuted?: boolean;
   isLoading?: boolean;
-  emptyStateMessage?: string;
+  emptyStateMessage?: string | React.ReactNode;
 }
 
 export interface EditProfileProps {
