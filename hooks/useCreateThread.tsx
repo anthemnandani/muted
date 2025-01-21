@@ -13,6 +13,7 @@ import { PostPrivacy } from '@prisma/client';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { useBunnyUpload } from './useBunnyUpload';
 
 const useCreateThread = (
   setMentions: (mentions: Array<{ userId: string; index: number }>) => void
@@ -20,7 +21,7 @@ const useCreateThread = (
   const router = useRouter();
   const { postPrivacy } = usePost();
   const { selectedFile, setSelectedFile } = useFileStore();
-  const { startUpload } = useUploadThing('media');
+  const { upload } = useBunnyUpload();
   const {
     replyPostInfo,
     setReplyPostInfo,
@@ -113,14 +114,13 @@ const useCreateThread = (
           type: 'image/gif',
         });
 
-        const fileRes = await startUpload([gifFile]);
-        if (!fileRes?.[0]) return {};
-
+        const { url: fileUrl } = await upload(gifFile);
         return {
-          fileUrl: fileRes[0].fileUrl,
+          fileUrl,
           fileType: 'gif',
         };
       }
+
       if (file instanceof File) {
         const dimensions = file.type.startsWith('image/')
           ? await getImageDimensions(file)
@@ -138,12 +138,10 @@ const useCreateThread = (
           }
         }
 
-        const fileRes = await startUpload(selectedFile as File[]);
-        if (!fileRes?.[0]) return {};
-
+        const { url: fileUrl } = await upload(file);
         return {
-          fileUrl: fileRes[0].fileUrl,
-          fileType: fileRes[0].fileKey.split('.').pop() || '',
+          fileUrl,
+          fileType: file.type.split('/')[1] || '',
           aspectRatio,
           originalDimensions,
         };

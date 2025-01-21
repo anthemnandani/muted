@@ -30,6 +30,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'placehold.co',
       },
+      {
+        protocol: 'https',
+        hostname: 'muted-development.b-cdn.net',
+      },
     ],
   },
 };
