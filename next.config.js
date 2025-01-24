@@ -34,6 +34,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'muted-development.b-cdn.net',
       },
+      {
+        protocol: 'https',
+        hostname: 'muted-production.b-cdn.net',
+      },
     ],
   },
 };

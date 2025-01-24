@@ -102,7 +102,7 @@ const useCreateThread = (
     });
 
   const handleMediaUpload = async () => {
-    if (selectedFile.length === 0) return {};
+    if (selectedFile.length === 0) return { success: true };
 
     const file = selectedFile[0];
     try {
@@ -115,6 +115,7 @@ const useCreateThread = (
 
         const { url: fileUrl } = await uploadToStorage(gifFile);
         return {
+          success: true,
           fileUrl,
           fileType: 'gif',
         };
@@ -141,6 +142,7 @@ const useCreateThread = (
             file
           );
           return {
+            success: true,
             fileUrl: streamUrl,
             fileType: 'video',
             videoId,
@@ -152,17 +154,18 @@ const useCreateThread = (
         }
         const response = await uploadToStorage(file);
         return {
+          success: true,
           fileUrl: response.url,
           fileType: file.type.split('/')[1] || '',
           aspectRatio,
           originalDimensions,
         };
       }
-      return {};
+      return { success: true };
     } catch (error) {
       console.error('Error processing media file:', error);
       toast.error('Error processing media file');
-      return {};
+      return { success: false, error };
     }
   };
 
@@ -172,12 +175,18 @@ const useCreateThread = (
       index: number;
     }>
   ) => {
+    const mediaUploadResult = await handleMediaUpload();
+
+    if (!mediaUploadResult.success) {
+      return Promise.reject(new Error('Media upload failed'));
+    }
+
     const {
       fileUrl: mediaUploadUrl,
       fileType,
       aspectRatio,
       originalDimensions,
-    } = await handleMediaUpload();
+    } = mediaUploadResult;
 
     const promise = replyPostInfo
       ? replyToPost({
@@ -209,7 +218,7 @@ const useCreateThread = (
           mentions,
         });
 
-    return promise as any;
+    return promise;
   };
 
   const resetState = () => {

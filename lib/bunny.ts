@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 export const bunnyConfig = {
+  storageHost: process.env.NEXT_PUBLIC_BUNNY_STORAGE_HOSTNAME!,
   storageZoneName: process.env.NEXT_PUBLIC_BUNNY_STORAGE_ZONE_NAME!,
   storageApiKey: process.env.NEXT_PUBLIC_BUNNY_STORAGE_API_KEY!,
   pullZoneUrl: process.env.NEXT_PUBLIC_BUNNY_PULL_ZONE_URL!,
@@ -15,7 +16,7 @@ export async function uploadToBunnyStorage(
 ) {
   try {
     await axios.put(
-      `https://storage.bunnycdn.com/${bunnyConfig.storageZoneName}/${fileName}`,
+      `https://${bunnyConfig.storageHost}/${bunnyConfig.storageZoneName}/${fileName}`,
       file,
       {
         headers: {
