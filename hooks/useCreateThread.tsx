@@ -1,5 +1,4 @@
 import type { MediaType, ThreadData } from '@/lib/types';
-import { useUploadThing } from '@/lib/uploadthing';
 import {
   getImageDimensions,
   getMediaAspectRatio,
@@ -21,7 +20,7 @@ const useCreateThread = (
   const router = useRouter();
   const { postPrivacy } = usePost();
   const { selectedFile, setSelectedFile } = useFileStore();
-  const { upload } = useBunnyUpload();
+  const { uploadToStorage, uploadToStream } = useBunnyUpload();
   const {
     replyPostInfo,
     setReplyPostInfo,
@@ -114,7 +113,7 @@ const useCreateThread = (
           type: 'image/gif',
         });
 
-        const { url: fileUrl } = await upload(gifFile);
+        const { url: fileUrl } = await uploadToStorage(gifFile);
         return {
           fileUrl,
           fileType: 'gif',
@@ -137,10 +136,23 @@ const useCreateThread = (
             originalDimensions = dimensions;
           }
         }
-
-        const { url: fileUrl } = await upload(file);
+        if (file.type.startsWith('video/')) {
+          const { videoId, thumbnailUrl, streamUrl } = await uploadToStream(
+            file
+          );
+          return {
+            fileUrl: streamUrl,
+            fileType: 'video',
+            videoId,
+            thumbnailUrl,
+            streamUrl,
+            aspectRatio,
+            originalDimensions,
+          };
+        }
+        const response = await uploadToStorage(file);
         return {
-          fileUrl,
+          fileUrl: response.url,
           fileType: file.type.split('/')[1] || '',
           aspectRatio,
           originalDimensions,
@@ -148,6 +160,7 @@ const useCreateThread = (
       }
       return {};
     } catch (error) {
+      console.error('Error processing media file:', error);
       toast.error('Error processing media file');
       return {};
     }
@@ -170,9 +183,6 @@ const useCreateThread = (
       ? replyToPost({
           text: threadData.text.trim(),
           postId: replyPostInfo.id,
-          media: mediaUploadUrl
-            ? { fileType, fileUrl: mediaUploadUrl }
-            : undefined,
           privacy: threadData.privacy,
           postAuthor: replyPostInfo.author.id,
         })

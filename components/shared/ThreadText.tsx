@@ -96,7 +96,14 @@ const ThreadText: React.FC<ThreadTextProps> = ({
         ? displayText.length
         : displayText.indexOf(' ', mention.index);
 
-    parts.push(<span className='!text-primary-blue'>@</span>);
+    parts.push(
+      <span
+        key={`mention-${mention.index}-start`}
+        className='!text-primary-blue'
+      >
+        @
+      </span>
+    );
 
     parts.push(
       <Username

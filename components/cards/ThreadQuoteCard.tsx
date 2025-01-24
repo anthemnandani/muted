@@ -99,13 +99,7 @@ const RenderCard: React.FC<ThreadQuoteCardProps> = ({
         </div>
       </div>
 
-      <ThreadContent
-        id={id}
-        text={text}
-        author={author}
-        media={media}
-        mentions={mentions}
-      />
+      <ThreadContent id={id} text={text} media={media} mentions={mentions} />
 
       {linkPreview && (
         <div className='mx-2 my-2'>

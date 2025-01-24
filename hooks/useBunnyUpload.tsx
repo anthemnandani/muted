@@ -1,7 +1,7 @@
-import { uploadToBunnyStorage } from '@/lib/bunny';
+import { uploadToBunnyStorage, uploadToBunnyStream } from '@/lib/bunny';
 
 export const useBunnyUpload = () => {
-  const upload = async (file: File) => {
+  const uploadToStorage = async (file: File) => {
     try {
       const buffer = Buffer.from(await file.arrayBuffer());
       const fileName = `${Date.now()}-${file.name}`;
@@ -13,5 +13,20 @@ export const useBunnyUpload = () => {
     }
   };
 
-  return { upload };
+  const uploadToStream = async (file: File) => {
+    try {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const fileName = `${Date.now()}-${file.name}`;
+      const { videoId, thumbnailUrl, streamUrl } = await uploadToBunnyStream(
+        buffer,
+        fileName
+      );
+      return { videoId, thumbnailUrl, streamUrl };
+    } catch (error) {
+      console.error('Upload error:', error);
+      throw error;
+    }
+  };
+
+  return { uploadToStorage, uploadToStream };
 };

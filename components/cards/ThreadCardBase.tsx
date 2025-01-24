@@ -72,7 +72,6 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
       <ThreadContent
         id={id}
         text={text}
-        author={author}
         mentions={mentions}
         media={media}
         variant={variant}

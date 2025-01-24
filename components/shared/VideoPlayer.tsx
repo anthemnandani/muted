@@ -1,51 +1,128 @@
 'use client';
 
 import React from 'react';
-import videojs from 'video.js';
-import Player from 'video.js/dist/types/player';
-import 'video.js/dist/video-js.css';
-import '@videojs/themes/dist/fantasy/index.css';
+import useVideoPlayer from '@/store/videoPlayer';
+import { loadPlayerJsScript } from '@/lib/playerjs-loader';
 
 interface VideoPlayerProps {
-  options: any;
-  onPlayerReady: (player: Player) => void;
-  onTouchStart?: (e: React.TouchEvent<HTMLVideoElement>) => void;
-  onTimeUpdate?: () => void;
+  video: string;
+  inView: boolean;
+  postId: string;
+  text?: string;
   videoStyle?: React.CSSProperties;
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
-  options,
-  onPlayerReady,
-  onTouchStart,
-  onTimeUpdate,
+  video,
   videoStyle,
+  inView,
+  postId,
+  text,
 }) => {
-  const videoRef = React.useRef<HTMLVideoElement>(null);
-  const playerRef = React.useRef<Player | null>(null);
+  const iframeRef = React.useRef<HTMLIFrameElement>(null);
+  const playerInstanceRef = React.useRef<any>(null);
+  const { currentlyPlaying, setCurrentlyPlaying } = useVideoPlayer();
 
   React.useEffect(() => {
-    if (videoRef.current && !playerRef.current) {
-      const player = videojs(videoRef.current, options);
+    let mounted = true;
 
-      player.on('dblclick', (e: React.MouseEvent<HTMLVideoElement>) => {
-        e.preventDefault();
+    const initializePlayer = async () => {
+      try {
+        await loadPlayerJsScript();
+
+        if (!mounted || !iframeRef.current) return;
+
+        // @ts-ignore - playerjs will be available after script loads
+        const player = new playerjs.Player(iframeRef.current);
+
+        player.on('ready', () => {
+          if (!mounted) return;
+
+          playerInstanceRef.current = player;
+
+          // Set initial state
+          if (inView && currentlyPlaying !== postId) {
+            handlePlay();
+          } else {
+            player.pause();
+          }
+        });
+      } catch (error) {
+        console.error('Failed to initialize player:', error);
+      }
+    };
+
+    initializePlayer();
+
+    return () => {
+      mounted = false;
+      if (currentlyPlaying === postId) {
+        setCurrentlyPlaying(null);
+      }
+    };
+  }, [postId]);
+
+  const handlePlay = React.useCallback(() => {
+    const player = playerInstanceRef.current;
+    if (!player) return;
+
+    // Pause currently playing video if different
+    if (currentlyPlaying && currentlyPlaying !== postId) {
+      const event = new CustomEvent('pause-video', {
+        detail: currentlyPlaying,
       });
-
-      playerRef.current = player;
-      onPlayerReady(player);
+      window.dispatchEvent(event);
     }
-  }, [options, onPlayerReady]);
+
+    player.play();
+    setCurrentlyPlaying(postId);
+  }, [currentlyPlaying, postId, setCurrentlyPlaying]);
+
+  const handlePause = React.useCallback(() => {
+    const player = playerInstanceRef.current;
+    if (!player) return;
+
+    player.pause();
+    if (currentlyPlaying === postId) {
+      setCurrentlyPlaying(null);
+    }
+  }, [currentlyPlaying, postId, setCurrentlyPlaying]);
+
+  // Listen for pause events from other videos
+  React.useEffect(() => {
+    const pauseHandler = (e: CustomEvent) => {
+      if (e.detail === postId) {
+        handlePause();
+      }
+    };
+
+    window.addEventListener('pause-video', pauseHandler as EventListener);
+    return () => {
+      window.removeEventListener('pause-video', pauseHandler as EventListener);
+    };
+  }, [postId, handlePause]);
+
+  // Handle visibility changes
+  React.useEffect(() => {
+    if (inView) {
+      if (currentlyPlaying !== postId) {
+        handlePlay();
+      }
+    } else {
+      handlePause();
+    }
+  }, [inView, currentlyPlaying, postId, handlePlay, handlePause]);
 
   return (
-    <video
-      data-vjs-player
-      ref={videoRef}
-      className='video-js vjs-theme-fantasy vjs-show-big-play-button-on-pause'
-      data-setup='{"inactivityTimeout": 0}'
-      onTouchStart={onTouchStart}
-      onTimeUpdate={onTimeUpdate}
-      style={videoStyle}
-    />
+    <div style={videoStyle}>
+      <iframe
+        ref={iframeRef}
+        src={`${video}?loop=true&enableapi=true`}
+        loading='lazy'
+        title={text || 'Video player'}
+        className='w-full h-full'
+        allow='autoplay; fullscreen'
+      />
+    </div>
   );
 };

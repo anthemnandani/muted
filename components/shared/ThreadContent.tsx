@@ -1,10 +1,10 @@
 import ThreadImageCard from '@/components/cards/ThreadImageCard';
 import ThreadVideoCard from '@/components/cards/ThreadVideoCard';
+import type { ParentPostInfo } from '@/lib/types';
 import { isImageOrVideo } from '@/lib/utils';
 import Image from 'next/image';
 import React from 'react';
 import ThreadText from './ThreadText';
-import type { ParentPostInfo } from '@/lib/types';
 
 type ThreadContentProps = Partial<ParentPostInfo> & {
   variant?: 'default' | 'reply';
@@ -13,7 +13,6 @@ type ThreadContentProps = Partial<ParentPostInfo> & {
 const ThreadContent = ({
   id,
   text,
-  author,
   mentions,
   media,
   variant = 'default',
@@ -30,12 +29,12 @@ const ThreadContent = ({
               originalDimensions={media.originalDimensions}
             />
           )}
-          {isImageOrVideo(media.fileType) === 'video' && (
+          {media.fileType === 'video' && (
             <ThreadVideoCard
               video={media.fileUrl! as string}
               aspectRatio={media.aspectRatio}
               originalDimensions={media.originalDimensions}
-              username={author!.username}
+              text={text || undefined}
               postId={id!}
             />
           )}
