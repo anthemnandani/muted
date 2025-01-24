@@ -218,7 +218,7 @@ const useCreateThread = (
           mentions,
         });
 
-    return promise;
+    return promise as any;
   };
 
   const resetState = () => {
