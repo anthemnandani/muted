@@ -1,7 +1,9 @@
 'use client';
 
-import React from 'react';
 import { loadPlayerScript } from '@/lib/playerjs-loader';
+import { Play, PlayIcon } from 'lucide-react';
+import Image from 'next/image';
+import React from 'react';
 
 interface VideoPlayerProps {
   video: string;
@@ -10,6 +12,21 @@ interface VideoPlayerProps {
   text?: string;
   videoStyle?: React.CSSProperties;
 }
+
+// const PlayerJsPlayIcon = () => (
+//   <svg
+//     width='18'
+//     height='18'
+//     viewBox='0 0 18 18'
+//     aria-hidden='true'
+//     focusable='false'
+//   >
+//     <path
+//       d='M15.562 8.1L3.87.225c-.818-.562-1.87 0-1.87.9v15.75c0 .9 1.052 1.462 1.87.9L15.563 9.9c.584-.45.584-1.35 0-1.8z'
+//       fill='#fff'
+//     />
+//   </svg>
+// );
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   video,
@@ -20,6 +37,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const iframeRef = React.useRef<HTMLIFrameElement>(null);
   const playerInstanceRef = React.useRef<any>(null);
   const [isPlayerReady, setIsPlayerReady] = React.useState(false);
+
+  const videoId = video.split('/').pop();
+  const thumbnailUrl = `https://${process.env.NEXT_PUBLIC_BUNNY_STREAM_CDN_HOSTNAME}/${videoId}/thumbnail.jpg`;
 
   React.useEffect(() => {
     let mounted = true;
@@ -49,9 +69,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       mounted = false;
       setIsPlayerReady(false);
     };
-  }, []); // Only run once on mount
+  }, []);
 
-  // Handle play/pause when either inView changes or player becomes ready
   React.useEffect(() => {
     const player = playerInstanceRef.current;
     if (player && isPlayerReady) {
@@ -68,10 +87,32 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   }, [inView, isPlayerReady]);
 
   return (
-    <div style={videoStyle}>
+    <div style={videoStyle} className='relative'>
+      <div
+        className={`absolute inset-0 bg-black transition-opacity duration-300 ${
+          isPlayerReady ? 'opacity-0' : 'opacity-100'
+        }`}
+      >
+        <Image
+          src={thumbnailUrl}
+          alt={text || 'Video thumbnail'}
+          className='object-cover'
+          fill
+          priority
+        />
+        {/* <div className='absolute inset-0 flex items-center justify-center'>
+          <button
+            type='button'
+            className='flex-center p-[15px] bg-[#B51018] rounded-full transition-colors'
+          >
+            <PlayerJsPlayIcon />
+          </button>
+        </div> */}
+      </div>
+
       <iframe
         ref={iframeRef}
-        src={`${video}?autoplay=false&loop=true&enableapi=true&muted=true`}
+        src={`${video}?loop=true&autoplay=false&muted=true`}
         loading='lazy'
         title={text || 'Video player'}
         className='w-full h-full'
