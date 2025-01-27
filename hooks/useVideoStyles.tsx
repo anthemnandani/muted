@@ -4,47 +4,37 @@ const useVideoStyles = (
 ) => {
   const MIN_RATIO = 0.8;
   const MAX_RATIO = 16 / 9;
+  const is916 = aspectRatio === '9:16';
 
-  let videoStyle: React.CSSProperties = { width: '100%', height: 'auto' };
+  let targetRatio = 16 / 9;
+  let videoStyle = {};
 
-  if (aspectRatio === '9:16') {
+  if (is916) {
     videoStyle = {
       height: '100%',
       aspectRatio: '9/16',
       width: 'auto',
     };
-  } else if (aspectRatio === '16:9') {
-    videoStyle = {
-      ...videoStyle,
-      aspectRatio: '16/9',
-    };
-  } else if (originalDimensions) {
-    const originalRatio = originalDimensions.width / originalDimensions.height;
-
-    if (originalRatio < MIN_RATIO && originalRatio !== 9 / 16) {
-      videoStyle = {
-        ...videoStyle,
-        aspectRatio: '4/5',
-      };
-    } else if (originalRatio > MAX_RATIO) {
-      videoStyle = {
-        ...videoStyle,
-        aspectRatio: '16/9',
-      };
-    } else {
-      videoStyle = {
-        ...videoStyle,
-        aspectRatio: `${originalDimensions.width}/${originalDimensions.height}`,
-      };
-    }
   } else {
+    if (aspectRatio === '16:9') targetRatio = 16 / 9;
+    else if (aspectRatio === '4:5') targetRatio = 4 / 5;
+    else if (originalDimensions) {
+      const originalRatio =
+        originalDimensions.width / originalDimensions.height;
+      if (originalRatio < MIN_RATIO && originalRatio !== 9 / 16)
+        targetRatio = 4 / 5;
+      else if (originalRatio > MAX_RATIO) targetRatio = 16 / 9;
+      else targetRatio = originalRatio;
+    }
     videoStyle = {
-      ...videoStyle,
-      aspectRatio: '16/9',
+      height: '100%',
+      width: '100%',
+      objectFit: 'contain',
+      margin: 'auto',
     };
   }
 
-  return { videoStyle };
+  return { videoStyle, is916 };
 };
 
 export default useVideoStyles;

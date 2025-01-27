@@ -14,6 +14,7 @@ const ThreadContent = ({
   id,
   text,
   mentions,
+  author,
   media,
   variant = 'default',
 }: ThreadContentProps) => {
@@ -32,9 +33,10 @@ const ThreadContent = ({
           {media.fileType === 'video' && (
             <ThreadVideoCard
               video={media.fileUrl! as string}
+              poster={media.thumbnailUrl! as string}
               aspectRatio={media.aspectRatio}
               originalDimensions={media.originalDimensions}
-              text={text || undefined}
+              username={author?.username!}
               postId={id!}
             />
           )}

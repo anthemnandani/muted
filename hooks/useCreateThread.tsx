@@ -138,16 +138,12 @@ const useCreateThread = (
           }
         }
         if (file.type.startsWith('video/')) {
-          const { videoId, thumbnailUrl, streamUrl } = await uploadToStream(
-            file
-          );
+          const { fileUrl, thumbnailUrl } = await uploadToStream(file);
           return {
             success: true,
-            fileUrl: streamUrl,
+            fileUrl,
             fileType: 'video',
-            videoId,
             thumbnailUrl,
-            streamUrl,
             aspectRatio,
             originalDimensions,
           };
@@ -183,6 +179,7 @@ const useCreateThread = (
 
     const {
       fileUrl: mediaUploadUrl,
+      thumbnailUrl,
       fileType,
       aspectRatio,
       originalDimensions,
@@ -209,6 +206,7 @@ const useCreateThread = (
                 fileUrl: mediaUploadUrl,
                 aspectRatio,
                 originalDimensions,
+                thumbnailUrl,
               }
             : undefined,
           privacy: threadData.privacy,

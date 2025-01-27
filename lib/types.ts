@@ -28,6 +28,7 @@ export type PostMedia = {
   fileUrl?: string | IGif;
   aspectRatio?: string;
   originalDimensions?: { width: number; height: number };
+  thumbnailUrl?: string;
 } | null;
 
 export type ParentPostInfo = Pick<

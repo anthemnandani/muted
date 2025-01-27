@@ -76,7 +76,7 @@ export async function uploadToBunnyStream(file: Buffer, fileName: string) {
 
     // Wait for video to be encoded
     let retries = 0;
-    while (retries < 10) {
+    while (retries < 20) {
       if (videoDetails.data.status === 'encoded') {
         break;
       }
@@ -85,9 +85,8 @@ export async function uploadToBunnyStream(file: Buffer, fileName: string) {
     }
 
     return {
-      videoId,
-      thumbnailUrl: videoDetails.data.thumbnailUrl,
-      streamUrl: `https://iframe.mediadelivery.net/embed/${bunnyConfig.streamLibraryId}/${videoId}`,
+      fileUrl: `https://${process.env.NEXT_PUBLIC_BUNNY_STREAM_CDN_HOSTNAME}/${videoId}/playlist.m3u8`,
+      thumbnailUrl: `https://${process.env.NEXT_PUBLIC_BUNNY_STREAM_CDN_HOSTNAME}/${videoId}/thumbnail.jpg`,
     };
   } catch (error) {
     console.error('Error uploading to Bunny Stream:', error);

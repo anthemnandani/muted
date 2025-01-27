@@ -27,6 +27,7 @@ export const postRouter = createTRPCRouter({
             fileType: z.string(),
             fileUrl: z.string(),
             aspectRatio: z.string().optional(),
+            thumbnailUrl: z.string().optional(),
             originalDimensions: z
               .object({
                 width: z.number(),

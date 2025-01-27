@@ -58,11 +58,13 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   const handleContentClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     if (
-      target.closest('.vjs-control') ||
+      target.closest('.vjs-control-bar') ||
       target.closest('.vjs-big-play-button') ||
-      (target.tagName === 'VIDEO' && pathname !== '/')
+      target.tagName === 'VIDEO'
     ) {
       e.preventDefault();
+      e.stopPropagation();
+      return;
     }
     router.push(`/${author.username}/post/${id}`);
   };
@@ -74,6 +76,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
         text={text}
         mentions={mentions}
         media={media}
+        author={author}
         variant={variant}
       />
       {quoteId && (
