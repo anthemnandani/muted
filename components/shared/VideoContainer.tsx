@@ -13,7 +13,7 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
   onInViewChange,
 }) => {
   const { ref, inView } = useInView({
-    threshold: 0.5,
+    threshold: 0.6,
   });
 
   React.useEffect(() => {

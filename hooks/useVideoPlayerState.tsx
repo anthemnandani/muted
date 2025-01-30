@@ -67,7 +67,7 @@ export const useVideoPlayerState = ({
       document.removeEventListener('visibilitychange', handlePlaybackState);
       player.off('play', handlePlay);
     };
-  }, [player, inView, videoId, currentlyPlaying, setCurrentlyPlaying]);
+  }, [player, inView, videoId]);
 
   React.useEffect(() => {
     if (player && timestamps[videoId]) {
