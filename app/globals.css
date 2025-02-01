@@ -199,6 +199,10 @@
   .sort-btn-latest {
     @apply sort-btn-base bg-transparent border border-border-dark dark:border-border-light hover:!bg-transparent;
   }
+
+  .btn-action {
+    @apply flex-center size-12 rounded-full bg-white-12 transition ease-in-out duration-200 hover:bg-white-6;
+  }
 }
 
 @layer utilities {

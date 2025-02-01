@@ -68,10 +68,10 @@ const LikeButton: React.FC<LikeButtonProps> = ({
         disabled={isLoading}
         title={isLikedByMe ? 'Unlike' : 'Like'}
         onClick={() => toggleLike({ id })}
-        className='flex-center w-12 h-12 rounded-full bg-[#FFFFFF1F] transition ease-in-out duration-200 hover:bg-gray-5'
+        className='btn-action'
       >
         <Icons.heart
-          fill={isLikedByMe ? '#ff3040' : '#fff'}
+          fill={isLikedByMe ? '#ff3040' : '#000 '}
           className={cn('size-5', {
             'text-primary-red': isLikedByMe,
           })}

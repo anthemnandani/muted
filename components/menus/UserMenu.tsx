@@ -3,7 +3,6 @@
 import useWindow from '@/hooks/useWindow';
 import { useAuth } from '@clerk/nextjs';
 import { AlertCircle, Bookmark, Heart, LogOut, Settings } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 import { Icons } from '../icons';
 import MenuItem from '../shared/MenuItem';
@@ -13,11 +12,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import AppearanceMenu from './AppearanceMenu';
 
 const UserMenu = () => {
   const { signOut } = useAuth();
-  const { theme, setTheme } = useTheme();
   const router = useRouter();
   const { isMobile } = useWindow();
   return (
@@ -28,7 +25,7 @@ const UserMenu = () => {
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent className='dropdown-content-container ml-4 w-[200px] p-0 rounded-lg'>
-        <AppearanceMenu theme={theme!} setTheme={setTheme} />
+        {/* <AppearanceMenu theme={theme!} setTheme={setTheme} /> */}
         <MenuItem icon={Settings} label='Settings' className='py-2' />
         <MenuItem
           icon={AlertCircle}

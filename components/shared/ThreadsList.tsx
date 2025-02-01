@@ -1,12 +1,12 @@
 'use client';
 
-import Loading from '@/app/(pages)/loading';
 import { ThreadsListProps } from '@/lib/types';
 import Link from 'next/link';
 import React from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import ThreadCard from '../cards/ThreadCard';
 import { Icons } from '../icons';
+import ThreadCardSkeleton from '../skeletons/ThreadCardSkeleton';
 
 const ThreadsList: React.FC<ThreadsListProps> = ({
   isLoading,
@@ -37,7 +37,11 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
         </div>
       )}
       {isLoading ? (
-        <Loading className='md:!h-[80vh]' />
+        <div>
+          {[...Array(10)].map((_, index) => (
+            <ThreadCardSkeleton key={index} />
+          ))}
+        </div>
       ) : (
         <InfiniteScroll
           dataLength={uniquePosts.length}

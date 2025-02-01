@@ -3,7 +3,6 @@
 import Error from '@/app/error';
 import ThreadsList from '@/components/shared/ThreadsList';
 import { api } from '@/trpc/react';
-import Loading from '../loading';
 
 const ThreadsClient = () => {
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
@@ -18,7 +17,6 @@ const ThreadsClient = () => {
 
   const allPosts = data?.pages.flatMap((page) => page.posts);
 
-  if (isLoading) return <Loading />;
   if (isError) return <Error />;
 
   return (
@@ -27,6 +25,7 @@ const ThreadsClient = () => {
         posts={allPosts}
         fetchNextPage={fetchNextPage}
         hasNextPage={hasNextPage}
+        isLoading={isLoading}
         emptyStateMessage='No posts found.'
       />
     </div>
