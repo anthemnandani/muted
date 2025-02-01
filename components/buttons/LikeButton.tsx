@@ -62,32 +62,33 @@ const LikeButton: React.FC<LikeButtonProps> = ({
   });
 
   return (
-    <div className='icon-container-hover'>
+    <div className='flex flex-col items-center gap-1.5'>
       <button
         type='button'
         disabled={isLoading}
         title={isLikedByMe ? 'Unlike' : 'Like'}
         onClick={() => toggleLike({ id })}
-        className='flex items-center gap-2 z-[2] relative'
+        className='flex-center w-12 h-12 rounded-full bg-[#FFFFFF1F] transition ease-in-out duration-200 hover:bg-gray-5'
       >
         <Icons.heart
-          fill={isLikedByMe ? '#ff3040' : 'transparent'}
+          fill={isLikedByMe ? '#ff3040' : '#fff'}
           className={cn('size-5', {
             'text-primary-red': isLikedByMe,
           })}
         />
       </button>
-      {likesCount > 0 && !hideLikes && !isParentPost && (
-        <span
-          className={cn(
-            'text-[13px] ml-2',
-            isLikedByMe && 'text-primary-red',
-            !isLikedByMe && 'text-gray-4 dark:text-gray-2'
-          )}
-        >
-          {likesCount}
-        </span>
-      )}
+      {/* {likesCount > 0 && !hideLikes && !isParentPost && ( */}
+      <strong
+        className={cn(
+          'text-[13px] leading-4 text-center',
+          isLikedByMe && 'text-primary-red',
+          !isLikedByMe && 'text-gray-4 dark:text-gray-2'
+        )}
+      >
+        {/* {likesCount} */}
+        100k
+      </strong>
+      {/* )} */}
     </div>
   );
 };

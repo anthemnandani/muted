@@ -12,7 +12,6 @@ interface VideoPlayerProps {
   onPlayerReady: (player: Player) => void;
   onTouchStart?: (e: React.TouchEvent<HTMLVideoElement>) => void;
   onTimeUpdate?: () => void;
-  videoStyle?: React.CSSProperties;
   poster?: string;
 }
 
@@ -21,7 +20,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onPlayerReady,
   onTouchStart,
   onTimeUpdate,
-  videoStyle,
   poster,
 }) => {
   const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -49,7 +47,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       onTouchStart={onTouchStart}
       onTimeUpdate={onTimeUpdate}
       poster={poster}
-      style={videoStyle}
+      style={{
+        height: '100%',
+        aspectRatio: '9/16',
+        width: 'auto',
+      }}
     />
   );
 };

@@ -76,7 +76,7 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
     [video, aspectRatio, isMuted]
   );
 
-  const { videoStyle } = useVideoStyles(aspectRatio, originalDimensions);
+  // const { videoStyle } = useVideoStyles(aspectRatio, originalDimensions);
 
   const handleTimeUpdate = React.useCallback(() => {
     if (player && inView) {
@@ -100,7 +100,6 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
         onPlayerReady={setPlayer}
         onTouchStart={handleTouchStart}
         onTimeUpdate={handleTimeUpdate}
-        videoStyle={videoStyle}
       />
     </VideoContainer>
   );

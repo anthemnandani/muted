@@ -280,6 +280,37 @@
       @apply max-h-[350px] !important;
     }
   }
+
+  .snap-mandatory {
+    scroll-snap-type: y mandatory;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    scroll-behavior: smooth;
+  }
+
+  /* Customize scrolling animation */
+  @media (prefers-reduced-motion: no-preference) {
+    .snap-mandatory {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /* Improve touch scrolling */
+  .smooth-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
 }
 
 /* Clerk Responsive fix */
@@ -294,9 +325,15 @@
 }
 
 .infinite-scroll-component {
-  @apply !overflow-hidden;
+  overflow: visible !important;
 }
 
 .vjs-theme-fantasy {
   --vjs-theme-fantasy--primary: #bf1313 !important;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .snap-mandatory {
+    scroll-snap-type: y mandatory;
+  }
 }

@@ -1,9 +1,8 @@
-import { Icons } from '@/components/icons';
 import type { ReplyPostInfo } from '@/lib/types';
-import { cn } from '@/lib/utils';
 import useDialog from '@/store/dialog';
 import React from 'react';
 import { toast } from 'sonner';
+import { Icons } from '../icons';
 
 interface ReplyButtonProps {
   replyThreadInfo: ReplyPostInfo;
@@ -27,19 +26,19 @@ const ReplyButton: React.FC<ReplyButtonProps> = ({
   };
 
   return (
-    <div
-      className={cn(
-        'icon-container-hover',
-        !canInteract && '!cursor-not-allowed'
-      )}
-      onClick={handleReplyClick}
-    >
-      <Icons.reply className='size-5 transition-colors duration-150 text-gray-4 dark:text-gray-2' />
-      {repliesCount > 0 && !isParentPost && (
-        <span className='text-[13px] ml-2 text-gray-4 dark:text-gray-2'>
-          {repliesCount}
-        </span>
-      )}
+    <div className='flex flex-col items-center gap-1.5'>
+      <button
+        className='flex-center w-12 h-12 rounded-full bg-[#FFFFFF1F] transition ease-in-out duration-200 hover:bg-gray-5'
+        onClick={handleReplyClick}
+      >
+        <Icons.comment className='size-5' fill='#fff' />
+      </button>
+      {/* {repliesCount > 0 && !isParentPost && ( */}
+      <strong className='text-[13px] leading-4 text-center'>
+        {/* {repliesCount} */}
+        5k
+      </strong>
+      {/* )} */}
     </div>
   );
 };

@@ -23,8 +23,7 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
   return (
     <div
       ref={ref}
-      className='relative overflow-hidden mt-2.5 mb-2 bg-black flex-center w-full cursor-pointer'
-      style={{ aspectRatio: '4/5' }}
+      className='relative h-full w-full overflow-hidden flex-grow cursor-pointer bg-black rounded-2xl'
     >
       {children}
     </div>

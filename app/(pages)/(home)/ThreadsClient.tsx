@@ -1,8 +1,7 @@
 'use client';
 
 import Error from '@/app/error';
-import FeedWrapper from '@/components/shared/FeedWrapper';
-import { ThreadFilter } from '@/lib/types';
+import ThreadsList from '@/components/shared/ThreadsList';
 import { api } from '@/trpc/react';
 import Loading from '../loading';
 
@@ -23,15 +22,14 @@ const ThreadsClient = () => {
   if (isError) return <Error />;
 
   return (
-    <FeedWrapper
-      posts={allPosts}
-      isLoading={isLoading}
-      isError={isError}
-      hasNextPage={hasNextPage}
-      fetchNextPage={fetchNextPage}
-      selectedFilter={ThreadFilter.FOR_YOU}
-      emptyStateMessage='No posts found.'
-    />
+    <div className='h-full'>
+      <ThreadsList
+        posts={allPosts}
+        fetchNextPage={fetchNextPage}
+        hasNextPage={hasNextPage}
+        emptyStateMessage='No posts found.'
+      />
+    </div>
   );
 };
 

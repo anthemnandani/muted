@@ -1,10 +1,6 @@
-import ThreadImageCard from '@/components/cards/ThreadImageCard';
 import ThreadVideoCard from '@/components/cards/ThreadVideoCard';
 import type { ParentPostInfo } from '@/lib/types';
-import { isImageOrVideo } from '@/lib/utils';
-import Image from 'next/image';
 import React from 'react';
-import ThreadText from './ThreadText';
 
 type ThreadContentProps = Partial<ParentPostInfo> & {
   variant?: 'default' | 'reply';
@@ -20,16 +16,16 @@ const ThreadContent = ({
 }: ThreadContentProps) => {
   return (
     <React.Fragment>
-      {text && <ThreadText text={text} mentions={mentions} variant={variant} />}
+      {/* {text && <ThreadText text={text} mentions={mentions} variant={variant} />} */}
       {media && media.fileType && (
         <>
-          {isImageOrVideo(media.fileType) === 'image' && (
+          {/* {isImageOrVideo(media.fileType) === 'image' && (
             <ThreadImageCard
               image={media.fileUrl as string}
               aspectRatio={media.aspectRatio}
               originalDimensions={media.originalDimensions}
             />
-          )}
+          )} */}
           {media.fileType === 'video' && (
             <ThreadVideoCard
               video={media.fileUrl! as string}
@@ -40,7 +36,7 @@ const ThreadContent = ({
               postId={id!}
             />
           )}
-          {media.fileType === 'gif' && (
+          {/* {media.fileType === 'gif' && (
             <div className='relative px-4 overflow-hidden mt-2.5 mb-2'>
               <Image
                 src={media.fileUrl as string}
@@ -50,7 +46,7 @@ const ThreadContent = ({
                 loading='lazy'
               />
             </div>
-          )}
+          )} */}
         </>
       )}
     </React.Fragment>

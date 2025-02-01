@@ -84,27 +84,30 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
 
   return (
     <div
-      className='relative inline-block'
+      className='flex flex-col items-center gap-1.5'
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className='icon-container-hover'>
-        <button ref={buttonRef} onClick={handleClick}>
-          <Bookmark
-            fill={isBookmarkedByMe ? 'currentColor' : 'transparent'}
-            className={cn(
-              'size-5 transition-colors',
-              isLoading && 'opacity-50',
-              isBookmarkedByMe && 'text-primary-blue'
-            )}
-          />
-        </button>
-        {bookmarksCount > 0 && !isParentPost && (
-          <span className='text-[13px] text-gray-4 dark:text-gray-2 ml-2'>
-            {bookmarksCount}
-          </span>
-        )}
-      </div>
+      <button
+        ref={buttonRef}
+        onClick={handleClick}
+        className='flex-center w-12 h-12 rounded-full bg-[#FFFFFF1F] transition ease-in-out duration-200 hover:bg-gray-5'
+      >
+        <Bookmark
+          fill={isBookmarkedByMe ? 'currentColor' : '#fff'}
+          className={cn(
+            'size-5 transition-colors',
+            isLoading && 'opacity-50',
+            isBookmarkedByMe && 'text-primary-blue'
+          )}
+        />
+      </button>
+      {/* {bookmarksCount > 0 && !isParentPost && ( */}
+      <strong className='text-[13px] leading-4 text-center'>
+        {/* {bookmarksCount} */}
+        2k
+      </strong>
+      {/* )} */}
       <CollectionsMenu
         postId={postId}
         isOpen={showMenu}

@@ -27,12 +27,8 @@ export default async function PagesLayout({
     <>
       <TopBar />
       <LeftSideBar />
-      <main className='flex justify-center h-screen'>
-        <section className='w-full'>
-          <div className='w-full md:max-w-[550px] mx-auto relative'>
-            {children}
-          </div>
-        </section>
+      <main className='h-screen overflow-y-scroll snap-y snap-mandatory smooth-scroll hide-scrollbar'>
+        <div className='grid place-items-center min-h-screen'>{children}</div>
       </main>
       <BottomBar />
     </>
