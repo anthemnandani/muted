@@ -16,7 +16,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
   author,
   className,
 }) => {
-  const { handleToggleFollow, isLoading, isSameUser, followUpdate } =
+  const { handleToggleFollow, isLoading, isSameUser, isFollowedByMe } =
     useFollowUser({
       author,
     });
@@ -25,16 +25,16 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     <Follow
       disabled={isLoading || isSameUser}
       onClick={handleToggleFollow}
-      variant={!followUpdate.current.isFollowedByMe ? variant : 'outline'}
+      variant={!isFollowedByMe ? variant : 'outline'}
       className={cn(
         'rounded-[10px] px-6 !text-[14px] py-1.5 h-8 select-none',
         className,
         {
-          'opacity-80': followUpdate.current.isFollowedByMe,
+          'opacity-80': isFollowedByMe,
         }
       )}
     >
-      {followUpdate.current.isFollowedByMe ? 'Following' : 'Follow'}
+      {isFollowedByMe ? 'Following' : 'Follow'}
     </Follow>
   );
 };
