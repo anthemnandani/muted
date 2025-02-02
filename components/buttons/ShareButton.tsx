@@ -6,7 +6,7 @@ const ShareButton = () => {
       <button className='btn-action'>
         <Share2 className='size-5' fill='#fff' />
       </button>
-      <strong className='text-[13px] text-center'>500</strong>
+      {/* <strong className='text-[13px] text-center'>500</strong> */}
     </div>
   );
 };

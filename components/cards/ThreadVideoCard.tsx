@@ -66,8 +66,6 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
     [video, aspectRatio, isMuted]
   );
 
-  // const { videoStyle } = useVideoStyles(aspectRatio, originalDimensions);
-
   const handleTimeUpdate = React.useCallback(() => {
     if (player && inView) {
       setTimestamp(videoId, player.currentTime() as number);

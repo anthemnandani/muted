@@ -11,7 +11,7 @@ const ThreadCardSkeleton = () => {
         </div>
         <div className='flex flex-col items-center gap-5'>
           {[...Array(5)].map((_, i) => (
-            <Skeleton className='size-12 rounded-full bg-white-12' />
+            <Skeleton key={i} className='size-12 rounded-full bg-white-12' />
           ))}
         </div>
       </article>

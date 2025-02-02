@@ -98,12 +98,11 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
           )}
         />
       </button>
-      {/* {bookmarksCount > 0 && !isParentPost && ( */}
-      <strong className='text-[13px] leading-4 text-center'>
-        {/* {bookmarksCount} */}
-        2k
-      </strong>
-      {/* )} */}
+      {bookmarksCount > 0 && (
+        <strong className='text-[13px] leading-4 text-center'>
+          {bookmarksCount}
+        </strong>
+      )}
       <CollectionsMenu
         postId={postId}
         isOpen={showMenu}

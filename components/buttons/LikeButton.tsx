@@ -1,4 +1,5 @@
 'use client';
+
 import { PostProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { api } from '@/trpc/react';
@@ -71,24 +72,17 @@ const LikeButton: React.FC<LikeButtonProps> = ({
         className='btn-action'
       >
         <Icons.heart
-          fill={isLikedByMe ? '#ff3040' : '#000 '}
+          fill={isLikedByMe ? '#ff3040' : '#fff '}
           className={cn('size-5', {
             'text-primary-red': isLikedByMe,
           })}
         />
       </button>
-      {/* {likesCount > 0 && !hideLikes && !isParentPost && ( */}
-      <strong
-        className={cn(
-          'text-[13px] leading-4 text-center',
-          isLikedByMe && 'text-primary-red',
-          !isLikedByMe && 'text-gray-4 dark:text-gray-2'
-        )}
-      >
-        {/* {likesCount} */}
-        100k
-      </strong>
-      {/* )} */}
+      {likesCount > 0 && !hideLikes && (
+        <strong className={cn('text-[13px] leading-4 text-center text-gray-2')}>
+          {likesCount}
+        </strong>
+      )}
     </div>
   );
 };

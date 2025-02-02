@@ -1,5 +1,6 @@
 import type { ReplyPostInfo } from '@/lib/types';
 import useDialog from '@/store/dialog';
+import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
 import { toast } from 'sonner';
 import { Icons } from '../icons';
@@ -18,9 +19,15 @@ const ReplyButton: React.FC<ReplyButtonProps> = ({
   canInteract,
 }) => {
   const { setOpenDialog, setReplyPostInfo } = useDialog();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const handleReplyClick = () => {
     if (!canInteract) return toast.error('You cannot reply to this post');
+    if (pathname === '/') {
+      const { author, id } = replyThreadInfo;
+      return router.push(`/${author.username}/post/${id}`);
+    }
     setOpenDialog(true);
     setReplyPostInfo(replyThreadInfo);
   };
@@ -30,12 +37,11 @@ const ReplyButton: React.FC<ReplyButtonProps> = ({
       <button className='btn-action' onClick={handleReplyClick}>
         <Icons.comment className='size-5' fill='#fff' />
       </button>
-      {/* {repliesCount > 0 && !isParentPost && ( */}
-      <strong className='text-[13px] leading-4 text-center'>
-        {/* {repliesCount} */}
-        5k
-      </strong>
-      {/* )} */}
+      {repliesCount > 0 && !isParentPost && (
+        <strong className='text-[13px] leading-4 text-center'>
+          {repliesCount}
+        </strong>
+      )}
     </div>
   );
 };

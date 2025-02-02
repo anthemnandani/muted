@@ -1,12 +1,13 @@
 'use client';
 import { ThreadCardProps } from '@/lib/types';
 import React from 'react';
-import BookmarkButton from '../buttons/BookmarkButton';
-import LikeButton from '../buttons/LikeButton';
-import ReplyButton from '../buttons/ReplyButton';
-import ShareButton from '../buttons/ShareButton';
 import UserProfile from '../modals/UserProfile';
+import ThreadActions from '../shared/ThreadActions';
 import ThreadVideoCard from './ThreadVideoCard';
+import ReplyButton from '../buttons/ReplyButton';
+import LikeButton from '../buttons/LikeButton';
+import BookmarkButton from '../buttons/BookmarkButton';
+import ShareButton from '../buttons/ShareButton';
 
 const ThreadCard: React.FC<ThreadCardProps> = ({
   isLastThread,

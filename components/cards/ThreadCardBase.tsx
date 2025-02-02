@@ -4,13 +4,16 @@ import { ThreadCardProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useHiddenPosts } from '@/store/hiddenPosts';
 import { useMutedUsers } from '@/store/mutedUsers';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import React from 'react';
+import PostHeader from '../posts/PostHeader';
 import ThreadActions from '../shared/ThreadActions';
 import ThreadContent from '../shared/ThreadContent';
 import RepostedBy from '../user/RepostedBy';
 import HiddenPost from './HiddenPost';
+import LinkPreviewCard from './LinkPreviewCard';
 import MutedPost from './MutedPost';
+import ThreadQuoteCard from './ThreadQuoteCard';
 
 interface ThreadCardBaseProps extends ThreadCardProps {
   variant?: 'default' | 'reply';
@@ -47,7 +50,6 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   className,
   children,
 }) => {
-  const pathname = usePathname();
   const { isTemporarilyHidden } = useHiddenPosts();
   const { isMutedUser } = useMutedUsers();
   const router = useRouter();
@@ -76,11 +78,11 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
         author={author}
         variant={variant}
       />
-      {/* {quoteId && (
+      {quoteId && (
         <div className='px-10'>
           <ThreadQuoteCard quoteId={quoteId} />
         </div>
-      )} */}
+      )}
     </>
   );
 
@@ -110,7 +112,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
         <RepostedBy repostedBy={repostedBy} repostedAt={repostedAt} />
       )}
 
-      {/* {showHeader && (
+      {showHeader && (
         <PostHeader
           author={author}
           createdAt={createdAt}
@@ -120,7 +122,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
           variant={variant}
           hideLikes={hideLikes}
         />
-      )} */}
+      )}
 
       {variant === 'default' ? (
         <div className='w-full cursor-pointer' onClick={handleContentClick}>
@@ -130,7 +132,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
         content
       )}
 
-      {/* {linkPreview && (
+      {linkPreview && (
         <div className='mx-2 md:mx-4 my-2'>
           <a href={linkPreview.url} target='_blank' rel='noreferrer'>
             <LinkPreviewCard
@@ -141,7 +143,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
             />
           </a>
         </div>
-      )} */}
+      )}
 
       {showActions && (
         <div className='pt-2 flex-between w-full px-2 md:px-4'>

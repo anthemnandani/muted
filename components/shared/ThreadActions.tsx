@@ -8,11 +8,7 @@ import LikeButton from '../buttons/LikeButton';
 import ReplyButton from '../buttons/ReplyButton';
 import RepostButton from '../buttons/RepostButton';
 
-interface ExtendedThreadActionsProps extends ThreadActionsProps {
-  layout?: 'horizontal' | 'vertical';
-}
-
-const ThreadActions: React.FC<ExtendedThreadActionsProps> = ({
+const ThreadActions: React.FC<ThreadActionsProps> = ({
   id,
   likesCount,
   likes,
@@ -36,63 +32,63 @@ const ThreadActions: React.FC<ExtendedThreadActionsProps> = ({
     privacy,
     mentions,
   });
-
-  const containerClass = 'flex flex-col gap-4 items-center';
-
   return (
-    <div className={containerClass}>
-      <LikeButton
-        likeInfo={{
-          id,
-          likesCount,
-          likes,
-        }}
-        hideLikes={hideLikes}
-        isParentPost={isParentPost}
-      />
+    <>
+      <div className='flex items-center gap-5'>
+        <LikeButton
+          likeInfo={{
+            id,
+            likesCount,
+            likes,
+          }}
+          hideLikes={hideLikes}
+          isParentPost={isParentPost}
+        />
 
-      <ReplyButton
-        replyThreadInfo={{
-          id,
-          text,
-          media,
-          author,
-          createdAt,
-          privacy,
-          mentions,
-          linkPreview,
-        }}
-        repliesCount={repliesCount}
-        isParentPost={isParentPost}
-        canInteract={canInteract}
-      />
+        <ReplyButton
+          replyThreadInfo={{
+            id,
+            text,
+            media,
+            author,
+            createdAt,
+            privacy,
+            mentions,
+            linkPreview,
+          }}
+          repliesCount={repliesCount}
+          isParentPost={isParentPost}
+          canInteract={canInteract}
+        />
 
-      <RepostButton
-        id={id}
-        text={text}
-        author={author}
-        createdAt={createdAt}
-        reposts={reposts}
-        repostsCount={repostsCount}
-        isParentPost={isParentPost}
-        media={media}
-        linkPreview={linkPreview}
-        mentions={mentions}
-        isCheckingPermissions={isCheckingPermissions}
-        canInteract={canInteract}
-      />
+        <RepostButton
+          id={id}
+          text={text}
+          author={author}
+          createdAt={createdAt}
+          reposts={reposts}
+          repostsCount={repostsCount}
+          isParentPost={isParentPost}
+          media={media}
+          linkPreview={linkPreview}
+          mentions={mentions}
+          isCheckingPermissions={isCheckingPermissions}
+          canInteract={canInteract}
+        />
+      </div>
 
-      <BookmarkButton
-        bookmarkInfo={{
-          id,
-          bookmarksCount,
-          bookmarks,
-        }}
-        isParentPost={isParentPost}
-      />
-
-      <CopyLinkButton postId={id} username={author.username} />
-    </div>
+      <div className='flex items-center gap-5'>
+        <BookmarkButton
+          bookmarkInfo={{
+            id,
+            bookmarksCount,
+            bookmarks,
+          }}
+          isParentPost={isParentPost}
+        />
+        <CopyLinkButton postId={id} username={author.username} />
+      </div>
+    </>
   );
 };
 

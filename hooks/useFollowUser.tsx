@@ -1,39 +1,29 @@
 import { Icons } from '@/components/icons';
-import { AuthorInfoProps } from '@/lib/types';
+import type { AuthorInfoProps } from '@/lib/types';
+import useFollowUserStore from '@/store/followUser';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
-import { usePathname } from 'next/navigation';
-import React from 'react';
 import { toast } from 'sonner';
 
 const useFollowUser = ({ author }: { author: AuthorInfoProps }) => {
-  const path = usePathname();
   const { user: loggedUser } = useUser();
   const trpcUtils = api.useUtils();
+  const { follows, toggleFollow: toggleFollowGlobal } = useFollowUserStore();
 
   const isSameUser = author.id === loggedUser?.id;
-  const followUpdate = React.useRef({
-    isFollowedByMe: author.followers?.some(
-      (user) => user.id === loggedUser?.id
-    ),
-  });
+  const isFollowedByMe = follows[author.id] || false;
 
   const { mutateAsync: toggleFollow, isLoading } =
     api.user.toggleFollow.useMutation({
       onMutate: () => {
-        const previousFollowedByMe = followUpdate.current.isFollowedByMe;
-        followUpdate.current.isFollowedByMe = !previousFollowedByMe;
-        return { previousFollowedByMe };
+        toggleFollowGlobal(author.id);
+        return { previousFollowedByMe: isFollowedByMe };
       },
       onError: (error, variables, context) => {
-        followUpdate.current.isFollowedByMe =
-          context?.previousFollowedByMe ?? followUpdate.current.isFollowedByMe;
+        toggleFollowGlobal(author.id);
         toast.error('FollowError: Something went wrong!');
       },
       onSettled: async () => {
-        if (path === '/') {
-          await trpcUtils.post.getInfinitePosts.invalidate();
-        }
         await trpcUtils.invalidate();
       },
     });
@@ -45,21 +35,20 @@ const useFollowUser = ({ author }: { author: AuthorInfoProps }) => {
           <div>
             <Icons.loading className='size-8' />
           </div>
-          {followUpdate.current.isFollowedByMe
-            ? 'Unfollowing...'
-            : 'Following...'}
+          {isFollowedByMe ? 'Unfollowing...' : 'Following...'}
         </div>
       ),
-      success: () => (
+      success: (data) => (
         <div className='flex-center p-0'>
-          {followUpdate.current.isFollowedByMe ? 'Followed' : 'Unfollowed'}
+          {data.followUser ? 'Followed' : 'Unfollowed'}
         </div>
       ),
       error: 'Error',
       richColors: true,
     });
   };
-  return { handleToggleFollow, isLoading, isSameUser, followUpdate };
+
+  return { handleToggleFollow, isLoading, isSameUser, isFollowedByMe };
 };
 
 export default useFollowUser;
