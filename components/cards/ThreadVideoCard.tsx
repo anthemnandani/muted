@@ -1,7 +1,6 @@
 'use client';
 
 import { useVideoPlayerState } from '@/hooks/useVideoPlayerState';
-import useVideoStyles from '@/hooks/useVideoStyles';
 import React from 'react';
 import Player from 'video.js/dist/types/player';
 import { VideoContainer } from '../shared/VideoContainer';
@@ -52,16 +51,7 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
       controlBar: {
         pictureInPictureToggle: false,
         fullscreenToggle: false,
-        volumePanel: { inline: true },
-        progressControl: { seekBar: true },
-        children: [
-          'playToggle',
-          'progressControl',
-          'volumePanel',
-          'currentTimeDisplay',
-          'timeDivider',
-          'durationDisplay',
-        ],
+        children: ['progressControl'],
       },
       sources: [{ src: video, type: 'application/x-mpegURL' }],
       html5: {
