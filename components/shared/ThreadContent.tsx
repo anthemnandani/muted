@@ -31,7 +31,6 @@ const ThreadContent = ({
               video={media.fileUrl! as string}
               poster={media.thumbnailUrl! as string}
               aspectRatio={media.aspectRatio}
-              originalDimensions={media.originalDimensions}
               username={author?.username!}
               postId={id!}
             />

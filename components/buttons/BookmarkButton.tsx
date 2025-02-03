@@ -88,7 +88,13 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <button ref={buttonRef} onClick={handleClick} className='btn-action'>
+      <button
+        aria-label='Bookmark'
+        type='button'
+        ref={buttonRef}
+        onClick={handleClick}
+        className='btn-action'
+      >
         <Bookmark
           fill={isBookmarkedByMe ? 'currentColor' : '#fff'}
           className={cn(

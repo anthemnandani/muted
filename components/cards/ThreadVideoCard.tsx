@@ -9,7 +9,6 @@ import { VideoPlayer } from '../shared/VideoPlayer';
 interface ThreadVideoCardProps {
   video: string;
   aspectRatio?: string;
-  originalDimensions?: { width: number; height: number };
   username: string;
   postId: string;
   poster: string;
@@ -18,7 +17,6 @@ interface ThreadVideoCardProps {
 const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
   video,
   aspectRatio,
-  originalDimensions,
   username,
   postId,
   poster,
@@ -39,6 +37,16 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
     postId,
   });
 
+  React.useEffect(() => {
+    if (player && inView) {
+      player.play()?.catch((error) => {
+        console.log('Autoplay prevented:', error);
+      });
+    } else if (player && !inView) {
+      player?.pause();
+    }
+  }, [player, inView]);
+
   const playerOptions = React.useMemo(
     () => ({
       controls: true,
@@ -46,6 +54,7 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
       muted: isMuted,
       playsinline: true,
       preload: 'auto',
+      autoplay: false,
       disablePictureInPicture: true,
       userActions: { hotkeys: true, doubleClick: false },
       controlBar: {
@@ -85,7 +94,14 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
       <VideoPlayer
         poster={poster}
         options={playerOptions}
-        onPlayerReady={setPlayer}
+        onPlayerReady={(p) => {
+          setPlayer(p);
+          if (inView) {
+            p.play()?.catch((error) => {
+              console.log('Initial autoplay prevented:', error);
+            });
+          }
+        }}
         onTouchStart={handleTouchStart}
         onTimeUpdate={handleTimeUpdate}
       />

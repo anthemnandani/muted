@@ -27,7 +27,10 @@ export default async function PagesLayout({
     <>
       <TopBar />
       <LeftSideBar />
-      <main className='h-screen overflow-y-scroll snap-y snap-mandatory smooth-scroll hide-scrollbar'>
+      <main
+        id='main-scroll-container'
+        className='h-screen overflow-y-scroll snap-y snap-mandatory smooth-scroll hide-scrollbar'
+      >
         <div className='grid place-items-center min-h-screen'>{children}</div>
       </main>
       <BottomBar />
