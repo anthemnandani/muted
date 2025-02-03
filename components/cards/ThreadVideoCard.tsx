@@ -51,7 +51,8 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
     () => ({
       controls: true,
       loop: true,
-      muted: isMuted,
+      // muted: isMuted,
+      muted: false,
       playsinline: true,
       preload: 'auto',
       autoplay: false,
