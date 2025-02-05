@@ -75,22 +75,22 @@ export const useVideoPlayerState = ({
     }
   }, [player]);
 
-  // React.useEffect(() => {
-  //   if (!player) return;
+  React.useEffect(() => {
+    if (!player) return;
 
-  //   const handleVolumeChange = () => {
-  //     if (player.muted() !== isMuted) {
-  //       setIsMuted(player.muted() as boolean);
-  //     }
-  //   };
+    const handleVolumeChange = () => {
+      if (player.muted() !== isMuted) {
+        setIsMuted(player.muted() as boolean);
+      }
+    };
 
-  //   player.muted(isMuted);
-  //   player.on('volumechange', handleVolumeChange);
+    player.muted(isMuted);
+    player.on('volumechange', handleVolumeChange);
 
-  //   return () => {
-  //     player.off('volumechange', handleVolumeChange);
-  //   };
-  // }, [player, isMuted, setIsMuted]);
+    return () => {
+      player.off('volumechange', handleVolumeChange);
+    };
+  }, [player, isMuted, setIsMuted]);
 
   React.useEffect(() => {
     if (!player) return;

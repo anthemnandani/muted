@@ -51,8 +51,7 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
     () => ({
       controls: true,
       loop: true,
-      // muted: isMuted,
-      muted: false,
+      muted: isMuted,
       playsinline: true,
       preload: 'auto',
       autoplay: false,
@@ -61,6 +60,7 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
       controlBar: {
         pictureInPictureToggle: false,
         fullscreenToggle: false,
+        volumePanel: { inline: true },
         children: ['progressControl'],
       },
       sources: [{ src: video, type: 'application/x-mpegURL' }],
@@ -91,7 +91,7 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
   };
 
   return (
-    <VideoContainer onInViewChange={setInView}>
+    <VideoContainer onInViewChange={setInView} player={player}>
       <VideoPlayer
         poster={poster}
         options={playerOptions}

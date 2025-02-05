@@ -36,7 +36,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
   return (
     <div className='h-screen flex-center'>
       <article className='flex justify-center items-end gap-4'>
-        <div className='w-full max-w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(0px-2rem+100vh)] relative snap-center'>
+        <div className='w-full max-w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(0px-2rem+100vh)] relative snap-center snap-always'>
           <ThreadVideoCard
             video={media?.fileUrl! as string}
             poster={media?.thumbnailUrl! as string}

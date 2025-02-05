@@ -4,8 +4,8 @@ import React from 'react';
 import videojs from 'video.js';
 import Player from 'video.js/dist/types/player';
 import 'video.js/dist/video-js.css';
-import '@videojs/themes/dist/fantasy/index.css';
 import '@videojs/http-streaming';
+import '@videojs/themes/dist/fantasy/index.css';
 
 interface VideoPlayerProps {
   options: any;
@@ -37,6 +37,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           height: 4px;
           background: rgba(255, 255, 255, 0.2);
         }
+
         .video-js .vjs-progress-holder {
           height: 4px;
           margin: 0;
@@ -64,6 +65,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           background: none;
           height: 4px;
         }
+
         .video-js .vjs-remaining-time,
         .video-js .vjs-volume-panel,
         .video-js .vjs-play-control {
