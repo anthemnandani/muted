@@ -1,24 +1,38 @@
 'use client';
 
+import { AuthorInfoProps } from '@/lib/types';
+import { formatTimeAgo } from '@/lib/utils';
 import useVideoPlayer from '@/store/videoPlayer';
 import { Volume2, VolumeX } from 'lucide-react';
+import Link from 'next/link';
 import React from 'react';
 import { useInView } from 'react-intersection-observer';
 import Player from 'video.js/dist/types/player';
+import Username from '../user/Username';
+import ThreadText from './ThreadText';
 
 interface VideoContainerProps {
   children: React.ReactNode;
   onInViewChange: (inView: boolean) => void;
   player: Player | null;
+  author: AuthorInfoProps;
+  createdAt: Date;
+  id: string;
+  text: string | null;
 }
 
 export const VideoContainer: React.FC<VideoContainerProps> = ({
   children,
   onInViewChange,
   player,
+  author,
+  createdAt,
+  id,
+  text,
 }) => {
   const [showControls, setShowControls] = React.useState(false);
   const [showVolumeSlider, setShowVolumeSlider] = React.useState(false);
+
   const { isMuted, setIsMuted } = useVideoPlayer();
   const [volume, setVolume] = React.useState(1);
   const controlsTimeoutRef = React.useRef<NodeJS.Timeout>();
@@ -49,19 +63,16 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
   const showControlsTemporarily = () => {
     setShowControls(true);
 
-    // Clear any existing timeout
     if (controlsTimeoutRef.current) {
       clearTimeout(controlsTimeoutRef.current);
     }
 
-    // Hide controls after 3 seconds
     controlsTimeoutRef.current = setTimeout(() => {
       setShowControls(false);
       setShowVolumeSlider(false);
     }, 3000);
   };
 
-  // Cleanup timeout on unmount
   React.useEffect(() => {
     return () => {
       if (controlsTimeoutRef.current) {
@@ -137,6 +148,21 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
             }}
           />
         </div>
+      </div>
+      <div className='absolute bottom-0 left-0 right-0 py-3 pl-4 max-h-[50%]'>
+        <div className='flex items-center gap-2 mb-2'>
+          <div className='max-w-[40%] overflow-hidden'>
+            <Username author={author} className='truncate' />
+          </div>
+          <div className='hidden size-1 rounded-full bg-white sm:block'></div>
+          <Link
+            href={`/${author.username}/post/${id}`}
+            className='text-white text-sm truncate'
+          >
+            {formatTimeAgo(createdAt)}
+          </Link>
+        </div>
+        {text && <ThreadText text={text} />}
       </div>
     </div>
   );

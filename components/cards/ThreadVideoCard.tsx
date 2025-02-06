@@ -5,35 +5,40 @@ import React from 'react';
 import Player from 'video.js/dist/types/player';
 import { VideoContainer } from '../shared/VideoContainer';
 import { VideoPlayer } from '../shared/VideoPlayer';
+import { AuthorInfoProps } from '@/lib/types';
 
 interface ThreadVideoCardProps {
   video: string;
   aspectRatio?: string;
-  username: string;
   postId: string;
   poster: string;
+  author: AuthorInfoProps;
+  createdAt: Date;
+  text: string | null;
 }
 
 const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
   video,
   aspectRatio,
-  username,
   postId,
   poster,
+  author,
+  createdAt,
+  text,
 }) => {
   const [player, setPlayer] = React.useState<Player | null>(null);
   const [inView, setInView] = React.useState(false);
 
   const videoId = React.useMemo(
-    () => `${username}-${postId}`,
-    [username, postId]
+    () => `${author?.username}-${postId}`,
+    [author?.username, postId]
   );
 
   const { isMuted, setTimestamp } = useVideoPlayerState({
     player,
     videoId,
     inView,
-    username,
+    username: author.username!,
     postId,
   });
 
@@ -91,7 +96,14 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
   };
 
   return (
-    <VideoContainer onInViewChange={setInView} player={player}>
+    <VideoContainer
+      onInViewChange={setInView}
+      player={player}
+      author={author}
+      createdAt={createdAt}
+      id={postId}
+      text={text}
+    >
       <VideoPlayer
         poster={poster}
         options={playerOptions}

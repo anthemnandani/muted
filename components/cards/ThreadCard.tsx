@@ -41,10 +41,13 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
             video={media?.fileUrl! as string}
             poster={media?.thumbnailUrl! as string}
             aspectRatio={media?.aspectRatio}
-            username={author?.username!}
             postId={id!}
+            author={author}
+            createdAt={createdAt}
+            text={text}
           />
         </div>
+
         <div className='flex flex-col items-center gap-4'>
           <UserProfile author={author} />
           <LikeButton

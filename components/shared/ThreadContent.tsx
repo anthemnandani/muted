@@ -26,15 +26,18 @@ const ThreadContent = ({
               originalDimensions={media.originalDimensions}
             />
           )} */}
-          {media.fileType === 'video' && (
+          {/* {media.fileType === 'video' && (
             <ThreadVideoCard
               video={media.fileUrl! as string}
               poster={media.thumbnailUrl! as string}
               aspectRatio={media.aspectRatio}
-              username={author?.username!}
+              author={author!}
+              createdAt={createdAt!}
               postId={id!}
+              text={text}
             />
-          )}
+
+          )} */}
           {/* {media.fileType === 'gif' && (
             <div className='relative px-4 overflow-hidden mt-2.5 mb-2'>
               <Image

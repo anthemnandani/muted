@@ -47,15 +47,22 @@ export function formatTimeAgo(timestamp: Date): string {
   const weeksDiff = differenceInWeeks(now, timestamp);
 
   if (secondsDiff < 60) {
-    return `${secondsDiff}s`;
+    return 'now';
   } else if (minutesDiff < 60) {
-    return `${minutesDiff}m`;
+    return minutesDiff === 1 ? '1m ago' : `${minutesDiff}m ago`;
   } else if (hoursDiff < 24) {
-    return `${hoursDiff}h`;
+    return hoursDiff === 1 ? '1h ago' : `${hoursDiff}h ago`;
   } else if (daysDiff < 7) {
-    return `${daysDiff}d`;
+    return daysDiff === 1 ? '1d ago' : `${daysDiff}d ago`;
+  } else if (weeksDiff < 52) {
+    return weeksDiff === 1 ? '1w ago' : `${weeksDiff}w ago`;
   } else {
-    return `${weeksDiff}w`;
+    const options: Intl.DateTimeFormatOptions = {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    };
+    return timestamp.toLocaleDateString(undefined, options);
   }
 }
 
