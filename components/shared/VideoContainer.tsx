@@ -149,7 +149,7 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
           />
         </div>
       </div>
-      <div className='absolute bottom-0 left-0 right-0 py-3 pl-4 max-h-[50%]'>
+      <div className='absolute bottom-0 left-0 right-0 py-3 px-4 max-h-[50%]'>
         <div className='flex items-center gap-2 mb-2'>
           <div className='max-w-[40%] overflow-hidden'>
             <Username author={author} className='truncate' />
