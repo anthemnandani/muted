@@ -143,13 +143,10 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
             value={isMuted ? 0 : volume}
             onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
             className='w-full h-1 bg-white/30 rounded-full'
-            style={{
-              WebkitAppearance: 'none',
-            }}
           />
         </div>
       </div>
-      <div className='absolute bottom-0 left-0 right-0 py-3 px-4 max-h-[50%]'>
+      <div className='absolute bottom-6 left-0 right-0 px-4'>
         <div className='flex items-center gap-2 mb-2'>
           <div className='max-w-[40%] overflow-hidden'>
             <Username author={author} className='truncate' />

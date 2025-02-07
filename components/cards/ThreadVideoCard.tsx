@@ -65,7 +65,10 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
       controlBar: {
         pictureInPictureToggle: false,
         fullscreenToggle: false,
-        volumePanel: { inline: true },
+        volumePanel: false,
+        progressControl: {
+          seekBar: true,
+        },
         children: ['progressControl'],
       },
       sources: [{ src: video, type: 'application/x-mpegURL' }],

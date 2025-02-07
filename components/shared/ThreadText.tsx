@@ -175,7 +175,7 @@ const ThreadText = ({ text }: { text: string }) => {
     setIsExpanded(!isExpanded);
   };
   return (
-    <div className='relative text-accent-foreground text-[14px] font-normal leading-[18px] antialiased whitespace-pre-line break-words mb-2'>
+    <div className='relative text-accent-foreground text-[14px] font-normal leading-[18px] antialiased whitespace-pre-line break-words'>
       <span
         dangerouslySetInnerHTML={{
           __html: highlightHashtagsAndUrls(displayText!.replace(/\\n/g, '\n')),
