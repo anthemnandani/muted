@@ -2,7 +2,6 @@
 import { ThreadCardProps } from '@/lib/types';
 import React from 'react';
 import UserProfile from '../modals/UserProfile';
-import ThreadActions from '../shared/ThreadActions';
 import ThreadVideoCard from './ThreadVideoCard';
 import ReplyButton from '../buttons/ReplyButton';
 import LikeButton from '../buttons/LikeButton';
@@ -45,10 +44,11 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
             author={author}
             createdAt={createdAt}
             text={text}
+            hideLikes={hideLikes}
           />
         </div>
 
-        <div className='flex flex-col items-center gap-4'>
+        <div className='flex flex-col items-center justify-end gap-4'>
           <UserProfile author={author} />
           <LikeButton
             likeInfo={{

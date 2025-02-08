@@ -117,7 +117,6 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
           author={author}
           createdAt={createdAt}
           id={id}
-          repostedBy={repostedBy}
           currentText={text ?? ''}
           variant={variant}
           hideLikes={hideLikes}

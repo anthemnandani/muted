@@ -8,7 +8,6 @@ interface PostHeaderProps {
   author: AuthorInfoProps;
   createdAt: Date;
   id: string;
-  repostedBy?: AuthorInfoProps;
   currentText: string;
   variant: 'default' | 'reply';
   hideLikes: boolean;
@@ -18,7 +17,6 @@ const PostHeader: React.FC<PostHeaderProps> = ({
   author,
   createdAt,
   id,
-  repostedBy,
   currentText,
   variant,
   hideLikes,
@@ -47,15 +45,14 @@ const PostHeader: React.FC<PostHeaderProps> = ({
           <a href={`/post/${id}`}>{formatTimeAgo(createdAt)}</a>
         </li>
       </ul>
-
+      {/* 
       <ThreadActionMenu
         author={author}
         postId={id}
-        repostedBy={repostedBy}
         createdAt={createdAt}
         currentText={currentText}
         hideLikes={hideLikes}
-      />
+      /> */}
     </div>
   </div>
 );

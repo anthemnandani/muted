@@ -3,13 +3,14 @@
 import { AuthorInfoProps } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils';
 import useVideoPlayer from '@/store/videoPlayer';
-import { Volume2, VolumeX } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 import { useInView } from 'react-intersection-observer';
 import Player from 'video.js/dist/types/player';
+import ThreadActionMenu from '../menus/ThreadActionMenu';
 import Username from '../user/Username';
 import ThreadText from './ThreadText';
+import VolumeControls from './VolumeControls';
 
 interface VideoContainerProps {
   children: React.ReactNode;
@@ -19,6 +20,7 @@ interface VideoContainerProps {
   createdAt: Date;
   id: string;
   text: string | null;
+  hideLikes: boolean;
 }
 
 export const VideoContainer: React.FC<VideoContainerProps> = ({
@@ -29,6 +31,7 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
   createdAt,
   id,
   text,
+  hideLikes,
 }) => {
   const [showControls, setShowControls] = React.useState(false);
   const [showVolumeSlider, setShowVolumeSlider] = React.useState(false);
@@ -104,45 +107,16 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
       }}
     >
       {children}
-      <div
-        className={`absolute top-4 left-4 z-50 flex items-center transition-opacity duration-200 ${
-          showControls ? 'opacity-100' : 'opacity-0'
-        }`}
-        onMouseEnter={() => setShowVolumeSlider(true)}
-        onMouseLeave={() => setShowVolumeSlider(false)}
-        onTouchStart={(e) => {
-          e.stopPropagation();
-          setShowVolumeSlider(true);
-        }}
-      >
-        <button
-          className='text-white drop-shadow-lg z-10 focus:outline-none focus-visible:outline-none select-none'
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsMuted(!isMuted);
-          }}
-        >
-          {isMuted ? (
-            <VolumeX className='size-6 stroke-[2.5px]' />
-          ) : (
-            <Volume2 className='size-6 stroke-[2.5px]' />
-          )}
-        </button>
-
-        <div
-          className={`h-6 w-20 bg-black/40 rounded-full px-2 flex items-center drop-shadow-lg backdrop-blur-sm ml-2 transition-opacity duration-200 ${
-            showVolumeSlider ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
-          onTouchStart={(e) => e.stopPropagation()}
-        >
-          <input
-            type='range'
-            min='0'
-            max='1'
-            step='0.1'
-            value={isMuted ? 0 : volume}
-            onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-            className='w-full h-1 bg-white/30 rounded-full'
+      <div className='absolute top-2 w-full z-50'>
+        <div className='flex-between px-4'>
+          <VolumeControls player={player} showControls={showControls} />
+          <ThreadActionMenu
+            author={author}
+            postId={id}
+            createdAt={createdAt}
+            currentText={text ?? ''}
+            hideLikes={hideLikes}
+            showControls={showControls}
           />
         </div>
       </div>

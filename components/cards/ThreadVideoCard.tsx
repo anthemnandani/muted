@@ -15,6 +15,7 @@ interface ThreadVideoCardProps {
   author: AuthorInfoProps;
   createdAt: Date;
   text: string | null;
+  hideLikes: boolean;
 }
 
 const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
@@ -25,6 +26,7 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
   author,
   createdAt,
   text,
+  hideLikes,
 }) => {
   const [player, setPlayer] = React.useState<Player | null>(null);
   const [inView, setInView] = React.useState(false);
@@ -106,6 +108,7 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
       createdAt={createdAt}
       id={postId}
       text={text}
+      hideLikes={hideLikes}
     >
       <VideoPlayer
         poster={poster}

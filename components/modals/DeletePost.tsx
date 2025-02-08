@@ -16,13 +16,7 @@ import {
 import { toast } from 'sonner';
 import { api } from '@/trpc/react';
 
-const DeletePost = ({
-  postId,
-  isRepost,
-}: {
-  postId: string;
-  isRepost: boolean;
-}) => {
+const DeletePost = ({ postId }: { postId: string }) => {
   const { openDeleteDialog, setOpenDeleteDialog } = useDeletePost();
   const trpcUtils = api.useUtils();
 
@@ -48,9 +42,10 @@ const DeletePost = ({
 
   const handleDeletePost = () => {
     setOpenDeleteDialog(false);
-    const promise = isRepost
-      ? deleteRepost({ id: postId })
-      : deletePost({ id: postId });
+    // const promise = isRepost
+    //   ? deleteRepost({ id: postId })
+    //   : deletePost({ id: postId });
+    const promise = deletePost({ id: postId });
 
     toast.promise(promise, {
       loading: (
@@ -75,7 +70,7 @@ const DeletePost = ({
         <MenuItem
           icon={Icons.delete}
           label='Delete'
-          className='flex-between py-3.5 px-4 text-primary-red focus:text-primary-red'
+          className='text-primary-red focus:text-primary-red'
           onSelect={(e) => e.preventDefault()}
           isActionMenuItem
         />

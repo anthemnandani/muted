@@ -5,7 +5,7 @@ import useHideLikes from '@/hooks/useHideLikes';
 import useToggleHidePost from '@/hooks/useToggleHidePost';
 import useToggleMuteUser from '@/hooks/useToggleMuteUser';
 import type { AuthorInfoProps } from '@/lib/types';
-import { formatTimeLeft } from '@/lib/utils';
+import { cn, formatTimeLeft } from '@/lib/utils';
 import useDialog from '@/store/dialog';
 import { useMutedUsers } from '@/store/mutedUsers';
 import { useUser } from '@clerk/nextjs';
@@ -15,51 +15,47 @@ import { Icons } from '../icons';
 import DeletePost from '../modals/DeletePost';
 import MenuItem from '../shared/MenuItem';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '../ui/hover-card';
+import { Separator } from '../ui/separator';
 
 interface ThreadActionMenuProps {
   author: AuthorInfoProps;
   postId: string;
-  repostedBy?: AuthorInfoProps;
   createdAt: Date;
   currentText: string;
   hideLikes: boolean;
+  showControls: boolean;
 }
 
 const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
   author,
   postId,
-  repostedBy,
   createdAt,
   currentText,
   hideLikes,
+  showControls,
 }) => {
   const { user } = useUser();
   const [timeLeft, setTimeLeft] = React.useState<number>(0);
-  const [isOpen, setIsOpen] = React.useState(false);
   const { setEditPostInfo, setOpenDialog } = useDialog();
   const { isMutedUser } = useMutedUsers();
 
   const { handleToggleHideLikes, isLoading } = useHideLikes({
     postId,
-    setIsOpen,
     hideLikes,
   });
 
   const { handleToggleHidePost, isLoading: isLoadingHidePost } =
     useToggleHidePost({
       postId,
-      setIsOpen,
     });
 
   const { handleToggleMuteUser, isLoading: isLoadingMuteUser } =
     useToggleMuteUser({
       userId: author.id,
-      setIsOpen,
     });
 
   const { handleCopyLink } = useCopyLink({ postId, username: author.username });
@@ -91,54 +87,57 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
   }, [createdAt]);
 
   return (
-    <DropdownMenu modal={false} open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
-        <div className='flex-center relative hover:before:content-[""] hover:before:absolute hover:before:bg-primary hover:before:z-[2] hover:before:-inset-2 hover:before:rounded-full cursor-pointer'>
-          <MoreHorizontal className='aspect-square object-cover object-center size-4 overflow-hidden flex-1 text-secondary' />
+    <HoverCard>
+      <HoverCardTrigger asChild>
+        <div
+          className={cn(
+            // 'relative hover:before:content-[""] hover:before:absolute hover:before:bg-primary hover:before:z-[2] hover:before:-inset-2 hover:before:rounded-full cursor-pointer transition-opacity duration-200',
+            'relative h-10 flex-center cursor-pointer transition-opacity duration-200 drop-shadow-lg',
+            showControls ? 'opacity-100' : 'opacity-0'
+          )}
+        >
+          <MoreHorizontal className='aspect-square object-cover object-center size-6 overflow-hidden flex-1 text-white' />
         </div>
-      </DropdownMenuTrigger>
+      </HoverCardTrigger>
 
-      <DropdownMenuContent
+      <HoverCardContent
         align='end'
-        className='dropdown-content-container rounded-xl p-0 w-[220px]'
+        className='w-[200px] p-2 bg-black/85 border-none rounded-xl'
       >
-        {(!repostedBy && user?.id !== author.id) ||
-        (repostedBy && user?.id !== repostedBy?.id) ? (
-          <>
+        {user?.id !== author.id ? (
+          <React.Fragment>
             <MenuItem
               icon={Icons.notInterested}
               label='Not interested'
-              className='flex-between py-3.5 px-4'
               onClick={() => handleToggleHidePost({ postId })}
               disabled={isLoadingHidePost}
               isActionMenuItem
             />
-
+            <Separator />
             <MenuItem
               icon={Icons.mute}
               label={isMutedUser(author.id) ? 'Unmute' : 'Mute'}
-              className='flex-between py-3.5 px-4'
               onClick={() => handleToggleMuteUser({ userId: author.id })}
               disabled={isLoadingMuteUser}
               isActionMenuItem
             />
-
+            <Separator />
             <MenuItem
               icon={Icons.block}
               label='Block'
-              className='flex-between py-3.5 px-4 text-primary-red focus:text-primary-red'
+              className='text-primary-red focus:text-primary-red'
               isActionMenuItem
             />
-            <DropdownMenuSeparator />
+            <Separator />
             <MenuItem
               icon={Icons.report}
               label='Report'
-              className='flex-between py-3.5 px-4 text-primary-red focus:text-primary-red'
+              className='text-primary-red focus:text-primary-red'
               isActionMenuItem
             />
-          </>
+          </React.Fragment>
         ) : (
-          <>
+          <React.Fragment>
             {timeLeft > 0 && (
               <>
                 <MenuItem
@@ -155,40 +154,37 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
                     setOpenDialog(true);
                   }}
                 />
-                <DropdownMenuSeparator />
+                <Separator />
               </>
             )}
 
             <MenuItem
               icon={Icons.profilePin}
               label='Pin to profile'
-              className='flex-between py-3.5 px-4'
               isActionMenuItem
             />
-
+            <Separator />
             <MenuItem
               icon={Icons.hide}
               label={hideLikes ? 'Unhide like counts' : 'Hide like counts'}
-              className='flex-between py-3.5 px-4'
               onClick={handleToggleHideLikes}
               disabled={isLoading}
               isActionMenuItem
             />
 
-            <DropdownMenuSeparator />
-            <DeletePost postId={postId} isRepost={!!repostedBy} />
-          </>
+            <Separator />
+            <DeletePost postId={postId} />
+          </React.Fragment>
         )}
-        <DropdownMenuSeparator />
+        <Separator />
         <MenuItem
           icon={Icons.copyLink}
           label='Copy link'
-          className='flex-between py-3.5 px-4'
           onClick={handleCopyLink}
           isActionMenuItem
         />
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </HoverCardContent>
+    </HoverCard>
   );
 };
 

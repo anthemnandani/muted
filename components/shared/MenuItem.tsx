@@ -1,35 +1,29 @@
 import { MenuItemProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import React from 'react';
-import { DropdownMenuItem } from '../ui/dropdown-menu';
 
 const MenuItem: React.FC<MenuItemProps> = ({
   icon: Icon,
   label,
   onClick,
-  onSelect,
-  isActionMenuItem,
   className,
   disabled,
 }) => (
-  <DropdownMenuItem
-    className={cn('dropdown-menu-item', className)}
+  <button
+    type='button'
+    className={cn(
+      'w-full flex items-center gap-3 py-2.5 px-3',
+      'text-white hover:bg-white/10 transition-colors',
+      'text-sm font-normal',
+      disabled && 'opacity-50 cursor-not-allowed',
+      className
+    )}
     onClick={onClick}
-    onSelect={onSelect}
     disabled={disabled}
   >
-    {isActionMenuItem ? (
-      <>
-        {label}
-        {Icon && <Icon className='h-5 w-5' />}
-      </>
-    ) : (
-      <>
-        {Icon && <Icon className='mr-2 h-4 w-4' />}
-        {label}
-      </>
-    )}
-  </DropdownMenuItem>
+    {Icon && <Icon className='size-4 min-w-4' />}
+    <span>{label}</span>
+  </button>
 );
 
 export default MenuItem;

@@ -4,20 +4,15 @@ import { toast } from 'sonner';
 
 interface UseToggleHidePostProps {
   postId: string;
-  setIsOpen?: (open: boolean) => void;
 }
 
-export default function useToggleHidePost({
-  postId,
-  setIsOpen,
-}: UseToggleHidePostProps) {
+export default function useToggleHidePost({ postId }: UseToggleHidePostProps) {
   const { hidePost, unhidePost } = useHiddenPosts();
   const trpcUtils = api.useUtils();
 
   const { mutateAsync: toggleHidePost, isLoading } =
     api.post.toggleHidePost.useMutation({
       onMutate: () => {
-        setIsOpen?.(false);
         const isCurrentlyHidden = useHiddenPosts
           .getState()
           .isTemporarilyHidden(postId);

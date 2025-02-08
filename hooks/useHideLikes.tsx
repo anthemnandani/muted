@@ -4,22 +4,14 @@ import { toast } from 'sonner';
 
 interface UseHideLikesProps {
   postId: string;
-  setIsOpen: (open: boolean) => void;
   hideLikes: boolean;
 }
 
-export default function useHideLikes({
-  postId,
-  setIsOpen,
-  hideLikes,
-}: UseHideLikesProps) {
+export default function useHideLikes({ postId, hideLikes }: UseHideLikesProps) {
   const trpcUtils = api.useUtils();
 
   const { mutateAsync: toggleHideLikes, isLoading } =
     api.post.toggleHideLikes.useMutation({
-      onMutate: () => {
-        setIsOpen(false);
-      },
       onError: () => {
         toast.error('Something went wrong!');
       },
