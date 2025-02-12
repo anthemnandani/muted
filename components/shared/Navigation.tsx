@@ -3,7 +3,7 @@
 import { useUser } from '@clerk/nextjs';
 import { usePathname } from 'next/navigation';
 import { Icons } from '../icons';
-import CreateThread from '../modals/CreateThread';
+import NewPost from '../modals/NewPost';
 import MenuLink from './MenuLink';
 
 const Navigation = () => {
@@ -23,7 +23,7 @@ const Navigation = () => {
         icon={Icons.search}
         isActive={pathname === '/search'}
       />
-      <CreateThread />
+      <NewPost />
       <MenuLink
         route='/activity'
         icon={Icons.activity}

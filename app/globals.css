@@ -364,3 +364,17 @@ input[type='range']::-webkit-slider-thumb {
   width: 12px;
   border-radius: 50%;
 }
+
+.embla {
+  --slide-spacing: 0;
+  --slide-size: 100%;
+}
+
+.embla__slide {
+  flex: 0 0 var(--slide-size);
+  min-width: 0;
+  position: relative;
+  transform: translateZ(0); /* Hardware acceleration */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}

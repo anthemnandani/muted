@@ -159,7 +159,7 @@ const CreateThread = () => {
             ? 'Reply'
             : 'New thread'}
         </h1>
-        <Card className='relative rounded-2xl border-none bg-background shadow-2xl ring-1 ring-[#393939] ring-offset-0 dark:bg-gray-6'>
+        <Card className='relative rounded-2xl border-none shadow-2xl ring-1 ring-[#393939] ring-offset-0 bg-gray-6'>
           <div className='max-h-[calc(100vh-100px)] overflow-y-auto'>
             {isCheckingPermissions ? (
               <div className='flex-center py-3.5 px-4'>
