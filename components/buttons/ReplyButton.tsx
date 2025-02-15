@@ -34,7 +34,12 @@ const ReplyButton: React.FC<ReplyButtonProps> = ({
 
   return (
     <div className='flex flex-col items-center gap-1.5'>
-      <button className='btn-action' onClick={handleReplyClick}>
+      <button
+        type='button'
+        aria-label='Reply'
+        className='btn-action'
+        onClick={handleReplyClick}
+      >
         <Icons.comment className='size-5' fill='#fff' />
       </button>
       {repliesCount > 0 && !isParentPost && (

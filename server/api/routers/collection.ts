@@ -175,7 +175,7 @@ export const collectionRouter = createTRPCRouter({
           isDefault: collection.isDefault,
           bookmarks: collection.bookmarks.map((bookmark) => ({
             id: bookmark.post.id,
-            media: bookmark.post.media as PostMedia,
+            media: bookmark.post.media as PostMedia[],
             author: bookmark.post.author,
             text: bookmark.post.text,
           })),
@@ -480,7 +480,7 @@ export const collectionRouter = createTRPCRouter({
         if (post.parentPostId === null) {
           const postItem = {
             ...post,
-            media: post.media as PostMedia,
+            media: post.media as PostMedia[],
             reposts: post.reposts.map((repost) => ({
               userId: repost.user.id,
               postId: repost.post.id,
@@ -495,7 +495,7 @@ export const collectionRouter = createTRPCRouter({
 
           const repostItems = post.reposts.map((repost) => ({
             ...post,
-            media: post.media as PostMedia,
+            media: post.media as PostMedia[],
             reposts: post.reposts.map((repost) => ({
               userId: repost.user.id,
               postId: repost.post.id,
@@ -519,7 +519,7 @@ export const collectionRouter = createTRPCRouter({
           return post.reposts.map((repost) => {
             const repostItem = {
               ...post,
-              media: post.media as PostMedia,
+              media: post.media as PostMedia[],
               reposts: post.reposts.map((repost) => ({
                 userId: repost.user.id,
                 postId: repost.post.id,

@@ -22,9 +22,9 @@ const CollectionCover = ({
   const [isSaving, setIsSaving] = React.useState(false);
   const { bookmarks, name } = collection;
   const isImageMedia =
-    isImage(bookmarks[0]?.media?.fileType as string) ||
-    isGif(bookmarks[0]?.media?.fileType as string);
-  const isVideoMedia = isVideo(bookmarks[0]?.media?.fileType as string);
+    isImage(bookmarks[0]?.media[0]?.fileType as string) ||
+    isGif(bookmarks[0]?.media[0]?.fileType as string);
+  const isVideoMedia = isVideo(bookmarks[0]?.media[0]?.fileType as string);
 
   const isBookmarked = bookmarks.some((bookmark) => bookmark.id === postId);
 
@@ -67,7 +67,7 @@ const CollectionCover = ({
             )}
           >
             <video
-              src={bookmarks[0]?.media?.fileUrl as string}
+              src={bookmarks[0]?.media[0]?.fileUrl as string}
               className='rounded-md object-contain w-full h-full'
               muted
             />
@@ -82,7 +82,7 @@ const CollectionCover = ({
             )}
           >
             <Image
-              src={bookmarks[0]?.media?.fileUrl as string}
+              src={bookmarks[0]?.media[0]?.fileUrl as string}
               alt='collection-cover'
               fill
               className='rounded-md object-cover'

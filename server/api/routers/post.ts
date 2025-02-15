@@ -281,7 +281,7 @@ export const postRouter = createTRPCRouter({
           if (post.parentPostId === null) {
             const postItem = {
               ...post,
-              media: post.media as PostMedia,
+              media: post.media as PostMedia[],
               reposts: post.reposts.map((repost) => ({
                 userId: repost.user.id,
                 postId: repost.post.id,
@@ -296,7 +296,7 @@ export const postRouter = createTRPCRouter({
 
             const repostItems = post.reposts.map((repost) => ({
               ...post,
-              media: post.media as PostMedia,
+              media: post.media as PostMedia[],
               reposts: post.reposts.map((repost) => ({
                 userId: repost.user.id,
                 postId: repost.post.id,
@@ -320,7 +320,7 @@ export const postRouter = createTRPCRouter({
             return post.reposts.map((repost) => {
               const repostItem = {
                 ...post,
-                media: post.media as PostMedia,
+                media: post.media as PostMedia[],
                 reposts: post.reposts.map((repost) => ({
                   userId: repost.user.id,
                   postId: repost.post.id,
@@ -567,7 +567,7 @@ export const postRouter = createTRPCRouter({
 
       const formatReply = (reply: (typeof replies)[number]) => ({
         ...reply,
-        media: reply.media as PostMedia,
+        media: reply.media as PostMedia[],
         likesCount: reply._count.likes,
         repostsCount: reply._count.reposts,
         bookmarksCount: new Set(
@@ -610,7 +610,7 @@ export const postRouter = createTRPCRouter({
       return {
         postInfo: {
           ...post,
-          media: post.media as PostMedia,
+          media: post.media as PostMedia[],
           likesCount: post._count.likes,
           repostsCount: post._count.reposts,
           bookmarksCount: new Set(
@@ -787,7 +787,7 @@ export const postRouter = createTRPCRouter({
           user: postInfo.author,
           likes: postInfo.likes,
           repliesCount: postInfo.repliesCount,
-          media: postInfo.media as PostMedia,
+          media: postInfo.media as PostMedia[],
           linkPreview: postInfo.linkPreview,
           mentions: postInfo.mentions,
         },
@@ -982,7 +982,7 @@ export const postRouter = createTRPCRouter({
       return {
         posts: allBookmarks.map((bookmark) => ({
           ...bookmark.post,
-          media: bookmark.post.media as PostMedia,
+          media: bookmark.post.media as PostMedia[],
           likesCount: bookmark.post._count.likes,
           repostsCount: bookmark.post._count.reposts,
           bookmarksCount: new Set(
@@ -1089,7 +1089,7 @@ export const postRouter = createTRPCRouter({
       return {
         posts: likedPosts.map((likedPost) => ({
           ...likedPost.post,
-          media: likedPost.post.media as PostMedia,
+          media: likedPost.post.media as PostMedia[],
           likesCount: likedPost.post._count.likes,
           repostsCount: likedPost.post._count.reposts,
           bookmarksCount: new Set(
@@ -1194,7 +1194,7 @@ export const postRouter = createTRPCRouter({
       return {
         posts: followingPosts.map((post) => ({
           ...post,
-          media: post.media as PostMedia,
+          media: post.media as PostMedia[],
           likesCount: post._count.likes,
           repostsCount: post._count.reposts,
           bookmarksCount: new Set(
@@ -1299,7 +1299,7 @@ export const postRouter = createTRPCRouter({
         if (post.parentPostId === null) {
           const postItem = {
             ...post,
-            media: post.media as PostMedia,
+            media: post.media as PostMedia[],
             reposts: post.reposts.map((repost) => ({
               userId: repost.user.id,
               postId: repost.post.id,
@@ -1314,7 +1314,7 @@ export const postRouter = createTRPCRouter({
 
           const repostItems = post.reposts.map((repost) => ({
             ...post,
-            media: post.media as PostMedia,
+            media: post.media as PostMedia[],
             reposts: post.reposts.map((repost) => ({
               userId: repost.user.id,
               postId: repost.post.id,
@@ -1338,7 +1338,7 @@ export const postRouter = createTRPCRouter({
           return post.reposts.map((repost) => {
             const repostItem = {
               ...post,
-              media: post.media as PostMedia,
+              media: post.media as PostMedia[],
               reposts: post.reposts.map((repost) => ({
                 userId: repost.user.id,
                 postId: repost.post.id,

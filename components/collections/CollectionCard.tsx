@@ -35,12 +35,12 @@ const CollectionCard = ({ collection, username }: CollectionCardProps) => {
     }
 
     const { media, author, text } = firstBookmark;
-    const fileType = media?.fileType;
+    const fileType = media[0]?.fileType;
 
     if (isImage(fileType as string) || isGif(fileType as string)) {
       return (
         <Image
-          src={media?.fileUrl as string}
+          src={media[0]?.fileUrl as string}
           alt={collection.name}
           fill
           className='object-cover transition-transform duration-300 group-hover:scale-105'
@@ -51,7 +51,7 @@ const CollectionCard = ({ collection, username }: CollectionCardProps) => {
     if (isVideo(fileType as string)) {
       return (
         <video
-          src={media?.fileUrl as string}
+          src={media[0]?.fileUrl as string}
           className='absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
           muted
         />

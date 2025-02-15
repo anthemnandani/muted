@@ -13,7 +13,7 @@ import PostMediaPreview from './PostMediaPreview';
 
 interface ReplyPreviewProps {
   text?: string | null;
-  media?: PostMedia;
+  media?: PostMedia[];
   linkPreview?: LinkPreview | null;
   author: any;
   createdAt: Date;
@@ -55,16 +55,16 @@ const ReplyPreview = ({
       </a>
     )}
 
-    {media && isGif(media.fileType) && (
-      <PostMediaPreview type='gif' url={media.fileUrl} text={text || ''} />
+    {media && isGif(media[0].fileType) && (
+      <PostMediaPreview type='gif' url={media[0].fileUrl} text={text || ''} />
     )}
 
-    {media && isImage(media.fileType) && (
-      <PostMediaPreview type='image' url={media.fileUrl} text={text || ''} />
+    {media && isImage(media[0].fileType) && (
+      <PostMediaPreview type='image' url={media[0].fileUrl} text={text || ''} />
     )}
 
-    {media && isVideo(media.fileType) && (
-      <PostMediaPreview type='video' url={media.fileUrl!} text={text || ''} />
+    {media && isVideo(media[0].fileType) && (
+      <PostMediaPreview type='video' url={media[0].fileUrl} text={text || ''} />
     )}
   </>
 );

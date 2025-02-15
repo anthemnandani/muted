@@ -72,6 +72,7 @@ const VolumeControls: React.FC<VolumeControlsProps> = ({
         onTouchStart={(e) => e.stopPropagation()}
       >
         <input
+          aria-label='Volume'
           type='range'
           min='0'
           max='1'

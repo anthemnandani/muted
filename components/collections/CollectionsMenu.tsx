@@ -78,6 +78,7 @@ const CollectionsMenu = ({
       >
         <h3 className='font-medium'>Collections</h3>
         <button
+          aria-label='New Collection'
           className='hover:bg-accent rounded-full p-1.5 transition-colors'
           onClick={handleNewCollection}
         >

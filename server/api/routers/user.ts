@@ -220,7 +220,7 @@ export const userRouter = createTRPCRouter({
               parentPost: post.parentPost
                 ? {
                     ...post.parentPost,
-                    media: post.parentPost.media as PostMedia,
+                    media: post.parentPost.media as PostMedia[],
                     likesCount: post.parentPost._count.likes,
                     bookmarksCount: new Set(
                       post.parentPost.bookmarks.map(
@@ -239,7 +239,7 @@ export const userRouter = createTRPCRouter({
               repliesCount: post.repliesCount,
               hideLikes: post.hideLikes,
               quoteId: post.quoteId,
-              media: post.media as PostMedia,
+              media: post.media as PostMedia[],
               reposts: post.reposts,
               mentions: post.mentions,
               linkPreview: post.linkPreview,
@@ -415,12 +415,12 @@ export const userRouter = createTRPCRouter({
           id: post.id,
           createdAt: post.createdAt,
           text: post.text,
-          media: post.media as PostMedia,
+          media: post.media as PostMedia[],
           parentPostId: post.parentPostId,
           parentPost: post.parentPost
             ? {
                 ...post.parentPost,
-                media: post.parentPost.media as PostMedia,
+                media: post.parentPost.media as PostMedia[],
                 likesCount: post.parentPost._count.likes,
                 bookmarksCount: new Set(
                   post.parentPost.bookmarks.map((bookmark) => bookmark.userId)
@@ -538,7 +538,7 @@ export const userRouter = createTRPCRouter({
           id: repost.post.id,
           createdAt: repost.post.createdAt,
           text: repost.post.text,
-          media: repost.post.media as PostMedia,
+          media: repost.post.media as PostMedia[],
           parentPostId: repost.post.parentPostId,
           author: repost.post.author,
           likesCount: repost.post._count.likes,

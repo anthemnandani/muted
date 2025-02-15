@@ -17,7 +17,7 @@ import { useFileUpload } from '@/hooks/useFileUpload';
 import useFileStore from '@/store/fileStore';
 import usePostDialog from '@/store/postDialog';
 import React from 'react';
-import CreatePost from '../CreatePost';
+import CreatePost from './CreatePost';
 import PostDialogTitle from './PostDialogTitle';
 import PreviewStep from './PreviewStep';
 import UploadError from './UploadError';

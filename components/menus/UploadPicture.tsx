@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 const UploadPicture = ({ userImage }: { userImage: string }) => {
   const { profilePic, setProfilePic } = useEditProfile();
-  const { setFiles } = useFileStore();
+  const { setProfileFiles } = useFileStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useUser();
 
@@ -24,7 +24,7 @@ const UploadPicture = ({ userImage }: { userImage: string }) => {
     const reader = new FileReader();
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      setFiles(Array.from(e.target.files));
+      setProfileFiles(file);
       if (!file.type.includes('image')) return;
       reader.onload = async (event) => {
         const imageUrl = event.target?.result?.toString() || '';
@@ -36,7 +36,7 @@ const UploadPicture = ({ userImage }: { userImage: string }) => {
 
   const handleRemoveImage = () => {
     setProfilePic(user?.imageUrl as string);
-    setFiles([]);
+    setProfileFiles(null);
   };
 
   const handleUploadClick = () => {

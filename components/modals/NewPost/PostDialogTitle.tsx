@@ -23,6 +23,7 @@ const PostDialogTitle = ({ hasError, discardPost }: PostDialogTitleProps) => {
       ) : step === 'post' ? (
         <button
           type='button'
+          aria-label='Cancel'
           className='font-normal'
           onClick={() => setStep('preview')}
         >

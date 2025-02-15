@@ -50,6 +50,7 @@ const SortableMedia = ({
         onClick={handleRemove}
         className='absolute top-1 right-1 z-10 size-4 rounded-full bg-black/60 hover:bg-black/80 flex-center opacity-0 group-hover:opacity-100 transition-opacity'
         aria-label='Remove media'
+        type='button'
       >
         <X className='size-3 text-neutral-100' />
       </button>

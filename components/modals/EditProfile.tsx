@@ -1,5 +1,4 @@
 'use client';
-import useFileUpload from '@/hooks/useFileUpload';
 import { EditProfileProps } from '@/lib/types';
 import { getFullName } from '@/lib/utils';
 import useEditProfile from '@/store/editProfile';
@@ -48,7 +47,7 @@ const EditProfile = ({
   const { user } = useUser();
   const resetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { isUploading, uploadProfileImage, resetFiles } = useFileUpload();
+  // const { isUploading, uploadProfileImage, resetFiles } = useFileUpload();
 
   useEffect(() => {
     if (!openDialog) {
@@ -85,7 +84,7 @@ const EditProfile = ({
         await trpcUtils.post.getInfinitePosts.invalidate();
         setOpenDialog(false);
         toast.success('Profile updated successfully!');
-        resetFiles();
+        // resetFiles();
       },
       onError: () => {
         toast.error('Updating Error: Something went wrong!');
@@ -101,9 +100,9 @@ const EditProfile = ({
   );
 
   const handleUpdateProfile = useCallback(async () => {
-    const imgUrl = await uploadProfileImage(profilePic);
+    // const imgUrl = await uploadProfileImage(profilePic);
     await updateProfile({
-      image: imgUrl,
+      // image: imgUrl,
       bio: profileBio,
       link: profileLink,
       privacy: privacy || Privacy.PUBLIC,
@@ -114,7 +113,7 @@ const EditProfile = ({
     profilePic,
     privacy,
     updateProfile,
-    uploadProfileImage,
+    // uploadProfileImage,
   ]);
 
   return (
@@ -186,9 +185,11 @@ const EditProfile = ({
             <Button
               className='w-full h-[52px] flex-center px-4 mt-4 rounded-xl bg-foreground hover:bg-foreground select-none text-white dark:text-black dark:hover:bg-slate-50 disabled:cursor-not-allowed disabled:pointer-events-auto disabled:opacity-100'
               onClick={handleUpdateProfile}
-              disabled={isLoading || isUploading}
+              // disabled={isLoading || isUploading}
+              disabled={isLoading}
             >
-              {isLoading || isUploading ? (
+              {/* {isLoading || isUploading ? ( */}
+              {isLoading ? (
                 <Icons.loading className='size-8' />
               ) : (
                 <span>Done</span>

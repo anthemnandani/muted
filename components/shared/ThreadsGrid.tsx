@@ -18,11 +18,11 @@ const ThreadsGrid = ({
 }: ThreadsListProps) => {
   const renderPostContent = (post: ParentPostProps) => {
     if (post.media) {
-      if (isVideo(post.media.fileType)) {
+      if (isVideo(post.media[0].fileType)) {
         return (
           <div className='absolute inset-0 flex-center'>
             <video
-              src={post.media?.fileUrl as string}
+              src={post.media[0].fileUrl as string}
               className='absolute w-full h-full object-cover'
               style={{
                 objectFit: 'cover',
@@ -34,10 +34,10 @@ const ThreadsGrid = ({
           </div>
         );
       }
-      if (isImage(post.media.fileType) || isGif(post.media.fileType)) {
+      if (isImage(post.media[0].fileType) || isGif(post.media[0].fileType)) {
         return (
           <Image
-            src={post.media?.fileUrl as string}
+            src={post.media[0].fileUrl as string}
             alt={post.text || ''}
             fill
             className='object-cover transition-transform group-hover:scale-105'

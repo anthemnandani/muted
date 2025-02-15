@@ -1,67 +1,49 @@
 'use client';
 
-import useCreateThread from '@/hooks/useCreatePost';
+import LinkPreviewCard from '@/components/cards/LinkPreviewCard';
+import { Icons } from '@/components/icons';
+import CreatePostInput from '@/components/inputs/CreatePostInput';
+import PostPrivacyMenu from '@/components/menus/PostPrivacyMenu';
+import UsersMenu from '@/components/menus/UsersMenu';
+import { Button } from '@/components/ui/button';
+import useCreatePost from '@/hooks/useCreatePost';
 import useLinkPreview from '@/hooks/useLinkPreview';
 import useMentions from '@/hooks/useMentions';
-import { usePostInteraction } from '@/hooks/usePostInteraction';
-import useWindow from '@/hooks/useWindow';
 import { cn } from '@/lib/utils';
-import useDialog from '@/store/postDialog';
-import useFileStore from '@/store/fileStore';
-import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
+import usePostDialog from '@/store/postDialog';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 import { toast } from 'sonner';
-import LinkPreviewCard from '../cards/LinkPreviewCard';
-import { Icons } from '../icons';
-import CreateThreadInput from '../inputs/CreateThreadInput';
-import PostPrivacyMenu from '../menus/PostPrivacyMenu';
-import UsersMenu from '../menus/UsersMenu';
-import { Button } from '../ui/button';
-import { Card } from '../ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '../ui/dialog';
 
-const CreateThread = () => {
-  const { isMobile } = useWindow();
-  const { selectedFile } = useFileStore();
-  const { openDialog, setOpenDialog, replyPostInfo, quoteInfo, editPostInfo } =
-    useDialog();
+const CreatePost = () => {
+  const {
+    openDialog,
+    setOpenDialog,
+    replyPostInfo,
+    quoteInfo,
+    editPostInfo,
+    mentions,
+    setMentions,
+  } = usePostDialog();
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-  const [mentions, setMentions] = React.useState<
-    Array<{
-      userId: string;
-      index: number;
-    }>
-  >([]);
 
-  const { isLoading: isCheckingPermissions, canInteract: canReply } =
-    usePostInteraction({
-      authorId: replyPostInfo?.author?.id!,
-      privacy: replyPostInfo?.privacy!,
-      mentions: replyPostInfo?.mentions!,
-    });
+  // const { isLoading: isCheckingPermissions } = usePostInteraction({
+  //   authorId: replyPostInfo?.author?.id!,
+  //   privacy: replyPostInfo?.privacy!,
+  //   mentions: replyPostInfo?.mentions!,
+  // });
 
   const {
-    threadData,
-    setThreadData,
+    postData,
+    setPostData,
     isLoading,
     isReplying,
     isEditing,
     handleMutation,
-    resetState,
-  } = useCreateThread(setMentions);
+  } = useCreatePost(setMentions);
 
-  const { isLinkPreviewLoading } = useLinkPreview(
-    threadData?.text,
-    setThreadData
-  );
+  const { isLinkPreviewLoading } = useLinkPreview(postData?.text, setPostData);
 
   const {
     mentionSuggestions,
@@ -70,7 +52,7 @@ const CreateThread = () => {
     handleMentionSearch,
     isMentionsLoading,
     insertMention,
-  } = useMentions({ textareaRef, setThreadData, setMentions });
+  } = useMentions({ textareaRef, setPostData, setMentions, mentions });
 
   const handleSubmit = (isEdit: boolean) => {
     setOpenDialog(false);
@@ -108,145 +90,101 @@ const CreateThread = () => {
   };
 
   const handleFieldChange = (textValue: string) => {
-    setThreadData({
-      ...threadData,
+    setPostData({
+      ...postData,
       text: textValue,
     });
   };
 
-  React.useEffect(() => {
-    if (!openDialog) {
-      resetState();
-    }
-  }, [openDialog]);
-
   return (
-    <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-      <DialogTrigger>
-        <span className='text-primary-blue text-base font-normal cursor-pointer'>
-          Next
-        </span>
-      </DialogTrigger>
-      <DialogContent
+    <div className='max-h-[calc(100vh-100px)] overflow-y-auto'>
+      {/* {isCheckingPermissions ? (
+        <div className='flex-center py-3.5 px-4'>
+          <Icons.loading className='size-8' />
+        </div>
+      ) : ( */}
+
+      <div
         className={cn(
-          'w-full select-none border-none bg-transparent shadow-none outline-none md:max-w-[668px]'
+          'p-6',
+          (postData.linkPreview || isLinkPreviewLoading) && '!pb-4'
         )}
       >
-        <DialogHeader>
-          <DialogTitle>
-            <VisuallyHidden.Root>
-              {editPostInfo
-                ? 'Edit thread'
-                : replyPostInfo
-                ? 'Reply'
-                : 'New thread'}
-            </VisuallyHidden.Root>
-          </DialogTitle>
-        </DialogHeader>
-        <h1 className='mb-2 w-full text-center font-bold text-white'>
-          {editPostInfo
-            ? 'Edit thread'
-            : replyPostInfo
-            ? 'Reply'
-            : 'New thread'}
-        </h1>
-        <Card className='relative rounded-2xl border-none shadow-2xl ring-1 ring-[#393939] ring-offset-0 bg-gray-6'>
-          <div className='max-h-[calc(100vh-100px)] overflow-y-auto'>
-            {isCheckingPermissions ? (
-              <div className='flex-center py-3.5 px-4'>
-                <Icons.loading className='size-8' />
-              </div>
-            ) : (
-              <>
-                <div
-                  className={cn(
-                    'p-6',
-                    (threadData.linkPreview || isLinkPreviewLoading) && '!pb-4'
-                  )}
-                >
-                  {replyPostInfo && (
-                    <CreateThreadInput
-                      isOpen={openDialog}
-                      onTextareaChange={handleFieldChange}
-                      replyThreadInfo={replyPostInfo}
-                      textareaRef={textareaRef}
-                      value={threadData.text}
-                      setThreadData={setThreadData}
-                      handleMentionSearch={handleMentionSearch}
-                      isReply
-                    />
-                  )}
-                  <CreateThreadInput
-                    isOpen={openDialog}
-                    onTextareaChange={handleFieldChange}
-                    quoteInfo={quoteInfo}
-                    placeholder={
-                      replyPostInfo
-                        ? `Reply to ${replyPostInfo?.author?.username}...`
-                        : 'Start a thread...'
-                    }
-                    textareaRef={textareaRef}
-                    value={threadData.text}
-                    setThreadData={setThreadData}
-                    isReply={!!replyPostInfo?.text || !!replyPostInfo?.media}
-                    handleMentionSearch={handleMentionSearch}
-                  />
-                </div>
-                {showMentionSuggestions && (
-                  <UsersMenu
-                    showMentionSuggestions={showMentionSuggestions}
-                    mentionSuggestions={mentionSuggestions}
-                    cursorPosition={cursorPosition}
-                    isLoading={isMentionsLoading}
-                    onSelect={insertMention}
-                  />
-                )}
-                {(threadData.linkPreview || isLinkPreviewLoading) && (
-                  <div className='mx-6'>
-                    <LinkPreviewCard
-                      url={threadData?.linkPreview?.url!}
-                      title={threadData?.linkPreview?.title || ''}
-                      description={threadData?.linkPreview?.description || ''}
-                      image={threadData?.linkPreview?.image || ''}
-                      isLoading={isLinkPreviewLoading}
-                      onClose={() =>
-                        setThreadData((prev) => ({
-                          ...prev,
-                          linkPreview: null,
-                        }))
-                      }
-                    />
-                  </div>
-                )}
-                <div className='w-full flex-between p-6'>
-                  <PostPrivacyMenu />
-                  <Button
-                    onClick={() => handleSubmit(!!editPostInfo)}
-                    variant='ghost'
-                    className='bg-transparent border border-border-dark dark:border-border-light rounded-lg text-[14px] leading-none flex-center hover:bg-transparent dark:hover:bg-transparent disabled:cursor-not-allowed disabled:pointer-events-auto'
-                    disabled={
-                      (threadData?.text === '' && !selectedFile) ||
-                      isLoading ||
-                      isReplying ||
-                      isEditing
-                    }
-                  >
-                    {(isLoading || isReplying) && (
-                      <Icons.spinner
-                        className='mr-2 size-4 animate-spin'
-                        aria-hidden='true'
-                      />
-                    )}
-                    {editPostInfo ? 'Edit' : 'Post'}
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
-        </Card>
-      </DialogContent>
-    </Dialog>
+        {replyPostInfo && (
+          <CreatePostInput
+            isOpen={openDialog}
+            onTextareaChange={handleFieldChange}
+            replyPostInfo={replyPostInfo}
+            textareaRef={textareaRef}
+            value={postData.text}
+            setPostData={setPostData}
+            handleMentionSearch={handleMentionSearch}
+            isReply
+          />
+        )}
+        <CreatePostInput
+          isOpen={openDialog}
+          onTextareaChange={handleFieldChange}
+          quoteInfo={quoteInfo}
+          placeholder={
+            replyPostInfo
+              ? `Reply to ${replyPostInfo?.author?.username}...`
+              : 'Write a caption...'
+          }
+          textareaRef={textareaRef}
+          value={postData.text}
+          setPostData={setPostData}
+          isReply={!!replyPostInfo?.text || !!replyPostInfo?.media}
+          handleMentionSearch={handleMentionSearch}
+        />
+      </div>
+      {showMentionSuggestions && (
+        <UsersMenu
+          showMentionSuggestions={showMentionSuggestions}
+          mentionSuggestions={mentionSuggestions}
+          cursorPosition={cursorPosition}
+          isLoading={isMentionsLoading}
+          onSelect={insertMention}
+        />
+      )}
+      {(postData.linkPreview || isLinkPreviewLoading) && (
+        <div className='mx-6'>
+          <LinkPreviewCard
+            url={postData?.linkPreview?.url!}
+            title={postData?.linkPreview?.title || ''}
+            description={postData?.linkPreview?.description || ''}
+            image={postData?.linkPreview?.image || ''}
+            isLoading={isLinkPreviewLoading}
+            onClose={() =>
+              setPostData((prev) => ({
+                ...prev,
+                linkPreview: null,
+              }))
+            }
+          />
+        </div>
+      )}
+      <div className='w-full flex-between p-6'>
+        <PostPrivacyMenu />
+        <Button
+          onClick={() => handleSubmit(!!editPostInfo)}
+          variant='ghost'
+          className='bg-transparent border border-border-dark dark:border-border-light rounded-lg text-[14px] leading-none flex-center hover:bg-transparent dark:hover:bg-transparent disabled:cursor-not-allowed disabled:pointer-events-auto'
+          disabled={
+            postData?.text === '' || isLoading || isReplying || isEditing
+          }
+        >
+          {(isLoading || isReplying) && (
+            <Icons.spinner
+              className='mr-2 size-4 animate-spin'
+              aria-hidden='true'
+            />
+          )}
+          {editPostInfo ? 'Edit' : 'Post'}
+        </Button>
+      </div>
+    </div>
   );
 };
 
-export default CreateThread;
+export default CreatePost;

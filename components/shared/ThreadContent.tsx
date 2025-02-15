@@ -17,7 +17,7 @@ const ThreadContent = ({
   return (
     <React.Fragment>
       {/* {text && <ThreadText text={text} mentions={mentions} variant={variant} />} */}
-      {media && media.fileType && (
+      {media && media[0].fileType && (
         <>
           {/* {isImageOrVideo(media.fileType) === 'image' && (
             <ThreadImageCard

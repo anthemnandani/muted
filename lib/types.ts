@@ -106,7 +106,7 @@ export type ParentPostProps = {
   id: string;
   createdAt: Date;
   text: string | null;
-  media: PostMedia;
+  media: PostMedia[];
   likes: {
     userId: string;
   }[];
@@ -190,7 +190,7 @@ export interface ThreadActionsProps {
   repostsCount: number;
   bookmarks: { userId: string; collection: { isDefault: boolean } }[];
   bookmarksCount: number;
-  media: PostMedia;
+  media: PostMedia[];
   linkPreview: LinkPreview | null;
   mentions: Array<{
     user: AuthorInfoProps;
@@ -229,7 +229,7 @@ export interface RepostButtonProps {
   id: string;
   text: string | null;
   author: AuthorInfoProps;
-  media: PostMedia | null;
+  media: PostMedia[];
   linkPreview: LinkPreview | null;
   mentions: Array<{
     user: AuthorInfoProps;
@@ -257,7 +257,7 @@ export type Collection = {
   privacy: CollectionPrivacy;
   bookmarks: {
     id: string;
-    media: PostMedia | null;
+    media: PostMedia[];
     text: string | null;
     author: AuthorInfoProps;
   }[];

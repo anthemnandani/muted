@@ -19,7 +19,7 @@ const DiscardPost = ({ discardPost }: { discardPost: () => void }) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <button type='button' className='font-normal'>
+        <button aria-label='Discard Post' type='button' className='font-normal'>
           <Icons.cancel className='size-5 text-white' />
         </button>
       </DialogTrigger>

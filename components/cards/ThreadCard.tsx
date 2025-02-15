@@ -37,9 +37,9 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
       <article className='flex justify-center items-end gap-4'>
         <div className='w-full max-w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(0px-2rem+100vh)] relative snap-center snap-always'>
           <ThreadVideoCard
-            video={media?.fileUrl! as string}
-            poster={media?.thumbnailUrl! as string}
-            aspectRatio={media?.aspectRatio}
+            video={media[0]?.fileUrl! as string}
+            poster={media[0]?.thumbnailUrl! as string}
+            aspectRatio={media[0]?.aspectRatio}
             postId={id!}
             author={author}
             createdAt={createdAt}

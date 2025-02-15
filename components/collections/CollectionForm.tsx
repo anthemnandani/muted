@@ -55,7 +55,11 @@ const CollectionForm = ({
   return (
     <Card className='rounded-2xl border-none bg-background shadow-2xl ring-1 ring-[#393939] ring-offset-0 dark:bg-gray-6 p-6'>
       <div className='flex items-start border-b dark:border-gray-5 border-gray-1 pb-1'>
-        <button className='mr-4' onClick={() => setOpen(false)}>
+        <button
+          aria-label='Close'
+          className='mr-4'
+          onClick={() => setOpen(false)}
+        >
           <Icons.close className='size-6 hover:cursor-pointer' />
         </button>
         <h2 className='pb-2 text-xl font-medium leading-6'>

@@ -1,7 +1,6 @@
 'use client';
 
 import Error from '@/app/error';
-import NewPost from '@/components/modals/NewPost';
 import ThreadsList from '@/components/shared/ThreadsList';
 import { api } from '@/trpc/react';
 
