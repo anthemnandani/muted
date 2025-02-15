@@ -365,16 +365,24 @@ input[type='range']::-webkit-slider-thumb {
   border-radius: 50%;
 }
 
-.embla {
-  --slide-spacing: 0;
-  --slide-size: 100%;
+@keyframes progress-loading {
+  0% {
+    width: 0%;
+  }
+  50% {
+    width: 100%;
+  }
+  100% {
+    width: 0%;
+  }
 }
 
-.embla__slide {
-  flex: 0 0 var(--slide-size);
-  min-width: 0;
-  position: relative;
-  transform: translateZ(0); /* Hardware acceleration */
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
+.animate-progress {
+  animation: progress-loading 1.5s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #0095f6 50%,
+    transparent 100%
+  );
 }

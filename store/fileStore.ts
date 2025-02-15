@@ -1,23 +1,21 @@
-import { IGif } from '@giphy/js-types';
+import { MediaFile } from '@/lib/types';
 import { create } from 'zustand';
 
-type MediaFile = File | IGif;
-
 interface FileStoreState {
-  files: File[];
-  setFiles: (files: File[]) => void;
-  selectedFile: MediaFile[];
+  mediaFiles: MediaFile[];
+  setMediaFiles: (files: MediaFile[]) => void;
+  selectedMediaFiles: MediaFile[];
   isSelectedImageSafe: boolean;
   setIsSelectedImageSafe: (isSafe: boolean) => void;
-  setSelectedFile: (file: MediaFile[]) => void;
+  setSelectedMediaFiles: (files: MediaFile[]) => void;
 }
 
 const useFileStore = create<FileStoreState>((set) => ({
-  files: [],
-  setFiles: (files) => set({ files }),
-  selectedFile: [],
+  mediaFiles: [],
+  setMediaFiles: (files) => set({ mediaFiles: files }),
+  selectedMediaFiles: [],
   isSelectedImageSafe: true,
-  setSelectedFile: (files) => set({ selectedFile: files }),
+  setSelectedMediaFiles: (files) => set({ selectedMediaFiles: files }),
   setIsSelectedImageSafe: (isSafe) => set({ isSelectedImageSafe: isSafe }),
 }));
 

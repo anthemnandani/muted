@@ -1,6 +1,6 @@
 import { Icons } from '@/components/icons';
 import type { ParentPostInfo } from '@/lib/types';
-import useDialog from '@/store/dialog';
+import useDialog from '@/store/postDialog';
 import React from 'react';
 import { toast } from 'sonner';
 import { DropdownMenuItem } from '../ui/dropdown-menu';

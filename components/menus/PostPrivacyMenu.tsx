@@ -42,6 +42,7 @@ const PostPrivacyMenu: React.FC = ({}) => {
         >
           Anyone
         </DropdownMenuItem>
+        <DropdownMenuSeparator className=' h-[1.2px] my-0' />
         <DropdownMenuItem
           className='dropdown-menu-item'
           onClick={() => setPostPrivacy('FOLLOWERS')}

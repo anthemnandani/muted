@@ -1,0 +1,40 @@
+'use client';
+
+import { Icons } from '@/components/icons';
+import { Button } from '@/components/ui/button';
+import { UploadStepProps } from '@/lib/types';
+import { cn } from '@/lib/utils';
+
+const UploadStep = ({
+  getRootProps,
+  getInputProps,
+  isDragActive,
+}: UploadStepProps) => {
+  return (
+    <div className='p-6'>
+      <div
+        {...getRootProps()}
+        className='flex flex-col items-center justify-center p-6 transition-colors'
+      >
+        <input {...getInputProps()} />
+        <Icons.media
+          className={cn(
+            'mb-4 w-24 h-[77px] text-neutral-100',
+            isDragActive && 'text-primary-blue'
+          )}
+        />
+        <span className='text-base sm:text-xl text-neutral-100 text-center'>
+          Drag photos and videos here
+        </span>
+        <Button
+          className='bg-primary-blue hover:bg-primary-blue/90 text-neutral-100 transition-colors duration-150 mt-4 sm:mt-6'
+          variant='default'
+        >
+          Select from computer
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export default UploadStep;

@@ -1,4 +1,4 @@
-import type { ThreadData } from '@/lib/types';
+import type { PostData } from '@/lib/types';
 import { api } from '@/trpc/react';
 import { debounce } from 'lodash';
 import React from 'react';
@@ -10,21 +10,24 @@ interface MentionPosition {
 
 interface UseMentionsProps {
   textareaRef: React.RefObject<HTMLTextAreaElement>;
-  setThreadData: React.Dispatch<React.SetStateAction<ThreadData>>;
-  setMentions: React.Dispatch<
-    React.SetStateAction<
-      Array<{
-        userId: string;
-        index: number;
-      }>
-    >
-  >;
+  setPostData: React.Dispatch<React.SetStateAction<PostData>>;
+  setMentions: (
+    mentions: Array<{
+      userId: string;
+      index: number;
+    }>
+  ) => void;
+  mentions: Array<{
+    userId: string;
+    index: number;
+  }>;
 }
 
 const useMentions = ({
   textareaRef,
-  setThreadData,
+  setPostData,
   setMentions,
+  mentions,
 }: UseMentionsProps) => {
   const [mentionSearch, setMentionSearch] = React.useState<string>('');
   const [showMentionSuggestions, setShowMentionSuggestions] =
@@ -145,18 +148,18 @@ const useMentions = ({
         `@${username} ` +
         text.slice(lastAtIndex + removeLength);
 
-      setThreadData((prev) => ({ ...prev, text: newText }));
+      setPostData((prev) => ({ ...prev, text: newText }));
 
       setShowMentionSuggestions(false);
       setMentionSearch('');
-
-      setMentions((prev) => [
-        ...prev,
+      const newMentions = [
+        ...mentions,
         {
           userId,
           index: lastAtIndex,
         },
-      ]);
+      ];
+      setMentions(newMentions);
 
       const newCursorPosition = lastAtIndex + username.length + 2;
 
@@ -165,7 +168,7 @@ const useMentions = ({
         textarea.focus();
       });
     },
-    [textareaRef, setThreadData]
+    [textareaRef, setPostData]
   );
 
   React.useEffect(() => {

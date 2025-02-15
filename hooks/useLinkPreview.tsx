@@ -1,9 +1,9 @@
-import type { LinkPreview, ThreadData } from '@/lib/types';
+import type { LinkPreview, PostData } from '@/lib/types';
 import { useEffect, useState } from 'react';
 
 export default function useLinkPreview(
   text: string,
-  setThreadData: React.Dispatch<React.SetStateAction<ThreadData>>
+  setPostData: React.Dispatch<React.SetStateAction<PostData>>
 ) {
   const [isLinkPreviewLoading, setIsLinkPreviewLoading] = useState(false);
   const [lastFetchedUrl, setLastFetchedUrl] = useState<string | null>(null);
@@ -16,7 +16,7 @@ export default function useLinkPreview(
     const url = matches?.[1];
 
     if (!url) {
-      setThreadData((prev) => ({ ...prev, linkPreview: null }));
+      setPostData((prev) => ({ ...prev, linkPreview: null }));
       setLastFetchedUrl(null);
       return;
     }
@@ -31,7 +31,7 @@ export default function useLinkPreview(
       setIsLinkPreviewLoading(true);
       try {
         if (cache[fullUrl]) {
-          setThreadData((prev) => ({
+          setPostData((prev) => ({
             ...prev,
             linkPreview: cache[fullUrl],
           }));
@@ -44,22 +44,22 @@ export default function useLinkPreview(
         });
 
         if (!response.ok) {
-          setThreadData((prev) => ({ ...prev, linkPreview: null }));
+          setPostData((prev) => ({ ...prev, linkPreview: null }));
           return;
         }
 
         const data = await response.json();
 
         if (data && (data.title || data.description || data.image)) {
-          setThreadData((prev) => ({ ...prev, linkPreview: data }));
+          setPostData((prev) => ({ ...prev, linkPreview: data }));
           cache[fullUrl] = data;
           setLastFetchedUrl(fullUrl);
         } else {
-          setThreadData((prev) => ({ ...prev, linkPreview: null }));
+          setPostData((prev) => ({ ...prev, linkPreview: null }));
         }
       } catch (error) {
         console.error('Error fetching link preview:', error);
-        setThreadData((prev) => ({ ...prev, linkPreview: null }));
+        setPostData((prev) => ({ ...prev, linkPreview: null }));
       } finally {
         setIsLinkPreviewLoading(false);
       }

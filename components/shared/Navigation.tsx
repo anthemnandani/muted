@@ -3,8 +3,8 @@
 import { useUser } from '@clerk/nextjs';
 import { usePathname } from 'next/navigation';
 import { Icons } from '../icons';
-import NewPost from '../modals/NewPost';
 import MenuLink from './MenuLink';
+import NewPost from '../modals/NewPost';
 
 const Navigation = () => {
   const pathname = usePathname();

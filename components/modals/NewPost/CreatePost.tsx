@@ -1,20 +1,18 @@
 'use client';
 
-import useCreateThread from '@/hooks/useCreateThread';
+import useCreateThread from '@/hooks/useCreatePost';
 import useLinkPreview from '@/hooks/useLinkPreview';
 import useMentions from '@/hooks/useMentions';
 import { usePostInteraction } from '@/hooks/usePostInteraction';
 import useWindow from '@/hooks/useWindow';
 import { cn } from '@/lib/utils';
-import useDialog from '@/store/dialog';
+import useDialog from '@/store/postDialog';
 import useFileStore from '@/store/fileStore';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 import { toast } from 'sonner';
-import CreateThreadDesktop from '../buttons/CreateThreadDesktop';
-import CreateThreadMobile from '../buttons/CreateThreadMobile';
 import LinkPreviewCard from '../cards/LinkPreviewCard';
 import { Icons } from '../icons';
 import CreateThreadInput from '../inputs/CreateThreadInput';
@@ -125,16 +123,9 @@ const CreateThread = () => {
   return (
     <Dialog open={openDialog} onOpenChange={setOpenDialog}>
       <DialogTrigger>
-        {isMobile ? (
-          <CreateThreadMobile />
-        ) : (
-          <>
-            <div className='hidden md:flex relative w-15 h-12 flex-center rounded-xl bg-primary transition-colors duration-150 border-none text-secondary hover:text-foreground'>
-              <Icons.plus className='size-6' />
-            </div>
-            <CreateThreadDesktop />
-          </>
-        )}
+        <span className='text-primary-blue text-base font-normal cursor-pointer'>
+          Next
+        </span>
       </DialogTrigger>
       <DialogContent
         className={cn(

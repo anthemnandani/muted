@@ -83,9 +83,14 @@ module.exports = {
       },
       width: {
         15: '60px',
+        18: '72px',
         40: '160px',
         44: '176px',
       },
+      height: {
+        18: '72px',
+      },
+
       maxHeight: {
         128: '40rem',
       },

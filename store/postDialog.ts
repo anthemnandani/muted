@@ -1,0 +1,69 @@
+import type { ParentPostInfo, PostData, ReplyPostInfo } from '@/lib/types';
+import { PostPrivacy } from '@prisma/client';
+import { create } from 'zustand';
+
+interface ToggleState {
+  openDialog: boolean;
+  setOpenDialog: (open: boolean) => void;
+  postData: PostData;
+  setPostData: (post: PostData) => void;
+  replyPostInfo: ReplyPostInfo | null;
+  setReplyPostInfo: (reply: ReplyPostInfo | null) => void;
+  quoteInfo: ParentPostInfo | null;
+  setQuoteInfo: (quote: ParentPostInfo | null) => void;
+  editPostInfo: { id: string; text: string } | null;
+  setEditPostInfo: (edit: { id: string; text: string } | null) => void;
+  step: 'upload' | 'preview' | 'post';
+  setStep: (step: 'upload' | 'preview' | 'post') => void;
+  currentMediaIndex: number;
+  setCurrentMediaIndex: (index: number) => void;
+  showGallery: boolean;
+  setShowGallery: (show: boolean) => void;
+  mentions: Array<{
+    userId: string;
+    index: number;
+  }>;
+  setMentions: (mentions: Array<{ userId: string; index: number }>) => void;
+  resetPostState: () => void;
+}
+
+const usePostDialog = create<ToggleState>((set) => ({
+  openDialog: false,
+  setOpenDialog: (open) => set({ openDialog: open }),
+  postData: {
+    privacy: PostPrivacy.ANYONE,
+    text: '',
+    linkPreview: null,
+  },
+  setPostData: (post) => set({ postData: post }),
+  replyPostInfo: null,
+  setReplyPostInfo: (reply) => set({ replyPostInfo: reply }),
+  quoteInfo: null,
+  setQuoteInfo: (quote) => set({ quoteInfo: quote }),
+  editPostInfo: null,
+  setEditPostInfo: (edit) => set({ editPostInfo: edit }),
+  step: 'upload',
+  setStep: (step) => set({ step }),
+  currentMediaIndex: 0,
+  setCurrentMediaIndex: (index) => set({ currentMediaIndex: index }),
+  showGallery: false,
+  setShowGallery: (show) => set({ showGallery: show }),
+  mentions: [],
+  setMentions: (mentions) => set({ mentions }),
+  resetPostState: () =>
+    set({
+      replyPostInfo: null,
+      quoteInfo: null,
+      editPostInfo: null,
+      currentMediaIndex: 0,
+      showGallery: false,
+      step: 'upload',
+      postData: {
+        privacy: PostPrivacy.ANYONE,
+        text: '',
+        linkPreview: null,
+      },
+    }),
+}));
+
+export default usePostDialog;

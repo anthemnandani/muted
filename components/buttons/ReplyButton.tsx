@@ -1,5 +1,5 @@
 import type { ReplyPostInfo } from '@/lib/types';
-import useDialog from '@/store/dialog';
+import useDialog from '@/store/postDialog';
 import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
 import { toast } from 'sonner';

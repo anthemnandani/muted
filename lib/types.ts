@@ -1,5 +1,4 @@
 import type { AppRouter } from '@/server/api/root';
-import { IGif } from '@giphy/js-types';
 import type { CollectionPrivacy, User } from '@prisma/client';
 import { PostPrivacy, Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
@@ -21,15 +20,16 @@ export type PostProps = ArrayElement<
   showLine?: boolean;
 };
 
-export type MediaType = 'image' | 'video' | 'gif';
-
 export type PostMedia = {
-  fileType: MediaType;
-  fileUrl?: string | IGif;
+  fileType: string;
+  fileUrl: string;
   aspectRatio?: string;
-  originalDimensions?: { width: number; height: number };
   thumbnailUrl?: string;
-} | null;
+  originalDimensions: {
+    width: number;
+    height: number;
+  };
+};
 
 export type ParentPostInfo = Pick<
   PostProps,
@@ -148,15 +148,15 @@ export interface UserAvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   fullname: string | null | undefined;
 }
 
-export interface CreateThreadInputProps {
+export interface CreatePostInputProps {
   isOpen: boolean;
-  replyThreadInfo?: ReplyPostInfo | null;
+  replyPostInfo?: ReplyPostInfo | null;
   onTextareaChange: (textValue: string) => void;
   quoteInfo?: ParentPostInfo | null;
   placeholder?: string;
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   value: string;
-  setThreadData: React.Dispatch<React.SetStateAction<ThreadData>>;
+  setPostData: React.Dispatch<React.SetStateAction<PostData>>;
   handleMentionSearch: (value: string, cursorPosition: number) => void;
   isReply?: boolean;
 }
@@ -219,7 +219,7 @@ export interface LinkPreview {
   image: string | null;
 }
 
-export type ThreadData = {
+export type PostData = {
   privacy: PostPrivacy;
   text: string;
   linkPreview: LinkPreview | null;
@@ -264,3 +264,50 @@ export type Collection = {
   postsCount: number;
   isDefault: boolean;
 };
+
+export type MediaFile = {
+  file: File;
+  preview: string;
+  id: string;
+  type: 'image' | 'video';
+};
+
+export interface PreviewStepProps {
+  getRootProps: any;
+  getInputProps: any;
+  isDragActive: boolean;
+}
+
+export interface SortableMediaProps {
+  file: MediaFile;
+  index: number;
+  isActive: boolean;
+  onClick: () => void;
+  onRemove: (id: string) => void;
+}
+
+export interface UploadStepProps {
+  getRootProps: any;
+  getInputProps: any;
+  isDragActive: boolean;
+}
+
+export interface PostDialogTitleProps {
+  hasError: boolean;
+  discardPost: () => void;
+}
+
+export interface UploadErrorProps {
+  title: string;
+  message: string;
+  onRetry: () => void;
+}
+
+export interface GalleryProps {
+  mediaFiles: MediaFile[];
+  setMediaFiles: (files: MediaFile[]) => void;
+  getRootProps: any;
+  getInputProps: any;
+  isDragActive: boolean;
+  onRemove: (id: string) => void;
+}

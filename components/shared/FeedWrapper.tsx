@@ -9,7 +9,7 @@ import ThreadsList from '@/components/shared/ThreadsList';
 import Wrapper from '@/components/shared/Wrapper';
 import useDevice from '@/hooks/useDevice';
 import { ParentPostProps, ThreadFilter } from '@/lib/types';
-import useDialog from '@/store/dialog';
+import useDialog from '@/store/postDialog';
 import React from 'react';
 
 interface FeedWrapperProps {

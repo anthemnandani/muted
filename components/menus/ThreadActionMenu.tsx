@@ -6,7 +6,7 @@ import useToggleHidePost from '@/hooks/useToggleHidePost';
 import useToggleMuteUser from '@/hooks/useToggleMuteUser';
 import type { AuthorInfoProps } from '@/lib/types';
 import { cn, formatTimeLeft } from '@/lib/utils';
-import useDialog from '@/store/dialog';
+import useDialog from '@/store/postDialog';
 import { useMutedUsers } from '@/store/mutedUsers';
 import { useUser } from '@clerk/nextjs';
 import { MoreHorizontal } from 'lucide-react';
