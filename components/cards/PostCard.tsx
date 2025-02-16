@@ -6,8 +6,7 @@ import LikeButton from '../buttons/LikeButton';
 import ReplyButton from '../buttons/ReplyButton';
 import ShareButton from '../buttons/ShareButton';
 import UserProfile from '../modals/UserProfile';
-import PostImageCard from './PostImageCard';
-import PostVideoCard from './PostVideoCard';
+import PostMediaCarousel from '../posts/PostMediaCarousel';
 
 const PostCard: React.FC<PostCardProps> = ({
   isLastThread,
@@ -36,31 +35,14 @@ const PostCard: React.FC<PostCardProps> = ({
   return (
     <div className='h-screen flex-center'>
       <article className='flex justify-center items-end gap-4'>
-        <div className='w-full max-w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(0px-2rem+100vh)] relative snap-center snap-always'>
-          {media[0]?.fileType === 'video' ? (
-            <PostVideoCard
-              video={media[0]?.fileUrl! as string}
-              poster={media[0]?.thumbnailUrl! as string}
-              aspectRatio={media[0]?.aspectRatio}
-              postId={id!}
-              author={author}
-              createdAt={createdAt}
-              text={text}
-              hideLikes={hideLikes}
-            />
-          ) : (
-            <PostImageCard
-              image={media[0]?.fileUrl! as string}
-              originalDimensions={media[0]?.originalDimensions}
-              id={id!}
-              author={author}
-              createdAt={createdAt}
-              text={text}
-              hideLikes={hideLikes}
-            />
-          )}
-        </div>
-
+        <PostMediaCarousel
+          media={media}
+          author={author}
+          createdAt={createdAt}
+          postId={id!}
+          text={text}
+          hideLikes={hideLikes}
+        />
         <div className='flex flex-col items-center justify-end gap-4'>
           <UserProfile author={author} />
           <LikeButton

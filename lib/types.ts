@@ -370,3 +370,12 @@ export interface PostActionMenuProps {
   hideLikes: boolean;
   showControls: boolean;
 }
+
+export interface PostMediaCarouselProps {
+  media: PostMedia[];
+  author: AuthorInfoProps;
+  createdAt: Date;
+  postId: string;
+  text: string | null;
+  hideLikes: boolean;
+}
