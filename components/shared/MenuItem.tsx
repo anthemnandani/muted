@@ -8,22 +8,45 @@ const MenuItem: React.FC<MenuItemProps> = ({
   onClick,
   className,
   disabled,
-}) => (
-  <button
-    type='button'
-    className={cn(
-      'w-full flex items-center gap-3 py-2.5 px-3',
-      'text-white hover:bg-white/10 transition-colors',
-      'text-sm font-normal',
-      disabled && 'opacity-50 cursor-not-allowed',
-      className
-    )}
-    onClick={onClick}
-    disabled={disabled}
-  >
-    {Icon && <Icon className='size-4 min-w-4' />}
-    <span>{label}</span>
-  </button>
-);
+  isActionMenuItem,
+}) => {
+  if (React.isValidElement(label)) {
+    return (
+      <button
+        type='button'
+        className={cn(
+          'w-full flex items-center gap-3 py-2.5 px-3',
+          'text-white hover:bg-white/10 transition-colors',
+          'text-sm font-normal',
+          disabled && 'opacity-50 cursor-not-allowed',
+          className
+        )}
+        onClick={onClick}
+        disabled={disabled}
+      >
+        {Icon && <Icon className='size-4 min-w-4' />}
+        {label}
+      </button>
+    );
+  }
+
+  return (
+    <button
+      type='button'
+      className={cn(
+        'w-full flex items-center gap-3 py-2.5 px-3',
+        'text-white hover:bg-white/10 transition-colors',
+        'text-sm font-normal',
+        disabled && 'opacity-50 cursor-not-allowed',
+        className
+      )}
+      onClick={onClick}
+      disabled={disabled}
+    >
+      {Icon && <Icon className='size-4 min-w-4' />}
+      <span>{label}</span>
+    </button>
+  );
+};
 
 export default MenuItem;

@@ -1,7 +1,7 @@
 'use client';
 
 import NotFound from '@/app/not-found';
-import ThreadCard from '@/components/cards/ThreadCard';
+import PostCard from '@/components/cards/PostCard';
 import { Icons } from '@/components/icons';
 import Loader from '@/components/shared/Loader';
 import { useSyncPostStates } from '@/hooks/useSyncPostStates';
@@ -53,7 +53,7 @@ const RepliesClient = ({ username }: { username: string }) => {
               {allReplies.map((reply, index) => (
                 <div key={`reply-${reply.id}`}>
                   {reply.parentPost && (
-                    <ThreadCard
+                    <PostCard
                       {...reply.parentPost}
                       showMuted={false}
                       variant='reply'
@@ -70,7 +70,7 @@ const RepliesClient = ({ username }: { username: string }) => {
                       </Link>
                     </div>
                   )}
-                  <ThreadCard
+                  <PostCard
                     {...reply}
                     showMuted={false}
                     variant='reply'

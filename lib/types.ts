@@ -3,6 +3,7 @@ import type { CollectionPrivacy, User } from '@prisma/client';
 import { PostPrivacy, Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
 import { LucideIcon } from 'lucide-react';
+import Player from 'video.js/dist/types/player';
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
 type RouterOutput = inferRouterOutputs<AppRouter>;
@@ -71,7 +72,7 @@ export interface AppearanceMenuProps {
   setTheme: (theme: string) => void;
 }
 
-export interface ThreadDisplayProps {
+export interface PostDisplayProps {
   isLastThread?: boolean;
   showSeparator?: boolean;
   showLine?: boolean;
@@ -140,7 +141,7 @@ export type ParentPostProps = {
   parentRepliesCount?: number;
 };
 
-export interface ThreadCardProps extends ParentPostProps, ThreadDisplayProps {}
+export interface PostCardProps extends ParentPostProps, PostDisplayProps {}
 
 export interface UserAvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   image: string | null | undefined;
@@ -161,7 +162,7 @@ export interface CreatePostInputProps {
   isReply?: boolean;
 }
 
-export interface ThreadsListProps {
+export interface PostsListProps {
   posts?: ParentPostProps[];
   fetchNextPage: () => void;
   hasNextPage?: boolean;
@@ -310,4 +311,62 @@ export interface GalleryProps {
   getInputProps: any;
   isDragActive: boolean;
   onRemove: (id: string) => void;
+}
+
+export interface PostFooterProps {
+  author: AuthorInfoProps;
+  createdAt: Date;
+  id: string;
+  text: string | null;
+}
+
+export interface VideoContainerProps {
+  children: React.ReactNode;
+  onInViewChange: (inView: boolean) => void;
+  player: Player | null;
+  author: AuthorInfoProps;
+  createdAt: Date;
+  id: string;
+  text: string | null;
+  hideLikes: boolean;
+}
+
+export interface MediaControlsProps {
+  author: AuthorInfoProps;
+  postId: string;
+  createdAt: Date;
+  text: string | null;
+  hideLikes: boolean;
+  showControls: boolean;
+  VolumeControls?: React.ReactNode;
+}
+
+export interface PostImageCardProps {
+  image: string;
+  originalDimensions?: { width: number; height: number };
+  createdAt: Date;
+  author: AuthorInfoProps;
+  id: string;
+  text: string | null;
+  hideLikes: boolean;
+}
+
+export interface PostVideoCardProps {
+  video: string;
+  aspectRatio?: string;
+  postId: string;
+  poster: string;
+  author: AuthorInfoProps;
+  createdAt: Date;
+  text: string | null;
+  hideLikes: boolean;
+}
+
+export interface PostActionMenuProps {
+  author: AuthorInfoProps;
+  postId: string;
+  createdAt: Date;
+  currentText: string;
+  hideLikes: boolean;
+  showControls: boolean;
 }

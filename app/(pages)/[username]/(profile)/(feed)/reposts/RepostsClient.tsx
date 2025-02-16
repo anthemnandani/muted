@@ -1,7 +1,7 @@
 'use client';
 import NotFound from '@/app/not-found';
 import Loader from '@/components/shared/Loader';
-import ThreadsList from '@/components/shared/ThreadsList';
+import PostsList from '@/components/shared/PostsList';
 import { useSyncPostStates } from '@/hooks/useSyncPostStates';
 import { api } from '@/trpc/react';
 import React from 'react';
@@ -34,7 +34,7 @@ const RepostsClient = ({ username }: { username: string }) => {
       {allReposts ? (
         allReposts?.length > 0 ? (
           <section className='flex flex-col justify-start w-full'>
-            <ThreadsList
+            <PostsList
               posts={allReposts}
               fetchNextPage={fetchNextPage}
               hasNextPage={hasNextPage}

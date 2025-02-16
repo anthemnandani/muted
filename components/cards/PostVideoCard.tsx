@@ -1,24 +1,13 @@
 'use client';
 
 import { useVideoPlayerState } from '@/hooks/useVideoPlayerState';
+import { PostVideoCardProps } from '@/lib/types';
 import React from 'react';
 import Player from 'video.js/dist/types/player';
 import { VideoContainer } from '../shared/VideoContainer';
 import { VideoPlayer } from '../shared/VideoPlayer';
-import { AuthorInfoProps } from '@/lib/types';
 
-interface ThreadVideoCardProps {
-  video: string;
-  aspectRatio?: string;
-  postId: string;
-  poster: string;
-  author: AuthorInfoProps;
-  createdAt: Date;
-  text: string | null;
-  hideLikes: boolean;
-}
-
-const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
+const PostVideoCard: React.FC<PostVideoCardProps> = ({
   video,
   aspectRatio,
   postId,
@@ -128,4 +117,4 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
   );
 };
 
-export default ThreadVideoCard;
+export default PostVideoCard;

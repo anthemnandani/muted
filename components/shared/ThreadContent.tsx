@@ -1,4 +1,3 @@
-import ThreadVideoCard from '@/components/cards/ThreadVideoCard';
 import type { ParentPostInfo } from '@/lib/types';
 import React from 'react';
 

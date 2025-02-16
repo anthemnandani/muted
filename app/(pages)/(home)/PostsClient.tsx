@@ -1,10 +1,10 @@
 'use client';
 
 import Error from '@/app/error';
-import ThreadsList from '@/components/shared/ThreadsList';
+import PostsList from '@/components/shared/PostsList';
 import { api } from '@/trpc/react';
 
-const ThreadsClient = () => {
+const PostsClient = () => {
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
     api.post.getInfinitePosts.useInfiniteQuery(
       {},
@@ -21,7 +21,7 @@ const ThreadsClient = () => {
 
   return (
     <div className='h-full'>
-      <ThreadsList
+      <PostsList
         posts={allPosts}
         fetchNextPage={fetchNextPage}
         hasNextPage={hasNextPage}
@@ -32,4 +32,4 @@ const ThreadsClient = () => {
   );
 };
 
-export default ThreadsClient;
+export default PostsClient;

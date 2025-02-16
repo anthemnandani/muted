@@ -3,7 +3,7 @@
 import Loading from '@/app/(pages)/loading';
 import NotFound from '@/app/not-found';
 import HeaderWrapper from '@/components/shared/HeaderWrapper';
-import ThreadsList from '@/components/shared/ThreadsList';
+import PostsList from '@/components/shared/PostsList';
 import TopHeader from '@/components/shared/TopHeader';
 import Wrapper from '@/components/shared/Wrapper';
 import useDevice from '@/hooks/useDevice';
@@ -38,7 +38,7 @@ const CollectionDetails = ({ id }: { id: string }) => {
       )}
       <Wrapper>
         <section className='flex flex-col gap-4 justify-start w-full'>
-          <ThreadsList
+          <PostsList
             posts={allPosts}
             fetchNextPage={fetchNextPage}
             hasNextPage={hasNextPage}

@@ -4,12 +4,12 @@ import useCopyLink from '@/hooks/useCopyLink';
 import useHideLikes from '@/hooks/useHideLikes';
 import useToggleHidePost from '@/hooks/useToggleHidePost';
 import useToggleMuteUser from '@/hooks/useToggleMuteUser';
-import type { AuthorInfoProps } from '@/lib/types';
+import { PostActionMenuProps } from '@/lib/types';
 import { cn, formatTimeLeft } from '@/lib/utils';
-import useDialog from '@/store/postDialog';
 import { useMutedUsers } from '@/store/mutedUsers';
+import useDialog from '@/store/postDialog';
 import { useUser } from '@clerk/nextjs';
-import { MoreHorizontal } from 'lucide-react';
+import { Edit, MoreHorizontal } from 'lucide-react';
 import React from 'react';
 import { Icons } from '../icons';
 import DeletePost from '../modals/DeletePost';
@@ -21,16 +21,7 @@ import {
 } from '../ui/hover-card';
 import { Separator } from '../ui/separator';
 
-interface ThreadActionMenuProps {
-  author: AuthorInfoProps;
-  postId: string;
-  createdAt: Date;
-  currentText: string;
-  hideLikes: boolean;
-  showControls: boolean;
-}
-
-const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
+const PostActionMenu: React.FC<PostActionMenuProps> = ({
   author,
   postId,
   createdAt,
@@ -141,6 +132,7 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
             {timeLeft > 0 && (
               <>
                 <MenuItem
+                  icon={Edit}
                   label={
                     <div className='flex-between w-full'>
                       <p>Edit</p>
@@ -188,4 +180,4 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
   );
 };
 
-export default ThreadActionMenu;
+export default PostActionMenu;

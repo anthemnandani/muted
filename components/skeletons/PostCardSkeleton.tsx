@@ -1,6 +1,6 @@
 import { Skeleton } from '@/components/ui/skeleton';
 
-const ThreadCardSkeleton = () => {
+const PostCardSkeleton = () => {
   return (
     <div className='h-screen flex-center'>
       <article className='flex justify-center items-end gap-4'>
@@ -19,4 +19,4 @@ const ThreadCardSkeleton = () => {
   );
 };
 
-export default ThreadCardSkeleton;
+export default PostCardSkeleton;

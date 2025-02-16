@@ -1,6 +1,5 @@
 import type { AuthorInfoProps } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils';
-import ThreadActionMenu from '../menus/ThreadActionMenu';
 import UserProfile from '../modals/UserProfile';
 import Username from '../user/Username';
 

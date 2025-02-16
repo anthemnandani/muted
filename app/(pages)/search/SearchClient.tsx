@@ -3,7 +3,7 @@
 import Error from '@/app/error';
 import SearchInput from '@/components/inputs/SearchInput';
 import HeaderWrapper from '@/components/shared/HeaderWrapper';
-import ThreadsList from '@/components/shared/ThreadsList';
+import PostsList from '@/components/shared/PostsList';
 import TopHeader from '@/components/shared/TopHeader';
 import Wrapper from '@/components/shared/Wrapper';
 import UsersList from '@/components/user/UsersList';
@@ -76,7 +76,7 @@ const SearchClient = () => {
           {query ? (
             <section className='flex flex-col gap-4 justify-start w-full'>
               <SortButtons sortBy={sortBy} onSortChange={handleSortChange} />
-              <ThreadsList
+              <PostsList
                 posts={allPosts}
                 fetchNextPage={postsFetchNextPage}
                 hasNextPage={postsHasNextPage}

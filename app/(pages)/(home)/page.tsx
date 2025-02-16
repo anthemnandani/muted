@@ -1,7 +1,7 @@
-import ThreadsClient from './ThreadsClient';
+import PostsClient from './PostsClient';
 
 const HomePage = () => {
-  return <ThreadsClient />;
+  return <PostsClient />;
 };
 
 export default HomePage;

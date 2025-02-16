@@ -5,7 +5,7 @@ import Error from '@/app/error';
 import CreateWithInput from '@/components/inputs/CreateWithInput';
 import ThreadFilterMenu from '@/components/menus/ThreadFilterMenu';
 import HeaderWrapper from '@/components/shared/HeaderWrapper';
-import ThreadsList from '@/components/shared/ThreadsList';
+import PostsList from '@/components/shared/PostsList';
 import Wrapper from '@/components/shared/Wrapper';
 import useDevice from '@/hooks/useDevice';
 import { ParentPostProps, ThreadFilter } from '@/lib/types';
@@ -49,7 +49,7 @@ const FeedWrapper = ({
           <CreateWithInput onClick={() => setOpenDialog(true)} />
         </div>
         <section className='flex flex-col gap-4 justify-start w-full'>
-          <ThreadsList
+          <PostsList
             posts={posts}
             fetchNextPage={fetchNextPage}
             hasNextPage={hasNextPage}

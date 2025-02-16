@@ -1,14 +1,14 @@
 'use client';
 
-import { ThreadsListProps } from '@/lib/types';
+import { PostsListProps } from '@/lib/types';
 import Link from 'next/link';
 import React from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import ThreadCard from '../cards/ThreadCard';
+import PostCard from '../cards/PostCard';
 import { Icons } from '../icons';
-import ThreadCardSkeleton from '../skeletons/ThreadCardSkeleton';
+import PostCardSkeleton from '../skeletons/PostCardSkeleton';
 
-const ThreadsList: React.FC<ThreadsListProps> = ({
+const PostsList: React.FC<PostsListProps> = ({
   isLoading,
   posts,
   fetchNextPage,
@@ -39,7 +39,7 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
       {isLoading ? (
         <div>
           {[...Array(10)].map((_, index) => (
-            <ThreadCardSkeleton key={index} />
+            <PostCardSkeleton key={index} />
           ))}
         </div>
       ) : (
@@ -66,7 +66,7 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
               {post.parentPostId && (
                 <>
                   {post.parentPost && (
-                    <ThreadCard
+                    <PostCard
                       {...post.parentPost}
                       showMuted={showMuted}
                       variant='reply'
@@ -83,7 +83,7 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
                   </div>
                 </>
               )}
-              <ThreadCard
+              <PostCard
                 {...post}
                 showMuted={showMuted}
                 variant={post.parentPostId ? 'reply' : 'default'}
@@ -97,4 +97,4 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
   );
 };
 
-export default ThreadsList;
+export default PostsList;

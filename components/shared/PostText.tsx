@@ -155,7 +155,7 @@
 import { highlightHashtagsAndUrls } from '@/lib/utils';
 import React from 'react';
 
-const ThreadText = ({ text }: { text: string }) => {
+const PostText = ({ text }: { text: string }) => {
   const [isExpanded, setIsExpanded] = React.useState(false);
   const MAX_LENGTH = 40;
   const MAX_EXPANDED_LENGTH = 190;
@@ -183,6 +183,8 @@ const ThreadText = ({ text }: { text: string }) => {
       />
       {shouldTruncate && !isExpanded && (
         <button
+          type='button'
+          aria-label='Show more'
           onClick={handleShowMoreClick}
           className='font-semibold text-white hover:cursor-pointer ml-1'
         >
@@ -193,4 +195,4 @@ const ThreadText = ({ text }: { text: string }) => {
   );
 };
 
-export default ThreadText;
+export default PostText;

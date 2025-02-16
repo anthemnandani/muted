@@ -3,8 +3,8 @@
 import NotFound from '@/app/not-found';
 import PostFilters from '@/components/posts/PostFilters';
 import Loader from '@/components/shared/Loader';
+import PostsList from '@/components/shared/PostsList';
 import ThreadsGrid from '@/components/shared/ThreadsGrid';
-import ThreadsList from '@/components/shared/ThreadsList';
 import { useSyncPostStates } from '@/hooks/useSyncPostStates';
 import type { PostFilter, PostView } from '@/lib/types';
 import { api } from '@/trpc/react';
@@ -61,7 +61,7 @@ const ProfileClient = ({ username }: { username: string }) => {
         allPosts?.length > 0 ? (
           <section className='flex flex-col justify-start w-full'>
             {view === 'LIST' ? (
-              <ThreadsList
+              <PostsList
                 posts={allPosts}
                 fetchNextPage={fetchNextPage}
                 hasNextPage={hasNextPage}
