@@ -1,12 +1,12 @@
 'use client';
-import { ThreadCardProps } from '@/lib/types';
+import type { PostCardProps } from '@/lib/types';
 import { useHiddenPosts } from '@/store/hiddenPosts';
 import React, { useMemo, useState } from 'react';
 import RepliesWrapper from '../shared/RepliesWrapper';
 import { Separator } from '../ui/separator';
 import ThreadCardBase from './ThreadCardBase';
 
-const ParentReplyCard: React.FC<ThreadCardProps> = ({
+const ParentReplyCard: React.FC<PostCardProps> = ({
   postChildren,
   repliesCount,
   author,

@@ -1,7 +1,7 @@
 'use client';
 
 import Loading from '@/app/(pages)/loading';
-import type { ParentPostProps, ThreadsListProps } from '@/lib/types';
+import type { ParentPostProps, PostsListProps } from '@/lib/types';
 import { isGif, isImage, isVideo } from '@/lib/utils';
 import { Play } from 'lucide-react';
 import Image from 'next/image';
@@ -15,7 +15,7 @@ const ThreadsGrid = ({
   posts,
   fetchNextPage,
   hasNextPage,
-}: ThreadsListProps) => {
+}: PostsListProps) => {
   const renderPostContent = (post: ParentPostProps) => {
     if (post.media) {
       if (isVideo(post.media[0].fileType)) {

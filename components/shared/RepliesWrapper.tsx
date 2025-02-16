@@ -1,4 +1,4 @@
-import { ThreadCardProps } from '@/lib/types';
+import type { PostCardProps } from '@/lib/types';
 import React from 'react';
 import ReplyToggleButton from '../buttons/ReplyToggleButton';
 import ChildReplyCard from '../cards/ChildReplyCard';
@@ -9,7 +9,7 @@ interface RepliesWrapperProps {
   showReplies: boolean;
   toggleReplies: () => void;
   repliesCount: number;
-  children: ThreadCardProps[];
+  children: PostCardProps[];
 }
 
 const RepliesWrapper: React.FC<RepliesWrapperProps> = ({

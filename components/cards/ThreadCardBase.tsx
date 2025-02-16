@@ -1,6 +1,6 @@
 'use client';
 
-import { ThreadCardProps } from '@/lib/types';
+import type { PostCardProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useHiddenPosts } from '@/store/hiddenPosts';
 import { useMutedUsers } from '@/store/mutedUsers';
@@ -15,7 +15,7 @@ import LinkPreviewCard from './LinkPreviewCard';
 import MutedPost from './MutedPost';
 import ThreadQuoteCard from './ThreadQuoteCard';
 
-interface ThreadCardBaseProps extends ThreadCardProps {
+interface ThreadCardBaseProps extends PostCardProps {
   variant?: 'default' | 'reply';
   showHeader?: boolean;
   showActions?: boolean;
