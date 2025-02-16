@@ -30,7 +30,7 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
 
   return (
     <div
-      className='relative w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(0px-2rem+100vh)] overflow-hidden flex-grow rounded-2xl flex-center'
+      className='relative w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(0px-2rem+100vh)] overflow-hidden flex-grow bg-black rounded-2xl flex-center'
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => {
         setShowControls(false);

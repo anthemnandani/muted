@@ -6,8 +6,8 @@ import LikeButton from '../buttons/LikeButton';
 import ReplyButton from '../buttons/ReplyButton';
 import ShareButton from '../buttons/ShareButton';
 import UserProfile from '../modals/UserProfile';
-import ThreadImageCard from './PostImageCard';
-import ThreadVideoCard from './PostVideoCard';
+import PostImageCard from './PostImageCard';
+import PostVideoCard from './PostVideoCard';
 
 const PostCard: React.FC<PostCardProps> = ({
   isLastThread,
@@ -36,9 +36,9 @@ const PostCard: React.FC<PostCardProps> = ({
   return (
     <div className='h-screen flex-center'>
       <article className='flex justify-center items-end gap-4'>
-        <div className='w-full max-w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(0px-2rem+100vh)] relative bg-black snap-center snap-always'>
+        <div className='w-full max-w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(0px-2rem+100vh)] relative snap-center snap-always'>
           {media[0]?.fileType === 'video' ? (
-            <ThreadVideoCard
+            <PostVideoCard
               video={media[0]?.fileUrl! as string}
               poster={media[0]?.thumbnailUrl! as string}
               aspectRatio={media[0]?.aspectRatio}
@@ -49,7 +49,7 @@ const PostCard: React.FC<PostCardProps> = ({
               hideLikes={hideLikes}
             />
           ) : (
-            <ThreadImageCard
+            <PostImageCard
               image={media[0]?.fileUrl! as string}
               originalDimensions={media[0]?.originalDimensions}
               id={id!}

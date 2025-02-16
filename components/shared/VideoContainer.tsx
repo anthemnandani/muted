@@ -37,7 +37,7 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
   return (
     <div
       ref={ref}
-      className='relative h-full w-full overflow-hidden flex-grow cursor-pointer rounded-2xl'
+      className='relative h-full w-full overflow-hidden flex-grow cursor-pointer bg-black rounded-2xl'
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => {
         setShowControls(false);
