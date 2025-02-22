@@ -76,14 +76,17 @@ const AddBio = ({ userBio }: { userBio: string }) => {
           </span>
         </div>
         <Card className='rounded-2xl border-none bg-background shadow-2xl ring-1 ring-[#393939] ring-offset-0 dark:bg-gray-6'>
-          <div className='no-scrollbar h-[215px] overflow-y-auto p-6'>
+          <div className='relative no-scrollbar h-[215px] overflow-y-auto p-6'>
             <ResizeTextarea
               className='w-full h-full border-none focus:outline-none'
               placeholder='Write a bio...'
               value={bio}
-              maxLength={150}
+              maxLength={80}
               onChange={(e) => setBio(e.target.value)}
             />
+            <div className='absolute bottom-2 right-4 text-sm text-white/75'>
+              {bio.length}/80
+            </div>
           </div>
         </Card>
       </DialogContent>

@@ -20,15 +20,22 @@ const PostsClient = () => {
   if (isError) return <Error />;
 
   return (
-    <div className='h-full'>
-      <PostsList
-        posts={allPosts}
-        fetchNextPage={fetchNextPage}
-        hasNextPage={hasNextPage}
-        isLoading={isLoading}
-        emptyStateMessage='No posts found.'
-      />
-    </div>
+    <main
+      id='main-scroll-container'
+      className='h-screen overflow-y-scroll snap-y snap-mandatory smooth-scroll hide-scrollbar'
+    >
+      <div className='grid place-items-center min-h-screen'>
+        <div className='h-full'>
+          <PostsList
+            posts={allPosts}
+            fetchNextPage={fetchNextPage}
+            hasNextPage={hasNextPage}
+            isLoading={isLoading}
+            emptyStateMessage='No posts found.'
+          />
+        </div>
+      </div>
+    </main>
   );
 };
 

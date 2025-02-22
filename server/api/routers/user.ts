@@ -266,24 +266,24 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         image: z.string().url().optional(),
-        link: z
-          .string()
-          .optional()
-          .refine(
-            (value) => {
-              return value === '' || z.string().url().safeParse(value).success;
-            },
-            {
-              message: 'Invalid url',
-            }
-          ),
+        // link: z
+        //   .string()
+        //   .optional()
+        //   .refine(
+        //     (value) => {
+        //       return value === '' || z.string().url().safeParse(value).success;
+        //     },
+        //     {
+        //       message: 'Invalid url',
+        //     }
+        //   ),
         bio: z.string().max(150).optional(),
         privacy: z.enum(['PUBLIC', 'PRIVATE']),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const { user } = ctx;
-      const { bio, link, image, privacy } = input;
+      const { bio, image, privacy } = input;
       const email = getUserEmail(user);
       const dbUser = await ctx.db.user.findUnique({
         where: {
@@ -304,7 +304,7 @@ export const userRouter = createTRPCRouter({
         where: { id: dbUser.id },
         data: {
           image,
-          link,
+          // link,
           bio,
           privacy,
         },

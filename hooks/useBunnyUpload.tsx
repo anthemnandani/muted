@@ -6,7 +6,7 @@ export const useBunnyUpload = () => {
       const buffer = Buffer.from(await file.arrayBuffer());
       const fileName = `${Date.now()}-${file.name}`;
       const url = await uploadToBunnyStorage(buffer, fileName, file.type);
-      return { url };
+      return url;
     } catch (error) {
       console.error('Upload error:', error);
       throw error;

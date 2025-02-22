@@ -7,14 +7,16 @@ import { cn } from '@/lib/utils';
 import React from 'react';
 
 interface FollowButtonProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant: 'default' | 'outline';
+  variant: 'default' | 'outline' | 'destructive';
   author: AuthorInfoProps;
+  size: 'default' | 'sm' | 'lg' | 'icon';
 }
 
 const FollowButton: React.FC<FollowButtonProps> = ({
   variant,
   author,
   className,
+  size,
 }) => {
   const { handleToggleFollow, isLoading, isSameUser, isFollowedByMe } =
     useFollowUser({
@@ -25,14 +27,11 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     <Follow
       disabled={isLoading || isSameUser}
       onClick={handleToggleFollow}
+      size={size}
       variant={!isFollowedByMe ? variant : 'outline'}
-      className={cn(
-        'rounded-[10px] px-6 !text-[14px] py-1.5 h-8 select-none',
-        className,
-        {
-          'opacity-80': isFollowedByMe,
-        }
-      )}
+      className={cn(className, {
+        'opacity-80': isFollowedByMe,
+      })}
     >
       {isFollowedByMe ? 'Following' : 'Follow'}
     </Follow>

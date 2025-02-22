@@ -6,6 +6,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import useSortBy from '@/store/sortBy';
 import { ArrowUpDown } from 'lucide-react';
+import { Separator } from '../ui/separator';
 
 interface SortFollowersAndFollowingProps {
   username: string;
@@ -24,7 +25,10 @@ const SortFollowersAndFollowing = ({
         <DropdownMenuTrigger asChild>
           <ArrowUpDown className='size-5 cursor-pointer hover:opacity-70 transition-opacity' />
         </DropdownMenuTrigger>
-        <DropdownMenuContent className='min-w-[190px] p-0' align='end'>
+        <DropdownMenuContent
+          className='min-w-[190px] p-0 bg-neutral-900 rounded-xl'
+          align='end'
+        >
           <DropdownMenuItem
             className='px-4 py-3 cursor-pointer'
             onClick={() => setSortBy(username, 'latest')}
@@ -34,6 +38,7 @@ const SortFollowersAndFollowing = ({
               {currentSort === 'latest' && ' ✓'}
             </span>
           </DropdownMenuItem>
+          <Separator />
           <DropdownMenuItem
             className='px-4 py-3 cursor-pointer'
             onClick={() => setSortBy(username, 'earliest')}

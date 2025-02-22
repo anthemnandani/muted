@@ -52,7 +52,12 @@ const UserCard: React.FC<UserCardProps> = (props) => {
                 </span>
               </div>
             </div>
-            <FollowButton variant='outline' author={authorProps} />
+            <FollowButton
+              size='default'
+              variant='outline'
+              author={authorProps}
+              className='rounded-[10px] px-6 !text-[14px] py-1.5 h-8 select-none'
+            />
           </div>
           {showDetails && bio && (
             <span className='text-[15px] text-black dark:text-[#f3f5f7] line-clamp-3 w-full whitespace-pre-line break-words antialiased pr-2 md:pr-4'>

@@ -133,7 +133,7 @@ const useCreatePost = (
           } else {
             const dimensions = await getImageDimensions(file);
             const aspectRatio = getMediaAspectRatio(dimensions);
-            const { url: fileUrl } = await uploadToStorage(file);
+            const fileUrl = await uploadToStorage(file);
 
             return {
               fileType: 'image',

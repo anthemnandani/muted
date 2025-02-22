@@ -5,6 +5,7 @@ import { getUserEmail } from '@/lib/utils';
 import { db } from '@/server/db';
 import { currentUser } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
+import React from 'react';
 
 export default async function PagesLayout({
   children,
@@ -24,16 +25,11 @@ export default async function PagesLayout({
   if (!dbUser?.verified) redirect('/account?origin=/');
 
   return (
-    <>
+    <React.Fragment>
       <TopBar />
       <LeftSideBar />
-      <main
-        id='main-scroll-container'
-        className='h-screen overflow-y-scroll snap-y snap-mandatory smooth-scroll hide-scrollbar'
-      >
-        <div className='grid place-items-center min-h-screen'>{children}</div>
-      </main>
+      {children}
       <BottomBar />
-    </>
+    </React.Fragment>
   );
 }

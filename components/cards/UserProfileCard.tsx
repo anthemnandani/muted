@@ -45,7 +45,12 @@ const UserProfileCard: React.FC<AuthorInfoProps> = (props) => {
           followers={followers.length}
         />
       </div>
-      <FollowButton variant='default' author={props} />
+      <FollowButton
+        size='default'
+        variant='default'
+        className='rounded-[10px] px-6 !text-[14px] py-1.5 h-8 select-none'
+        author={props}
+      />
     </div>
   );
 };

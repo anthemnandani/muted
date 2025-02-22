@@ -173,7 +173,6 @@ export interface PostsListProps {
 
 export interface EditProfileProps {
   userBio: string;
-  userLink: string;
   userImage: string;
   userPrivacy: Privacy;
 }

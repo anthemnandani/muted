@@ -369,37 +369,34 @@ export const Icons = {
   ),
   share: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
     <svg
-      width='23'
-      height='23'
-      viewBox='0 0 23 23'
-      fill='none'
+      fill='currentColor'
+      color='inherit'
+      font-size='inherit'
+      viewBox='0 0 48 48'
       xmlns='http://www.w3.org/2000/svg'
+      width='1em'
+      height='1em'
       {...props}
     >
-      <g clipPath='url(#clip0_2_823)'>
-        <path
-          d='M21.125 2.8125L9.14188 9.45281'
-          stroke='currentColor'
-          strokeWidth='1.875'
-          strokeLinejoin='round'
-        />
-        <path
-          d='M11.4669 19.0629L21.125 2.81323H2.375L9.14188 9.45354L11.4669 19.0629Z'
-          stroke='currentColor'
-          strokeWidth='1.875'
-          strokeLinejoin='round'
-        />
-      </g>
-      <defs>
-        <clipPath id='clip0_2_823'>
-          <rect
-            width='22.5'
-            height='22.5'
-            fill='white'
-            transform='translate(0.5)'
-          />
-        </clipPath>
-      </defs>
+      <path d='M21.68 3.18a2 2 0 0 1 2.14.32l21.5 19a2 2 0 0 1-.02 3.02l-21.5 18.5a2 2 0 0 1-3.3-1.52v-9.97c-5.68.28-11.95 1.75-16.09 5.88A2 2 0 0 1 1 37c0-11.68 7.7-21.05 19.5-21.94V5a2 2 0 0 1 1.18-1.82ZM24.5 30.5v7.64l16.46-14.16L24.5 9.44V17a2 2 0 0 1-2.05 2c-8.4-.21-15.62 5.34-17.09 13.66 4.47-2.7 9.8-3.87 14.98-4.13.68-.03 1.22-.04 1.6-.04 1.19 0 2.56.26 2.56 2.01Z'></path>
+    </svg>
+  ),
+  ellipsis: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      width='24'
+      height='24'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      {...props}
+    >
+      <circle cx='12' cy='12' r='1' />
+      <circle cx='19' cy='12' r='1' />
+      <circle cx='5' cy='12' r='1' />
     </svg>
   ),
   media: (props: IconProps | React.SVGProps<SVGSVGElement>) => (

@@ -1,42 +1,68 @@
 'use client';
 
+import { UPLOAD_CONSTRAINTS } from '@/lib/constants';
+import { cn } from '@/lib/utils';
+import useEditProfile from '@/store/editProfile';
+import useFileStore from '@/store/fileStore';
+import { useUser } from '@clerk/nextjs';
+import { Plus } from 'lucide-react';
+import React from 'react';
+import { useDropzone } from 'react-dropzone';
+import { toast } from 'sonner';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import useEditProfile from '@/store/editProfile';
-import useFileStore from '@/store/fileStore';
-import { useUser } from '@clerk/nextjs';
-import Image from 'next/image';
-import { ChangeEvent, useRef } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+} from '../ui/dropdown-menu';
+import { Separator } from '../ui/separator';
 
-const UploadPicture = ({ userImage }: { userImage: string }) => {
+const UploadPicture = () => {
   const { profilePic, setProfilePic } = useEditProfile();
-  const { setProfileFiles } = useFileStore();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { setProfileFile } = useFileStore();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const { user } = useUser();
 
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const reader = new FileReader();
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      setProfileFiles(file);
-      if (!file.type.includes('image')) return;
-      reader.onload = async (event) => {
-        const imageUrl = event.target?.result?.toString() || '';
-        setProfilePic(imageUrl);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  const onDrop = React.useCallback(
+    (acceptedFiles: File[]) => {
+      const file = acceptedFiles[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const imageUrl = event.target?.result?.toString() || '';
+          setProfilePic(imageUrl);
+          setProfileFile(file);
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+    [setProfilePic, setProfileFile]
+  );
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      ...UPLOAD_CONSTRAINTS.ACCEPTED_IMAGE_TYPES,
+    },
+    maxSize: UPLOAD_CONSTRAINTS.MAX_IMAGE_SIZE,
+    multiple: false,
+    noClick: true,
+    onDropRejected: (fileRejections) => {
+      const error = fileRejections[0]?.errors[0];
+      if (error.code === 'file-too-large') {
+        toast.error('Image size should be less than 10MB');
+      } else if (error.code === 'file-invalid-type') {
+        toast.error('Only JPG, JPEG and PNG files are allowed');
+      } else {
+        toast.error('Error uploading file');
+      }
+    },
+  });
 
   const handleRemoveImage = () => {
     setProfilePic(user?.imageUrl as string);
-    setProfileFiles(null);
+    setProfileFile(null);
   };
 
   const handleUploadClick = () => {
@@ -46,41 +72,64 @@ const UploadPicture = ({ userImage }: { userImage: string }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Avatar className='cursor-pointer outline outline-1 outline-border size-12'>
-          <AvatarImage
-            src={profilePic}
-            alt='Profile Picture'
-            className='object-cover'
-          />
-          <AvatarFallback>
-            <Image src={profilePic} alt='Profile Pic' width={40} height={40} />
-          </AvatarFallback>
-        </Avatar>
+        <div
+          className={cn(
+            'relative size-20 outline outline-1 rounded-full cursor-pointer transition-all duration-200',
+            isDragActive
+              ? 'outline-primary-red outline-2 ring-4 ring-primary-red/20'
+              : 'outline-border',
+            isDragActive &&
+              'after:absolute after:inset-0 after:bg-primary-red/10 after:rounded-full'
+          )}
+          {...getRootProps()}
+        >
+          <Avatar className='rounded-full w-full h-full'>
+            <AvatarImage
+              src={profilePic}
+              alt='Profile Picture'
+              className='object-cover'
+            />
+            <AvatarFallback className='size-20' />
+          </Avatar>
+          <button
+            type='button'
+            className='absolute -bottom-2 left-1/2 -translate-x-1/2'
+          >
+            <div className='bg-primary-red size-7 flex-center rounded-full cursor-pointer hover:scale-105 active:scale-95'>
+              <Plus className='size-5 text-neutral-50' />
+            </div>
+          </button>
+          <input {...getInputProps()} />
+        </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align='end' className='z-[1000]'>
+      <DropdownMenuContent
+        align='end'
+        className='min-w-[190px] p-0 bg-neutral-900 rounded-xl z-[1001]'
+      >
         <DropdownMenuItem
-          className='dropdown-menu-item'
+          className='px-4 py-3 cursor-pointer'
           onClick={handleUploadClick}
         >
-          Upload Picture
+          Upload picture
         </DropdownMenuItem>
+        <Separator />
 
         <DropdownMenuItem
-          className='dropdown-menu-item text-primary-red focus:text-primary-red'
+          className='px-4 py-3 cursor-pointer text-primary-red focus:text-primary-red'
           onClick={handleRemoveImage}
-          disabled={profilePic !== userImage || profilePic === user?.imageUrl}
+          disabled={profilePic === user?.imageUrl}
         >
           Remove current picture
         </DropdownMenuItem>
       </DropdownMenuContent>
-      <input
+      {/* <input
         title='File Input'
         type='file'
         ref={fileInputRef}
         accept='image/*'
         className='hidden'
         onChange={handleImageChange}
-      />
+      /> */}
     </DropdownMenu>
   );
 };

@@ -48,38 +48,44 @@ export default function FollowersAndFollowingLayout({
           <TopHeader title='Profile' />
         </HeaderWrapper>
       )}
-      <Wrapper>
-        <div className='flex-between px-6 pt-8 pb-4'>
-          <div className='flex items-center gap-4'>
-            <div className='cursor-pointer' onClick={() => router.back()}>
-              <Icons.back className='size-6' />
-            </div>
-            <div className='flex flex-col'>
-              <span className='text-lg font-medium'>
-                {data.userDetails.fullName}
-              </span>
-              <span className='text-sm text-muted-foreground'>
-                @{data.userDetails.username}
-              </span>
-            </div>
-          </div>
+      <main className='flex justify-center h-screen'>
+        <section className='w-full'>
+          <div className='w-full md:max-w-[550px] mx-auto relative'>
+            <Wrapper>
+              <div className='flex-between px-6 pt-8 pb-4'>
+                <div className='flex items-center gap-4'>
+                  <div className='cursor-pointer' onClick={() => router.back()}>
+                    <Icons.back className='size-6' />
+                  </div>
+                  <div className='flex flex-col'>
+                    <span className='text-lg font-medium'>
+                      {data.userDetails.fullName}
+                    </span>
+                    <span className='text-sm text-muted-foreground'>
+                      @{data.userDetails.username}
+                    </span>
+                  </div>
+                </div>
 
-          <SortFollowersAndFollowing username={username} />
-        </div>
-        <div className='w-full flex border-b border-border'>
-          <ProfileTabItem
-            href={`/${basePath}/following`}
-            isActive={lastSegment === 'following'}
-            label='Following'
-          />
-          <ProfileTabItem
-            href={`/${basePath}/followers`}
-            isActive={lastSegment === 'followers'}
-            label='Followers'
-          />
-        </div>
-        {children}
-      </Wrapper>
+                <SortFollowersAndFollowing username={username} />
+              </div>
+              <div className='w-full flex border-b border-border'>
+                <ProfileTabItem
+                  href={`/${basePath}/following`}
+                  isActive={lastSegment === 'following'}
+                  label='Following'
+                />
+                <ProfileTabItem
+                  href={`/${basePath}/followers`}
+                  isActive={lastSegment === 'followers'}
+                  label='Followers'
+                />
+              </div>
+              {children}
+            </Wrapper>
+          </div>
+        </section>
+      </main>
     </React.Fragment>
   );
 }

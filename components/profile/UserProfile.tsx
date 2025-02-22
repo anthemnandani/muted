@@ -1,128 +1,113 @@
 'use client';
 
-import { Icons } from '@/components/icons';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import useCopyLink from '@/hooks/useCopyLink';
 import type { UserProfileInfoProps } from '@/lib/types';
-import { formatURL, parseUsernamePath } from '@/lib/utils';
+import { formatCount } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
 import { Privacy } from '@prisma/client';
-import { Link2 } from 'lucide-react';
+import { Lock, Settings } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
-import { useParams, usePathname } from 'next/navigation';
 import React from 'react';
 import FollowButton from '../buttons/FollowButton';
+import { Icons } from '../icons';
 import UserProfileMenu from '../menus/UserProfileMenu';
 import EditProfile from '../modals/EditProfile';
-import ProfileTabItem from '../shared/ProfileTabItem';
 import { Button } from '../ui/button';
-import UserStats from './UserStats';
 
 const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
-  const {
-    id,
-    bio,
-    fullName,
-    image,
-    link,
-    username,
-    privacy,
-    isAdmin,
-    followers,
-    following,
-  } = props;
-  const path = usePathname();
+  const { id, bio, fullName, image, username, privacy, followers, following } =
+    props;
   const { user } = useUser();
-
-  const params = useParams<{ username: string }>();
-  const { basePath, lastSegment } = parseUsernamePath(path, params.username);
+  const { handleCopyProfileLink } = useCopyLink({ username });
 
   return (
-    <div className='z-[10] mt-4 flex w-full flex-col space-y-4'>
-      <div className='pt-2 px-4 md:px-5 pb-[10px]'>
-        <div className='flex w-full items-center'>
-          <div className='flex w-full flex-col p-3 pl-0 gap-1'>
-            <h1 className='text-2xl leading-[30px] tracking-normal'>
-              {fullName}
-            </h1>
-            <div className='flex gap-1'>
-              <h4 className='text-[15px]'>{username}</h4>
-            </div>
-          </div>
-          <Avatar className='size-20 overflow-visible outline outline-2 outline-border relative'>
-            <AvatarImage
-              src={image || ''}
-              alt={fullName || ''}
-              className='h-min w-full rounded-full object-cover '
-            />
-            <AvatarFallback></AvatarFallback>
-            {isAdmin && (
-              <div className='absolute bottom-0 -left-0.5'>
-                <Icons.verified2 className='h-6 w-6 text-background' />
-              </div>
-            )}
-          </Avatar>
-        </div>
-
-        <p className='text-[15px] whitespace-pre-line mt-6'>{bio}</p>
-        {link && (
-          <div className='flex flex-wrap items-center gap-x-3 pt-1'>
-            <div className='group flex hover:cursor-pointer'>
-              <Link href={link} target='_blank' rel='noreferrer'>
-                <Link2 className='inline h-4 w-4 stroke-sky-600' />
-                <span className='ml-2 break-all text-sm text-sky-600 group-hover:text-sky-500'>
-                  {formatURL(link)}
-                </span>
-              </Link>
-            </div>
-          </div>
-        )}
-        <div className='flex-between mt-3'>
-          <UserStats
-            username={username}
-            following={following.length}
-            followers={followers.length}
-          />
-          {user?.id != id && <UserProfileMenu />}
-        </div>
+    <div className='flex items-center relative min-h-[140px] mb-5 gap-7 flex-[0_0_auto]'>
+      <div className='relative flex-center size-[212px] inline-block rounded-full overflow-hidden border-[0.5px] border-white-12 cursor-pointer'>
+        <Image
+          src={image ?? ''}
+          alt='Profile pic'
+          fill
+          priority
+          className='object-cover'
+        />
       </div>
-
-      <div className='py-3 px-6 !mt-2'>
-        {user?.id != id && (
-          <div className='grid gap-2 sm:grid-cols-2 pt-2'>
+      <div className='flex flex-col justify-between flex-[1_1_0%] gap-3 overflow-visible'>
+        <div className='flex items-center gap-3'>
+          <h1 className='text-2xl font-bold overflow-hidden text-ellipsis whitespace-nowrap break-words antialiased'>
+            {fullName}
+          </h1>
+          {user?.id === id && <Lock className='size-5 text-neutral-50' />}
+          <p className='text-lg font-medium max-w-[450px] overflow-hidden text-ellipsis whitespace-nowrap break-words h-[25px] antialiased'>
+            {username}
+          </p>
+        </div>
+        <div className='flex items-center gap-3'>
+          {user?.id === id && (
+            <React.Fragment>
+              <EditProfile
+                userBio={bio || ''}
+                userImage={image || ''}
+                userPrivacy={privacy as Privacy}
+              />
+              <Button
+                size='icon'
+                className='size-10 bg-white-13 hover:bg-white-8 rounded-md transition-colors duration-200'
+              >
+                <Settings className='size-5 text-neutral-50' />
+              </Button>
+            </React.Fragment>
+          )}
+          {user?.id !== id && (
             <FollowButton
-              className='text-[14px] px-6'
-              variant='default'
+              size='default'
+              variant='destructive'
+              className='min-w-[120px] text-base font-medium overflow-hidden text-ellipsis whitespace-nowrap break-words'
               author={props}
             />
+          )}
+          {user?.id !== id && <UserProfileMenu />}
+          {user?.id === id && (
             <Button
-              size='sm'
-              variant='outline'
-              className='w-full border-[#333333] sm:w-auto rounded-xl cursor-not-allowed py-1 font-semibold tracking-normal active:scale-95 '
+              size='icon'
+              className='size-10 bg-white-13 hover:bg-white-8 rounded-md transition-colors duration-200'
+              onClick={handleCopyProfileLink}
             >
-              Mention
+              <Icons.share className='size-5 text-neutral-50' />
             </Button>
+          )}
+        </div>
+        <div className='flex items-center gap-5'>
+          <Link
+            href={`/@${username}/following`}
+            className='flex items-center gap-1.5 cursor-pointer'
+          >
+            <strong className='text-lg text-white/90 antialiased'>
+              {formatCount(following.length)}
+            </strong>
+            <span className='text-base text-white/75 hover:underline transition-all duration-200 antialiased'>
+              Following
+            </span>
+          </Link>
+          <Link
+            href={`/@${username}/followers`}
+            className='flex items-center gap-1.5 cursor-pointer'
+          >
+            <strong className='text-lg text-white/90 antialiased'>
+              {formatCount(followers.length)}
+            </strong>
+            <span className='text-base text-white/75 hover:underline transition-all duration-200 antialiased'>
+              Followers
+            </span>
+          </Link>
+          <div className='flex items-center gap-1.5'>
+            <strong className='text-lg text-white/90 antialiased'>0</strong>
+            <span className='text-base text-white/75 antialiased'>Likes</span>
           </div>
-        )}
-        {user?.id === id && (
-          <EditProfile
-            userBio={bio || ''}
-            userLink={link || ''}
-            userImage={image || ''}
-            userPrivacy={privacy as Privacy}
-          />
-        )}
-      </div>
-      <div className='w-full flex border-b border-border'>
-        <ProfileTabItem
-          href={`/${basePath}`}
-          isActive={lastSegment === basePath}
-          label='All Posts'
-        />
-        <ProfileTabItem
-          href={`/${basePath}/collections`}
-          isActive={lastSegment === 'collections'}
-          label='Collections'
-        />
+        </div>
+        <h2 className='text-left font-normal antialiased whitespace-pre-line text-base text-white/90 max-w-[600px]'>
+          {bio || 'No bio yet.'}
+        </h2>
       </div>
     </div>
   );
