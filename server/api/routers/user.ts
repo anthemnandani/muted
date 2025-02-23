@@ -39,12 +39,33 @@ export const userRouter = createTRPCRouter({
         include: {
           followers: true,
           following: true,
+          posts: {
+            select: {
+              _count: {
+                select: {
+                  likes: true,
+                },
+              },
+              id: true,
+              media: true,
+            },
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
         },
       });
 
       if (!userProfileInfo) {
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
+
+      const totalLikes = userProfileInfo.posts.reduce(
+        (sum, post) => sum + post._count.likes,
+        0
+      );
+
+      console.log(userProfileInfo.posts);
 
       return {
         userDetails: {
@@ -59,6 +80,11 @@ export const userRouter = createTRPCRouter({
           isAdmin: userProfileInfo.isAdmin,
           followers: userProfileInfo.followers,
           following: userProfileInfo.following,
+          posts: userProfileInfo.posts.map((post) => ({
+            id: post.id,
+            media: post.media as PostMedia[],
+          })),
+          totalLikes,
         },
       };
     }),
@@ -304,7 +330,6 @@ export const userRouter = createTRPCRouter({
         where: { id: dbUser.id },
         data: {
           image,
-          // link,
           bio,
           privacy,
         },

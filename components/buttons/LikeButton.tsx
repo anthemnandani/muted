@@ -59,6 +59,7 @@ const LikeButton: React.FC<LikeButtonProps> = ({
       await trpcUtils.post.getInfinitePosts.invalidate();
       await trpcUtils.post.getNestedPosts.invalidate();
       await trpcUtils.post.getLikedPosts.invalidate();
+      await trpcUtils.user.userInfo.invalidate();
     },
   });
 

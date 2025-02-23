@@ -16,8 +16,17 @@ import EditProfile from '../modals/EditProfile';
 import { Button } from '../ui/button';
 
 const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
-  const { id, bio, fullName, image, username, privacy, followers, following } =
-    props;
+  const {
+    id,
+    bio,
+    fullName,
+    image,
+    username,
+    privacy,
+    followers,
+    following,
+    totalLikes,
+  } = props;
   const { user } = useUser();
   const { handleCopyProfileLink } = useCopyLink({ username });
 
@@ -86,7 +95,7 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
               {formatCount(following.length)}
             </strong>
             <span className='text-base text-white/75 hover:underline transition-all duration-200 antialiased'>
-              Following
+              Following{following.length === 1 ? '' : 's'}
             </span>
           </Link>
           <Link
@@ -97,12 +106,16 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
               {formatCount(followers.length)}
             </strong>
             <span className='text-base text-white/75 hover:underline transition-all duration-200 antialiased'>
-              Followers
+              Follower{followers.length === 1 ? '' : 's'}
             </span>
           </Link>
           <div className='flex items-center gap-1.5'>
-            <strong className='text-lg text-white/90 antialiased'>0</strong>
-            <span className='text-base text-white/75 antialiased'>Likes</span>
+            <strong className='text-lg text-white/90 antialiased'>
+              {formatCount(totalLikes)}
+            </strong>
+            <span className='text-base text-white/75 antialiased'>
+              Like{totalLikes === 1 ? '' : 's'}
+            </span>
           </div>
         </div>
         <h2 className='text-left font-normal antialiased whitespace-pre-line text-base text-white/90 max-w-[600px]'>

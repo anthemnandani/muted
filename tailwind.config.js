@@ -82,6 +82,9 @@ module.exports = {
         'hovered-background': 'rgba(255, 255, 255, 0.04)',
         glassmorphism: 'rgba(16, 16, 18, 0.60)',
       },
+      screens: {
+        '2xl': '1440px',
+      },
       width: {
         15: '60px',
         18: '72px',

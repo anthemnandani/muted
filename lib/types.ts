@@ -52,6 +52,9 @@ export type ReplyPostInfo = Pick<
 export type UserProfileInfoProps =
   RouterOutput['user']['userInfo']['userDetails'];
 
+export type UserProfilePostsProps =
+  RouterOutput['user']['userInfo']['userDetails']['posts'];
+
 export type UserCardProps = ArrayElement<
   RouterOutput['user']['allUsers']['allUsers']
 > & {
