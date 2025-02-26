@@ -65,6 +65,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
       sources: [{ src: video, type: 'application/x-mpegURL' }],
       html5: {
         vhs: {
+          overrideNative: true,
           withCredentials: false,
         },
         nativeTextTracks: false,

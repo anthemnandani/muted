@@ -49,11 +49,47 @@ export type ReplyPostInfo = Pick<
   | 'linkPreview'
 >;
 
-export type UserProfileInfoProps =
-  RouterOutput['user']['userInfo']['userDetails'];
+export type UserProfileInfoProps = {
+  id: string;
+  image: string | null;
+  fullName: string | null;
+  username: string;
+  bio: string | null;
+  link: string | null;
+  privacy: Privacy;
+  createdAt: Date;
+  isAdmin: boolean | null;
+  followers: {
+    id: string;
+    username: string;
+    fullName: string | null;
+    image: string | null;
+  }[];
+  following: {
+    id: string;
+    username: string;
+    fullName: string | null;
+    image: string | null;
+  }[];
+  posts: {
+    id: string;
+    media: PostMedia[];
+  }[];
+  totalLikes: number;
+};
 
 export type UserProfilePostsProps =
   RouterOutput['user']['userInfo']['userDetails']['posts'];
+
+export interface UserPostsListProps {
+  posts: UserProfilePostsProps;
+  fetchNextPage: () => void;
+  hasNextPage?: boolean;
+}
+
+export interface UserProfileContentProps extends UserPostsListProps {
+  userId: string;
+}
 
 export type UserCardProps = ArrayElement<
   RouterOutput['user']['allUsers']['allUsers']
@@ -380,4 +416,18 @@ export interface PostMediaCarouselProps {
   postId: string;
   text: string | null;
   hideLikes: boolean;
+}
+
+export interface ProfileVideoPlayerProps {
+  options: any;
+  onPlayerReady: (player: Player) => void;
+  poster?: string;
+}
+
+export interface VideoPlayerProps {
+  options: any;
+  onPlayerReady: (player: Player) => void;
+  onTouchStart?: (e: React.TouchEvent<HTMLVideoElement>) => void;
+  onTimeUpdate?: () => void;
+  poster?: string;
 }

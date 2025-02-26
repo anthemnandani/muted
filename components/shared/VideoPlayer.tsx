@@ -6,14 +6,7 @@ import Player from 'video.js/dist/types/player';
 import 'video.js/dist/video-js.css';
 import '@videojs/http-streaming';
 import '@videojs/themes/dist/fantasy/index.css';
-
-interface VideoPlayerProps {
-  options: any;
-  onPlayerReady: (player: Player) => void;
-  onTouchStart?: (e: React.TouchEvent<HTMLVideoElement>) => void;
-  onTimeUpdate?: () => void;
-  poster?: string;
-}
+import { VideoPlayerProps } from '@/lib/types';
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   options,

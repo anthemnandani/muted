@@ -19,12 +19,14 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         username: z.string(),
+        limit: z.number().optional(),
+        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
       })
     )
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input: { username, limit = 24, cursor }, ctx }) => {
       const isUser = await ctx.db.user.findUnique({
         where: {
-          username: input.username,
+          username,
         },
       });
 
@@ -34,12 +36,15 @@ export const userRouter = createTRPCRouter({
 
       const userProfileInfo = await ctx.db.user.findUnique({
         where: {
-          username: input.username,
+          username,
         },
         include: {
           followers: true,
           following: true,
           posts: {
+            take: limit + 1,
+            cursor: cursor ? { createdAt_id: cursor } : undefined,
+            orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
             select: {
               _count: {
                 select: {
@@ -47,10 +52,8 @@ export const userRouter = createTRPCRouter({
                 },
               },
               id: true,
+              createdAt: true,
               media: true,
-            },
-            orderBy: {
-              createdAt: 'desc',
             },
           },
         },
@@ -60,12 +63,20 @@ export const userRouter = createTRPCRouter({
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
 
-      const totalLikes = userProfileInfo.posts.reduce(
+      let nextCursor: typeof cursor | undefined;
+      const posts = userProfileInfo.posts;
+
+      if (posts.length > limit) {
+        const nextItem = posts.pop();
+        if (nextItem != null) {
+          nextCursor = { id: nextItem.id, createdAt: nextItem.createdAt };
+        }
+      }
+
+      const totalLikes = posts.reduce(
         (sum, post) => sum + post._count.likes,
         0
       );
-
-      console.log(userProfileInfo.posts);
 
       return {
         userDetails: {
@@ -80,12 +91,13 @@ export const userRouter = createTRPCRouter({
           isAdmin: userProfileInfo.isAdmin,
           followers: userProfileInfo.followers,
           following: userProfileInfo.following,
-          posts: userProfileInfo.posts.map((post) => ({
+          posts: posts.map((post) => ({
             id: post.id,
             media: post.media as PostMedia[],
           })),
           totalLikes,
         },
+        nextCursor,
       };
     }),
 
@@ -695,7 +707,7 @@ export const userRouter = createTRPCRouter({
           throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
         }
 
-        return { unFollowUser: false };
+        return { followUser: false };
       }
     }),
 

@@ -1,34 +1,41 @@
 'use client';
 
 import type { PostMedia } from '@/lib/types';
+import { useProfileVideoPlayer } from '@/store/profileVideoPlayer';
 import { Play } from 'lucide-react';
 import React from 'react';
-import videojs from 'video.js';
 import Player from 'video.js/dist/types/player';
-import 'video.js/dist/video-js.css';
+import { ProfileVideoPlayer } from './ProfileVideoPlayer';
+import Image from 'next/image';
 
-const UserPostCard = ({ media }: { media: PostMedia[] }) => {
-  const videoRef = React.useRef<HTMLVideoElement | null>(null);
-  const playerRef = React.useRef<Player | null>(null);
-  const [isHovered, setIsHovered] = React.useState(false);
+const UserPostCard = ({
+  media,
+  postId,
+}: {
+  media: PostMedia[];
+  postId: string;
+}) => {
+  const [player, setPlayer] = React.useState<Player | null>(null);
+  const { playingVideoId, setPlayingVideoId } = useProfileVideoPlayer();
+  const videoId = postId;
 
-  const mediaItem = media[0];
-  if (!mediaItem || mediaItem.fileType !== 'video') return null;
+  const mediaItem = media?.[0];
+  if (!mediaItem) return null;
 
-  React.useEffect(() => {
-    if (!videoRef.current) return;
+  const isVideo = mediaItem.fileType === 'video';
+  const fileUrl = mediaItem.fileUrl;
 
-    playerRef.current = videojs(videoRef.current, {
+  const playerOptions = React.useMemo(
+    () => ({
       controls: false,
       loop: true,
       muted: true,
       playsinline: true,
       preload: 'auto',
       autoplay: false,
-      fluid: true,
       sources: [
         {
-          src: mediaItem.fileUrl,
+          src: isVideo ? fileUrl : '',
           type: 'application/x-mpegURL',
         },
       ],
@@ -38,50 +45,54 @@ const UserPostCard = ({ media }: { media: PostMedia[] }) => {
         nativeAudioTracks: false,
         nativeVideoTracks: false,
       },
-    });
+    }),
+    [mediaItem.fileUrl]
+  );
 
-    return () => {
-      if (playerRef.current) {
-        playerRef.current.dispose();
-        playerRef.current = null;
-      }
-    };
-  }, [mediaItem.fileUrl, mediaItem.thumbnailUrl]);
+  React.useEffect(() => {
+    if (player && playingVideoId === videoId) {
+      player.play()?.catch((error) => {
+        console.log('Hover play prevented:', error);
+      });
+    } else if (player && playingVideoId !== videoId) {
+      player.pause();
+    }
+  }, [player, playingVideoId, videoId]);
 
   const handleMouseEnter = () => {
-    setIsHovered(true);
-    playerRef.current?.play()?.catch((error) => {
-      console.log('Hover play prevented:', error);
-    });
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-    playerRef.current?.pause();
+    if (!isVideo) return;
+    setTimeout(() => {
+      setPlayingVideoId(videoId);
+    }, 1000);
   };
 
   return (
     <div
-      className='relative max-w-[320px] aspect-[3/4] rounded-[4px] overflow-hidden cursor-pointer group'
+      className='relative max-w-[320px] aspect-[3/4] rounded-[4px] overflow-hidden flex-center bg-no-repeat bg-center cursor-pointer'
       onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      style={{
-        backgroundImage: `url(${mediaItem.thumbnailUrl})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
     >
-      <div data-vjs-player>
-        <video
-          ref={videoRef}
-          className='video-js w-full h-full object-cover'
-          poster={mediaItem.thumbnailUrl}
+      {isVideo ? (
+        <React.Fragment>
+          <ProfileVideoPlayer
+            poster={mediaItem.thumbnailUrl}
+            options={playerOptions}
+            onPlayerReady={(p) => {
+              setPlayer(p);
+            }}
+          />
+
+          <div className='absolute bottom-3 left-3 text-white/90 z-10'>
+            <Play className='size-[18px]' />
+          </div>
+        </React.Fragment>
+      ) : (
+        <Image
+          src={fileUrl}
+          loading='lazy'
+          fill
+          alt='Post Image'
+          className='object-cover'
         />
-      </div>
-      {!isHovered && (
-        <div className='absolute bottom-2 left-2 text-white/90 z-10'>
-          <Play className='size-[18px]' />
-        </div>
       )}
     </div>
   );

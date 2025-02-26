@@ -29,7 +29,7 @@ const ProfileTabsHeader = ({ isOwner }: { isOwner: boolean }) => {
     React.useState(false);
   return (
     <TabsList
-      className='relative flex justify-around h-11 top-0 z-0 w-full'
+      className='relative flex justify-around h-11 w-full'
       onMouseEnter={() => setIsTabsContainerHovered(true)}
       onMouseLeave={() => {
         setIsTabsContainerHovered(false);
