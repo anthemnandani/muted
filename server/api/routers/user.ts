@@ -101,6 +101,70 @@ export const userRouter = createTRPCRouter({
       };
     }),
 
+  getUserLikedPosts: privateProcedure
+    .input(
+      z.object({
+        username: z.string(),
+        limit: z.number().optional(),
+        cursor: z
+          .object({
+            postId: z.string(),
+            userId: z.string(),
+          })
+          .optional(),
+      })
+    )
+    .query(async ({ input: { username, limit = 20, cursor }, ctx }) => {
+      const user = await ctx.db.user.findUnique({
+        where: {
+          username,
+        },
+      });
+
+      if (!user) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const likedPosts = await ctx.db.like.findMany({
+        where: {
+          userId: user.id,
+        },
+        take: limit + 1,
+        cursor: cursor
+          ? { postId_userId: { postId: cursor.postId, userId: user.id } }
+          : undefined,
+        select: {
+          post: {
+            select: {
+              id: true,
+              createdAt: true,
+              media: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      let nextCursor: typeof cursor | undefined;
+      if (likedPosts.length > limit) {
+        const nextItem = likedPosts[limit];
+        nextCursor = {
+          postId: nextItem.post.id,
+          userId: user.id,
+        };
+        likedPosts.length = limit;
+      }
+      return {
+        posts: likedPosts.map((likedPost) => ({
+          ...likedPost.post,
+          media: likedPost.post.media as PostMedia[],
+        })),
+        nextCursor,
+      };
+    }),
+
   postInfo: privateProcedure
     .input(
       z.object({

@@ -29,6 +29,7 @@ const ProfileClient = ({ username }: { username: string }) => {
       <div className='flex flex-col flex-[1_1_auto]'>
         <UserProfile {...userDetails[0]} />
         <UserProfileContent
+          username={username}
           posts={allPosts}
           userId={userDetails[0].id}
           fetchNextPage={fetchNextPage}

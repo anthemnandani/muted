@@ -85,10 +85,12 @@ export interface UserPostsListProps {
   posts: UserProfilePostsProps;
   fetchNextPage: () => void;
   hasNextPage?: boolean;
+  likedPosts?: boolean;
 }
 
 export interface UserProfileContentProps extends UserPostsListProps {
   userId: string;
+  username: string;
 }
 
 export type UserCardProps = ArrayElement<

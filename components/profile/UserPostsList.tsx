@@ -1,14 +1,30 @@
 import type { UserPostsListProps } from '@/lib/types';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { Icons } from '../icons';
+import EmptyState from '../shared/EmptyState';
 import UserPostCard from './UserPostCard';
 
 const UserPostsList = ({
   posts,
   fetchNextPage,
   hasNextPage,
+  likedPosts = false,
 }: UserPostsListProps) => {
-  return (
+  return posts.length === 0 ? (
+    <EmptyState
+      icon={
+        <div className='size-[92px] rounded-full flex-center bg-zinc-800'>
+          <Icons.emptyPost className='size-11 text-white/90' />
+        </div>
+      }
+      title={likedPosts ? 'No liked posts yet' : 'Upload your first video'}
+      description={
+        likedPosts
+          ? 'Videos you liked will appear here'
+          : 'Your videos will appear here'
+      }
+    />
+  ) : (
     <InfiniteScroll
       dataLength={posts.length}
       next={fetchNextPage}

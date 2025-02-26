@@ -24,9 +24,12 @@ const ProfileTabsHeader = ({ isOwner }: { isOwner: boolean }) => {
       : []),
     { id: 'liked', icon: <Icons.liked className='size-5' />, label: 'Liked' },
   ];
+
   const [hoverTab, setHoverTab] = React.useState<string | null>(null);
   const [isTabsContainerHovered, setIsTabsContainerHovered] =
     React.useState(false);
+  const [activeTab, setActiveTab] = React.useState('posts');
+
   return (
     <TabsList
       className='relative flex justify-around h-11 w-full'
@@ -40,6 +43,7 @@ const ProfileTabsHeader = ({ isOwner }: { isOwner: boolean }) => {
         <TabsTrigger
           key={tab.id}
           value={tab.id}
+          onClick={() => setActiveTab(tab.id)}
           className='flex-1 flex items-center relative data-[state=active]:text-white text-white/50 transition-colors'
         >
           <div
@@ -48,16 +52,12 @@ const ProfileTabsHeader = ({ isOwner }: { isOwner: boolean }) => {
           >
             <span className='transition-colors'>{tab.icon}</span>
             <span className='font-medium transition-colors'>{tab.label}</span>
-            {(hoverTab === tab.id ||
-              (tab.id === 'posts' && !hoverTab && !isTabsContainerHovered)) && (
+            {(hoverTab === tab.id || (tab.id === activeTab && !hoverTab)) && (
               <div
                 className={cn(
                   'absolute -bottom-2.5 left-0 right-0 h-[2px] bg-white/90',
                   hoverTab === tab.id && 'animate-tab-slide',
-                  tab.id === 'posts' &&
-                    !hoverTab &&
-                    !isTabsContainerHovered &&
-                    'scale-x-100'
+                  tab.id === activeTab && !hoverTab && 'scale-x-100'
                 )}
               />
             )}
