@@ -21,8 +21,6 @@ const PostCard: React.FC<PostCardProps> = ({
   text,
   createdAt,
   repliesCount,
-  reposts,
-  repostsCount,
   bookmarks,
   bookmarksCount,
   privacy,
@@ -30,7 +28,7 @@ const PostCard: React.FC<PostCardProps> = ({
   linkPreview,
   hideLikes,
   likesCount,
-  ...props
+  pinned,
 }) => {
   return (
     <div className='h-screen flex-center'>
@@ -42,6 +40,7 @@ const PostCard: React.FC<PostCardProps> = ({
           postId={id!}
           text={text}
           hideLikes={hideLikes}
+          pinned={pinned}
         />
         <div className='flex flex-col items-center justify-end gap-4'>
           <UserProfile author={author} />

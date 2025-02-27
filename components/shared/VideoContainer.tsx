@@ -17,6 +17,7 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
   id,
   text,
   hideLikes,
+  pinned,
 }) => {
   const {
     showControls,
@@ -57,6 +58,7 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
         text={text}
         hideLikes={hideLikes}
         showControls={showControls}
+        pinned={pinned}
         VolumeControls={
           <VolumeControls player={player} showControls={showControls} />
         }

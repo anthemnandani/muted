@@ -47,7 +47,11 @@ export const userRouter = createTRPCRouter({
             cursor: cursor ? { createdAt_id: cursor } : undefined,
             orderBy:
               sortBy === 'LATEST'
-                ? [{ createdAt: 'desc' }, { id: 'desc' }]
+                ? [
+                    { pinned: 'desc' }, // Pinned posts first
+                    { createdAt: 'desc' },
+                    { id: 'desc' },
+                  ]
                 : [{ createdAt: 'asc' }, { id: 'asc' }],
             select: {
               _count: {
@@ -58,6 +62,7 @@ export const userRouter = createTRPCRouter({
               id: true,
               createdAt: true,
               media: true,
+              pinned: true,
             },
           },
         },
@@ -98,6 +103,7 @@ export const userRouter = createTRPCRouter({
           posts: posts.map((post) => ({
             id: post.id,
             media: post.media as PostMedia[],
+            pinned: post.pinned,
           })),
           totalLikes,
         },
@@ -143,6 +149,7 @@ export const userRouter = createTRPCRouter({
               id: true,
               createdAt: true,
               media: true,
+              pinned: true,
             },
           },
         },
@@ -162,6 +169,7 @@ export const userRouter = createTRPCRouter({
         posts: likedPosts.map((likedPost) => ({
           ...likedPost.post,
           media: likedPost.post.media as PostMedia[],
+          pinned: likedPost.post.pinned,
         })),
         nextCursor,
       };
@@ -266,6 +274,7 @@ export const userRouter = createTRPCRouter({
                 },
                 repliesCount: true,
                 hideLikes: true,
+                pinned: true,
                 privacy: true,
                 ...getAuthorAndHiddenSelect(ctx.userId),
                 ...GET_LIKES,
@@ -280,6 +289,7 @@ export const userRouter = createTRPCRouter({
             path: true,
             repliesCount: true,
             hideLikes: true,
+            pinned: true,
             privacy: true,
             ...getAuthorAndHiddenSelect(ctx.userId),
             ...GET_LIKES,
@@ -342,6 +352,7 @@ export const userRouter = createTRPCRouter({
               path: post.path,
               repliesCount: post.repliesCount,
               hideLikes: post.hideLikes,
+              pinned: post.pinned,
               quoteId: post.quoteId,
               media: post.media as PostMedia[],
               reposts: post.reposts,
@@ -475,6 +486,7 @@ export const userRouter = createTRPCRouter({
               },
               repliesCount: true,
               hideLikes: true,
+              pinned: true,
               privacy: true,
               ...getAuthorAndHiddenSelect(ctx.userId),
               ...GET_LIKES,
@@ -489,6 +501,7 @@ export const userRouter = createTRPCRouter({
           path: true,
           repliesCount: true,
           hideLikes: true,
+          pinned: true,
           privacy: true,
           ...getAuthorAndHiddenSelect(ctx.userId),
           ...GET_LIKES,
@@ -545,6 +558,7 @@ export const userRouter = createTRPCRouter({
           mentions: post.mentions,
           quoteId: post.quoteId,
           hideLikes: post.hideLikes,
+          pinned: post.pinned,
           path: post.path,
           repliesCount: post.repliesCount,
           linkPreview: post.linkPreview,
@@ -611,6 +625,7 @@ export const userRouter = createTRPCRouter({
               path: true,
               repliesCount: true,
               hideLikes: true,
+              pinned: true,
               privacy: true,
               ...getAuthorAndHiddenSelect(ctx.userId),
               ...GET_LIKES,
@@ -656,6 +671,7 @@ export const userRouter = createTRPCRouter({
           path: repost.post.path,
           repliesCount: repost.post.repliesCount,
           hideLikes: repost.post.hideLikes,
+          pinned: repost.post.pinned,
           repostsCount: repost.post._count.reposts,
           linkPreview: repost.post.linkPreview,
           repostedBy: repost.user,

@@ -8,7 +8,7 @@ import Player from 'video.js/dist/types/player';
 import MediaTypeIndicator from './MediaTypeIndicator';
 import { ProfileVideoPlayer } from './ProfileVideoPlayer';
 
-const UserPostCard = ({ media, postId }: UserPostCardProps) => {
+const UserPostCard = ({ media, postId, pinned }: UserPostCardProps) => {
   const [player, setPlayer] = React.useState<Player | null>(null);
   const { playingVideoId, setPlayingVideoId } = useProfileVideoPlayer();
   const videoId = postId;
@@ -82,8 +82,10 @@ const UserPostCard = ({ media, postId }: UserPostCardProps) => {
           className='object-cover'
         />
       )}
-      {(isCarousel || isVideo) && (
-        <MediaTypeIndicator type={isCarousel ? 'carousel' : 'video'} />
+      {(isCarousel || isVideo || pinned) && (
+        <MediaTypeIndicator
+          type={pinned ? 'pinned' : isCarousel ? 'carousel' : 'video'}
+        />
       )}
     </div>
   );

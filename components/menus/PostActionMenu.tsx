@@ -9,7 +9,7 @@ import { cn, formatTimeLeft } from '@/lib/utils';
 import { useMutedUsers } from '@/store/mutedUsers';
 import useDialog from '@/store/postDialog';
 import { useUser } from '@clerk/nextjs';
-import { Edit, MoreHorizontal } from 'lucide-react';
+import { Edit, MoreHorizontal, PinOff } from 'lucide-react';
 import React from 'react';
 import { Icons } from '../icons';
 import DeletePost from '../modals/DeletePost';
@@ -20,6 +20,7 @@ import {
   HoverCardTrigger,
 } from '../ui/hover-card';
 import { Separator } from '../ui/separator';
+import useTogglePinPost from '@/hooks/useTogglePinPost';
 
 const PostActionMenu: React.FC<PostActionMenuProps> = ({
   author,
@@ -27,6 +28,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
   createdAt,
   currentText,
   hideLikes,
+  pinned,
   showControls,
 }) => {
   const { user } = useUser();
@@ -38,6 +40,13 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
     postId,
     hideLikes,
   });
+
+  const { handleTogglePinPost, isLoading: isLoadingPinPost } = useTogglePinPost(
+    {
+      postId,
+      isPinned: pinned,
+    }
+  );
 
   const { handleToggleHidePost, isLoading: isLoadingHidePost } =
     useToggleHidePost({
@@ -130,7 +139,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
         ) : (
           <React.Fragment>
             {timeLeft > 0 && (
-              <>
+              <React.Fragment>
                 <MenuItem
                   icon={Edit}
                   label={
@@ -147,12 +156,14 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
                   }}
                 />
                 <Separator />
-              </>
+              </React.Fragment>
             )}
 
             <MenuItem
-              icon={Icons.profilePin}
-              label='Pin to profile'
+              icon={pinned ? PinOff : Icons.profilePin}
+              label={pinned ? 'Unpin from profile' : 'Pin to profile'}
+              onClick={handleTogglePinPost}
+              disabled={isLoadingPinPost}
               isActionMenuItem
             />
             <Separator />

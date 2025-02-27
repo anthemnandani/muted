@@ -1,6 +1,5 @@
 'use client';
 
-import Loading from '@/app/(pages)/loading';
 import type { ParentPostProps, PostsListProps } from '@/lib/types';
 import { isGif, isImage, isVideo } from '@/lib/utils';
 import { Play } from 'lucide-react';
@@ -9,6 +8,7 @@ import Link from 'next/link';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import TextPostCover from '../collections/TextPostCover';
 import { Icons } from '../icons';
+import Loader from './Loader';
 
 const ThreadsGrid = ({
   isLoading,
@@ -55,7 +55,7 @@ const ThreadsGrid = ({
         </div>
       )}
       {isLoading ? (
-        <Loading className='md:!h-[80vh]' />
+        <Loader className='md:!h-[80vh]' />
       ) : (
         <InfiniteScroll
           dataLength={posts?.length ?? 0}

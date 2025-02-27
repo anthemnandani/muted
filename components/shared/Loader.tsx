@@ -1,12 +1,11 @@
+import { Icons } from '@/components/icons';
+import { cn } from '@/lib/utils';
 import React from 'react';
-import { Icons } from '../icons';
 
-const Loader = () => {
+export default function Loader({ className }: { className?: string }) {
   return (
-    <div className='h-[200px] w-full flex-center mb-[10vh] sm:mb-0'>
+    <div className={cn('h-[75vh] md:h-screen w-full flex-center', className)}>
       <Icons.loading className='size-11' />
     </div>
   );
-};
-
-export default Loader;
+}

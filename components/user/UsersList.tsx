@@ -1,10 +1,10 @@
-import Loading from '@/app/(pages)/loading';
 import SearchQueryOption from '@/app/(pages)/search/components/SearchQueryOption';
 import UserCard from '@/components/cards/UserCard';
 import { Icons } from '@/components/icons';
 import { AuthorInfoProps } from '@/lib/types';
 import React from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import Loader from '../shared/Loader';
 
 interface UsersListProps {
   isLoading: boolean;
@@ -34,7 +34,7 @@ const UsersList: React.FC<UsersListProps> = ({
       )}
       <div>
         {isLoading ? (
-          <Loading className='md:!h-[80vh]' />
+          <Loader className='md:!h-[80vh]' />
         ) : (
           <React.Fragment>
             {searchQuery && <SearchQueryOption searchQuery={searchQuery} />}

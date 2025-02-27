@@ -16,6 +16,7 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
   id,
   text,
   hideLikes,
+  pinned,
 }) => {
   const {
     showControls,
@@ -56,6 +57,7 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
         text={text}
         hideLikes={hideLikes}
         showControls={showControls}
+        pinned={pinned}
       />
       {isVerticalImage && (
         <div className='absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none' />

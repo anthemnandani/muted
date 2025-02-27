@@ -171,6 +171,7 @@ export type ParentPostProps = {
   bookmarksCount?: number;
   repostsCount?: number;
   repostedAt?: Date;
+  pinned: boolean;
   hideLikes: boolean;
   isHidden?: boolean;
   isMuted?: boolean;
@@ -371,6 +372,7 @@ export interface VideoContainerProps {
   id: string;
   text: string | null;
   hideLikes: boolean;
+  pinned: boolean;
 }
 
 export interface MediaControlsProps {
@@ -379,6 +381,7 @@ export interface MediaControlsProps {
   createdAt: Date;
   text: string | null;
   hideLikes: boolean;
+  pinned: boolean;
   showControls: boolean;
   VolumeControls?: React.ReactNode;
 }
@@ -391,6 +394,7 @@ export interface PostImageCardProps {
   id: string;
   text: string | null;
   hideLikes: boolean;
+  pinned: boolean;
 }
 
 export interface PostVideoCardProps {
@@ -402,6 +406,7 @@ export interface PostVideoCardProps {
   createdAt: Date;
   text: string | null;
   hideLikes: boolean;
+  pinned: boolean;
 }
 
 export interface PostActionMenuProps {
@@ -411,6 +416,7 @@ export interface PostActionMenuProps {
   currentText: string;
   hideLikes: boolean;
   showControls: boolean;
+  pinned: boolean;
 }
 
 export interface PostMediaCarouselProps {
@@ -420,6 +426,7 @@ export interface PostMediaCarouselProps {
   postId: string;
   text: string | null;
   hideLikes: boolean;
+  pinned: boolean;
 }
 
 export interface ProfileVideoPlayerProps {
@@ -437,7 +444,7 @@ export interface VideoPlayerProps {
 }
 
 export interface MediaTypeIndicatorProps {
-  type: 'carousel' | 'video';
+  type: 'carousel' | 'video' | 'pinned';
   className?: string;
   iconClassName?: string;
 }
@@ -457,6 +464,7 @@ export interface ProfileFiltersProps {
 export interface UserPostCardProps {
   media: PostMedia[];
   postId: string;
+  pinned: boolean;
 }
 
 export interface ProfileTabsHeaderProps {

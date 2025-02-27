@@ -11,6 +11,7 @@ const MediaControls: React.FC<MediaControlsProps> = ({
   text,
   hideLikes,
   showControls,
+  pinned,
   VolumeControls,
 }) => {
   return (
@@ -24,6 +25,7 @@ const MediaControls: React.FC<MediaControlsProps> = ({
           currentText={text ?? ''}
           hideLikes={hideLikes}
           showControls={showControls}
+          pinned={pinned}
         />
       </div>
     </div>

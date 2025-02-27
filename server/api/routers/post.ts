@@ -247,6 +247,7 @@ export const postRouter = createTRPCRouter({
             path: true,
             repliesCount: true,
             hideLikes: true,
+            pinned: true,
             privacy: true,
             author: {
               select: {
@@ -512,6 +513,7 @@ export const postRouter = createTRPCRouter({
           path: true,
           repliesCount: true,
           hideLikes: true,
+          pinned: true,
           privacy: true,
           ...getAuthorAndHiddenSelect(ctx.userId!),
           ...GET_LIKES,
@@ -555,6 +557,7 @@ export const postRouter = createTRPCRouter({
           repliesCount: true,
           hideLikes: true,
           privacy: true,
+          pinned: true,
           ...getAuthorAndHiddenSelect(ctx.userId!),
           ...GET_LIKES,
           ...GET_REPOSTS,
@@ -945,6 +948,7 @@ export const postRouter = createTRPCRouter({
                   path: true,
                   repliesCount: true,
                   hideLikes: true,
+                  pinned: true,
                   privacy: true,
                   author: {
                     select: {
@@ -1057,6 +1061,7 @@ export const postRouter = createTRPCRouter({
               path: true,
               repliesCount: true,
               hideLikes: true,
+              pinned: true,
               privacy: true,
               author: {
                 select: {
@@ -1166,6 +1171,7 @@ export const postRouter = createTRPCRouter({
           path: true,
           repliesCount: true,
           hideLikes: true,
+          pinned: true,
           privacy: true,
           author: {
             select: {
@@ -1264,6 +1270,7 @@ export const postRouter = createTRPCRouter({
           path: true,
           repliesCount: true,
           hideLikes: true,
+          pinned: true,
           privacy: true,
           author: {
             select: {
@@ -1569,5 +1576,34 @@ export const postRouter = createTRPCRouter({
         });
         return { hidden: false };
       }
+    }),
+  togglePinPost: privateProcedure
+    .input(
+      z.object({
+        postId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { userId } = ctx;
+      const postExists = await ctx.db.post.findUnique({
+        where: {
+          id: input.postId,
+          authorId: userId,
+        },
+        select: {
+          pinned: true,
+        },
+      });
+
+      if (!postExists) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      await ctx.db.post.update({
+        where: { id: input.postId },
+        data: { pinned: !postExists.pinned },
+      });
+
+      return { pinned: !postExists.pinned };
     }),
 });

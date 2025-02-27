@@ -1,6 +1,5 @@
 'use client';
 
-import Loading from '@/app/(pages)/loading';
 import Error from '@/app/error';
 import CreateWithInput from '@/components/inputs/CreateWithInput';
 import ThreadFilterMenu from '@/components/menus/ThreadFilterMenu';
@@ -11,6 +10,7 @@ import useDevice from '@/hooks/useDevice';
 import { ParentPostProps, ThreadFilter } from '@/lib/types';
 import useDialog from '@/store/postDialog';
 import React from 'react';
+import Loader from './Loader';
 
 interface FeedWrapperProps {
   posts?: ParentPostProps[];
@@ -34,7 +34,7 @@ const FeedWrapper = ({
   const { setOpenDialog } = useDialog();
   const { isMobile } = useDevice();
 
-  if (isLoading) return <Loading />;
+  if (isLoading) return <Loader />;
   if (isError) return <Error />;
 
   return (

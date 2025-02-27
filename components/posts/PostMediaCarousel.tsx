@@ -18,6 +18,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
   postId,
   text,
   hideLikes,
+  pinned,
 }) => {
   const [swiperRef, setSwiperRef] = React.useState<SwiperType>();
   const [currentIndex, setCurrentIndex] = React.useState(0);
@@ -45,6 +46,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                 createdAt={createdAt}
                 text={text}
                 hideLikes={hideLikes}
+                pinned={pinned}
               />
             ) : (
               <PostImageCard
@@ -55,6 +57,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                 id={postId}
                 text={text}
                 hideLikes={hideLikes}
+                pinned={pinned}
               />
             )}
           </SwiperSlide>

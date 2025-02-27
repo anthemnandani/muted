@@ -1,10 +1,10 @@
 'use client';
 
-import Loading from '@/app/(pages)/loading';
 import NotFound from '@/app/not-found';
 import { Icons } from '@/components/icons';
 import SortFollowersAndFollowing from '@/components/menus/SortFollowersAndFollowing';
 import HeaderWrapper from '@/components/shared/HeaderWrapper';
+import Loader from '@/components/shared/Loader';
 import ProfileTabItem from '@/components/shared/ProfileTabItem';
 import TopHeader from '@/components/shared/TopHeader';
 import Wrapper from '@/components/shared/Wrapper';
@@ -38,7 +38,7 @@ export default function FollowersAndFollowingLayout({
     };
   }, [username, resetSortBy]);
 
-  if (isLoading) return <Loading />;
+  if (isLoading) return <Loader />;
   if (isError) return <NotFound />;
 
   return (

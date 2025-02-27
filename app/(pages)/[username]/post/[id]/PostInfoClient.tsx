@@ -1,12 +1,12 @@
 'use client';
 
-import Loading from '@/app/(pages)/loading';
 import NotFound from '@/app/not-found';
 import ParentReplyCard from '@/components/cards/ParentReplyCard';
 import ParentThreadCard from '@/components/cards/ParentThreadCard';
 import { Icons } from '@/components/icons';
 import NewCollection from '@/components/modals/NewCollection';
 import HeaderWrapper from '@/components/shared/HeaderWrapper';
+import Loader from '@/components/shared/Loader';
 import TopHeader from '@/components/shared/TopHeader';
 import Wrapper from '@/components/shared/Wrapper';
 import useDevice from '@/hooks/useDevice';
@@ -46,7 +46,7 @@ const PostInfoClient = ({ id }: { id: string }) => {
     }
   }, [data]);
 
-  if (isLoading) return <Loading />;
+  if (isLoading) return <Loader />;
   if (isError || !data) return <NotFound />;
 
   return (

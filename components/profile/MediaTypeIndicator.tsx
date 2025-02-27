@@ -1,6 +1,7 @@
 import { MediaTypeIndicatorProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Icons } from '../icons';
+import { Pin } from 'lucide-react';
 
 const MediaTypeIndicator = ({
   type,
@@ -16,8 +17,14 @@ const MediaTypeIndicator = ({
     >
       {type === 'carousel' ? (
         <Icons.gallery className={cn('size-6', iconClassName)} />
-      ) : (
+      ) : type === 'video' ? (
         <Icons.video className={cn('size-6', iconClassName)} />
+      ) : (
+        <Pin
+          className={cn('size-6 rotate-45', iconClassName)}
+          fill='white'
+          fillOpacity={0.9}
+        />
       )}
     </div>
   );

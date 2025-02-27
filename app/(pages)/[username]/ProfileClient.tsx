@@ -3,10 +3,10 @@
 import NotFound from '@/app/not-found';
 import UserProfile from '@/components/profile/UserProfile';
 import UserProfileContent from '@/components/profile/UserProfileContent';
-import { api } from '@/trpc/react';
-import Loading from '../loading';
-import { useState } from 'react';
+import Loader from '@/components/shared/Loader';
 import type { ProfileFilter } from '@/lib/types';
+import { api } from '@/trpc/react';
+import { useState } from 'react';
 
 const ProfileClient = ({ username }: { username: string }) => {
   const [selectedFilter, setSelectedFilter] = useState<ProfileFilter>('LATEST');
@@ -20,7 +20,7 @@ const ProfileClient = ({ username }: { username: string }) => {
       }
     );
 
-  if (isLoading) return <Loading />;
+  if (isLoading) return <Loader />;
   if (isError) return <NotFound />;
 
   const allPosts = data?.pages.flatMap((page) => page.userDetails.posts);

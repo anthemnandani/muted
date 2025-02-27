@@ -70,6 +70,7 @@ model Post {
   lastEditedAt   DateTime?
   linkPreviewUrl String?
   linkPreview    LinkPreview?   @relation(fields: [linkPreviewUrl], references: [url])
+  pinned         Boolean        @default(false)
 
   @@unique([createdAt, id])
   @@index([linkPreviewUrl])
