@@ -1,7 +1,6 @@
 'use client';
 
 import { api } from '@/trpc/react';
-import React from 'react';
 import { Icons } from '../icons';
 import EmptyState from '../shared/EmptyState';
 import UserPostsList from './UserPostsList';

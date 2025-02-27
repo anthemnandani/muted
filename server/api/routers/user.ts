@@ -19,11 +19,12 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         username: z.string(),
+        sortBy: z.enum(['LATEST', 'OLDEST']).optional(),
         limit: z.number().optional(),
         cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
       })
     )
-    .query(async ({ input: { username, limit = 24, cursor }, ctx }) => {
+    .query(async ({ input: { username, limit = 24, cursor, sortBy }, ctx }) => {
       const isUser = await ctx.db.user.findUnique({
         where: {
           username,
@@ -44,7 +45,10 @@ export const userRouter = createTRPCRouter({
           posts: {
             take: limit + 1,
             cursor: cursor ? { createdAt_id: cursor } : undefined,
-            orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+            orderBy:
+              sortBy === 'LATEST'
+                ? [{ createdAt: 'desc' }, { id: 'desc' }]
+                : [{ createdAt: 'asc' }, { id: 'asc' }],
             select: {
               _count: {
                 select: {
@@ -142,9 +146,7 @@ export const userRouter = createTRPCRouter({
             },
           },
         },
-        orderBy: {
-          createdAt: 'desc',
-        },
+        orderBy: { createdAt: 'desc' },
       });
 
       let nextCursor: typeof cursor | undefined;

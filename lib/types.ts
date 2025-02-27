@@ -91,6 +91,8 @@ export interface UserPostsListProps {
 export interface UserProfileContentProps extends UserPostsListProps {
   userId: string;
   username: string;
+  selectedFilter: ProfileFilter;
+  setSelectedFilter: (filter: ProfileFilter) => void;
 }
 
 export type UserCardProps = ArrayElement<
@@ -433,3 +435,34 @@ export interface VideoPlayerProps {
   onTimeUpdate?: () => void;
   poster?: string;
 }
+
+export interface MediaTypeIndicatorProps {
+  type: 'carousel' | 'video';
+  className?: string;
+  iconClassName?: string;
+}
+
+export interface FilterButtonProps {
+  label: string;
+  value: ProfileFilter;
+  isSelected: boolean;
+  onClick: (value: ProfileFilter) => void;
+}
+
+export interface ProfileFiltersProps {
+  selectedFilter: ProfileFilter;
+  setSelectedFilter: (filter: ProfileFilter) => void;
+}
+
+export interface UserPostCardProps {
+  media: PostMedia[];
+  postId: string;
+}
+
+export interface ProfileTabsHeaderProps {
+  isOwner: boolean;
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+}
+
+export type ProfileFilter = 'LATEST' | 'OLDEST';

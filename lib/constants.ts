@@ -1,3 +1,5 @@
+import type { ProfileFilter } from './types';
+
 export const UPLOAD_CONSTRAINTS = {
   MAX_ITEMS: 10,
   MAX_VIDEO_DURATION: 600,
@@ -9,3 +11,11 @@ export const UPLOAD_CONSTRAINTS = {
     'video/*': ['.mp4', '.mov', '.avi'],
   },
 };
+
+export const PROFILE_FILTERS: Array<{
+  label: string;
+  value: ProfileFilter;
+}> = [
+  { label: 'Latest', value: 'LATEST' },
+  { label: 'Oldest', value: 'OLDEST' },
+];

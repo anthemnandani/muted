@@ -25,24 +25,41 @@ const UserPostsList = ({
       }
     />
   ) : (
+    // <InfiniteScroll
+    //   dataLength={posts.length}
+    //   next={fetchNextPage}
+    //   hasMore={hasNextPage ?? false}
+    //   className='
+    //   w-full grid gap-y-6 gap-x-4
+    //   grid-cols-[repeat(auto-fit,minmax(200px,1fr))]
+    //   xl:grid-cols-[repeat(auto-fit,minmax(220px,1fr))]
+    //   2xl:grid-cols-[repeat(auto-fit,minmax(240px,1fr))] mt-6'
+    //   loader={
+    //     <div className='col-span-full flex-center'>
+    //       <Icons.loading className='size-11' />
+    //     </div>
+    //   }
+    // >
+    //   {posts.map((post) => (
+    //     <UserPostCard key={post.id} media={post.media} postId={post.id} />
+    //   ))}
+    // </InfiniteScroll>
     <InfiniteScroll
       dataLength={posts.length}
       next={fetchNextPage}
       hasMore={hasNextPage ?? false}
-      className='
-      w-full grid gap-y-6 gap-x-4
-      grid-cols-[repeat(auto-fit,minmax(200px,1fr))]
-      xl:grid-cols-[repeat(auto-fit,minmax(220px,1fr))]
-      2xl:grid-cols-[repeat(auto-fit,minmax(240px,1fr))] mt-6'
+      className='w-full mt-6'
       loader={
         <div className='col-span-full flex-center'>
           <Icons.loading className='size-11' />
         </div>
       }
     >
-      {posts.map((post) => (
-        <UserPostCard key={post.id} media={post.media} postId={post.id} />
-      ))}
+      <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-[1fr]'>
+        {posts.map((post) => (
+          <UserPostCard key={post.id} media={post.media} postId={post.id} />
+        ))}
+      </div>
     </InfiniteScroll>
   );
 };

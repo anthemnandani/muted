@@ -1,11 +1,16 @@
 'use client';
 
+import { ProfileTabsHeaderProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import React from 'react';
 import { Icons } from '../icons';
 import { TabsList, TabsTrigger } from '../ui/tabs';
 
-const ProfileTabsHeader = ({ isOwner }: { isOwner: boolean }) => {
+const ProfileTabsHeader = ({
+  isOwner,
+  activeTab,
+  setActiveTab,
+}: ProfileTabsHeaderProps) => {
   const tabs = [
     { id: 'posts', icon: <Icons.posts className='size-5' />, label: 'Posts' },
     {
@@ -28,7 +33,6 @@ const ProfileTabsHeader = ({ isOwner }: { isOwner: boolean }) => {
   const [hoverTab, setHoverTab] = React.useState<string | null>(null);
   const [isTabsContainerHovered, setIsTabsContainerHovered] =
     React.useState(false);
-  const [activeTab, setActiveTab] = React.useState('posts');
 
   return (
     <TabsList

@@ -100,6 +100,13 @@ module.exports = {
         'groups-sidebar': '-30px 0px 60px 0px rgba(28, 28, 31, 0.50)',
         'items-dropdown': '0 0 0 1px rgba(0, 0, 0, 0.08)',
       },
+      dropShadow: {
+        main: [
+          '0 0 0.75px rgba(0, 0, 0, 0.42)',
+          '0 1px 0.5px rgba(0, 0, 0, 0.18)',
+          '0 2px 3px rgba(0, 0, 0, 0.2)',
+        ],
+      },
       screens: {
         '2xl': '1440px',
         xs: '400px',

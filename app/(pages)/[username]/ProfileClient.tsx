@@ -5,11 +5,14 @@ import UserProfile from '@/components/profile/UserProfile';
 import UserProfileContent from '@/components/profile/UserProfileContent';
 import { api } from '@/trpc/react';
 import Loading from '../loading';
+import { useState } from 'react';
+import type { ProfileFilter } from '@/lib/types';
 
 const ProfileClient = ({ username }: { username: string }) => {
+  const [selectedFilter, setSelectedFilter] = useState<ProfileFilter>('LATEST');
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
     api.user.userInfo.useInfiniteQuery(
-      { username },
+      { username, sortBy: selectedFilter },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         trpc: { abortOnUnmount: true },
@@ -34,6 +37,8 @@ const ProfileClient = ({ username }: { username: string }) => {
           userId={userDetails[0].id}
           fetchNextPage={fetchNextPage}
           hasNextPage={hasNextPage}
+          selectedFilter={selectedFilter}
+          setSelectedFilter={setSelectedFilter}
         />
       </div>
     </div>
