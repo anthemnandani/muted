@@ -100,7 +100,7 @@ const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
                 bookmarksCount: postInfo.bookmarksCount ?? 0,
                 bookmarks: postInfo.bookmarks,
               }}
-              isParentPost
+              // isParentPost
             />
             <CopyLinkButton
               postId={postInfo.id}

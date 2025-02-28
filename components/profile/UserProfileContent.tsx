@@ -4,8 +4,10 @@ import { Tabs, TabsContent } from '@/components/ui/tabs';
 import type { UserProfileContentProps } from '@/lib/types';
 import { useUser } from '@clerk/nextjs';
 import { useState } from 'react';
+import NewCollection from '../modals/NewCollection';
 import ProfileFilters from './ProfileFilters';
 import ProfileTabsHeader from './ProfileTabsHeader';
+import UserCollectionsList from './UserCollectionsList';
 import UserLikedPostsList from './UserLikedPostsList';
 import UserPostsList from './UserPostsList';
 
@@ -43,6 +45,11 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
                 />
               </div>
             )}
+            {activeTab === 'collections' && (
+              <div className='ml-4'>
+                <NewCollection showTrigger />
+              </div>
+            )}
           </div>
 
           <TabsContent value='posts' className='w-full'>
@@ -54,6 +61,9 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
           </TabsContent>
           <TabsContent value='liked' className='w-full'>
             <UserLikedPostsList username={username} />
+          </TabsContent>
+          <TabsContent value='collections' className='w-full'>
+            <UserCollectionsList username={username} />
           </TabsContent>
         </Tabs>
       </div>

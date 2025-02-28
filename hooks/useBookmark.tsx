@@ -10,6 +10,7 @@ const useBookmark = (
 ) => {
   const trpcUtils = api.useUtils();
   const { bookmarksCount, bookmarks } = bookmarkInfo || {};
+
   const { user: loggedUser } = useUser();
 
   const isBookmarkedByMe = useMemo(() => {

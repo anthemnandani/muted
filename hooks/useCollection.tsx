@@ -1,21 +1,9 @@
 'use client';
 
+import { CollectionData, UseCollectionProps } from '@/lib/types';
 import { api } from '@/trpc/react';
-import { CollectionPrivacy } from '@prisma/client';
 import { useState } from 'react';
 import { toast } from 'sonner';
-
-interface CollectionData {
-  id?: string;
-  name: string;
-  privacy: CollectionPrivacy;
-  description: string;
-}
-
-interface UseCollectionProps {
-  onSuccess?: () => void;
-  onClose?: () => void;
-}
 
 export const useCollection = ({
   onSuccess,
@@ -54,7 +42,7 @@ export const useCollection = ({
           privacy: data.privacy,
         });
       } else {
-        if (!data.postId) return toast.error('Post ID is required');
+        // if (!data.postId) return toast.error('Post ID is required');
         await createCollection({
           name: data.name,
           description: data.description,

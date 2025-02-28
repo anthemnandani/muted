@@ -5,7 +5,6 @@ import { PostProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import useDeleteBookmark from '@/store/deleteBookmark';
 import { Bookmark } from 'lucide-react';
-import { usePathname } from 'next/navigation';
 import React from 'react';
 import { toast } from 'sonner';
 import CollectionsMenu from '../collections/CollectionsMenu';
@@ -13,14 +12,9 @@ import DeleteBookmark from '../modals/DeleteBookmark';
 
 interface BookmarkButtonProps {
   bookmarkInfo: Pick<PostProps, 'id' | 'bookmarks' | 'bookmarksCount'>;
-  isParentPost?: boolean;
 }
 
-const BookmarkButton: React.FC<BookmarkButtonProps> = ({
-  bookmarkInfo,
-  isParentPost,
-}) => {
-  const pathname = usePathname();
+const BookmarkButton: React.FC<BookmarkButtonProps> = ({ bookmarkInfo }) => {
   const [showMenu, setShowMenu] = React.useState(false);
   const { setOpenDeleteDialog } = useDeleteBookmark();
   const { id: postId } = bookmarkInfo;
@@ -35,8 +29,6 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
     bookmarksCount,
     hasNonDefaultBookmarks,
   } = useBookmark(bookmarkInfo);
-
-  const isPostDetailPage = /^\/[^/]+\/post\/[^/]+$/.test(pathname);
 
   const handleClick = async () => {
     try {
@@ -55,15 +47,13 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    if (isPostDetailPage) {
-      showTimeoutRef.current = setTimeout(() => {
-        if (buttonRef.current) {
-          const rect = buttonRef.current.getBoundingClientRect();
-          setAnchorRect(rect);
-        }
-        setShowMenu(true);
-      }, 1000);
-    }
+    showTimeoutRef.current = setTimeout(() => {
+      if (buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect();
+        setAnchorRect(rect);
+      }
+      setShowMenu(true);
+    }, 1000);
   };
 
   const handleMouseLeave = () => {
