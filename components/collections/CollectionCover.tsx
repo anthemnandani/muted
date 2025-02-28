@@ -9,13 +9,12 @@ import React from 'react';
 import { toast } from 'sonner';
 import DefaultCollectionCover from './DefaultCollectionCover';
 
-const CollectionCover = ({
-  collection,
-  postId,
-}: {
+interface CollectionCoverProps {
   collection: Collection;
   postId: string;
-}) => {
+}
+
+const CollectionCover = ({ collection, postId }: CollectionCoverProps) => {
   const [isSaving, setIsSaving] = React.useState(false);
   const { bookmarks, name } = collection;
 
