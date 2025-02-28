@@ -474,3 +474,38 @@ export interface ProfileTabsHeaderProps {
 }
 
 export type ProfileFilter = 'LATEST' | 'OLDEST';
+
+export interface CollectionCardProps {
+  collection: Collection;
+  username: string;
+}
+
+export interface CollectionData {
+  id?: string;
+  name: string;
+  privacy: CollectionPrivacy;
+  description: string;
+}
+
+export interface UseCollectionProps {
+  onSuccess?: () => void;
+  onClose?: () => void;
+}
+
+export interface CollectionFormProps {
+  initialData: CollectionData;
+  isEditing: boolean;
+  postId?: string;
+  isLoading: boolean;
+  error: string;
+  setOpen: (open: boolean) => void;
+  onSubmit: (data: CollectionData & { postId?: string }) => Promise<any>;
+  onError: (error: string) => void;
+}
+
+export interface CollectionsMenuProps {
+  postId: string;
+  isOpen: boolean;
+  onClose: () => void;
+  anchorRect: DOMRect | null;
+}

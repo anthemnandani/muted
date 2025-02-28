@@ -19,23 +19,12 @@ export const collectionRouter = createTRPCRouter({
         name: z.string().min(1, { message: 'Name is required' }),
         privacy: z.enum(['PUBLIC', 'PRIVATE']),
         description: z.string().optional(),
-        postId: z.string(),
+        postId: z.string().optional(),
       })
     )
     .mutation(
       async ({ input: { name, privacy, description, postId }, ctx }) => {
         const { userId } = ctx;
-
-        const post = await ctx.db.post.findUnique({
-          where: { id: postId },
-        });
-
-        if (!post) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'Post not found',
-          });
-        }
 
         // Get default collection
         const defaultCollection = await ctx.db.collection.findFirst({
@@ -60,30 +49,43 @@ export const collectionRouter = createTRPCRouter({
           });
 
           // Create bookmark in new collection
-          await tx.bookmark.create({
-            data: {
-              postId,
-              userId,
-              collectionId: createdCollection.id,
-            },
-          });
 
-          // Add to default collection using upsert to prevent duplicates
-          await tx.bookmark.upsert({
-            where: {
-              postId_userId_collectionId: {
+          if (postId) {
+            const post = await ctx.db.post.findUnique({
+              where: { id: postId },
+            });
+
+            if (!post) {
+              throw new TRPCError({
+                code: 'NOT_FOUND',
+                message: 'Post not found',
+              });
+            }
+            await tx.bookmark.create({
+              data: {
+                postId,
+                userId,
+                collectionId: createdCollection.id,
+              },
+            });
+
+            // Add to default collection using upsert to prevent duplicates
+            await tx.bookmark.upsert({
+              where: {
+                postId_userId_collectionId: {
+                  postId,
+                  userId,
+                  collectionId: defaultCollection.id,
+                },
+              },
+              create: {
                 postId,
                 userId,
                 collectionId: defaultCollection.id,
               },
-            },
-            create: {
-              postId,
-              userId,
-              collectionId: defaultCollection.id,
-            },
-            update: {}, // Do nothing if exists
-          });
+              update: {}, // Do nothing if exists
+            });
+          }
 
           return {
             success: true,
@@ -97,7 +99,7 @@ export const collectionRouter = createTRPCRouter({
   getUserCollections: privateProcedure
     .input(
       z.object({
-        sortBy: z.enum(['latest', 'oldest']).default('latest'),
+        sortBy: z.enum(['LATEST', 'OLDEST']).default('LATEST'),
         username: z.string(),
         limit: z.number().optional().default(21),
         cursor: z
@@ -110,7 +112,7 @@ export const collectionRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const { sortBy, username, limit, cursor } = input;
-      const orderBy = sortBy === 'latest' ? 'desc' : 'asc';
+      const orderBy = sortBy === 'LATEST' ? 'desc' : 'asc';
 
       const user = await ctx.db.user.findUnique({
         where: { username },
@@ -132,7 +134,11 @@ export const collectionRouter = createTRPCRouter({
           userId: user.id,
           ...(!isOwner && { privacy: 'PUBLIC' }),
         },
-        orderBy: [{ createdAt: orderBy }, { id: orderBy }],
+        orderBy: [
+          { isDefault: 'desc' },
+          { createdAt: orderBy },
+          { id: orderBy },
+        ],
         include: {
           bookmarks: {
             include: {
@@ -416,6 +422,7 @@ export const collectionRouter = createTRPCRouter({
                   createdAt: true,
                   media: true,
                   parentPostId: true,
+                  pinned: true,
                   parentPost: {
                     select: {
                       id: true,

@@ -1,45 +1,43 @@
 'use client';
 
+import useBookmark from '@/hooks/useBookmark';
 import type { Collection } from '@/lib/types';
-import { cn, isGif, isImage, isVideo } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { Check } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react';
+import { toast } from 'sonner';
 import DefaultCollectionCover from './DefaultCollectionCover';
-import TextCollectionCover from './TextCollectionCover';
-
-interface CollectionCoverProps {
-  collection: Collection;
-  onClick: () => Promise<void>;
-  postId: string;
-}
 
 const CollectionCover = ({
   collection,
-  onClick,
   postId,
-}: CollectionCoverProps) => {
+}: {
+  collection: Collection;
+  postId: string;
+}) => {
   const [isSaving, setIsSaving] = React.useState(false);
   const { bookmarks, name } = collection;
-  const isImageMedia =
-    isImage(bookmarks[0]?.media[0]?.fileType as string) ||
-    isGif(bookmarks[0]?.media[0]?.fileType as string);
-  const isVideoMedia = isVideo(bookmarks[0]?.media[0]?.fileType as string);
 
   const isBookmarked = bookmarks.some((bookmark) => bookmark.id === postId);
 
-  const handleClick = async (e: React.MouseEvent) => {
+  const { toggleBookmark } = useBookmark();
+
+  const handleCollectionClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     setIsSaving(true);
-
     try {
-      await onClick();
+      await toggleBookmark({ postId, collectionId: collection.id });
+    } catch (error) {
+      toast.error('Something went wrong');
     } finally {
       setTimeout(() => {
         setIsSaving(false);
       }, 500);
     }
   };
+
+  const firstMedia = bookmarks[0]?.media[0];
 
   const renderContent = () => (
     <div className='flex-between w-full mb-3'>
@@ -50,45 +48,27 @@ const CollectionCover = ({
           isSaving && 'opacity-50'
         )}
       >
-        {!isImageMedia && bookmarks.length === 0 ? (
-          <div
-            className={cn(
-              'aspect-square relative inline-block size-10 rounded-md bg-zinc-800',
-              !isSaving && 'cursor-pointer'
-            )}
-          >
+        <div
+          className={cn(
+            'aspect-square relative inline-block size-10 rounded-md bg-zinc-800',
+            !isSaving && 'cursor-pointer'
+          )}
+        >
+          {bookmarks.length === 0 ? (
             <DefaultCollectionCover className='text-black' />
-          </div>
-        ) : isVideoMedia ? (
-          <div
-            className={cn(
-              'size-10 relative inline-block rounded-md bg-zinc-800',
-              !isSaving && 'cursor-pointer'
-            )}
-          >
-            <video
-              src={bookmarks[0]?.media[0]?.fileUrl as string}
-              className='rounded-md object-contain w-full h-full'
-              muted
-            />
-          </div>
-        ) : !isImageMedia && bookmarks.length > 0 ? (
-          <TextCollectionCover author={bookmarks[0]?.author} />
-        ) : (
-          <div
-            className={cn(
-              'aspect-square relative inline-block size-10 rounded-md bg-zinc-800',
-              !isSaving && 'cursor-pointer'
-            )}
-          >
+          ) : (
             <Image
-              src={bookmarks[0]?.media[0]?.fileUrl as string}
+              src={
+                firstMedia?.fileType === 'image'
+                  ? firstMedia.fileUrl!
+                  : firstMedia.thumbnailUrl!
+              }
               alt='collection-cover'
               fill
-              className='rounded-md object-cover'
+              className='object-cover rounded-md'
             />
-          </div>
-        )}
+          )}
+        </div>
 
         <h2 className='overflow-hidden text-ellipsis whitespace-nowrap text-sm font-semibold'>
           {name}
@@ -106,7 +86,7 @@ const CollectionCover = ({
         !isSaving && 'cursor-pointer',
         isSaving && 'cursor-wait'
       )}
-      onClick={handleClick}
+      onClick={handleCollectionClick}
       disabled={isSaving}
     >
       {renderContent()}

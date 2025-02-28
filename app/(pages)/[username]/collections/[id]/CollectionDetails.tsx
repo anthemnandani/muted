@@ -1,14 +1,14 @@
 'use client';
 
-import Error from '@/app/error';
-import NewCollection from '@/components/modals/NewCollection';
+import NotFound from '@/app/not-found';
+import Loader from '@/components/shared/Loader';
 import PostsList from '@/components/shared/PostsList';
 import { api } from '@/trpc/react';
 
-const PostsClient = () => {
+const CollectionDetails = ({ id }: { id: string }) => {
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
-    api.post.getInfinitePosts.useInfiniteQuery(
-      {},
+    api.collection.getCollection.useInfiniteQuery(
+      { id },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         trpc: { abortOnUnmount: true },
@@ -18,7 +18,8 @@ const PostsClient = () => {
 
   const allPosts = data?.pages.flatMap((page) => page.posts);
 
-  if (isError) return <Error />;
+  if (isLoading) return <Loader />;
+  if (isError || !data) return <NotFound />;
 
   return (
     <main
@@ -36,9 +37,8 @@ const PostsClient = () => {
           />
         </div>
       </div>
-      <NewCollection />
     </main>
   );
 };
 
-export default PostsClient;
+export default CollectionDetails;

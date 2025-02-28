@@ -14,7 +14,6 @@ import CollectionCover from './CollectionCover';
 const CollectionsList = ({ postId }: { postId: string }) => {
   const { isMobile } = useDevice();
   const { user } = useUser();
-  const { toggleBookmark } = useBookmark();
   const { data, isLoading, hasNextPage, fetchNextPage } =
     api.collection.getUserCollections.useInfiniteQuery(
       { username: user?.username ?? '' },
@@ -38,14 +37,6 @@ const CollectionsList = ({ postId }: { postId: string }) => {
     return (
       <div className='flex-center h-20 text-gray-3'>No collections found</div>
     );
-
-  const handleCollectionClick = async (collectionId: string) => {
-    try {
-      await toggleBookmark({ postId, collectionId });
-    } catch (error) {
-      toast.error('Something went wrong');
-    }
-  };
 
   return (
     <ScrollArea
@@ -72,7 +63,6 @@ const CollectionsList = ({ postId }: { postId: string }) => {
               key={collection.id}
               collection={collection}
               postId={postId}
-              onClick={() => handleCollectionClick(collection.id)}
             />
           ))}
       </InfiniteScroll>

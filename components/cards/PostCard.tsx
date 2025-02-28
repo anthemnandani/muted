@@ -9,11 +9,6 @@ import UserProfile from '../modals/UserProfile';
 import PostMediaCarousel from '../posts/PostMediaCarousel';
 
 const PostCard: React.FC<PostCardProps> = ({
-  isLastThread,
-  showUsername,
-  parentPost,
-  variant = 'default',
-  showMuted = true,
   media,
   id,
   author,
@@ -74,7 +69,6 @@ const PostCard: React.FC<PostCardProps> = ({
               bookmarksCount: bookmarksCount!,
               bookmarks,
             }}
-            isParentPost
           />
           <ShareButton />
         </div>

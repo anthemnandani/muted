@@ -1,7 +1,6 @@
 'use client';
 
-import { Collection } from '@/lib/types';
-import { isGif, isImage, isVideo } from '@/lib/utils';
+import { CollectionCardProps } from '@/lib/types';
 import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -9,12 +8,6 @@ import { usePathname } from 'next/navigation';
 import { Card, CardFooter, CardHeader } from '../ui/card';
 import CollectionActions from './CollectionActions';
 import DefaultCollectionCover from './DefaultCollectionCover';
-import TextPostCover from './TextPostCover';
-
-interface CollectionCardProps {
-  collection: Collection;
-  username: string;
-}
 
 const CollectionCard = ({ collection, username }: CollectionCardProps) => {
   const { user } = useUser();
@@ -34,38 +27,17 @@ const CollectionCard = ({ collection, username }: CollectionCardProps) => {
       );
     }
 
-    const { media, author, text } = firstBookmark;
+    const { media } = firstBookmark;
     const fileType = media[0]?.fileType;
 
-    if (isImage(fileType as string) || isGif(fileType as string)) {
-      return (
-        <Image
-          src={media[0]?.fileUrl as string}
-          alt={collection.name}
-          fill
-          className='object-cover transition-transform duration-300 group-hover:scale-105'
-        />
-      );
-    }
-
-    if (isVideo(fileType as string)) {
-      return (
-        <video
-          src={media[0]?.fileUrl as string}
-          className='absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
-          muted
-        />
-      );
-    }
-
     return (
-      <TextPostCover
-        author={{
-          image: author.image!,
-          fullName: author.fullName!,
-          username: author.username,
-        }}
-        content={text!}
+      <Image
+        src={
+          fileType === 'image' ? media[0]?.fileUrl! : media[0]?.thumbnailUrl!
+        }
+        alt={collection.name}
+        fill
+        className='object-cover transition-transform duration-300 group-hover:scale-105'
       />
     );
   };
@@ -73,7 +45,7 @@ const CollectionCard = ({ collection, username }: CollectionCardProps) => {
   return (
     <Card className='group overflow-hidden'>
       <CardHeader className='p-0'>
-        <Link href={`${path}/${collection.id}`}>
+        <Link href={`${path}/collections/${collection.id}`}>
           <div className='relative aspect-square w-full overflow-hidden bg-muted'>
             {renderCover()}
             <div className='absolute bottom-2 left-2 rounded-md bg-black/60 px-2 py-1 text-xs text-white'>
@@ -84,7 +56,7 @@ const CollectionCard = ({ collection, username }: CollectionCardProps) => {
         </Link>
       </CardHeader>
 
-      <CardFooter className='p-2 sm:p-3'>
+      <CardFooter className='p-2 sm:p-3 bg-white-8'>
         <div className='flex-between w-full'>
           <div className='flex flex-col'>
             <Link href={`${path}/${collection.id}`}>

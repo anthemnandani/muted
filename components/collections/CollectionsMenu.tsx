@@ -1,18 +1,12 @@
 'use client';
 
 import useDevice from '@/hooks/useDevice';
+import { CollectionsMenuProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import useAddCollection from '@/store/addCollection';
 import { Plus } from 'lucide-react';
 import React from 'react';
 import CollectionsList from './CollectionsList';
-
-interface CollectionsMenuProps {
-  postId: string;
-  isOpen: boolean;
-  onClose: () => void;
-  anchorRect: DOMRect | null;
-}
 
 const CollectionsMenu = ({
   postId,
@@ -63,19 +57,14 @@ const CollectionsMenu = ({
     <div
       ref={menuRef}
       className={cn(
-        'fixed z-50 bg-background dark:bg-black border border-border-dark dark:border-border-light rounded-lg shadow-lg',
+        'fixed z-50 bg-black/95 border border-border-light rounded-lg shadow-lg',
         'transform -translate-y-2',
         "after:content-[''] after:absolute after:bottom-[-10px] after:left-0 after:w-full after:h-[10px]",
         isSmallMobile ? 'w-[175px]' : isMobile ? 'w-[200px]' : 'w-[250px]'
       )}
       style={getMenuPosition()}
     >
-      <div
-        className={cn(
-          'flex items-center justify-between w-full',
-          isMobile ? 'p-2.5' : 'p-3'
-        )}
-      >
+      <div className={cn('flex-between w-full', isMobile ? 'p-2.5' : 'p-3')}>
         <h3 className='font-medium'>Collections</h3>
         <button
           aria-label='New Collection'

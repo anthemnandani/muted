@@ -1,7 +1,8 @@
 'use client';
 
+import { CollectionFormProps } from '@/lib/types';
 import { CollectionData } from '@/store/addCollection';
-import { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { Icons } from '../icons';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -10,17 +11,6 @@ import { Label } from '../ui/label';
 import { ResizeTextarea } from '../ui/resize-textarea';
 import { Separator } from '../ui/separator';
 import { Switch } from '../ui/switch';
-
-interface CollectionFormProps {
-  initialData: CollectionData;
-  isEditing: boolean;
-  postId?: string;
-  isLoading: boolean;
-  error: string;
-  setOpen: (open: boolean) => void;
-  onSubmit: (data: CollectionData & { postId?: string }) => Promise<any>;
-  onError: (error: string) => void;
-}
 
 const CollectionForm = ({
   initialData,
@@ -32,10 +22,10 @@ const CollectionForm = ({
   onSubmit,
   onError,
 }: CollectionFormProps) => {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [formData, setFormData] = useState<CollectionData>(initialData);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const [formData, setFormData] = React.useState<CollectionData>(initialData);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
     }

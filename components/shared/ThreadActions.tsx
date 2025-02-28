@@ -84,7 +84,7 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
             bookmarksCount,
             bookmarks,
           }}
-          isParentPost={isParentPost}
+          // isParentPost={isParentPost}
         />
         <CopyLinkButton postId={id} username={author.username} />
       </div>
