@@ -483,6 +483,76 @@ export const postRouter = createTRPCRouter({
       };
     }),
 
+  getPostDetails: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const { id } = input;
+
+      const post = await ctx.db.post.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          createdAt: true,
+          text: true,
+          media: true,
+          parentPostId: true,
+          quoteId: true,
+          path: true,
+          repliesCount: true,
+          hideLikes: true,
+          pinned: true,
+          privacy: true,
+          author: {
+            select: {
+              ...GET_USER,
+            },
+          },
+          ...GET_LIKES,
+          ...GET_BOOKMARKS,
+          ...GET_COUNT,
+          ...GET_REPOSTS,
+          ...GET_MENTIONS,
+          ...GET_LINK_PREVIEW,
+          reposts: {
+            select: {
+              createdAt: true,
+              user: {
+                select: {
+                  ...GET_USER,
+                },
+              },
+              post: {
+                select: {
+                  id: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!post) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Post not found' });
+      }
+
+      return {
+        post: {
+          ...post,
+          media: post.media as PostMedia[],
+          reposts: post.reposts.map((repost) => ({
+            userId: repost.user.id,
+            postId: repost.post.id,
+          })),
+          likesCount: post._count.likes,
+          repostsCount: post._count.reposts,
+          bookmarksCount: new Set(
+            post.bookmarks.map((bookmark) => bookmark.userId)
+          ).size,
+          type: 'post' as const,
+        },
+      };
+    }),
+
   getNestedPosts: publicProcedure
     .input(
       z.object({

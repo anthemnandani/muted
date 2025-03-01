@@ -55,6 +55,7 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
           <TabsContent value='posts' className='w-full'>
             <UserPostsList
               posts={posts}
+              username={username}
               fetchNextPage={fetchNextPage}
               hasNextPage={hasNextPage}
             />

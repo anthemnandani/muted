@@ -27,6 +27,7 @@ const CollectionDetails = ({ id }: { id: string }) => {
     <div className='main-container'>
       <TopHeader title={collection?.name as string} />
       <UserPostsList
+        username={collection?.username as string}
         posts={allPosts!}
         fetchNextPage={fetchNextPage}
         hasNextPage={hasNextPage}

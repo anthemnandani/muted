@@ -38,6 +38,7 @@ const UserLikedPostsList = ({ username }: { username: string }) => {
       posts={allPosts}
       fetchNextPage={fetchNextPage}
       hasNextPage={hasNextPage}
+      username={username}
       likedPosts
     />
   );

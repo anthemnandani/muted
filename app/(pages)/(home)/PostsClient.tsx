@@ -3,6 +3,7 @@
 import Error from '@/app/error';
 import NewCollection from '@/components/modals/NewCollection';
 import PostsList from '@/components/shared/PostsList';
+import ScrollContainer from '@/components/shared/ScrollContainer';
 import { api } from '@/trpc/react';
 
 const PostsClient = () => {
@@ -21,23 +22,15 @@ const PostsClient = () => {
   if (isError) return <Error />;
 
   return (
-    <main
-      id='main-scroll-container'
-      className='h-screen overflow-y-scroll snap-y snap-mandatory smooth-scroll hide-scrollbar'
-    >
-      <div className='grid place-items-center min-h-screen'>
-        <div className='h-full'>
-          <PostsList
-            posts={allPosts}
-            fetchNextPage={fetchNextPage}
-            hasNextPage={hasNextPage}
-            isLoading={isLoading}
-            emptyStateMessage='No posts found.'
-          />
-        </div>
-      </div>
-      <NewCollection />
-    </main>
+    <ScrollContainer>
+      <PostsList
+        posts={allPosts}
+        fetchNextPage={fetchNextPage}
+        hasNextPage={hasNextPage}
+        isLoading={isLoading}
+        emptyStateMessage='No posts found.'
+      />
+    </ScrollContainer>
   );
 };
 

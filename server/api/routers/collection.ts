@@ -1,14 +1,6 @@
 import { PostMedia } from '@/lib/types';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
-import {
-  GET_BOOKMARKS,
-  GET_COUNT,
-  GET_LIKES,
-  GET_LINK_PREVIEW,
-  GET_MENTIONS,
-  GET_REPOSTS,
-  GET_USER,
-} from '@/server/constants';
+import { GET_USER } from '@/server/constants';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
@@ -423,6 +415,11 @@ export const collectionRouter = createTRPCRouter({
                   createdAt: true,
                 },
               },
+              user: {
+                select: {
+                  username: true,
+                },
+              },
             },
             orderBy: {
               createdAt: 'desc',
@@ -468,6 +465,7 @@ export const collectionRouter = createTRPCRouter({
           description: collection.description,
           privacy: collection.privacy,
           isDefault: collection.isDefault,
+          username: collection.bookmarks[0].user.username,
         },
         posts,
         nextCursor,

@@ -6,6 +6,7 @@ import UserPostCard from './UserPostCard';
 
 const UserPostsList = ({
   posts,
+  username,
   fetchNextPage,
   hasNextPage,
   likedPosts = false,
@@ -59,6 +60,7 @@ const UserPostsList = ({
         {posts.map((post) => (
           <UserPostCard
             key={post.id}
+            username={username}
             media={post.media}
             postId={post.id}
             pinned={post.pinned}

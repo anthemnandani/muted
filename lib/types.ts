@@ -86,6 +86,7 @@ export interface UserPostsListProps {
   fetchNextPage: () => void;
   hasNextPage?: boolean;
   likedPosts?: boolean;
+  username: string;
 }
 
 export interface UserProfileContentProps extends UserPostsListProps {
@@ -465,6 +466,7 @@ export interface UserPostCardProps {
   media: PostMedia[];
   postId: string;
   pinned: boolean;
+  username: string;
 }
 
 export interface ProfileTabsHeaderProps {

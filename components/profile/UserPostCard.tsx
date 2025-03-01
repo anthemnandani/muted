@@ -1,15 +1,22 @@
 'use client';
 
-import type { PostMedia, UserPostCardProps } from '@/lib/types';
+import type { UserPostCardProps } from '@/lib/types';
 import { useProfileVideoPlayer } from '@/store/profileVideoPlayer';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 import Player from 'video.js/dist/types/player';
 import MediaTypeIndicator from './MediaTypeIndicator';
 import { ProfileVideoPlayer } from './ProfileVideoPlayer';
 
-const UserPostCard = ({ media, postId, pinned }: UserPostCardProps) => {
+const UserPostCard = ({
+  media,
+  postId,
+  pinned,
+  username,
+}: UserPostCardProps) => {
   const [player, setPlayer] = React.useState<Player | null>(null);
+  const router = useRouter();
   const { playingVideoId, setPlayingVideoId } = useProfileVideoPlayer();
   const videoId = postId;
   const isCarousel = media.length > 1;
@@ -63,6 +70,9 @@ const UserPostCard = ({ media, postId, pinned }: UserPostCardProps) => {
   return (
     <div
       className='relative max-w-[320px] aspect-[3/4] rounded-[4px] overflow-hidden flex-center bg-no-repeat bg-center bg-white-12 cursor-pointer'
+      onClick={() => {
+        router.push(`/@${username}/post/${postId}`);
+      }}
       onMouseEnter={handleMouseEnter}
     >
       {isVideo ? (
