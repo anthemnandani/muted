@@ -1,23 +1,24 @@
 'use client';
 
-import { CollectionData, UseCollectionProps } from '@/lib/types';
+import { CollectionData } from '@/lib/types';
+import useAddCollection from '@/store/addCollection';
 import { api } from '@/trpc/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-export const useCollection = ({
-  onSuccess,
-  onClose,
-}: UseCollectionProps = {}) => {
+export const useCollection = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const trpcUtils = api.useUtils();
+  const { resetCollectionData, setIsOpen } = useAddCollection();
 
   const { mutateAsync: createCollection } =
     api.collection.createCollection.useMutation({
+      onMutate: () => {
+        resetCollectionData();
+      },
       onSettled: async () => {
         await trpcUtils.collection.invalidate();
-        onSuccess?.();
       },
     });
 
@@ -25,7 +26,7 @@ export const useCollection = ({
     api.collection.editCollection.useMutation({
       onSettled: async () => {
         await trpcUtils.collection.invalidate();
-        onSuccess?.();
+        setIsOpen(false);
       },
     });
 
@@ -51,7 +52,7 @@ export const useCollection = ({
         });
       }
       toast.success('Success');
-      onClose?.();
+      setIsOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
       toast.error('Failed to save collection');

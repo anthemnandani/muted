@@ -65,7 +65,6 @@ const SearchClient = () => {
         <HeaderWrapper>
           <TopHeader
             title={query ?? 'Search'}
-            showBack
             onBack={() => setSearchQuery('')}
           />
         </HeaderWrapper>

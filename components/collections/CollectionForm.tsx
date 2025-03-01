@@ -43,8 +43,8 @@ const CollectionForm = ({
   };
 
   return (
-    <Card className='rounded-2xl border-none bg-background shadow-2xl ring-1 ring-[#393939] ring-offset-0 dark:bg-gray-6 p-6'>
-      <div className='flex items-start border-b dark:border-gray-5 border-gray-1 pb-1'>
+    <Card className='rounded-2xl border-none shadow-2xl ring-1 ring-[#393939] ring-offset-0 bg-gray-6 p-6'>
+      <div className='flex items-start border-b border-gray-5 pb-1'>
         <button
           aria-label='Close'
           className='mr-4'
@@ -74,7 +74,7 @@ const CollectionForm = ({
             }
           />
           {error && <p className='text-red-500 text-sm'>{error}</p>}
-          <Separator className='bg-border-dark dark:bg-border-light h-[0.5px]' />
+          <Separator className='bg-border-light h-[0.5px]' />
         </div>
 
         <div className='flex flex-col w-full'>
@@ -94,7 +94,7 @@ const CollectionForm = ({
               }
             />
           </div>
-          <Separator className='bg-border-dark dark:bg-border-light h-[0.5px]' />
+          <Separator className='bg-border-light h-[0.5px]' />
         </div>
 
         <div className='flex-between w-full'>
@@ -116,7 +116,7 @@ const CollectionForm = ({
           />
         </div>
         <Button
-          className='w-full h-[52px] flex-center px-4 mt-4 rounded-xl bg-foreground hover:bg-foreground select-none text-white dark:text-black dark:hover:bg-slate-50 disabled:cursor-not-allowed disabled:pointer-events-auto disabled:opacity-100'
+          className='w-full h-[52px] flex-center px-4 mt-4 rounded-xl bg-foreground select-none text-black hover:bg-slate-50 disabled:cursor-not-allowed disabled:pointer-events-auto disabled:opacity-100'
           onClick={handleSubmit}
           disabled={isLoading || formData.name.length === 0}
         >

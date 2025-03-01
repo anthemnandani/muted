@@ -11,10 +11,7 @@ const NewCollection = ({ showTrigger }: { showTrigger?: boolean }) => {
   const { isOpen, setIsOpen, collectionData, isEditing, postId } =
     useAddCollection();
 
-  const { handleSubmit, isLoading, error, setError } = useCollection({
-    onSuccess: () => setIsOpen(false),
-    onClose: () => setIsOpen(false),
-  });
+  const { handleSubmit, isLoading, error, setError } = useCollection();
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

@@ -418,52 +418,9 @@ export const collectionRouter = createTRPCRouter({
               post: {
                 select: {
                   id: true,
-                  text: true,
-                  createdAt: true,
                   media: true,
-                  parentPostId: true,
                   pinned: true,
-                  parentPost: {
-                    select: {
-                      id: true,
-                      author: {
-                        select: {
-                          ...GET_USER,
-                        },
-                      },
-                    },
-                  },
-                  quoteId: true,
-                  path: true,
-                  repliesCount: true,
-                  hideLikes: true,
-                  privacy: true,
-                  author: {
-                    select: {
-                      ...GET_USER,
-                    },
-                  },
-                  ...GET_LIKES,
-                  ...GET_REPOSTS,
-                  ...GET_COUNT,
-                  ...GET_BOOKMARKS,
-                  ...GET_MENTIONS,
-                  ...GET_LINK_PREVIEW,
-                  reposts: {
-                    select: {
-                      createdAt: true,
-                      user: {
-                        select: {
-                          ...GET_USER,
-                        },
-                      },
-                      post: {
-                        select: {
-                          id: true,
-                        },
-                      },
-                    },
-                  },
+                  createdAt: true,
                 },
               },
             },
@@ -481,95 +438,27 @@ export const collectionRouter = createTRPCRouter({
         });
       }
 
-      const repostsMap = new Map();
-      const flattenedPosts = collection.bookmarks.flatMap((bookmark) => {
-        const post = bookmark.post;
-        if (post.parentPostId === null) {
-          const postItem = {
-            ...post,
-            media: post.media as PostMedia[],
-            reposts: post.reposts.map((repost) => ({
-              userId: repost.user.id,
-              postId: repost.post.id,
-            })),
-            likesCount: post._count.likes,
-            repostsCount: post._count.reposts,
-            bookmarksCount: new Set(
-              post.bookmarks.map((bookmark) => bookmark.userId)
-            ).size,
-            type: 'post' as const,
-          };
+      const posts = collection.bookmarks.map((bookmark) => ({
+        id: bookmark.post.id,
+        media: bookmark.post.media as PostMedia[],
+        pinned: bookmark.post.pinned,
+        createdAt: bookmark.post.createdAt,
+      }));
 
-          const repostItems = post.reposts.map((repost) => ({
-            ...post,
-            media: post.media as PostMedia[],
-            reposts: post.reposts.map((repost) => ({
-              userId: repost.user.id,
-              postId: repost.post.id,
-            })),
-            likesCount: post._count.likes,
-            repostsCount: post._count.reposts,
-            bookmarksCount: new Set(
-              post.bookmarks.map((bookmark) => bookmark.userId)
-            ).size,
-            repostedBy: repost.user,
-            repostedAt: repost.createdAt,
-            type: 'repost' as const,
-          }));
-
-          repostItems.forEach((item) =>
-            repostsMap.set(`${item.repostedBy.id}-${post.id}`, item)
-          );
-
-          return [postItem, ...repostItems];
-        } else {
-          return post.reposts.map((repost) => {
-            const repostItem = {
-              ...post,
-              media: post.media as PostMedia[],
-              reposts: post.reposts.map((repost) => ({
-                userId: repost.user.id,
-                postId: repost.post.id,
-              })),
-              likesCount: post._count.likes,
-              repostsCount: post._count.reposts,
-              bookmarksCount: new Set(
-                post.bookmarks.map((bookmark) => bookmark.userId)
-              ).size,
-              repostedBy: repost.user,
-              repostedAt: repost.createdAt,
-              type: 'repost' as const,
-            };
-            repostsMap.set(`${repost.user.id}-${post.id}`, repostItem);
-            return repostItem;
-          });
-        }
-      });
-
-      const uniqueFlattenedPosts = flattenedPosts.filter((item) => {
-        if (item.type === 'repost') {
-          const key = `${item.repostedBy.id}-${item.id}`;
-          return repostsMap.get(key) === item;
-        }
-        return true;
-      });
-
-      uniqueFlattenedPosts.sort((a, b) => {
-        const aTime =
-          a.type === 'repost' ? a.repostedAt.getTime() : a.createdAt.getTime();
-        const bTime =
-          b.type === 'repost' ? b.repostedAt.getTime() : b.createdAt.getTime();
-        return bTime - aTime;
+      posts.sort((a, b) => {
+        if (a.pinned && !b.pinned) return -1;
+        if (!a.pinned && b.pinned) return 1;
+        return b.createdAt.getTime() - a.createdAt.getTime();
       });
 
       let nextCursor: typeof cursor | undefined;
-      if (uniqueFlattenedPosts.length > limit) {
-        const nextItem = uniqueFlattenedPosts[limit];
+      if (posts.length > limit) {
+        const nextItem = posts[limit];
         nextCursor = {
           id: nextItem.id,
           createdAt: nextItem.createdAt,
         };
-        uniqueFlattenedPosts.length = limit;
+        posts.length = limit;
       }
 
       return {
@@ -580,7 +469,7 @@ export const collectionRouter = createTRPCRouter({
           privacy: collection.privacy,
           isDefault: collection.isDefault,
         },
-        posts: uniqueFlattenedPosts,
+        posts,
         nextCursor,
       };
     }),

@@ -487,11 +487,6 @@ export interface CollectionData {
   description: string;
 }
 
-export interface UseCollectionProps {
-  onSuccess?: () => void;
-  onClose?: () => void;
-}
-
 export interface CollectionFormProps {
   initialData: CollectionData;
   isEditing: boolean;

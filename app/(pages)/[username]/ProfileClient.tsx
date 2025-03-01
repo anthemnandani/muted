@@ -28,7 +28,7 @@ const ProfileClient = ({ username }: { username: string }) => {
   const userDetails = data?.pages.flatMap((page) => page.userDetails);
 
   return (
-    <div className='ml-[90px] 2xl:pl-[185px] lg:pl-[160px] w-[calc(100%-90px)] pr-3 max-w-[1800px] 2xl:mx-auto md:pt-8 pb-9 min-h-[calc(1px_+_100vh)]'>
+    <div className='main-container'>
       <div className='flex flex-col flex-[1_1_auto]'>
         <UserProfile {...userDetails[0]} />
         <UserProfileContent

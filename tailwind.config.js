@@ -89,6 +89,7 @@ module.exports = {
         44: '176px',
       },
       height: {
+        15: '60px',
         18: '72px',
       },
 

@@ -1,21 +1,14 @@
 'use client';
 
-import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { Icons } from '../icons';
-import PinToHome from '../menus/PinToHome';
 
 interface TopHeaderProps {
   title?: string;
   onBack?: () => void;
-  showBack?: boolean;
 }
 
-const TopHeader = ({
-  title = 'Thread',
-  showBack = false,
-  onBack,
-}: TopHeaderProps) => {
+const TopHeader = ({ title = 'Thread', onBack }: TopHeaderProps) => {
   const router = useRouter();
 
   const handleBack = () => {
@@ -24,21 +17,14 @@ const TopHeader = ({
   };
 
   return (
-    <div className='flex-between h-[60px] px-4'>
-      {showBack && (
-        <div className='icon-container' onClick={handleBack}>
-          <Icons.back className='size-3' />
-        </div>
-      )}
-      <span
-        className={cn(
-          'text-[15px] text-center font-semibold',
-          !showBack && 'flex-1'
-        )}
-      >
+    <div className='flex-between h-5'>
+      <div className='icon-container' onClick={handleBack}>
+        <Icons.back className='size-3' />
+      </div>
+      <span className='text-[15px] text-center font-semibold flex-1'>
         {title}
       </span>
-      <PinToHome />
+      {/* <PinToHome /> */}
     </div>
   );
 };

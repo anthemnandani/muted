@@ -53,7 +53,7 @@ const PostInfoClient = ({ id }: { id: string }) => {
     <>
       {!isMobile && (
         <HeaderWrapper>
-          <TopHeader title='Thread' showBack />
+          <TopHeader title='Thread' />
         </HeaderWrapper>
       )}
       <Wrapper>

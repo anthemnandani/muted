@@ -1,8 +1,9 @@
 'use client';
 
 import NotFound from '@/app/not-found';
+import UserPostsList from '@/components/profile/UserPostsList';
 import Loader from '@/components/shared/Loader';
-import PostsList from '@/components/shared/PostsList';
+import TopHeader from '@/components/shared/TopHeader';
 import { api } from '@/trpc/react';
 
 const CollectionDetails = ({ id }: { id: string }) => {
@@ -17,27 +18,20 @@ const CollectionDetails = ({ id }: { id: string }) => {
     );
 
   const allPosts = data?.pages.flatMap((page) => page.posts);
+  const collection = data?.pages[0].collection;
 
   if (isLoading) return <Loader />;
   if (isError || !data) return <NotFound />;
 
   return (
-    <main
-      id='main-scroll-container'
-      className='h-screen overflow-y-scroll snap-y snap-mandatory smooth-scroll hide-scrollbar'
-    >
-      <div className='grid place-items-center min-h-screen'>
-        <div className='h-full'>
-          <PostsList
-            posts={allPosts}
-            fetchNextPage={fetchNextPage}
-            hasNextPage={hasNextPage}
-            isLoading={isLoading}
-            emptyStateMessage='No posts found.'
-          />
-        </div>
-      </div>
-    </main>
+    <div className='main-container'>
+      <TopHeader title={collection?.name as string} />
+      <UserPostsList
+        posts={allPosts!}
+        fetchNextPage={fetchNextPage}
+        hasNextPage={hasNextPage}
+      />
+    </div>
   );
 };
 
