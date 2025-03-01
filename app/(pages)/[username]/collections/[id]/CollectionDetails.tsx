@@ -1,10 +1,13 @@
 'use client';
 
+import Error from '@/app/error';
 import NotFound from '@/app/not-found';
 import UserPostsList from '@/components/profile/UserPostsList';
-import Loader from '@/components/shared/Loader';
 import TopHeader from '@/components/shared/TopHeader';
+import HeaderSkeleton from '@/components/skeletons/HeaderSkeleton';
+import SkeletonGrid from '@/components/skeletons/SkeletonGrid';
 import { api } from '@/trpc/react';
+import React from 'react';
 
 const CollectionDetails = ({ id }: { id: string }) => {
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
@@ -20,18 +23,27 @@ const CollectionDetails = ({ id }: { id: string }) => {
   const allPosts = data?.pages.flatMap((page) => page.posts);
   const collection = data?.pages[0].collection;
 
-  if (isLoading) return <Loader />;
-  if (isError || !data) return <NotFound />;
+  if (isError) return <Error />;
+  if (!isLoading && !data) return <NotFound />;
 
   return (
     <div className='main-container'>
-      <TopHeader title={collection?.name as string} />
-      <UserPostsList
-        username={collection?.username as string}
-        posts={allPosts!}
-        fetchNextPage={fetchNextPage}
-        hasNextPage={hasNextPage}
-      />
+      {isLoading ? (
+        <React.Fragment>
+          <HeaderSkeleton />
+          <SkeletonGrid />
+        </React.Fragment>
+      ) : (
+        <React.Fragment>
+          <TopHeader title={collection?.name as string} />
+          <UserPostsList
+            username={collection?.username as string}
+            posts={allPosts!}
+            fetchNextPage={fetchNextPage}
+            hasNextPage={hasNextPage}
+          />
+        </React.Fragment>
+      )}
     </div>
   );
 };

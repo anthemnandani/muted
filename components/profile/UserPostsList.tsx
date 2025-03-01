@@ -56,7 +56,7 @@ const UserPostsList = ({
         </div>
       }
     >
-      <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-[1fr]'>
+      <div className='main-grid'>
         {posts.map((post) => (
           <UserPostCard
             key={post.id}

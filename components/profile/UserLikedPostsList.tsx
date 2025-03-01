@@ -4,6 +4,7 @@ import { api } from '@/trpc/react';
 import { Icons } from '../icons';
 import EmptyState from '../shared/EmptyState';
 import UserPostsList from './UserPostsList';
+import SkeletonGrid from '../skeletons/SkeletonGrid';
 
 const UserLikedPostsList = ({ username }: { username: string }) => {
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
@@ -16,13 +17,6 @@ const UserLikedPostsList = ({ username }: { username: string }) => {
       }
     );
 
-  if (isLoading)
-    return (
-      <div className='flex-center min-h-[490px] h-full w-full'>
-        <Icons.loading className='size-11' />
-      </div>
-    );
-
   if (isError)
     return (
       <EmptyState
@@ -33,9 +27,11 @@ const UserLikedPostsList = ({ username }: { username: string }) => {
 
   const allPosts = data?.pages.flatMap((page) => page.posts);
 
-  return (
+  return isLoading ? (
+    <SkeletonGrid />
+  ) : (
     <UserPostsList
-      posts={allPosts}
+      posts={allPosts!}
       fetchNextPage={fetchNextPage}
       hasNextPage={hasNextPage}
       username={username}

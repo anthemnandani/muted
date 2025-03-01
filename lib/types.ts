@@ -506,3 +506,9 @@ export interface CollectionsMenuProps {
   onClose: () => void;
   anchorRect: DOMRect | null;
 }
+
+export interface SkeletonGridProps {
+  count?: number;
+  className?: string;
+  skeletonClassName?: string;
+}

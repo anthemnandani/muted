@@ -24,7 +24,6 @@ const TopHeader = ({ title = 'Thread', onBack }: TopHeaderProps) => {
       <span className='text-[15px] text-center font-semibold flex-1'>
         {title}
       </span>
-      {/* <PinToHome /> */}
     </div>
   );
 };
