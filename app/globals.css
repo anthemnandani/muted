@@ -207,6 +207,10 @@
   .btn-action {
     @apply flex-center size-12 rounded-full bg-white-12 transition ease-in-out duration-200 hover:bg-white-6;
   }
+
+  .navigator-btn {
+    @apply flex-center size-12 rounded-full bg-white-13 hover:bg-white/20 transition-colors duration-300;
+  }
 }
 
 @layer utilities {

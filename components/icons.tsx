@@ -870,6 +870,34 @@ export const Icons = {
       ></path>
     </svg>
   ),
+  chevronUp: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
+    <svg
+      fill='currentColor'
+      color='inherit'
+      fontSize='inherit'
+      viewBox='0 0 48 48'
+      xmlns='http://www.w3.org/2000/svg'
+      width='1em'
+      height='1em'
+      {...props}
+    >
+      <path d='m24 20.24 13.17 13.17a1 1 0 0 0 1.42 0l2.82-2.82a1 1 0 0 0 0-1.42L25.06 12.82a1.5 1.5 0 0 0-2.12 0L6.59 29.17a1 1 0 0 0 0 1.42L9.4 33.4a1 1 0 0 0 1.42 0L24 20.24Z'></path>
+    </svg>
+  ),
+  chevronDown: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
+    <svg
+      fill='currentColor'
+      color='inherit'
+      fontSize='inherit'
+      viewBox='0 0 48 48'
+      xmlns='http://www.w3.org/2000/svg'
+      width='1em'
+      height='1em'
+      {...props}
+    >
+      <path d='m24 27.76 13.17-13.17a1 1 0 0 1 1.42 0l2.82 2.82a1 1 0 0 1 0 1.42L25.06 35.18a1.5 1.5 0 0 1-2.12 0L6.59 18.83a1 1 0 0 1 0-1.42L9.4 14.6a1 1 0 0 1 1.42 0L24 27.76Z'></path>
+    </svg>
+  ),
   hide: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
     <svg
       aria-label='Hide like and share counts'

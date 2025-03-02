@@ -1,7 +1,6 @@
 'use client';
 
 import Error from '@/app/error';
-import NewCollection from '@/components/modals/NewCollection';
 import PostsList from '@/components/shared/PostsList';
 import ScrollContainer from '@/components/shared/ScrollContainer';
 import { api } from '@/trpc/react';

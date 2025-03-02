@@ -117,7 +117,8 @@ export interface AppearanceMenuProps {
 }
 
 export interface PostDisplayProps {
-  isLastThread?: boolean;
+  index?: number;
+  totalPosts?: number;
   showSeparator?: boolean;
   showLine?: boolean;
   isReply?: boolean;
@@ -511,4 +512,11 @@ export interface SkeletonGridProps {
   count?: number;
   className?: string;
   skeletonClassName?: string;
+}
+
+export interface PostNavigatorContextType {
+  isFirstPost: boolean;
+  isLastPost: boolean;
+  currentIndex: number;
+  setPostNavigation: (index: number, total: number) => void;
 }

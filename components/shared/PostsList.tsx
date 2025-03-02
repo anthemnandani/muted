@@ -7,6 +7,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import PostCard from '../cards/PostCard';
 import { Icons } from '../icons';
 import PostCardSkeleton from '../skeletons/PostCardSkeleton';
+import PostNavigator from '../posts/PostNavigator';
 
 const PostsList: React.FC<PostsListProps> = ({
   isLoading,
@@ -87,10 +88,12 @@ const PostsList: React.FC<PostsListProps> = ({
                 {...post}
                 showMuted={showMuted}
                 variant={post.parentPostId ? 'reply' : 'default'}
-                isLastThread={index === uniquePosts.length - 1}
+                index={index}
+                totalPosts={uniquePosts.length}
               />
             </div>
           ))}
+          <PostNavigator />
         </InfiniteScroll>
       )}
     </React.Fragment>
