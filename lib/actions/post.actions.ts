@@ -10,9 +10,15 @@ import {
   GET_USER,
 } from '@/server/constants';
 import { db } from '@/server/db';
-import { PostMedia } from '../types';
+import type { PostMedia, ProfileFilter } from '../types';
 
-export const getPostNavigationData = async (username: string) => {
+export const getPostNavigationData = async ({
+  username,
+  sortBy,
+}: {
+  username: string;
+  sortBy: ProfileFilter;
+}) => {
   try {
     const user = await db.user.findUnique({
       where: { username },
@@ -24,7 +30,10 @@ export const getPostNavigationData = async (username: string) => {
 
     const posts = await db.post.findMany({
       where: { authorId: user.id },
-      orderBy: [{ pinned: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }],
+      orderBy:
+        sortBy === 'LATEST'
+          ? [{ pinned: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }]
+          : [{ createdAt: 'asc' }, { id: 'asc' }],
       select: {
         id: true,
         createdAt: true,

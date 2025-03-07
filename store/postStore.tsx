@@ -1,9 +1,10 @@
 import { getPostById, getPostNavigationData } from '@/lib/actions/post.actions';
-import { ParentPostProps } from '@/lib/types';
+import { ParentPostProps, ProfileFilter } from '@/lib/types';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
 interface PostStore {
+  selectedFilter: ProfileFilter;
   navigationPosts: ParentPostProps[];
   postById: ParentPostProps | null;
   isLoadingPost: boolean;
@@ -13,6 +14,7 @@ interface PostStore {
   setPostById: (postId: string, username: string) => Promise<void>;
   setPostsByUser: (username: string) => Promise<void>;
   setCurrentPostIndex: (index: number) => void;
+  setSelectedFilter: (filter: ProfileFilter) => void;
   clearStore: () => void;
 }
 
@@ -24,9 +26,19 @@ export const usePostStore = create<PostStore>()(
     currentPostIndex: 0,
     isLoadingPost: false,
     isLoadingUserPosts: false,
+    selectedFilter: 'LATEST',
 
     setCurrentPostIndex: (index: number) => {
       set({ currentPostIndex: index });
+    },
+
+    setSelectedFilter: (filter: ProfileFilter) => {
+      set({
+        selectedFilter: filter,
+        navigationPosts: [],
+        currentPostIndex: 0,
+        postById: null,
+      });
     },
 
     clearStore: () => {
@@ -55,7 +67,10 @@ export const usePostStore = create<PostStore>()(
 
       set({ isLoadingUserPosts: true });
       try {
-        const data = await getPostNavigationData(username);
+        const data = await getPostNavigationData({
+          username,
+          sortBy: get().selectedFilter,
+        });
         set({
           navigationPosts: data,
           currentUsername: username,

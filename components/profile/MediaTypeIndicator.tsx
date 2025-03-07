@@ -2,12 +2,18 @@ import { MediaTypeIndicatorProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Icons } from '../icons';
 import { Pin } from 'lucide-react';
+import { usePostStore } from '@/store/postStore';
 
 const MediaTypeIndicator = ({
   type,
   className,
   iconClassName,
 }: MediaTypeIndicatorProps) => {
+  const { selectedFilter } = usePostStore();
+
+  if (type === 'pinned' && selectedFilter === 'OLDEST') {
+    return null;
+  }
   return (
     <div
       className={cn(

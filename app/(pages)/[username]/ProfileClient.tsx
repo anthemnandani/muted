@@ -5,14 +5,13 @@ import UserProfile from '@/components/profile/UserProfile';
 import UserProfileContent from '@/components/profile/UserProfileContent';
 import ProfileHeaderSkeleton from '@/components/skeletons/ProfileHeaderSkeleton';
 import SkeletonGrid from '@/components/skeletons/SkeletonGrid';
-import type { ProfileFilter } from '@/lib/types';
+import { usePostStore } from '@/store/postStore';
 import useVideoPlayer from '@/store/videoPlayer';
 import { api } from '@/trpc/react';
 import React from 'react';
 
 const ProfileClient = ({ username }: { username: string }) => {
-  const [selectedFilter, setSelectedFilter] =
-    React.useState<ProfileFilter>('LATEST');
+  const { selectedFilter, setSelectedFilter } = usePostStore();
   const { setCurrentlyPlaying } = useVideoPlayer();
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
     api.user.userInfo.useInfiniteQuery(
