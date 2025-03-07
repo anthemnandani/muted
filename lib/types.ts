@@ -518,7 +518,5 @@ export interface PostNavigatorContextType {
   isFirstPost: boolean;
   isLastPost: boolean;
   currentIndex: number;
-  setIsFirstPost: (isFirstPost: boolean) => void;
-  setIsLastPost: (isLastPost: boolean) => void;
   setPostNavigation: (index: number, total: number) => void;
 }
