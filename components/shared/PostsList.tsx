@@ -7,7 +7,6 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import PostCard from '../cards/PostCard';
 import { Icons } from '../icons';
 import PostCardSkeleton from '../skeletons/PostCardSkeleton';
-import PostNavigator from '../posts/PostNavigator';
 
 const PostsList: React.FC<PostsListProps> = ({
   isLoading,
@@ -93,7 +92,7 @@ const PostsList: React.FC<PostsListProps> = ({
               />
             </div>
           ))}
-          <PostNavigator />
+          {/* <PostNavigator /> */}
         </InfiniteScroll>
       )}
     </React.Fragment>

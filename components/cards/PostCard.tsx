@@ -1,9 +1,7 @@
 'use client';
 
-import usePostNavigator from '@/hooks/usePostNavigator';
 import { PostCardProps } from '@/lib/types';
 import React from 'react';
-import { useInView } from 'react-intersection-observer';
 import BookmarkButton from '../buttons/BookmarkButton';
 import LikeButton from '../buttons/LikeButton';
 import ReplyButton from '../buttons/ReplyButton';
@@ -30,19 +28,20 @@ const PostCard: React.FC<PostCardProps> = ({
   index,
   totalPosts,
 }) => {
-  const { setPostNavigation } = usePostNavigator();
-  const { ref, inView } = useInView({
-    threshold: 0.6,
-  });
+  // const { setPostNavigation } = usePostNavigator();
+  // const { ref, inView } = useInView({
+  //   threshold: 0.6,
+  // });
 
-  React.useEffect(() => {
-    if (inView && index !== undefined && totalPosts !== undefined) {
-      setPostNavigation(index, totalPosts);
-    }
-  }, [inView, index, totalPosts, setPostNavigation]);
+  // React.useEffect(() => {
+  //   if (inView && index !== undefined && totalPosts !== undefined) {
+  //     setPostNavigation(index, totalPosts);
+  //   }
+  // }, [inView, index, totalPosts, setPostNavigation]);
 
   return (
-    <div ref={ref} className='h-screen flex-center' data-post-index={index}>
+    // <div ref={ref} className='h-screen flex-center' data-post-index={index}>
+    <div className='h-screen flex-center'>
       <article className='flex justify-center items-end gap-4'>
         <PostMediaCarousel
           media={media}
