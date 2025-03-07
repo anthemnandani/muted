@@ -34,7 +34,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
         onSwiper={setSwiperRef}
         onSlideChange={handleSlideChange}
       >
-        {media.map((item, index) => (
+        {media?.map((item, index) => (
           <SwiperSlide key={`${postId}-${index}`}>
             {item.fileType === 'video' ? (
               <PostVideoCard
@@ -64,7 +64,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
         ))}
       </Swiper>
 
-      {media.length > 1 && (
+      {media?.length > 1 && (
         <React.Fragment>
           {currentIndex > 0 && (
             <Button
@@ -76,7 +76,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
               <ChevronLeft className='size-4' />
             </Button>
           )}
-          {currentIndex < media.length - 1 && (
+          {currentIndex < media?.length - 1 && (
             <Button
               variant='ghost'
               size='icon'

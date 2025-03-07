@@ -51,7 +51,7 @@ const UserPostsList = ({
       hasMore={hasNextPage ?? false}
       className='w-full mt-6'
       loader={
-        <div className='col-span-full flex-center'>
+        <div className='col-span-full flex-center py-10'>
           <Icons.loading className='size-11' />
         </div>
       }

@@ -1,105 +1,79 @@
-// 'use client';
-
-// import NotFound from '@/app/not-found';
-// import ParentReplyCard from '@/components/cards/ParentReplyCard';
-// import ParentThreadCard from '@/components/cards/ParentThreadCard';
-// import { Icons } from '@/components/icons';
-// import NewCollection from '@/components/modals/NewCollection';
-// import HeaderWrapper from '@/components/shared/HeaderWrapper';
-// import Loader from '@/components/shared/Loader';
-// import TopHeader from '@/components/shared/TopHeader';
-// import Wrapper from '@/components/shared/Wrapper';
-// import useDevice from '@/hooks/useDevice';
-// import { useSyncPostStates } from '@/hooks/useSyncPostStates';
-// import { api } from '@/trpc/react';
-// import React from 'react';
-// import InfiniteScroll from 'react-infinite-scroll-component';
-
-// const PostInfoClient = ({ id }: { id: string }) => {
-//   const { isMobile } = useDevice();
-//   const { syncPostStates } = useSyncPostStates();
-
-//   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
-//     api.post.getNestedPosts.useInfiniteQuery(
-//       { id },
-//       {
-//         getNextPageParam: (lastPage) => lastPage.nextCursor,
-//         trpc: { abortOnUnmount: true },
-//         staleTime: 10 * 60 * 1000,
-//       }
-//     );
-
-//   const allReplies = React.useMemo(() => {
-//     const replies = data?.pages.flatMap((page) => page.replies) ?? [];
-//     return [...replies].sort(
-//       (a, b) =>
-//         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-//     );
-//   }, [data?.pages]);
-
-//   const postInfo = data?.pages[0].postInfo;
-
-//   React.useEffect(() => {
-//     if (postInfo) {
-//       syncPostStates(postInfo);
-//       allReplies?.forEach(syncPostStates);
-//     }
-//   }, [data]);
-
-//   if (isLoading) return <Loader />;
-//   if (isError || !data) return <NotFound />;
-
-//   return (
-//     <>
-//       {!isMobile && (
-//         <HeaderWrapper>
-//           <TopHeader title='Thread' />
-//         </HeaderWrapper>
-//       )}
-//       <Wrapper>
-//         <ParentThreadCard postInfo={postInfo!} />
-//         <InfiniteScroll
-//           dataLength={allReplies?.length ?? 0}
-//           next={fetchNextPage}
-//           hasMore={hasNextPage ?? false}
-//           loader={
-//             <div className='h-[80px] w-full flex-center mb-[10vh] sm:mb-0'>
-//               <Icons.loading className='size-11' />
-//             </div>
-//           }
-//         >
-//           {allReplies?.map((reply) => (
-//             <ParentReplyCard key={reply.id} {...reply} />
-//           ))}
-//         </InfiniteScroll>
-//         <div className='pb-20 md:pb-10'></div>
-//         <NewCollection />
-//       </Wrapper>
-//     </>
-//   );
-// };
-
-// export default PostInfoClient;
-
 'use client';
 
-import Error from '@/app/error';
-import NotFound from '@/app/not-found';
 import PostCard from '@/components/cards/PostCard';
-import ScrollContainer from '@/components/shared/ScrollContainer';
+import { Icons } from '@/components/icons';
 import PostCardSkeleton from '@/components/skeletons/PostCardSkeleton';
-import { api } from '@/trpc/react';
+import { cn } from '@/lib/utils';
+import { usePostStore } from '@/store/postStore';
+import useVideoPlayer from '@/store/videoPlayer';
+import { useRouter } from 'next/navigation';
+import React from 'react';
 
-const PostInfoClient = ({ id }: { id: string }) => {
-  const { data, isLoading, isError } = api.post.getPostDetails.useQuery({ id });
+const PostInfoClient = ({ id, username }: { id: string; username: string }) => {
+  const {
+    postById,
+    navigationPosts,
+    currentPostIndex,
+    setPostById,
+    setPostsByUser,
+    isLoadingPost,
+    isLoadingUserPosts,
+  } = usePostStore();
+  const { setCurrentlyPlaying } = useVideoPlayer();
 
-  if (isError) return <Error />;
-  if (!isLoading && !data) return <NotFound />;
+  React.useEffect(() => {
+    Promise.all([setPostById(id, username), setPostsByUser(username)]);
+  }, [id, username, setPostById, setPostsByUser]);
+
+  const router = useRouter();
+  const isFirstPost = currentPostIndex === 0;
+  const isLastPost = currentPostIndex === navigationPosts?.length - 1;
+
+  const isLoading = isLoadingPost || isLoadingUserPosts;
+
+  const navigateToPost = (direction: 'up' | 'down') => {
+    if (!navigationPosts?.length) return;
+
+    const targetIndex =
+      direction === 'up' ? currentPostIndex - 1 : currentPostIndex + 1;
+
+    if (targetIndex >= 0 && targetIndex < navigationPosts.length) {
+      const targetPost = navigationPosts[targetIndex];
+      setCurrentlyPlaying(null);
+      router.push(`/@${username}/post/${targetPost.id}`);
+    }
+  };
 
   return (
-    <ScrollContainer>
-      {isLoading ? <PostCardSkeleton /> : <PostCard {...data.post} />}
-    </ScrollContainer>
+    <React.Fragment key={id}>
+      {isLoadingPost && !postById ? (
+        <PostCardSkeleton />
+      ) : (
+        postById && <PostCard {...postById} />
+      )}
+      <div className='fixed right-4 top-1/2 -translate-y-1/2 flex flex-col justify-center gap-4 w-fit'>
+        <button
+          className={cn(
+            'navigator-btn',
+            (isFirstPost || isLoading) && 'cursor-not-allowed opacity-40'
+          )}
+          onClick={() => navigateToPost('up')}
+          disabled={isFirstPost || isLoading}
+        >
+          <Icons.chevronUp className='size-6 text-white/90 font-medium' />
+        </button>
+        <button
+          className={cn(
+            'navigator-btn',
+            (isLastPost || isLoading) && 'cursor-not-allowed opacity-40'
+          )}
+          disabled={isLastPost || isLoading}
+          onClick={() => navigateToPost('down')}
+        >
+          <Icons.chevronDown className='size-6 text-white/90 font-medium' />
+        </button>
+      </div>
+    </React.Fragment>
   );
 };
 

@@ -71,7 +71,7 @@ const UserPostCard = ({
     <div
       className='relative max-w-[320px] aspect-[3/4] rounded-[4px] overflow-hidden flex-center bg-no-repeat bg-center bg-white-12 cursor-pointer'
       onClick={() => {
-        router.push(`/@${username}/post/${postId}`);
+        router.push(`/@${username}/post/${postId}`, { scroll: false });
       }}
       onMouseEnter={handleMouseEnter}
     >

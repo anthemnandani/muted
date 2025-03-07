@@ -1,6 +1,7 @@
 import BottomBar from '@/components/shared/BottomBar';
 import LeftSideBar from '@/components/shared/LeftSideBar';
 import TopBar from '@/components/shared/TopBar';
+import { PostNavigatorProvider } from '@/contexts/PostNavigatorContext';
 import { getUserEmail } from '@/lib/utils';
 import { db } from '@/server/db';
 import { currentUser } from '@clerk/nextjs';
@@ -28,7 +29,7 @@ export default async function PagesLayout({
     <React.Fragment>
       <TopBar />
       <LeftSideBar />
-      {children}
+      <PostNavigatorProvider>{children}</PostNavigatorProvider>
       <BottomBar />
     </React.Fragment>
   );
