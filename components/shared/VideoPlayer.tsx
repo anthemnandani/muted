@@ -25,15 +25,15 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       const customStyles = `
         .video-js .vjs-progress-control {
           position: absolute;
-          bottom: 6px;
+          bottom: 8px;
           width: 100%;
-          height: 4px;
+          height: 12px;
+          cursor: pointer;
         }
 
         .video-js .vjs-progress-holder {
           height: 4px;
-          margin: 0;
-          cursor: pointer;
+          margin: 4px 0;
         }
 
         .video-js .vjs-play-progress {
@@ -42,15 +42,20 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
         .video-js .vjs-progress-holder .vjs-play-progress:before {
           content: '';
-          display: block !important;
-          width: 12px;
-          height: 12px;
+          display: none !important;
+          width: 14px;
+          height: 14px;
           background: white;
           border-radius: 50%;
           position: absolute;
-          top: -4px;
-          right: -6px;
+          top: -5px;
+          right: -7px;
           z-index: 1;
+          box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .video-js .vjs-progress-control:hover .vjs-play-progress:before {
+          display: block !important;
         }
 
         .video-js .vjs-time-tooltip,
@@ -64,7 +69,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
         .video-js .vjs-control-bar {
           background: none;
-          height: 4px;
+          height: 12px;
+          bottom: 4px;
         }
 
         .video-js .vjs-remaining-time,
