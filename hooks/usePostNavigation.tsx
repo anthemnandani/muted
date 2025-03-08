@@ -22,7 +22,7 @@ export const usePostNavigation = (id: string, username: string) => {
     if (targetIndex >= 0 && targetIndex < navigationPosts.length) {
       const targetPost = navigationPosts[targetIndex];
       setCurrentlyPlaying(null);
-      router.push(`/@${username}/post/${targetPost.id}`);
+      router.replace(`/@${username}/post/${targetPost.id}`);
     }
   };
 
