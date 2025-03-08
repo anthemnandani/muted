@@ -25,31 +25,39 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       const customStyles = `
         .video-js .vjs-progress-control {
           position: absolute;
-          bottom: 0;
+          bottom: 6px;
           width: 100%;
           height: 4px;
-          background: rgba(255, 255, 255, 0.2);
         }
 
         .video-js .vjs-progress-holder {
           height: 4px;
           margin: 0;
-        }
-
-        .video-js .vjs-play-progress:before {
-          display: none; 
+          cursor: pointer;
         }
 
         .video-js .vjs-play-progress {
-          background-color: #ff0050;;
+          background-color: #ff0050;
+        }
+
+        .video-js .vjs-progress-holder .vjs-play-progress:before {
+          content: '';
+          display: block !important;
+          width: 12px;
+          height: 12px;
+          background: white;
+          border-radius: 50%;
+          position: absolute;
+          top: -4px;
+          right: -6px;
+          z-index: 1;
         }
 
         .video-js .vjs-time-tooltip,
         .video-js .vjs-remaining-time-display,
         .video-js .vjs-progress-control .vjs-mouse-display,
-        .video-js .vjs-progress-control .vjs-play-progress:before,
         .video-js .vjs-progress-control .vjs-time-tooltip {
-         display: none !important;
+          display: none !important;
           opacity: 0 !important;
           visibility: hidden !important;
         }

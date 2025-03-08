@@ -14,7 +14,7 @@ const PostFooter: React.FC<PostFooterProps> = ({
   text,
 }) => {
   return (
-    <div className='absolute bottom-6 left-0 right-0 px-4 z-10'>
+    <div className='absolute bottom-7 left-0 right-0 px-4 z-10'>
       <div className='flex items-center gap-2 mb-2'>
         <div className='max-w-[40%] overflow-hidden'>
           <Username author={author} className='truncate' />
