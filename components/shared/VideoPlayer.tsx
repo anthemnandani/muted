@@ -88,8 +88,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       onTouchStart={onTouchStart}
       onTimeUpdate={onTimeUpdate}
       poster={poster}
-      webkit-playsinline='true'
-      x-webkit-airplay='allow'
+      // webkit-playsinline='true'
+      // x-webkit-airplay='allow'
       style={{
         height: '100%',
         aspectRatio: '9/16',

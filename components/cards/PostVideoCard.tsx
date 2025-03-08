@@ -3,7 +3,6 @@
 import { useVideoPlayerState } from '@/hooks/useVideoPlayerState';
 import { PostVideoCardProps } from '@/lib/types';
 import React from 'react';
-import videojs from 'video.js';
 import Player from 'video.js/dist/types/player';
 import { VideoContainer } from '../shared/VideoContainer';
 import { VideoPlayer } from '../shared/VideoPlayer';
@@ -65,19 +64,28 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
         children: ['progressControl'],
       },
       sources: [{ src: video, type: 'application/x-mpegURL' }],
+      // html5: {
+      //   vhs: {
+      //     overrideNative: !videojs.browser.IS_SAFARI,
+      //     enableLowInitialPlaylist: true,
+      //     limitRenditionByPlayerDimensions: true,
+      //     smoothQualityChange: true,
+      //     withCredentials: false,
+      //   },
+      //   nativeTextTracks: false,
+      //   nativeAudioTracks: false,
+      //   nativeVideoTracks: false,
+      // },
+      // techOrder: ['html5'],
       html5: {
         vhs: {
-          overrideNative: !videojs.browser.IS_SAFARI,
-          enableLowInitialPlaylist: true,
-          limitRenditionByPlayerDimensions: true,
-          smoothQualityChange: true,
+          overrideNative: true,
           withCredentials: false,
         },
         nativeTextTracks: false,
         nativeAudioTracks: false,
         nativeVideoTracks: false,
       },
-      techOrder: ['html5'],
     }),
     [video, aspectRatio, isMuted]
   );
