@@ -419,3 +419,16 @@ input[type='range']::-webkit-slider-thumb {
 .scale-x-100 {
   transform: scaleX(1);
 }
+
+.profile-video .video-js {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.profile-video .video-js .vjs-tech {
+  object-fit: cover !important;
+}
+
+.profile-video .vjs-poster img {
+  object-fit: cover !important;
+}
