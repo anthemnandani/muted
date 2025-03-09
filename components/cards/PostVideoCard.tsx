@@ -44,6 +44,11 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
     }
   }, [player, inView]);
 
+  const isSafari = React.useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  }, []);
+
   const playerOptions = React.useMemo(
     () => ({
       controls: true,
@@ -66,13 +71,12 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
       sources: [{ src: video, type: 'application/x-mpegURL' }],
       html5: {
         vhs: {
-          // overrideNative: true,
-          overrideNative: false,
+          overrideNative: !isSafari,
           withCredentials: false,
         },
-        nativeTextTracks: true,
-        nativeAudioTracks: true,
-        nativeVideoTracks: true,
+        nativeTextTracks: isSafari,
+        nativeAudioTracks: isSafari,
+        nativeVideoTracks: isSafari,
       },
     }),
     [video, aspectRatio, isMuted]
