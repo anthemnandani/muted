@@ -60,7 +60,7 @@ export const usePostNavigation = ({
       } else if (e.deltaY < 0 && !isFirstPost) {
         navigateToPost('up');
       }
-    }, 500);
+    }, 200);
   };
 
   const touchStartRef = React.useRef<number | null>(null);
@@ -84,7 +84,7 @@ export const usePostNavigation = ({
       } else if (delta < -30 && !isFirstPost) {
         navigateToPost('up');
       }
-    }, 500);
+    }, 200);
     touchStartRef.current = null;
   };
 

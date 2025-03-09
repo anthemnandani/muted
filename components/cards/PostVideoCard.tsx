@@ -64,27 +64,15 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
         children: ['progressControl'],
       },
       sources: [{ src: video, type: 'application/x-mpegURL' }],
-      // html5: {
-      //   vhs: {
-      //     overrideNative: !videojs.browser.IS_SAFARI,
-      //     enableLowInitialPlaylist: true,
-      //     limitRenditionByPlayerDimensions: true,
-      //     smoothQualityChange: true,
-      //     withCredentials: false,
-      //   },
-      //   nativeTextTracks: false,
-      //   nativeAudioTracks: false,
-      //   nativeVideoTracks: false,
-      // },
-      // techOrder: ['html5'],
       html5: {
         vhs: {
-          overrideNative: true,
+          // overrideNative: true,
+          overrideNative: false,
           withCredentials: false,
         },
-        nativeTextTracks: false,
-        nativeAudioTracks: false,
-        nativeVideoTracks: false,
+        nativeTextTracks: true,
+        nativeAudioTracks: true,
+        nativeVideoTracks: true,
       },
     }),
     [video, aspectRatio, isMuted]
