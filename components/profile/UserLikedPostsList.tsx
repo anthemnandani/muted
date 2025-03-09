@@ -1,10 +1,9 @@
 'use client';
 
 import { api } from '@/trpc/react';
-import { Icons } from '../icons';
 import EmptyState from '../shared/EmptyState';
-import UserPostsList from './UserPostsList';
 import SkeletonGrid from '../skeletons/SkeletonGrid';
+import UserPostsList from './UserPostsList';
 
 const UserLikedPostsList = ({ username }: { username: string }) => {
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
@@ -35,7 +34,7 @@ const UserLikedPostsList = ({ username }: { username: string }) => {
       fetchNextPage={fetchNextPage}
       hasNextPage={hasNextPage}
       username={username}
-      likedPosts
+      type='liked'
     />
   );
 };

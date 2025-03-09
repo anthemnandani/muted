@@ -1,13 +1,22 @@
+import { NavigationType } from '@/lib/types';
 import { usePostStore } from '@/store/postStore';
 import useVideoPlayer from '@/store/videoPlayer';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-export const usePostNavigation = (
-  id: string,
-  username: string,
-  isLoading: boolean
-) => {
+interface UsePostNavigationProps {
+  id: string;
+  username: string;
+  isLoading: boolean;
+  type: NavigationType;
+}
+
+export const usePostNavigation = ({
+  id,
+  username,
+  isLoading,
+  type = 'post',
+}: UsePostNavigationProps) => {
   const { navigationPosts, currentPostIndex, setPostById, setPostsByUser } =
     usePostStore();
   const { setCurrentlyPlaying } = useVideoPlayer();
@@ -16,7 +25,10 @@ export const usePostNavigation = (
   const router = useRouter();
 
   React.useEffect(() => {
-    Promise.all([setPostById(id, username), setPostsByUser(username)]);
+    Promise.all([
+      setPostById(id, username, type),
+      setPostsByUser(username, type),
+    ]);
   }, [id, username, setPostById, setPostsByUser]);
 
   const navigateToPost = (direction: 'up' | 'down') => {
@@ -28,7 +40,7 @@ export const usePostNavigation = (
     if (targetIndex >= 0 && targetIndex < navigationPosts.length) {
       const targetPost = navigationPosts[targetIndex];
       setCurrentlyPlaying(null);
-      router.replace(`/@${username}/post/${targetPost.id}`);
+      router.replace(`/@${username}/${type}/${targetPost.id}`);
     }
   };
 

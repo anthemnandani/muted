@@ -85,7 +85,7 @@ export interface UserPostsListProps {
   posts: UserProfilePostsProps;
   fetchNextPage: () => void;
   hasNextPage?: boolean;
-  likedPosts?: boolean;
+  type?: NavigationType;
   username: string;
 }
 
@@ -468,6 +468,7 @@ export interface UserPostCardProps {
   postId: string;
   pinned: boolean;
   username: string;
+  type: NavigationType;
 }
 
 export interface ProfileTabsHeaderProps {
@@ -519,4 +520,19 @@ export interface PostNavigatorContextType {
   isLastPost: boolean;
   currentIndex: number;
   setPostNavigation: (index: number, total: number) => void;
+}
+
+export type NavigationType = 'post' | 'liked';
+
+export interface PostInfoClientProps {
+  id: string;
+  username: string;
+  type?: NavigationType;
+}
+
+export interface NavigationButtonsProps {
+  isFirstPost: boolean;
+  isLastPost: boolean;
+  handleNavigation: (direction: 'up' | 'down') => void;
+  isLoading?: boolean;
 }

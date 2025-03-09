@@ -1,5 +1,9 @@
-import { getPostById, getPostNavigationData } from '@/lib/actions/post.actions';
-import { ParentPostProps, ProfileFilter } from '@/lib/types';
+import {
+  getPostById,
+  getPostNavigationData,
+  getLikedPosts,
+} from '@/lib/actions/post.actions';
+import { NavigationType, ParentPostProps, ProfileFilter } from '@/lib/types';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
@@ -11,8 +15,13 @@ interface PostStore {
   isLoadingUserPosts: boolean;
   currentUsername: string | null;
   currentPostIndex: number;
-  setPostById: (postId: string, username: string) => Promise<void>;
-  setPostsByUser: (username: string) => Promise<void>;
+  navigationType: NavigationType;
+  setPostById: (
+    postId: string,
+    username: string,
+    type?: NavigationType
+  ) => Promise<void>;
+  setPostsByUser: (username: string, type: NavigationType) => Promise<void>;
   setCurrentPostIndex: (index: number) => void;
   setSelectedFilter: (filter: ProfileFilter) => void;
   clearStore: () => void;
@@ -27,6 +36,7 @@ export const usePostStore = create<PostStore>()(
     isLoadingPost: false,
     isLoadingUserPosts: false,
     selectedFilter: 'LATEST',
+    navigationType: 'post',
 
     setCurrentPostIndex: (index: number) => {
       set({ currentPostIndex: index });
@@ -47,19 +57,22 @@ export const usePostStore = create<PostStore>()(
         postById: null,
         currentUsername: null,
         currentPostIndex: 0,
+        navigationType: 'post',
       });
     },
 
-    setPostsByUser: async (username: string) => {
-      if (username !== get().currentUsername) {
+    setPostsByUser: async (username: string, type: NavigationType = 'post') => {
+      if (username !== get().currentUsername || type !== get().navigationType) {
         set({
           navigationPosts: [],
           currentUsername: null,
+          navigationType: type,
         });
       }
 
       if (
         username === get().currentUsername &&
+        type === get().navigationType &&
         get().navigationPosts.length > 0
       ) {
         return;
@@ -67,10 +80,14 @@ export const usePostStore = create<PostStore>()(
 
       set({ isLoadingUserPosts: true });
       try {
-        const data = await getPostNavigationData({
-          username,
-          sortBy: get().selectedFilter,
-        });
+        const data =
+          type === 'post'
+            ? await getPostNavigationData({
+                username,
+                sortBy: get().selectedFilter,
+              })
+            : await getLikedPosts(username);
+
         set({
           navigationPosts: data,
           currentUsername: username,
@@ -82,8 +99,12 @@ export const usePostStore = create<PostStore>()(
       }
     },
 
-    setPostById: async (postId: string, username: string) => {
-      if (username !== get().currentUsername) {
+    setPostById: async (
+      postId: string,
+      username: string,
+      type: NavigationType = 'post'
+    ) => {
+      if (username !== get().currentUsername || type !== get().navigationType) {
         get().clearStore();
       }
 

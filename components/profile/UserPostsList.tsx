@@ -9,7 +9,7 @@ const UserPostsList = ({
   username,
   fetchNextPage,
   hasNextPage,
-  likedPosts = false,
+  type = 'post',
 }: UserPostsListProps) => {
   return posts.length === 0 ? (
     <EmptyState
@@ -18,9 +18,11 @@ const UserPostsList = ({
           <Icons.emptyPost className='size-11 text-white/90' />
         </div>
       }
-      title={likedPosts ? 'No liked posts yet' : 'Upload your first video'}
+      title={
+        type === 'liked' ? 'No liked posts yet' : 'Upload your first video'
+      }
       description={
-        likedPosts
+        type === 'liked'
           ? 'Videos you liked will appear here'
           : 'Your videos will appear here'
       }
@@ -64,6 +66,7 @@ const UserPostsList = ({
             media={post.media}
             postId={post.id}
             pinned={post.pinned}
+            type={type}
           />
         ))}
       </div>

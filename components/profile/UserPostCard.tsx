@@ -14,6 +14,7 @@ const UserPostCard = ({
   postId,
   pinned,
   username,
+  type = 'post',
 }: UserPostCardProps) => {
   const [player, setPlayer] = React.useState<Player | null>(null);
   const router = useRouter();
@@ -71,7 +72,7 @@ const UserPostCard = ({
     <div
       className='relative max-w-[320px] aspect-[3/4] rounded-[4px] overflow-hidden flex-center bg-no-repeat bg-center bg-white-12 cursor-pointer'
       onClick={() => {
-        router.push(`/@${username}/post/${postId}`, { scroll: false });
+        router.push(`/@${username}/${type}/${postId}`, { scroll: false });
       }}
       onMouseEnter={handleMouseEnter}
     >
