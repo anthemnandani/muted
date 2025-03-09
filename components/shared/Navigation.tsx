@@ -25,6 +25,11 @@ const Navigation = () => {
       />
       <NewPost />
       <MenuLink
+        route='/following'
+        icon={Icons.followings}
+        isActive={pathname === '/following'}
+      />
+      <MenuLink
         route='/activity'
         icon={Icons.activity}
         isActive={pathname === '/activity'}

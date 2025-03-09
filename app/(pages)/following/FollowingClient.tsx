@@ -1,7 +1,8 @@
 'use client';
 
-import FeedWrapper from '@/components/shared/FeedWrapper';
-import { ThreadFilter } from '@/lib/types';
+import Error from '@/app/error';
+import PostsList from '@/components/shared/PostsList';
+import ScrollContainer from '@/components/shared/ScrollContainer';
 import { api } from '@/trpc/react';
 
 const FollowingClient = () => {
@@ -17,16 +18,18 @@ const FollowingClient = () => {
 
   const allPosts = data?.pages.flatMap((page) => page.posts);
 
+  if (isError) return <Error />;
+
   return (
-    <FeedWrapper
-      posts={allPosts}
-      isLoading={isLoading}
-      isError={isError}
-      hasNextPage={hasNextPage}
-      fetchNextPage={fetchNextPage}
-      selectedFilter={ThreadFilter.FOLLOWING}
-      emptyStateMessage='Follow more profiles to get your feed going.'
-    />
+    <ScrollContainer>
+      <PostsList
+        posts={allPosts}
+        fetchNextPage={fetchNextPage}
+        hasNextPage={hasNextPage}
+        isLoading={isLoading}
+        emptyStateMessage='Follow more profiles to get your feed going.'
+      />
+    </ScrollContainer>
   );
 };
 

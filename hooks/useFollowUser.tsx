@@ -40,7 +40,7 @@ const useFollowUser = ({ author }: { author: AuthorInfoProps }) => {
       ),
       success: (data) => (
         <div className='flex-center p-0'>
-          {data.followUser ? 'Unfollowed' : 'Followed'}
+          {data.followUser ? 'Followed' : 'Unfollowed'}
         </div>
       ),
       error: 'Error',
