@@ -9,44 +9,47 @@ import { usePostStore } from '@/store/postStore';
 import React from 'react';
 
 const PostInfoClient = ({ id, username }: { id: string; username: string }) => {
-  const { postById, isLoadingPost, isLoadingUserPosts } = usePostStore();
+  const { isLoadingPost, isLoadingUserPosts, postById } = usePostStore();
 
   const isLoading = isLoadingPost || isLoadingUserPosts;
 
   const { navigateToPost, isFirstPost, isLastPost } = usePostNavigation(
     id,
-    username
+    username,
+    isLoading
   );
 
   return (
     <React.Fragment key={id}>
-      {isLoadingPost && !postById ? (
+      {isLoadingPost || !postById ? (
         <PostCardSkeleton />
       ) : (
-        postById && <PostCard {...postById} />
+        <React.Fragment>
+          {postById && <PostCard {...postById} />}
+          <div className='fixed right-4 top-1/2 -translate-y-1/2 flex flex-col justify-center gap-4 w-fit'>
+            <button
+              className={cn(
+                'navigator-btn',
+                (isFirstPost || isLoading) && 'cursor-not-allowed opacity-40'
+              )}
+              onClick={() => navigateToPost('up')}
+              disabled={isFirstPost || isLoading}
+            >
+              <Icons.chevronUp className='size-6 text-white/90 font-medium' />
+            </button>
+            <button
+              className={cn(
+                'navigator-btn',
+                (isLastPost || isLoading) && 'cursor-not-allowed opacity-40'
+              )}
+              disabled={isLastPost || isLoading}
+              onClick={() => navigateToPost('down')}
+            >
+              <Icons.chevronDown className='size-6 text-white/90 font-medium' />
+            </button>
+          </div>
+        </React.Fragment>
       )}
-      <div className='fixed right-4 top-1/2 -translate-y-1/2 flex flex-col justify-center gap-4 w-fit'>
-        <button
-          className={cn(
-            'navigator-btn',
-            (isFirstPost || isLoading) && 'cursor-not-allowed opacity-40'
-          )}
-          onClick={() => navigateToPost('up')}
-          disabled={isFirstPost || isLoading}
-        >
-          <Icons.chevronUp className='size-6 text-white/90 font-medium' />
-        </button>
-        <button
-          className={cn(
-            'navigator-btn',
-            (isLastPost || isLoading) && 'cursor-not-allowed opacity-40'
-          )}
-          disabled={isLastPost || isLoading}
-          onClick={() => navigateToPost('down')}
-        >
-          <Icons.chevronDown className='size-6 text-white/90 font-medium' />
-        </button>
-      </div>
     </React.Fragment>
   );
 };

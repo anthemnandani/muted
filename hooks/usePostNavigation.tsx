@@ -1,15 +1,21 @@
 import { usePostStore } from '@/store/postStore';
 import useVideoPlayer from '@/store/videoPlayer';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import React from 'react';
 
-export const usePostNavigation = (id: string, username: string) => {
+export const usePostNavigation = (
+  id: string,
+  username: string,
+  isLoading: boolean
+) => {
   const { navigationPosts, currentPostIndex, setPostById, setPostsByUser } =
     usePostStore();
   const { setCurrentlyPlaying } = useVideoPlayer();
+  const isFirstPost = currentPostIndex === 0;
+  const isLastPost = currentPostIndex === navigationPosts?.length - 1;
   const router = useRouter();
 
-  useEffect(() => {
+  React.useEffect(() => {
     Promise.all([setPostById(id, username), setPostsByUser(username)]);
   }, [id, username, setPostById, setPostsByUser]);
 
@@ -25,6 +31,69 @@ export const usePostNavigation = (id: string, username: string) => {
       router.replace(`/@${username}/post/${targetPost.id}`);
     }
   };
+
+  const debounceTimeout = React.useRef<NodeJS.Timeout | null>(null);
+  const touchDebounceTimeout = React.useRef<NodeJS.Timeout | null>(null);
+
+  const handleScroll = (e: WheelEvent) => {
+    if (isLoading) return;
+
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+
+    debounceTimeout.current = setTimeout(() => {
+      if (e.deltaY > 0 && !isLastPost) {
+        navigateToPost('down');
+      } else if (e.deltaY < 0 && !isFirstPost) {
+        navigateToPost('up');
+      }
+    }, 500);
+  };
+
+  const touchStartRef = React.useRef<number | null>(null);
+  const handleTouchStart = (e: TouchEvent) => {
+    touchStartRef.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: TouchEvent) => {
+    if (isLoading || touchStartRef.current === null) return;
+
+    const touchEnd = e.changedTouches[0].clientY;
+    const delta = touchStartRef.current - touchEnd;
+
+    if (touchDebounceTimeout.current) {
+      clearTimeout(touchDebounceTimeout.current);
+    }
+
+    touchDebounceTimeout.current = setTimeout(() => {
+      if (delta > 30 && !isLastPost) {
+        navigateToPost('down');
+      } else if (delta < -30 && !isFirstPost) {
+        navigateToPost('up');
+      }
+    }, 500);
+    touchStartRef.current = null;
+  };
+
+  React.useEffect(() => {
+    window.addEventListener('wheel', handleScroll);
+
+    window.addEventListener('touchstart', handleTouchStart);
+    window.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+      if (touchDebounceTimeout.current) {
+        clearTimeout(touchDebounceTimeout.current);
+      }
+      window.removeEventListener('wheel', handleScroll);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [currentPostIndex, navigationPosts, isLoading]);
 
   return {
     navigateToPost,
