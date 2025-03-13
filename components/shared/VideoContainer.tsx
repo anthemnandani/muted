@@ -3,14 +3,13 @@
 import useMediaControls from '@/hooks/useMediaControls';
 import { VideoContainerProps } from '@/lib/types';
 import React from 'react';
-import { useInView } from 'react-intersection-observer';
 import PostFooter from '../posts/PostFooter';
 import MediaControls from './MediaControls';
 import VolumeControls from './VolumeControls';
+import { useInView } from 'react-intersection-observer';
 
 export const VideoContainer: React.FC<VideoContainerProps> = ({
   children,
-  onInViewChange,
   player,
   author,
   createdAt,
@@ -18,22 +17,23 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
   text,
   hideLikes,
   pinned,
+  setInView,
 }) => {
+  const { ref, inView } = useInView({
+    threshold: 0.5,
+    triggerOnce: false,
+  });
+
+  React.useEffect(() => {
+    setInView(inView);
+  }, [inView, setInView]);
+
   const {
     showControls,
     setShowControls,
     controlsTimeoutRef,
     showControlsTemporarily,
   } = useMediaControls();
-
-  const { ref, inView } = useInView({
-    threshold: 0.6,
-    triggerOnce: false,
-  });
-
-  React.useEffect(() => {
-    onInViewChange(inView);
-  }, [inView, onInViewChange]);
 
   return (
     <div

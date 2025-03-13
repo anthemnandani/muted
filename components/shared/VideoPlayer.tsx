@@ -1,18 +1,16 @@
 'use client';
 
+import { VideoPlayerProps } from '@/lib/types';
+import '@videojs/http-streaming';
+import '@videojs/themes/dist/fantasy/index.css';
 import React from 'react';
 import videojs from 'video.js';
 import Player from 'video.js/dist/types/player';
 import 'video.js/dist/video-js.css';
-import '@videojs/http-streaming';
-import '@videojs/themes/dist/fantasy/index.css';
-import { VideoPlayerProps } from '@/lib/types';
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   options,
   onPlayerReady,
-  onTouchStart,
-  onTimeUpdate,
   poster,
 }) => {
   const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -78,6 +76,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         .video-js .vjs-play-control {
           display: none;
         }
+        
+        .video-js .vjs-big-play-button {
+          display: none !important;
+        }
       `;
 
       const styleSheet = document.createElement('style');
@@ -97,13 +99,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     <video
       data-vjs-player
       ref={videoRef}
-      className='video-js vjs-theme-fantasy vjs-show-big-play-button-on-pause'
+      className='video-js vjs-theme-fantasy'
       data-setup='{"inactivityTimeout": 0}'
-      onTouchStart={onTouchStart}
-      onTimeUpdate={onTimeUpdate}
       poster={poster}
-      // webkit-playsinline='true'
-      // x-webkit-airplay='allow'
+      webkit-playsinline='true'
+      x-webkit-airplay='allow'
       style={{
         height: '100%',
         aspectRatio: '9/16',

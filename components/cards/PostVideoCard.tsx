@@ -1,7 +1,7 @@
 'use client';
 
-import { useVideoPlayerState } from '@/hooks/useVideoPlayerState';
 import { PostVideoCardProps } from '@/lib/types';
+import useVideoPlayer from '@/store/videoPlayer';
 import React from 'react';
 import Player from 'video.js/dist/types/player';
 import { VideoContainer } from '../shared/VideoContainer';
@@ -9,7 +9,6 @@ import { VideoPlayer } from '../shared/VideoPlayer';
 
 const PostVideoCard: React.FC<PostVideoCardProps> = ({
   video,
-  aspectRatio,
   postId,
   poster,
   author,
@@ -21,28 +20,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   const [player, setPlayer] = React.useState<Player | null>(null);
   const [inView, setInView] = React.useState(false);
 
-  const videoId = React.useMemo(
-    () => `${author?.username}-${postId}`,
-    [author?.username, postId]
-  );
-
-  const { isMuted, setTimestamp } = useVideoPlayerState({
-    player,
-    videoId,
-    inView,
-    username: author.username!,
-    postId,
-  });
-
-  React.useEffect(() => {
-    if (player && inView) {
-      player.play()?.catch((error) => {
-        console.log('Autoplay prevented:', error);
-      });
-    } else if (player && !inView) {
-      player?.pause();
-    }
-  }, [player, inView]);
+  const { currentlyPlaying, setCurrentlyPlaying } = useVideoPlayer();
 
   const isSafari = React.useMemo(() => {
     if (typeof window === 'undefined') return false;
@@ -53,9 +31,9 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
     () => ({
       controls: true,
       loop: true,
-      muted: isMuted,
+      muted: true,
       playsinline: true,
-      preload: 'auto',
+      preload: 'metadata',
       autoplay: false,
       disablePictureInPicture: true,
       userActions: { hotkeys: true, doubleClick: false },
@@ -79,29 +57,34 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
         nativeVideoTracks: isSafari,
       },
     }),
-    [video, aspectRatio, isMuted]
+    [video, isSafari]
   );
 
-  const handleTimeUpdate = React.useCallback(() => {
-    if (player && inView) {
-      setTimestamp(videoId, player.currentTime() as number);
-    }
-  }, [videoId, setTimestamp, inView]);
+  React.useEffect(() => {
+    if (!player) return;
 
-  const handleTouchStart = (e: React.TouchEvent<HTMLVideoElement>) => {
-    if (e.currentTarget.classList.contains('vjs-playing')) {
-      player?.pause();
-    } else {
-      player?.play();
+    if (inView) {
+      setCurrentlyPlaying(postId);
+      player.play();
+    } else if (currentlyPlaying === postId) {
+      player.pause();
     }
-  };
+  }, [inView, player, postId, currentlyPlaying]);
+
+  React.useEffect(() => {
+    if (!player) return;
+
+    if (currentlyPlaying !== postId && player.paused() === false) {
+      player.pause();
+    }
+  }, [currentlyPlaying, player, postId]);
 
   return (
     <VideoContainer
-      onInViewChange={setInView}
       player={player}
       author={author}
       createdAt={createdAt}
+      setInView={setInView}
       id={postId}
       text={text}
       hideLikes={hideLikes}
@@ -112,14 +95,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
         options={playerOptions}
         onPlayerReady={(p) => {
           setPlayer(p);
-          if (inView) {
-            p.play()?.catch((error) => {
-              console.log('Initial autoplay prevented:', error);
-            });
-          }
         }}
-        onTouchStart={handleTouchStart}
-        onTimeUpdate={handleTimeUpdate}
       />
     </VideoContainer>
   );

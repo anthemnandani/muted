@@ -43,7 +43,6 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
               <PostVideoCard
                 video={item.fileUrl}
                 poster={item.thumbnailUrl!}
-                aspectRatio={item.aspectRatio}
                 postId={postId}
                 author={author}
                 createdAt={createdAt}

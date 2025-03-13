@@ -367,7 +367,6 @@ export interface PostFooterProps {
 
 export interface VideoContainerProps {
   children: React.ReactNode;
-  onInViewChange: (inView: boolean) => void;
   player: Player | null;
   author: AuthorInfoProps;
   createdAt: Date;
@@ -375,6 +374,7 @@ export interface VideoContainerProps {
   text: string | null;
   hideLikes: boolean;
   pinned: boolean;
+  setInView: (inView: boolean) => void;
 }
 
 export interface MediaControlsProps {
@@ -401,7 +401,6 @@ export interface PostImageCardProps {
 
 export interface PostVideoCardProps {
   video: string;
-  aspectRatio?: string;
   postId: string;
   poster: string;
   author: AuthorInfoProps;
@@ -440,8 +439,6 @@ export interface ProfileVideoPlayerProps {
 export interface VideoPlayerProps {
   options: any;
   onPlayerReady: (player: Player) => void;
-  onTouchStart?: (e: React.TouchEvent<HTMLVideoElement>) => void;
-  onTimeUpdate?: () => void;
   poster?: string;
 }
 
