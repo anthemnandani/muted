@@ -12,6 +12,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   options,
   onPlayerReady,
   poster,
+  onTimeUpdate,
 }) => {
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const playerRef = React.useRef<Player | null>(null);
@@ -102,6 +103,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       className='video-js vjs-theme-fantasy'
       data-setup='{"inactivityTimeout": 0}'
       poster={poster}
+      onTimeUpdate={onTimeUpdate}
       webkit-playsinline='true'
       x-webkit-airplay='allow'
       style={{

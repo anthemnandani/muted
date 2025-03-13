@@ -19,8 +19,14 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
 }) => {
   const [player, setPlayer] = React.useState<Player | null>(null);
   const [inView, setInView] = React.useState(false);
-
-  const { currentlyPlaying, setCurrentlyPlaying } = useVideoPlayer();
+  const {
+    currentlyPlaying,
+    setCurrentlyPlaying,
+    isMuted,
+    setIsMuted,
+    timestamps,
+    setTimestamp,
+  } = useVideoPlayer();
 
   const isSafari = React.useMemo(() => {
     if (typeof window === 'undefined') return false;
@@ -79,6 +85,35 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
     }
   }, [currentlyPlaying, player, postId]);
 
+  React.useEffect(() => {
+    if (!player) return;
+
+    const handleVolumeChange = () => {
+      if (player.muted() !== isMuted) {
+        setIsMuted(player.muted() as boolean);
+      }
+    };
+
+    player.muted(isMuted);
+    player.on('volumechange', handleVolumeChange);
+
+    return () => {
+      player.off('volumechange', handleVolumeChange);
+    };
+  }, [player, isMuted, setIsMuted]);
+
+  React.useEffect(() => {
+    if (player && timestamps[postId]) {
+      player.currentTime(timestamps[postId]);
+    }
+  }, [player]);
+
+  const handleTimeUpdate = React.useCallback(() => {
+    if (player && inView) {
+      setTimestamp(postId, player.currentTime() as number);
+    }
+  }, [postId, player, inView, setTimestamp]);
+
   return (
     <VideoContainer
       player={player}
@@ -96,6 +131,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
         onPlayerReady={(p) => {
           setPlayer(p);
         }}
+        onTimeUpdate={handleTimeUpdate}
       />
     </VideoContainer>
   );

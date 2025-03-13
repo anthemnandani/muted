@@ -440,6 +440,7 @@ export interface VideoPlayerProps {
   options: any;
   onPlayerReady: (player: Player) => void;
   poster?: string;
+  onTimeUpdate?: () => void;
 }
 
 export interface MediaTypeIndicatorProps {
