@@ -34,7 +34,11 @@ export const GET_REPOSTS = {
   reposts: {
     select: {
       postId: true,
-      userId: true,
+      user: {
+        select: {
+          ...GET_USER,
+        },
+      },
     },
   },
 };

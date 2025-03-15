@@ -152,6 +152,11 @@ export interface MenuItemProps {
   disabled?: boolean;
 }
 
+export type Repost = {
+  postId: string;
+  user: AuthorInfoProps;
+};
+
 export type ParentPostProps = {
   id: string;
   createdAt: Date;
@@ -162,7 +167,7 @@ export type ParentPostProps = {
   }[];
   bookmarks: { userId: string; collection: { isDefault: boolean } }[];
   quoteId: string | null;
-  reposts: { userId: string; postId: string }[];
+  reposts: Repost[];
   parentPostId: string | null;
   parentPost?: any;
   mentions: Array<{
@@ -236,7 +241,7 @@ export interface PostActionsProps {
   author: AuthorInfoProps;
   createdAt: Date;
   repliesCount: number;
-  reposts: { userId: string; postId: string }[];
+  reposts: Repost[];
   repostsCount: number;
   bookmarks: { userId: string; collection: { isDefault: boolean } }[];
   bookmarksCount: number;
@@ -247,6 +252,16 @@ export interface PostActionsProps {
     index: number;
   }>;
   hideLikes: boolean;
+}
+
+export interface RepostIndicatorProps {
+  repostedBy?: {
+    id: string;
+    fullName: string | null;
+    image: string | null;
+  };
+  isRepostedByMe?: Repost;
+  reposts: Repost[];
 }
 
 export enum ThreadFilter {
@@ -276,10 +291,7 @@ export type PostData = {
 
 export interface RepostButtonProps {
   id: string;
-  reposts: {
-    userId: string;
-    postId: string;
-  }[];
+  reposts: Repost[];
   repostsCount: number;
   // isCheckingPermissions: boolean;
   // canInteract: boolean;
@@ -357,6 +369,7 @@ export interface PostFooterProps {
   id: string;
   text: string | null;
   repostedBy?: AuthorInfoProps;
+  reposts: Repost[];
 }
 
 export interface VideoContainerProps {
@@ -370,6 +383,7 @@ export interface VideoContainerProps {
   pinned: boolean;
   setInView: (inView: boolean) => void;
   repostedBy?: AuthorInfoProps;
+  reposts: Repost[];
 }
 
 export interface MediaControlsProps {
@@ -393,6 +407,7 @@ export interface PostImageCardProps {
   hideLikes: boolean;
   pinned: boolean;
   repostedBy?: AuthorInfoProps;
+  reposts: Repost[];
 }
 
 export interface PostVideoCardProps {
@@ -405,6 +420,7 @@ export interface PostVideoCardProps {
   hideLikes: boolean;
   pinned: boolean;
   repostedBy?: AuthorInfoProps;
+  reposts: Repost[];
 }
 
 export interface PostActionMenuProps {
@@ -426,6 +442,7 @@ export interface PostMediaCarouselProps {
   hideLikes: boolean;
   pinned: boolean;
   repostedBy?: AuthorInfoProps;
+  reposts: Repost[];
 }
 
 export interface ProfileVideoPlayerProps {

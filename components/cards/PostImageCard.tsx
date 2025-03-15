@@ -16,6 +16,7 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
   id,
   text,
   hideLikes,
+  reposts,
   pinned,
   repostedBy,
 }) => {
@@ -69,6 +70,7 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
         id={id}
         text={text}
         repostedBy={repostedBy}
+        reposts={reposts}
       />
     </div>
   );

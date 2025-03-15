@@ -2,11 +2,12 @@
 
 import { PostFooterProps } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils';
-import Image from 'next/image';
+import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import React from 'react';
 import PostText from '../shared/PostText';
 import Username from '../user/Username';
+import RepostIndicator from './RepostIndicator';
 
 const PostFooter: React.FC<PostFooterProps> = ({
   author,
@@ -14,34 +15,22 @@ const PostFooter: React.FC<PostFooterProps> = ({
   id,
   text,
   repostedBy,
+  reposts,
 }) => {
+  const { user } = useUser();
+
+  const isRepostedByMe = React.useMemo(() => {
+    return reposts.find((repost) => repost.user.id === user?.id);
+  }, [reposts, user?.id]);
+
   return (
     <div className='absolute bottom-[30px] left-0 right-0 px-4 z-10'>
-      {repostedBy && (
-        <div
-          className='inline-flex items-center gap-1.5 mb-3 px-2.5 py-1 rounded-full 
-        bg-black/20 backdrop-blur-[2px] 
-        border border-white/20 
-        shadow-[0_2px_8px_-2px_rgba(0,0,0,0.3)]'
-        >
-          {repostedBy.image && (
-            <div className='size-4 rounded-full overflow-hidden'>
-              <Image
-                src={repostedBy.image}
-                alt={repostedBy.fullName!}
-                width={16}
-                height={16}
-                className='object-cover'
-              />
-            </div>
-          )}
-          <span className='text-sm text-white font-medium'>
-            {repostedBy.fullName!.length > 15
-              ? `${repostedBy.fullName!.slice(0, 15)}...`
-              : repostedBy.fullName}{' '}
-            reposted
-          </span>
-        </div>
+      {(repostedBy || isRepostedByMe) && (
+        <RepostIndicator
+          repostedBy={repostedBy}
+          isRepostedByMe={isRepostedByMe}
+          reposts={reposts}
+        />
       )}
       <div className='flex items-center gap-2 mb-2'>
         <div className='max-w-[40%] overflow-hidden'>

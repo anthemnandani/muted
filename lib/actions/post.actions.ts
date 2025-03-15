@@ -79,7 +79,7 @@ export const getPostNavigationData = async ({
       ...post,
       media: post.media as PostMedia[],
       reposts: post.reposts.map((repost) => ({
-        userId: repost.user.id,
+        user: repost.user,
         postId: repost.post.id,
       })),
       likesCount: post._count.likes,
@@ -160,7 +160,7 @@ export const getLikedPosts = async (username: string) => {
       ...likedPost.post,
       media: likedPost.post.media as PostMedia[],
       reposts: likedPost.post.reposts.map((repost) => ({
-        userId: repost.user.id,
+        user: repost.user,
         postId: repost.post.id,
       })),
       likesCount: likedPost.post._count.likes,
@@ -229,7 +229,7 @@ export const getPostById = async (id: string) => {
       ...post,
       media: post.media as PostMedia[],
       reposts: post.reposts.map((repost) => ({
-        userId: repost.user.id,
+        user: repost.user,
         postId: repost.post.id,
       })),
       likesCount: post._count.likes,

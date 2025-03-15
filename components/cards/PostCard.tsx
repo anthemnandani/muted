@@ -2,11 +2,6 @@
 
 import { PostCardProps } from '@/lib/types';
 import React from 'react';
-import BookmarkButton from '../buttons/BookmarkButton';
-import LikeButton from '../buttons/LikeButton';
-import ReplyButton from '../buttons/ReplyButton';
-import ShareButton from '../buttons/ShareButton';
-import UserProfile from '../modals/UserProfile';
 import PostMediaCarousel from '../posts/PostMediaCarousel';
 import PostActions from '../shared/PostActions';
 
@@ -56,6 +51,7 @@ const PostCard: React.FC<PostCardProps> = ({
           text={text}
           hideLikes={hideLikes}
           pinned={pinned}
+          reposts={reposts}
         />
         <PostActions
           id={id}

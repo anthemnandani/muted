@@ -15,6 +15,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   createdAt,
   text,
   hideLikes,
+  reposts,
   pinned,
   repostedBy,
 }) => {
@@ -144,6 +145,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
       hideLikes={hideLikes}
       pinned={pinned}
       repostedBy={repostedBy}
+      reposts={reposts}
     >
       <VideoPlayer
         poster={poster}

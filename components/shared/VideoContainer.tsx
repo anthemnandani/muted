@@ -16,6 +16,7 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
   id,
   text,
   hideLikes,
+  reposts,
   pinned,
   setInView,
   repostedBy,
@@ -70,6 +71,7 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
         id={id}
         text={text}
         repostedBy={repostedBy}
+        reposts={reposts}
       />
     </div>
   );

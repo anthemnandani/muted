@@ -257,9 +257,9 @@ export const postRouter = createTRPCRouter({
             ...GET_LIKES,
             ...GET_BOOKMARKS,
             ...GET_COUNT,
-            ...GET_REPOSTS,
             ...GET_MENTIONS,
             ...GET_LINK_PREVIEW,
+            ...GET_REPOSTS,
           },
         });
 
@@ -1094,6 +1094,7 @@ export const postRouter = createTRPCRouter({
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
       const { userId } = ctx;
+
       const followingPosts = await ctx.db.post.findMany({
         where: {
           AND: [
@@ -1102,9 +1103,7 @@ export const postRouter = createTRPCRouter({
                 {
                   author: {
                     followers: {
-                      some: {
-                        id: userId,
-                      },
+                      some: { id: userId },
                     },
                   },
                 },
@@ -1113,9 +1112,7 @@ export const postRouter = createTRPCRouter({
                     some: {
                       user: {
                         followers: {
-                          some: {
-                            id: userId,
-                          },
+                          some: { id: userId },
                         },
                       },
                     },
@@ -1123,9 +1120,7 @@ export const postRouter = createTRPCRouter({
                 },
               ],
             },
-            {
-              parentPostId: null,
-            },
+            { parentPostId: null },
           ],
         },
         take: limit + 1,
@@ -1149,24 +1144,15 @@ export const postRouter = createTRPCRouter({
             },
           },
           reposts: {
-            where: {
-              user: {
-                followers: {
-                  some: {
-                    id: userId,
-                  },
-                },
-              },
-            },
             select: {
-              createdAt: true,
+              userId: true,
               user: {
                 select: {
                   ...GET_USER,
                 },
               },
-              userId: true,
               postId: true,
+              createdAt: true,
             },
           },
           ...GET_LIKES,
@@ -1188,7 +1174,10 @@ export const postRouter = createTRPCRouter({
       }
 
       const formattedPosts = followingPosts.map((post) => {
-        const repost = post.reposts[0];
+        const followedUserRepost = post.reposts.find((repost) =>
+          repost.user.followers.some((follower) => follower.id === userId)
+        );
+
         return {
           ...post,
           media: post.media as PostMedia[],
@@ -1197,17 +1186,17 @@ export const postRouter = createTRPCRouter({
           bookmarksCount: new Set(
             post.bookmarks.map((bookmark) => bookmark.userId)
           ).size,
-          type: repost ? ('repost' as const) : ('post' as const),
-          repostedBy: repost?.user,
-          repostedAt: repost?.createdAt,
+          type: followedUserRepost ? ('repost' as const) : ('post' as const),
+          repostedBy: followedUserRepost?.user,
+          repostedAt: followedUserRepost?.createdAt,
         };
       });
 
       const sortedPosts = formattedPosts.sort((a, b) => {
         const aTime =
-          a.type === 'repost' ? a.repostedAt.getTime() : a.createdAt.getTime();
+          a.type === 'repost' ? a.repostedAt!.getTime() : a.createdAt.getTime();
         const bTime =
-          b.type === 'repost' ? b.repostedAt.getTime() : b.createdAt.getTime();
+          b.type === 'repost' ? b.repostedAt!.getTime() : b.createdAt.getTime();
         return bTime - aTime;
       });
 

@@ -16,7 +16,7 @@ const RepostButton: React.FC<RepostButtonProps> = ({
   const { user: loggedUser } = useUser();
 
   const isRepostedByMeInitial = React.useMemo(() => {
-    return reposts.some((repost) => repost.userId === loggedUser?.id);
+    return reposts.some((repost) => repost.user.id === loggedUser?.id);
   }, [reposts, loggedUser?.id]);
 
   const [isRepostedByMe, setIsRepostedByMe] = React.useState(
