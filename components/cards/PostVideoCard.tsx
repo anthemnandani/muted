@@ -114,6 +114,24 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
     }
   }, [postId, player, inView, setTimestamp]);
 
+  React.useEffect(() => {
+    if (!player) return;
+
+    const handleVisibilityChange = () => {
+      if (document.hidden && player.paused() === false) {
+        player.pause();
+      } else if (!document.hidden && inView && currentlyPlaying === postId) {
+        player.play();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [player, inView, currentlyPlaying, postId]);
+
   return (
     <VideoContainer
       player={player}
