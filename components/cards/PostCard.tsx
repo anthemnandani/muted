@@ -8,6 +8,7 @@ import ReplyButton from '../buttons/ReplyButton';
 import ShareButton from '../buttons/ShareButton';
 import UserProfile from '../modals/UserProfile';
 import PostMediaCarousel from '../posts/PostMediaCarousel';
+import PostActions from '../shared/PostActions';
 
 const PostCard: React.FC<PostCardProps> = ({
   media,
@@ -19,6 +20,9 @@ const PostCard: React.FC<PostCardProps> = ({
   repliesCount,
   bookmarks,
   bookmarksCount,
+  reposts,
+  repostsCount,
+  repostedBy,
   privacy,
   mentions,
   linkPreview,
@@ -46,47 +50,31 @@ const PostCard: React.FC<PostCardProps> = ({
         <PostMediaCarousel
           media={media}
           author={author}
+          repostedBy={repostedBy}
           createdAt={createdAt}
           postId={id!}
           text={text}
           hideLikes={hideLikes}
           pinned={pinned}
         />
-        <div className='flex flex-col items-center justify-end gap-4'>
-          <UserProfile author={author} />
-          <LikeButton
-            likeInfo={{
-              id,
-              likesCount: likesCount!,
-              likes: likes!,
-            }}
-            hideLikes={hideLikes}
-            isParentPost
-          />
-          <ReplyButton
-            replyThreadInfo={{
-              id,
-              text,
-              media,
-              author,
-              createdAt,
-              privacy,
-              mentions,
-              linkPreview,
-            }}
-            repliesCount={repliesCount}
-            isParentPost
-            canInteract
-          />
-          <BookmarkButton
-            bookmarkInfo={{
-              id,
-              bookmarksCount: bookmarksCount!,
-              bookmarks,
-            }}
-          />
-          <ShareButton />
-        </div>
+        <PostActions
+          id={id}
+          likesCount={likesCount ?? 0}
+          likes={likes}
+          text={text}
+          author={author}
+          createdAt={createdAt}
+          repliesCount={repliesCount ?? 0}
+          repostsCount={repostsCount ?? 0}
+          reposts={reposts}
+          media={media}
+          linkPreview={linkPreview}
+          mentions={mentions}
+          hideLikes={hideLikes}
+          bookmarksCount={bookmarksCount ?? 0}
+          bookmarks={bookmarks}
+          privacy={privacy}
+        />
       </article>
     </div>
   );

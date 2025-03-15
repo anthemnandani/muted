@@ -111,6 +111,74 @@ export const userRouter = createTRPCRouter({
       };
     }),
 
+  getUserReposts: privateProcedure
+    .input(
+      z.object({
+        username: z.string(),
+        limit: z.number().optional(),
+        cursor: z
+          .object({
+            postId: z.string(),
+            userId: z.string(),
+          })
+          .optional(),
+      })
+    )
+    .query(async ({ input: { username, limit = 20, cursor }, ctx }) => {
+      const user = await ctx.db.user.findUnique({
+        where: { username },
+      });
+
+      if (!user) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const reposts = await ctx.db.repost.findMany({
+        where: { userId: user.id },
+        cursor: cursor
+          ? { postId_userId: { postId: cursor.postId, userId: user.id } }
+          : undefined,
+        take: limit + 1,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          post: {
+            select: {
+              id: true,
+              author: {
+                select: {
+                  ...GET_USER,
+                },
+              },
+              createdAt: true,
+              media: true,
+              pinned: true,
+            },
+          },
+        },
+      });
+
+      const formattedReposts = reposts.map((repost) => ({
+        ...repost.post,
+        media: repost.post.media as PostMedia[],
+        pinned: repost.post.pinned,
+      }));
+
+      let nextCursor: typeof cursor | undefined;
+      if (formattedReposts.length > limit) {
+        const nextItem = formattedReposts[limit];
+        nextCursor = {
+          postId: nextItem.id,
+          userId: user.id,
+        };
+        formattedReposts.length = limit;
+      }
+
+      return {
+        posts: formattedReposts,
+        nextCursor,
+      };
+    }),
+
   getUserLikedPosts: privateProcedure
     .input(
       z.object({
@@ -150,6 +218,11 @@ export const userRouter = createTRPCRouter({
               createdAt: true,
               media: true,
               pinned: true,
+              author: {
+                select: {
+                  ...GET_USER,
+                },
+              },
             },
           },
         },

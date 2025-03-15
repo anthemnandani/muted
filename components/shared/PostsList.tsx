@@ -1,7 +1,6 @@
 'use client';
 
 import { PostsListProps } from '@/lib/types';
-import Link from 'next/link';
 import React from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import PostCard from '../cards/PostCard';
@@ -63,30 +62,9 @@ const PostsList: React.FC<PostsListProps> = ({
                   : `post-${post.id}`
               }
             >
-              {post.parentPostId && (
-                <>
-                  {post.parentPost && (
-                    <PostCard
-                      {...post.parentPost}
-                      showMuted={showMuted}
-                      variant='reply'
-                      showUsername
-                    />
-                  )}
-                  <div className='mt-4 px-2 md:px-4'>
-                    <Link
-                      href={`/@${post.parentPost?.author.username}/post/${post.parentPost?.id}`}
-                      className='text-gray-3 text-[15px] leading-5'
-                    >
-                      Replying to @{post.parentPost?.author.username}
-                    </Link>
-                  </div>
-                </>
-              )}
               <PostCard
                 {...post}
                 showMuted={showMuted}
-                variant={post.parentPostId ? 'reply' : 'default'}
                 index={index}
                 totalPosts={uniquePosts.length}
               />

@@ -16,8 +16,8 @@ interface LikeButtonProps {
 
 const LikeButton: React.FC<LikeButtonProps> = ({
   likeInfo,
-  isParentPost,
   hideLikes,
+  isParentPost,
 }) => {
   const { user: loggedUser } = useUser();
 

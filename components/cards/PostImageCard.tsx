@@ -17,6 +17,7 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
   text,
   hideLikes,
   pinned,
+  repostedBy,
 }) => {
   const {
     showControls,
@@ -62,7 +63,13 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
       {isVerticalImage && (
         <div className='absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none' />
       )}
-      <PostFooter author={author} createdAt={createdAt} id={id} text={text} />
+      <PostFooter
+        author={author}
+        createdAt={createdAt}
+        id={id}
+        text={text}
+        repostedBy={repostedBy}
+      />
     </div>
   );
 };

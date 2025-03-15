@@ -260,127 +260,32 @@ export const postRouter = createTRPCRouter({
             ...GET_REPOSTS,
             ...GET_MENTIONS,
             ...GET_LINK_PREVIEW,
-            reposts: {
-              select: {
-                createdAt: true,
-                user: {
-                  select: {
-                    ...GET_USER,
-                  },
-                },
-                post: {
-                  select: {
-                    id: true,
-                  },
-                },
-              },
-            },
           },
         });
-        const repostsMap = new Map();
-        const flattenedPosts = posts.flatMap((post) => {
-          if (post.parentPostId === null) {
-            const postItem = {
-              ...post,
-              media: post.media as PostMedia[],
-              reposts: post.reposts.map((repost) => ({
-                userId: repost.user.id,
-                postId: repost.post.id,
-              })),
-              likesCount: post._count.likes,
-              repostsCount: post._count.reposts,
-              bookmarksCount: new Set(
-                post.bookmarks.map((bookmark) => bookmark.userId)
-              ).size,
-              type: 'post' as const,
-            };
 
-            const repostItems = post.reposts.map((repost) => ({
-              ...post,
-              media: post.media as PostMedia[],
-              reposts: post.reposts.map((repost) => ({
-                userId: repost.user.id,
-                postId: repost.post.id,
-              })),
-              likesCount: post._count.likes,
-              repostsCount: post._count.reposts,
-              bookmarksCount: new Set(
-                post.bookmarks.map((bookmark) => bookmark.userId)
-              ).size,
-              repostedBy: repost.user,
-              repostedAt: repost.createdAt,
-              type: 'repost' as const,
-            }));
-
-            repostItems.forEach((item) =>
-              repostsMap.set(`${item.repostedBy.id}-${post.id}`, item)
-            );
-
-            return [postItem, ...repostItems];
-          } else {
-            return post.reposts.map((repost) => {
-              const repostItem = {
-                ...post,
-                media: post.media as PostMedia[],
-                reposts: post.reposts.map((repost) => ({
-                  userId: repost.user.id,
-                  postId: repost.post.id,
-                })),
-                likesCount: post._count.likes,
-                repostsCount: post._count.reposts,
-                bookmarksCount: new Set(
-                  post.bookmarks.map((bookmark) => bookmark.userId)
-                ).size,
-                repostedBy: repost.user,
-                repostedAt: repost.createdAt,
-                type: 'repost' as const,
-              };
-              repostsMap.set(`${repost.user.id}-${post.id}`, repostItem);
-              return repostItem;
-            });
-          }
-        });
-
-        const uniqueFlattenedPosts = flattenedPosts.filter((item) => {
-          if (item.type === 'repost') {
-            const key = `${item.repostedBy.id}-${item.id}`;
-            return repostsMap.get(key) === item;
-          }
-          return true;
-        });
-
-        const sortedPosts =
-          sortBy === 'TOP'
-            ? uniqueFlattenedPosts.sort((a, b) => {
-                const likeDiff = b.likesCount - a.likesCount;
-                if (likeDiff !== 0) return likeDiff;
-                return b.createdAt.getTime() - a.createdAt.getTime();
-              })
-            : uniqueFlattenedPosts.sort((a, b) => {
-                const aTime =
-                  a.type === 'repost'
-                    ? a.repostedAt.getTime()
-                    : a.createdAt.getTime();
-                const bTime =
-                  b.type === 'repost'
-                    ? b.repostedAt.getTime()
-                    : b.createdAt.getTime();
-                return bTime - aTime;
-              });
+        const formattedPosts = posts.map((post) => ({
+          ...post,
+          media: post.media as PostMedia[],
+          likesCount: post._count.likes,
+          repostsCount: post._count.reposts,
+          bookmarksCount: new Set(
+            post.bookmarks.map((bookmark) => bookmark.userId)
+          ).size,
+          type: 'post' as const,
+        }));
 
         let nextCursor: typeof cursor | undefined;
-
-        if (sortedPosts.length > limit) {
-          const nextItem = sortedPosts[limit];
+        if (formattedPosts.length > limit) {
+          const nextItem = formattedPosts[limit];
           nextCursor = {
             id: nextItem.id,
             createdAt: nextItem.createdAt,
           };
-          sortedPosts.length = limit;
+          formattedPosts.length = limit;
         }
 
         return {
-          posts: sortedPosts,
+          posts: formattedPosts,
           nextCursor,
         };
       }
@@ -1191,30 +1096,35 @@ export const postRouter = createTRPCRouter({
       const { userId } = ctx;
       const followingPosts = await ctx.db.post.findMany({
         where: {
-          author: {
-            followers: {
-              some: {
-                id: userId,
-              },
-            },
-          },
-          parentPostId: null,
           AND: [
             {
-              hiddenBy: {
-                none: {
-                  userId: ctx.userId,
-                },
-              },
-            },
-            {
-              author: {
-                mutedByUsers: {
-                  none: {
-                    mutedByUserId: ctx.userId,
+              OR: [
+                {
+                  author: {
+                    followers: {
+                      some: {
+                        id: userId,
+                      },
+                    },
                   },
                 },
-              },
+                {
+                  reposts: {
+                    some: {
+                      user: {
+                        followers: {
+                          some: {
+                            id: userId,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              parentPostId: null,
             },
           ],
         },
@@ -1227,16 +1137,6 @@ export const postRouter = createTRPCRouter({
           createdAt: true,
           media: true,
           parentPostId: true,
-          parentPost: {
-            select: {
-              id: true,
-              author: {
-                select: {
-                  ...GET_USER,
-                },
-              },
-            },
-          },
           quoteId: true,
           path: true,
           repliesCount: true,
@@ -1248,10 +1148,30 @@ export const postRouter = createTRPCRouter({
               ...GET_USER,
             },
           },
+          reposts: {
+            where: {
+              user: {
+                followers: {
+                  some: {
+                    id: userId,
+                  },
+                },
+              },
+            },
+            select: {
+              createdAt: true,
+              user: {
+                select: {
+                  ...GET_USER,
+                },
+              },
+              userId: true,
+              postId: true,
+            },
+          },
           ...GET_LIKES,
-          ...GET_REPOSTS,
-          ...GET_COUNT,
           ...GET_BOOKMARKS,
+          ...GET_COUNT,
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
         },
@@ -1267,8 +1187,9 @@ export const postRouter = createTRPCRouter({
         followingPosts.pop();
       }
 
-      return {
-        posts: followingPosts.map((post) => ({
+      const formattedPosts = followingPosts.map((post) => {
+        const repost = post.reposts[0];
+        return {
           ...post,
           media: post.media as PostMedia[],
           likesCount: post._count.likes,
@@ -1276,7 +1197,22 @@ export const postRouter = createTRPCRouter({
           bookmarksCount: new Set(
             post.bookmarks.map((bookmark) => bookmark.userId)
           ).size,
-        })),
+          type: repost ? ('repost' as const) : ('post' as const),
+          repostedBy: repost?.user,
+          repostedAt: repost?.createdAt,
+        };
+      });
+
+      const sortedPosts = formattedPosts.sort((a, b) => {
+        const aTime =
+          a.type === 'repost' ? a.repostedAt.getTime() : a.createdAt.getTime();
+        const bTime =
+          b.type === 'repost' ? b.repostedAt.getTime() : b.createdAt.getTime();
+        return bTime - aTime;
+      });
+
+      return {
+        posts: sortedPosts,
         nextCursor,
       };
     }),
@@ -1353,117 +1289,33 @@ export const postRouter = createTRPCRouter({
           ...GET_REPOSTS,
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
-          reposts: {
-            select: {
-              createdAt: true,
-              user: {
-                select: {
-                  ...GET_USER,
-                },
-              },
-              post: {
-                select: {
-                  id: true,
-                },
-              },
-            },
-          },
         },
       });
 
-      const repostsMap = new Map();
-      const flattenedPosts = posts.flatMap((post) => {
-        if (post.parentPostId === null) {
-          const postItem = {
-            ...post,
-            media: post.media as PostMedia[],
-            reposts: post.reposts.map((repost) => ({
-              userId: repost.user.id,
-              postId: repost.post.id,
-            })),
-            likesCount: post._count.likes,
-            repostsCount: post._count.reposts,
-            bookmarksCount: new Set(
-              post.bookmarks.map((bookmark) => bookmark.userId)
-            ).size,
-            type: 'post' as const,
-          };
-
-          const repostItems = post.reposts.map((repost) => ({
-            ...post,
-            media: post.media as PostMedia[],
-            reposts: post.reposts.map((repost) => ({
-              userId: repost.user.id,
-              postId: repost.post.id,
-            })),
-            likesCount: post._count.likes,
-            repostsCount: post._count.reposts,
-            bookmarksCount: new Set(
-              post.bookmarks.map((bookmark) => bookmark.userId)
-            ).size,
-            repostedBy: repost.user,
-            repostedAt: repost.createdAt,
-            type: 'repost' as const,
-          }));
-
-          repostItems.forEach((item) =>
-            repostsMap.set(`${item.repostedBy.id}-${post.id}`, item)
-          );
-
-          return [postItem, ...repostItems];
-        } else {
-          return post.reposts.map((repost) => {
-            const repostItem = {
-              ...post,
-              media: post.media as PostMedia[],
-              reposts: post.reposts.map((repost) => ({
-                userId: repost.user.id,
-                postId: repost.post.id,
-              })),
-              likesCount: post._count.likes,
-              repostsCount: post._count.reposts,
-              bookmarksCount: new Set(
-                post.bookmarks.map((bookmark) => bookmark.userId)
-              ).size,
-              repostedBy: repost.user,
-              repostedAt: repost.createdAt,
-              type: 'repost' as const,
-            };
-            repostsMap.set(`${repost.user.id}-${post.id}`, repostItem);
-            return repostItem;
-          });
-        }
-      });
-
-      const uniqueFlattenedPosts = flattenedPosts.filter((item) => {
-        if (item.type === 'repost') {
-          const key = `${item.repostedBy.id}-${item.id}`;
-          return repostsMap.get(key) === item;
-        }
-        return true;
-      });
-
-      uniqueFlattenedPosts.sort((a, b) => {
-        const aTime =
-          a.type === 'repost' ? a.repostedAt.getTime() : a.createdAt.getTime();
-        const bTime =
-          b.type === 'repost' ? b.repostedAt.getTime() : b.createdAt.getTime();
-        return bTime - aTime;
-      });
+      const formattedPosts = posts.map((post) => ({
+        ...post,
+        media: post.media as PostMedia[],
+        likesCount: post._count.likes,
+        repostsCount: post._count.reposts,
+        bookmarksCount: new Set(
+          post.bookmarks.map((bookmark) => bookmark.userId)
+        ).size,
+        type: 'post' as const,
+      }));
 
       let nextCursor: typeof cursor | undefined;
 
-      if (uniqueFlattenedPosts.length > limit) {
-        const nextItem = uniqueFlattenedPosts[limit];
+      if (formattedPosts.length > limit) {
+        const nextItem = formattedPosts[limit];
         nextCursor = {
           id: nextItem.id,
           createdAt: nextItem.createdAt,
         };
-        uniqueFlattenedPosts.length = limit;
+        formattedPosts.length = limit;
       }
 
       return {
-        posts: uniqueFlattenedPosts,
+        posts: formattedPosts,
         nextCursor,
       };
     }),

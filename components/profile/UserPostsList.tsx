@@ -11,6 +11,20 @@ const UserPostsList = ({
   hasNextPage,
   type = 'post',
 }: UserPostsListProps) => {
+  const EMPTY_STATE_CONFIG = {
+    liked: {
+      title: 'No liked posts yet',
+      description: 'Posts you liked will appear here',
+    },
+    reposted: {
+      title: 'No reposted posts yet',
+      description: 'Posts you reposted will appear here',
+    },
+    post: {
+      title: 'Upload your first post',
+      description: 'Upload your first post',
+    },
+  } as const;
   return posts.length === 0 ? (
     <EmptyState
       icon={
@@ -18,35 +32,10 @@ const UserPostsList = ({
           <Icons.emptyPost className='size-11 text-white/90' />
         </div>
       }
-      title={
-        type === 'liked' ? 'No liked posts yet' : 'Upload your first video'
-      }
-      description={
-        type === 'liked'
-          ? 'Videos you liked will appear here'
-          : 'Your videos will appear here'
-      }
+      title={EMPTY_STATE_CONFIG[type].title}
+      description={EMPTY_STATE_CONFIG[type].description}
     />
   ) : (
-    // <InfiniteScroll
-    //   dataLength={posts.length}
-    //   next={fetchNextPage}
-    //   hasMore={hasNextPage ?? false}
-    //   className='
-    //   w-full grid gap-y-6 gap-x-4
-    //   grid-cols-[repeat(auto-fit,minmax(200px,1fr))]
-    //   xl:grid-cols-[repeat(auto-fit,minmax(220px,1fr))]
-    //   2xl:grid-cols-[repeat(auto-fit,minmax(240px,1fr))] mt-6'
-    //   loader={
-    //     <div className='col-span-full flex-center'>
-    //       <Icons.loading className='size-11' />
-    //     </div>
-    //   }
-    // >
-    //   {posts.map((post) => (
-    //     <UserPostCard key={post.id} media={post.media} postId={post.id} />
-    //   ))}
-    // </InfiniteScroll>
     <InfiniteScroll
       dataLength={posts.length}
       next={fetchNextPage}
@@ -62,7 +51,7 @@ const UserPostsList = ({
         {posts.map((post) => (
           <UserPostCard
             key={post.id}
-            username={username}
+            username={post.author?.username || username}
             media={post.media}
             postId={post.id}
             pinned={post.pinned}

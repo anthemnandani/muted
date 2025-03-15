@@ -78,11 +78,15 @@ export type UserProfileInfoProps = {
   totalLikes: number;
 };
 
-export type UserProfilePostsProps =
-  RouterOutput['user']['userInfo']['userDetails']['posts'];
+export type UserProfilePostsProps = {
+  id: string;
+  media: PostMedia[];
+  pinned: boolean;
+  author?: AuthorInfoProps;
+};
 
 export interface UserPostsListProps {
-  posts: UserProfilePostsProps;
+  posts: UserProfilePostsProps[];
   fetchNextPage: () => void;
   hasNextPage?: boolean;
   type?: NavigationType;
@@ -223,7 +227,7 @@ export interface EditProfileProps {
   userPrivacy: Privacy;
 }
 
-export interface ThreadActionsProps {
+export interface PostActionsProps {
   id: string;
   privacy: PostPrivacy;
   likesCount: number;
@@ -243,7 +247,6 @@ export interface ThreadActionsProps {
     index: number;
   }>;
   hideLikes: boolean;
-  isParentPost?: boolean;
 }
 
 export enum ThreadFilter {
@@ -273,23 +276,13 @@ export type PostData = {
 
 export interface RepostButtonProps {
   id: string;
-  text: string | null;
-  author: AuthorInfoProps;
-  media: PostMedia[];
-  linkPreview: LinkPreview | null;
-  mentions: Array<{
-    user: AuthorInfoProps;
-    index: number;
-  }>;
-  createdAt?: Date;
   reposts: {
     userId: string;
     postId: string;
   }[];
   repostsCount: number;
-  isParentPost?: boolean;
-  isCheckingPermissions: boolean;
-  canInteract: boolean;
+  // isCheckingPermissions: boolean;
+  // canInteract: boolean;
 }
 
 export type PostFilter = 'ALL' | 'TEXT' | 'REPLIES' | 'REPOSTS';
@@ -363,6 +356,7 @@ export interface PostFooterProps {
   createdAt: Date;
   id: string;
   text: string | null;
+  repostedBy?: AuthorInfoProps;
 }
 
 export interface VideoContainerProps {
@@ -375,6 +369,7 @@ export interface VideoContainerProps {
   hideLikes: boolean;
   pinned: boolean;
   setInView: (inView: boolean) => void;
+  repostedBy?: AuthorInfoProps;
 }
 
 export interface MediaControlsProps {
@@ -397,6 +392,7 @@ export interface PostImageCardProps {
   text: string | null;
   hideLikes: boolean;
   pinned: boolean;
+  repostedBy?: AuthorInfoProps;
 }
 
 export interface PostVideoCardProps {
@@ -408,6 +404,7 @@ export interface PostVideoCardProps {
   text: string | null;
   hideLikes: boolean;
   pinned: boolean;
+  repostedBy?: AuthorInfoProps;
 }
 
 export interface PostActionMenuProps {
@@ -428,6 +425,7 @@ export interface PostMediaCarouselProps {
   text: string | null;
   hideLikes: boolean;
   pinned: boolean;
+  repostedBy?: AuthorInfoProps;
 }
 
 export interface ProfileVideoPlayerProps {
@@ -520,7 +518,7 @@ export interface PostNavigatorContextType {
   setPostNavigation: (index: number, total: number) => void;
 }
 
-export type NavigationType = 'post' | 'liked';
+export type NavigationType = 'post' | 'liked' | 'reposted';
 
 export interface PostInfoClientProps {
   id: string;

@@ -10,6 +10,7 @@ import ProfileTabsHeader from './ProfileTabsHeader';
 import UserCollectionsList from './UserCollectionsList';
 import UserLikedPostsList from './UserLikedPostsList';
 import UserPostsList from './UserPostsList';
+import UserRepostsList from './UserRepostsList';
 
 const UserProfileContent: React.FC<UserProfileContentProps> = ({
   posts,
@@ -59,6 +60,9 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
               fetchNextPage={fetchNextPage}
               hasNextPage={hasNextPage}
             />
+          </TabsContent>
+          <TabsContent value='reposts' className='w-full'>
+            <UserRepostsList username={username} />
           </TabsContent>
           <TabsContent value='liked' className='w-full'>
             <UserLikedPostsList username={username} />

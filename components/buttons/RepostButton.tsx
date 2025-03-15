@@ -1,134 +1,90 @@
+'use client';
+
 import { Icons } from '@/components/icons';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import type { RepostButtonProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
 import React from 'react';
 import { toast } from 'sonner';
-import QuoteButton from './QuoteButton';
 
 const RepostButton: React.FC<RepostButtonProps> = ({
   id,
-  text,
-  author,
-  createdAt,
   reposts,
-  media,
-  linkPreview,
-  mentions,
-  repostsCount,
-  isParentPost,
-  isCheckingPermissions,
-  canInteract,
+  repostsCount: initialRepostsCount,
 }) => {
   const { user: loggedUser } = useUser();
 
-  const isRepostedByMe = React.useMemo(() => {
+  const isRepostedByMeInitial = React.useMemo(() => {
     return reposts.some((repost) => repost.userId === loggedUser?.id);
   }, [reposts, loggedUser?.id]);
 
+  const [isRepostedByMe, setIsRepostedByMe] = React.useState(
+    isRepostedByMeInitial
+  );
+  const [repostsCount, setRepostsCount] = React.useState(
+    initialRepostsCount || 0
+  );
+
+  React.useEffect(() => {
+    setIsRepostedByMe(isRepostedByMeInitial);
+    setRepostsCount(initialRepostsCount || 0);
+  }, [isRepostedByMeInitial, initialRepostsCount]);
+
   const trpcUtils = api.useUtils();
 
-  const { mutateAsync: toggleRepost, isLoading } =
-    api.post.toggleRepost.useMutation({
-      onError: (error) => {
-        toast.error('RepostError: Something went wrong!');
-      },
-      onSettled: async () => {
-        await trpcUtils.invalidate();
-      },
-    });
+  const { mutate: toggleRepost, isLoading } = api.post.toggleRepost.useMutation(
+    {
+      onMutate: async () => {
+        setIsRepostedByMe((prev) => !prev);
+        setRepostsCount((prev) => (isRepostedByMe ? prev - 1 : prev + 1));
 
-  const handleToggleRepost = async () => {
-    const promise = toggleRepost({ id });
-
-    toast.promise(promise, {
-      loading: (
-        <div className='flex w-[270px] items-center justify-start gap-1.5 p-0'>
-          <div>
-            <Icons.loading className='size-8' />
-          </div>
-          {isRepostedByMe ? 'Removing...' : 'Reposting...'}
-        </div>
-      ),
-      success: () => {
-        return (
-          <div className='flex-center p-0'>
-            {isRepostedByMe ? 'Removed' : 'Reposted'}
-          </div>
-        );
+        return {
+          previousIsRepostedByMe: isRepostedByMe,
+          previousRepostsCount: repostsCount,
+        };
       },
-      error: 'Error',
-      richColors: true,
-    });
-  };
+      onError: (error, variables, context) => {
+        if (
+          context?.previousIsRepostedByMe !== undefined &&
+          context?.previousRepostsCount !== undefined
+        ) {
+          setIsRepostedByMe(context.previousIsRepostedByMe);
+          setRepostsCount(context.previousRepostsCount);
+        }
+        toast.error('Something went wrong!');
+      },
+      onSuccess: async () => {
+        await trpcUtils.post.getInfinitePosts.invalidate();
+        await trpcUtils.post.getFollowingPosts.invalidate();
+        await trpcUtils.user.getUserReposts.invalidate();
+        await trpcUtils.post.getNestedPosts.invalidate();
+        await trpcUtils.post.getPostsByTag.invalidate();
+      },
+    }
+  );
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger>
-        <button disabled={isLoading} className='icon-container-hover'>
-          {isRepostedByMe ? (
-            <Icons.reposted className='size-5' />
-          ) : (
-            <Icons.repost className='size-5' />
-          )}
-          {repostsCount > 0 && !isParentPost && (
-            <span className='text-[13px] ml-2 text-gray-4 dark:text-gray-2'>
-              {repostsCount}
-            </span>
-          )}
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align='start'
-        className='dropdown-content-container p-2 rounded-2xl w-[240px]'
+    <div className='flex flex-col items-center gap-1.5'>
+      <button
+        type='button'
+        disabled={isLoading}
+        title={isRepostedByMe ? 'Remove Repost' : 'Repost'}
+        onClick={() => toggleRepost({ id })}
+        className='btn-action'
       >
-        {isCheckingPermissions ? (
-          <div className='flex-center py-3.5 px-4'>
-            <Icons.loading className='size-8' />
-          </div>
+        {isRepostedByMe ? (
+          <Icons.reposted className='size-5' />
         ) : (
-          <>
-            <DropdownMenuItem
-              disabled={isLoading}
-              onClick={handleToggleRepost}
-              className={cn(
-                'dropdown-menu-item flex-between py-3.5 px-4 data-[disabled]:pointer-events-auto',
-                {
-                  'text-red-600 focus:text-red-600': isRepostedByMe,
-                }
-              )}
-            >
-              {isRepostedByMe ? 'Remove' : 'Repost'}
-              <Icons.repost
-                className={cn('size-5', {
-                  'text-red-600': isRepostedByMe,
-                })}
-              />
-            </DropdownMenuItem>
-
-            <QuoteButton
-              quoteInfo={{
-                text,
-                id,
-                author,
-                createdAt,
-                media,
-                linkPreview,
-                mentions,
-              }}
-              disabled={!canInteract}
-            />
-          </>
+          <Icons.repost className='size-5' />
         )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </button>
+      {repostsCount > 0 && (
+        <strong className={cn('text-[13px] leading-4 text-center text-gray-2')}>
+          {repostsCount}
+        </strong>
+      )}
+    </div>
   );
 };
 

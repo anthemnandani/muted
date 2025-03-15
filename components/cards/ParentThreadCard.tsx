@@ -81,17 +81,8 @@ const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
             />
             <RepostButton
               id={postInfo.id}
-              text={postInfo.text}
-              author={postInfo.author}
-              createdAt={postInfo.createdAt}
               reposts={postInfo.reposts}
               repostsCount={postInfo.repostsCount ?? 0}
-              media={postInfo.media}
-              linkPreview={postInfo.linkPreview}
-              mentions={postInfo.mentions}
-              isParentPost
-              isCheckingPermissions={isCheckingPermissions}
-              canInteract={canInteract}
             />
 
             <BookmarkButton

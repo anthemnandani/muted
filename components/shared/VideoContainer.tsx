@@ -18,6 +18,7 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
   hideLikes,
   pinned,
   setInView,
+  repostedBy,
 }) => {
   const { ref, inView } = useInView({
     threshold: 0.5,
@@ -63,7 +64,13 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
           <VolumeControls player={player} showControls={showControls} />
         }
       />
-      <PostFooter author={author} createdAt={createdAt} id={id} text={text} />
+      <PostFooter
+        author={author}
+        createdAt={createdAt}
+        id={id}
+        text={text}
+        repostedBy={repostedBy}
+      />
     </div>
   );
 };

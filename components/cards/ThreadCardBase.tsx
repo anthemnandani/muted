@@ -7,7 +7,7 @@ import { useMutedUsers } from '@/store/mutedUsers';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import PostHeader from '../posts/PostHeader';
-import ThreadActions from '../shared/ThreadActions';
+import PostActions from '../shared/PostActions';
 import ThreadContent from '../shared/ThreadContent';
 import RepostedBy from '../user/RepostedBy';
 import HiddenPost from './HiddenPost';
@@ -146,7 +146,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
 
       {showActions && (
         <div className='pt-2 flex-between w-full px-2 md:px-4'>
-          <ThreadActions
+          <PostActions
             id={id}
             likesCount={likesCount ?? 0}
             likes={likes}
