@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 
 const RepostButton: React.FC<RepostButtonProps> = ({
   id,
+  authorId,
   reposts,
   repostsCount: initialRepostsCount,
 }) => {
@@ -68,7 +69,7 @@ const RepostButton: React.FC<RepostButtonProps> = ({
     <div className='flex flex-col items-center gap-1.5'>
       <button
         type='button'
-        disabled={isLoading}
+        disabled={isLoading || authorId === loggedUser?.id}
         title={isRepostedByMe ? 'Remove Repost' : 'Repost'}
         onClick={() => toggleRepost({ id })}
         className='btn-action'

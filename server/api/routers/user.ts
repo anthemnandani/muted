@@ -47,11 +47,7 @@ export const userRouter = createTRPCRouter({
             cursor: cursor ? { createdAt_id: cursor } : undefined,
             orderBy:
               sortBy === 'LATEST'
-                ? [
-                    { pinned: 'desc' }, // Pinned posts first
-                    { createdAt: 'desc' },
-                    { id: 'desc' },
-                  ]
+                ? [{ pinned: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }]
                 : [{ createdAt: 'asc' }, { id: 'asc' }],
             select: {
               _count: {
@@ -370,18 +366,7 @@ export const userRouter = createTRPCRouter({
             ...GET_COUNT,
             ...GET_MENTIONS,
             ...GET_LINK_PREVIEW,
-            reposts: {
-              select: {
-                createdAt: true,
-                userId: true,
-                postId: true,
-                user: {
-                  select: {
-                    ...GET_USER,
-                  },
-                },
-              },
-            },
+            ...GET_REPOSTS,
           },
         });
 
@@ -397,7 +382,7 @@ export const userRouter = createTRPCRouter({
         return {
           posts: posts.map((post) => {
             const userRepost = post.reposts.find(
-              (repost) => repost.userId === user.id
+              (repost) => repost.user.id === user.id
             );
             return {
               id: post.id,

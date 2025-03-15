@@ -53,7 +53,12 @@ const PostActions: React.FC<PostActionsProps> = ({
         isParentPost
         canInteract
       />
-      <RepostButton id={id} reposts={reposts} repostsCount={repostsCount} />
+      <RepostButton
+        id={id}
+        authorId={author.id}
+        reposts={reposts}
+        repostsCount={repostsCount}
+      />
       <BookmarkButton
         bookmarkInfo={{
           id,

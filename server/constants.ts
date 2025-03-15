@@ -39,6 +39,7 @@ export const GET_REPOSTS = {
           ...GET_USER,
         },
       },
+      createdAt: true,
     },
   },
 };

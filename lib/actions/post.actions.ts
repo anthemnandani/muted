@@ -57,31 +57,12 @@ export const getPostNavigationData = async ({
         ...GET_REPOSTS,
         ...GET_MENTIONS,
         ...GET_LINK_PREVIEW,
-        reposts: {
-          select: {
-            createdAt: true,
-            user: {
-              select: {
-                ...GET_USER,
-              },
-            },
-            post: {
-              select: {
-                id: true,
-              },
-            },
-          },
-        },
       },
     });
 
     return posts.map((post) => ({
       ...post,
       media: post.media as PostMedia[],
-      reposts: post.reposts.map((repost) => ({
-        user: repost.user,
-        postId: repost.post.id,
-      })),
       likesCount: post._count.likes,
       repostsCount: post._count.reposts,
       bookmarksCount: new Set(post.bookmarks.map((bookmark) => bookmark.userId))
@@ -136,21 +117,6 @@ export const getLikedPosts = async (username: string) => {
             ...GET_REPOSTS,
             ...GET_MENTIONS,
             ...GET_LINK_PREVIEW,
-            reposts: {
-              select: {
-                createdAt: true,
-                user: {
-                  select: {
-                    ...GET_USER,
-                  },
-                },
-                post: {
-                  select: {
-                    id: true,
-                  },
-                },
-              },
-            },
           },
         },
       },
@@ -159,10 +125,7 @@ export const getLikedPosts = async (username: string) => {
     return likedPosts.map((likedPost) => ({
       ...likedPost.post,
       media: likedPost.post.media as PostMedia[],
-      reposts: likedPost.post.reposts.map((repost) => ({
-        user: repost.user,
-        postId: repost.post.id,
-      })),
+
       likesCount: likedPost.post._count.likes,
       repostsCount: likedPost.post._count.reposts,
       bookmarksCount: new Set(
@@ -203,21 +166,6 @@ export const getPostById = async (id: string) => {
         ...GET_REPOSTS,
         ...GET_MENTIONS,
         ...GET_LINK_PREVIEW,
-        reposts: {
-          select: {
-            createdAt: true,
-            user: {
-              select: {
-                ...GET_USER,
-              },
-            },
-            post: {
-              select: {
-                id: true,
-              },
-            },
-          },
-        },
       },
     });
 
@@ -228,10 +176,6 @@ export const getPostById = async (id: string) => {
     return {
       ...post,
       media: post.media as PostMedia[],
-      reposts: post.reposts.map((repost) => ({
-        user: repost.user,
-        postId: repost.post.id,
-      })),
       likesCount: post._count.likes,
       repostsCount: post._count.reposts,
       bookmarksCount: new Set(post.bookmarks.map((bookmark) => bookmark.userId))

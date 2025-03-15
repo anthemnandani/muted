@@ -155,6 +155,7 @@ export interface MenuItemProps {
 export type Repost = {
   postId: string;
   user: AuthorInfoProps;
+  createdAt: Date;
 };
 
 export type ParentPostProps = {
@@ -293,6 +294,7 @@ export interface RepostButtonProps {
   id: string;
   reposts: Repost[];
   repostsCount: number;
+  authorId: string;
   // isCheckingPermissions: boolean;
   // canInteract: boolean;
 }

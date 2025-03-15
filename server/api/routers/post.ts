@@ -418,21 +418,6 @@ export const postRouter = createTRPCRouter({
           ...GET_REPOSTS,
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
-          reposts: {
-            select: {
-              createdAt: true,
-              user: {
-                select: {
-                  ...GET_USER,
-                },
-              },
-              post: {
-                select: {
-                  id: true,
-                },
-              },
-            },
-          },
         },
       });
 
@@ -444,10 +429,6 @@ export const postRouter = createTRPCRouter({
         post: {
           ...post,
           media: post.media as PostMedia[],
-          reposts: post.reposts.map((repost) => ({
-            userId: repost.user.id,
-            postId: repost.post.id,
-          })),
           likesCount: post._count.likes,
           repostsCount: post._count.reposts,
           bookmarksCount: new Set(
@@ -1143,18 +1124,7 @@ export const postRouter = createTRPCRouter({
               ...GET_USER,
             },
           },
-          reposts: {
-            select: {
-              userId: true,
-              user: {
-                select: {
-                  ...GET_USER,
-                },
-              },
-              postId: true,
-              createdAt: true,
-            },
-          },
+          ...GET_REPOSTS,
           ...GET_LIKES,
           ...GET_BOOKMARKS,
           ...GET_COUNT,
