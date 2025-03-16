@@ -70,8 +70,8 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
         createdAt={createdAt}
         id={id}
         text={text}
-        repostedBy={repostedBy}
         reposts={reposts}
+        repostedBy={repostedBy}
       />
     </div>
   );

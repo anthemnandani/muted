@@ -349,7 +349,12 @@ export const userRouter = createTRPCRouter({
                 ...GET_LIKES,
                 ...GET_BOOKMARKS,
                 ...GET_COUNT,
-                ...GET_REPOSTS,
+                reposts: {
+                  ...GET_REPOSTS,
+                  orderBy: {
+                    createdAt: 'desc',
+                  },
+                },
                 ...GET_MENTIONS,
                 ...GET_LINK_PREVIEW,
               },
@@ -366,7 +371,12 @@ export const userRouter = createTRPCRouter({
             ...GET_COUNT,
             ...GET_MENTIONS,
             ...GET_LINK_PREVIEW,
-            ...GET_REPOSTS,
+            reposts: {
+              ...GET_REPOSTS,
+              orderBy: {
+                createdAt: 'desc',
+              },
+            },
           },
         });
 
@@ -550,7 +560,12 @@ export const userRouter = createTRPCRouter({
               ...GET_LIKES,
               ...GET_BOOKMARKS,
               ...GET_COUNT,
-              ...GET_REPOSTS,
+              reposts: {
+                ...GET_REPOSTS,
+                orderBy: {
+                  createdAt: 'desc',
+                },
+              },
               ...GET_MENTIONS,
               ...GET_LINK_PREVIEW,
             },
@@ -565,7 +580,12 @@ export const userRouter = createTRPCRouter({
           ...GET_LIKES,
           ...GET_BOOKMARKS,
           ...GET_COUNT,
-          ...GET_REPOSTS,
+          reposts: {
+            ...GET_REPOSTS,
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
         },
@@ -688,7 +708,12 @@ export const userRouter = createTRPCRouter({
               ...getAuthorAndHiddenSelect(ctx.userId),
               ...GET_LIKES,
               ...GET_COUNT,
-              ...GET_REPOSTS,
+              reposts: {
+                ...GET_REPOSTS,
+                orderBy: {
+                  createdAt: 'desc',
+                },
+              },
               ...GET_BOOKMARKS,
               ...GET_MENTIONS,
               ...GET_LINK_PREVIEW,

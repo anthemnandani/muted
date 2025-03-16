@@ -144,8 +144,8 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
       text={text}
       hideLikes={hideLikes}
       pinned={pinned}
-      repostedBy={repostedBy}
       reposts={reposts}
+      repostedBy={repostedBy}
     >
       <VideoPlayer
         poster={poster}

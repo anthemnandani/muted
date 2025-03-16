@@ -1,12 +1,13 @@
 'use client';
 
 import { PostActionsProps } from '@/lib/types';
+import { useUser } from '@clerk/nextjs';
 import BookmarkButton from '../buttons/BookmarkButton';
 import LikeButton from '../buttons/LikeButton';
 import ReplyButton from '../buttons/ReplyButton';
+import RepostButton from '../buttons/RepostButton';
 import ShareButton from '../buttons/ShareButton';
 import UserProfile from '../modals/UserProfile';
-import RepostButton from '../buttons/RepostButton';
 
 const PostActions: React.FC<PostActionsProps> = ({
   id,
@@ -26,6 +27,7 @@ const PostActions: React.FC<PostActionsProps> = ({
   bookmarksCount,
   privacy,
 }) => {
+  const { user } = useUser();
   return (
     <div className='flex flex-col items-center justify-end gap-4'>
       <UserProfile author={author} />
@@ -53,12 +55,9 @@ const PostActions: React.FC<PostActionsProps> = ({
         isParentPost
         canInteract
       />
-      <RepostButton
-        id={id}
-        authorId={author.id}
-        reposts={reposts}
-        repostsCount={repostsCount}
-      />
+      {user?.id !== author.id && (
+        <RepostButton id={id} reposts={reposts} repostsCount={repostsCount} />
+      )}
       <BookmarkButton
         bookmarkInfo={{
           id,

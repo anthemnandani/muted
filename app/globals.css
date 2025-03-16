@@ -211,6 +211,10 @@
   .navigator-btn {
     @apply flex-center size-12 rounded-full bg-white-13 hover:bg-white/20 transition-colors duration-300;
   }
+
+  .repost-banner {
+    @apply inline-flex items-center gap-1.5 mb-3 px-2.5 py-1 rounded-full cursor-pointer bg-black/20 backdrop-blur-[2px] border border-white/20 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.3)];
+  }
 }
 
 @layer utilities {

@@ -69,8 +69,8 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
         createdAt={createdAt}
         id={id}
         text={text}
-        repostedBy={repostedBy}
         reposts={reposts}
+        repostedBy={repostedBy}
       />
     </div>
   );

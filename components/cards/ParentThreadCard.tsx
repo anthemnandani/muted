@@ -79,11 +79,11 @@ const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
               canInteract={canInteract}
               isParentPost
             />
+
             <RepostButton
               id={postInfo.id}
               reposts={postInfo.reposts}
               repostsCount={postInfo.repostsCount ?? 0}
-              authorId={postInfo.author.id}
             />
 
             <BookmarkButton
@@ -94,6 +94,7 @@ const ParentThreadCard: React.FC<ParentThreadCardProps> = ({ postInfo }) => {
               }}
               // isParentPost
             />
+
             <CopyLinkButton
               postId={postInfo.id}
               username={postInfo.author.username}

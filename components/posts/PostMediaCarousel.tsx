@@ -49,10 +49,10 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                 author={author}
                 createdAt={createdAt}
                 text={text}
-                repostedBy={repostedBy}
                 reposts={reposts}
                 hideLikes={hideLikes}
                 pinned={pinned}
+                repostedBy={repostedBy}
               />
             ) : (
               <PostImageCard
@@ -61,11 +61,11 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                 author={author}
                 createdAt={createdAt}
                 id={postId}
-                repostedBy={repostedBy}
                 text={text}
                 reposts={reposts}
                 hideLikes={hideLikes}
                 pinned={pinned}
+                repostedBy={repostedBy}
               />
             )}
           </SwiperSlide>

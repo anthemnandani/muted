@@ -265,6 +265,11 @@ export interface RepostIndicatorProps {
   reposts: Repost[];
 }
 
+export interface RepostersDialogProps {
+  isRepostedByMe?: Repost;
+  reposts: Repost[];
+}
+
 export enum ThreadFilter {
   FOR_YOU = 'For you',
   FOLLOWING = 'Following',
@@ -294,7 +299,6 @@ export interface RepostButtonProps {
   id: string;
   reposts: Repost[];
   repostsCount: number;
-  authorId: string;
   // isCheckingPermissions: boolean;
   // canInteract: boolean;
 }
@@ -370,8 +374,8 @@ export interface PostFooterProps {
   createdAt: Date;
   id: string;
   text: string | null;
-  repostedBy?: AuthorInfoProps;
   reposts: Repost[];
+  repostedBy?: AuthorInfoProps;
 }
 
 export interface VideoContainerProps {
@@ -384,8 +388,8 @@ export interface VideoContainerProps {
   hideLikes: boolean;
   pinned: boolean;
   setInView: (inView: boolean) => void;
-  repostedBy?: AuthorInfoProps;
   reposts: Repost[];
+  repostedBy?: AuthorInfoProps;
 }
 
 export interface MediaControlsProps {
@@ -408,8 +412,8 @@ export interface PostImageCardProps {
   text: string | null;
   hideLikes: boolean;
   pinned: boolean;
-  repostedBy?: AuthorInfoProps;
   reposts: Repost[];
+  repostedBy?: AuthorInfoProps;
 }
 
 export interface PostVideoCardProps {
@@ -421,8 +425,8 @@ export interface PostVideoCardProps {
   text: string | null;
   hideLikes: boolean;
   pinned: boolean;
-  repostedBy?: AuthorInfoProps;
   reposts: Repost[];
+  repostedBy?: AuthorInfoProps;
 }
 
 export interface PostActionMenuProps {
@@ -443,8 +447,8 @@ export interface PostMediaCarouselProps {
   text: string | null;
   hideLikes: boolean;
   pinned: boolean;
-  repostedBy?: AuthorInfoProps;
   reposts: Repost[];
+  repostedBy?: AuthorInfoProps;
 }
 
 export interface ProfileVideoPlayerProps {

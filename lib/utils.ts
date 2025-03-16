@@ -47,7 +47,7 @@ export function formatTimeAgo(timestamp: Date): string {
   const weeksDiff = differenceInWeeks(now, timestamp);
 
   if (secondsDiff < 60) {
-    return 'now';
+    return 'Just now';
   } else if (minutesDiff < 60) {
     return minutesDiff === 1 ? '1m ago' : `${minutesDiff}m ago`;
   } else if (hoursDiff < 24) {

@@ -16,8 +16,8 @@ const PostCard: React.FC<PostCardProps> = ({
   bookmarks,
   bookmarksCount,
   reposts,
-  repostsCount,
   repostedBy,
+  repostsCount,
   privacy,
   mentions,
   linkPreview,
@@ -45,13 +45,13 @@ const PostCard: React.FC<PostCardProps> = ({
         <PostMediaCarousel
           media={media}
           author={author}
-          repostedBy={repostedBy}
           createdAt={createdAt}
           postId={id!}
           text={text}
           hideLikes={hideLikes}
           pinned={pinned}
           reposts={reposts}
+          repostedBy={repostedBy}
         />
         <PostActions
           id={id}

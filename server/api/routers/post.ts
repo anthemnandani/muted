@@ -259,7 +259,12 @@ export const postRouter = createTRPCRouter({
             ...GET_COUNT,
             ...GET_MENTIONS,
             ...GET_LINK_PREVIEW,
-            ...GET_REPOSTS,
+            reposts: {
+              ...GET_REPOSTS,
+              orderBy: {
+                createdAt: 'desc',
+              },
+            },
           },
         });
 
@@ -415,7 +420,12 @@ export const postRouter = createTRPCRouter({
           ...GET_LIKES,
           ...GET_BOOKMARKS,
           ...GET_COUNT,
-          ...GET_REPOSTS,
+          reposts: {
+            ...GET_REPOSTS,
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
         },
@@ -471,10 +481,15 @@ export const postRouter = createTRPCRouter({
           hideLikes: true,
           pinned: true,
           privacy: true,
+          reposts: {
+            ...GET_REPOSTS,
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
           ...getAuthorAndHiddenSelect(ctx.userId!),
           ...GET_LIKES,
           ...GET_BOOKMARKS,
-          ...GET_REPOSTS,
           ...GET_COUNT,
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
@@ -516,7 +531,12 @@ export const postRouter = createTRPCRouter({
           pinned: true,
           ...getAuthorAndHiddenSelect(ctx.userId!),
           ...GET_LIKES,
-          ...GET_REPOSTS,
+          reposts: {
+            ...GET_REPOSTS,
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
           ...GET_COUNT,
           ...GET_BOOKMARKS,
           ...GET_LINK_PREVIEW,
@@ -912,7 +932,12 @@ export const postRouter = createTRPCRouter({
                     },
                   },
                   ...GET_LIKES,
-                  ...GET_REPOSTS,
+                  reposts: {
+                    ...GET_REPOSTS,
+                    orderBy: {
+                      createdAt: 'desc',
+                    },
+                  },
                   ...GET_COUNT,
                   ...GET_BOOKMARKS,
                   ...GET_MENTIONS,
@@ -1025,7 +1050,12 @@ export const postRouter = createTRPCRouter({
                 },
               },
               ...GET_LIKES,
-              ...GET_REPOSTS,
+              reposts: {
+                ...GET_REPOSTS,
+                orderBy: {
+                  createdAt: 'desc',
+                },
+              },
               ...GET_COUNT,
               ...GET_BOOKMARKS,
               ...GET_MENTIONS,
@@ -1124,7 +1154,12 @@ export const postRouter = createTRPCRouter({
               ...GET_USER,
             },
           },
-          ...GET_REPOSTS,
+          reposts: {
+            ...GET_REPOSTS,
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
           ...GET_LIKES,
           ...GET_BOOKMARKS,
           ...GET_COUNT,
@@ -1245,7 +1280,12 @@ export const postRouter = createTRPCRouter({
           ...GET_LIKES,
           ...GET_BOOKMARKS,
           ...GET_COUNT,
-          ...GET_REPOSTS,
+          reposts: {
+            ...GET_REPOSTS,
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
         },

@@ -54,7 +54,12 @@ export const getPostNavigationData = async ({
         ...GET_LIKES,
         ...GET_BOOKMARKS,
         ...GET_COUNT,
-        ...GET_REPOSTS,
+        reposts: {
+          ...GET_REPOSTS,
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
         ...GET_MENTIONS,
         ...GET_LINK_PREVIEW,
       },
@@ -114,7 +119,12 @@ export const getLikedPosts = async (username: string) => {
             ...GET_LIKES,
             ...GET_BOOKMARKS,
             ...GET_COUNT,
-            ...GET_REPOSTS,
+            reposts: {
+              ...GET_REPOSTS,
+              orderBy: {
+                createdAt: 'desc',
+              },
+            },
             ...GET_MENTIONS,
             ...GET_LINK_PREVIEW,
           },
@@ -163,7 +173,12 @@ export const getPostById = async (id: string) => {
         ...GET_LIKES,
         ...GET_BOOKMARKS,
         ...GET_COUNT,
-        ...GET_REPOSTS,
+        reposts: {
+          ...GET_REPOSTS,
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
         ...GET_MENTIONS,
         ...GET_LINK_PREVIEW,
       },
