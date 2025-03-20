@@ -2,7 +2,7 @@
 
 import { PostVideoCardProps } from '@/lib/types';
 import useVideoPlayer from '@/store/videoPlayer';
-import React from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import Player from 'video.js/dist/types/player';
 import { VideoContainer } from '../shared/VideoContainer';
 import { VideoPlayer } from '../shared/VideoPlayer';
@@ -19,8 +19,8 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   pinned,
   repostedBy,
 }) => {
-  const [player, setPlayer] = React.useState<Player | null>(null);
-  const [inView, setInView] = React.useState(false);
+  const [player, setPlayer] = useState<Player | null>(null);
+  const [inView, setInView] = useState(false);
   const {
     currentlyPlaying,
     setCurrentlyPlaying,
@@ -30,12 +30,19 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
     setTimestamp,
   } = useVideoPlayer();
 
-  const isSafari = React.useMemo(() => {
+  const isSafari = useMemo(() => {
     if (typeof window === 'undefined') return false;
     return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   }, []);
 
-  const playerOptions = React.useMemo(
+  const sourceType = useMemo(() => {
+    if (isSafari) {
+      return 'application/vnd.apple.mpegurl';
+    }
+    return 'application/x-mpegURL';
+  }, [isSafari]);
+
+  const playerOptions = useMemo(
     () => ({
       controls: true,
       loop: true,
@@ -54,7 +61,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
         },
         children: ['progressControl'],
       },
-      sources: [{ src: video, type: 'application/x-mpegURL' }],
+      sources: [{ src: video, type: sourceType }],
       html5: {
         vhs: {
           overrideNative: !isSafari,
@@ -64,11 +71,16 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
         nativeAudioTracks: isSafari,
         nativeVideoTracks: isSafari,
       },
+      hls: {
+        debug: false,
+        enableLowInitialPlaylist: true,
+        manifestLoadingTimeOut: 10000,
+      },
     }),
     [video, isSafari]
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!player) return;
 
     if (inView) {
@@ -79,7 +91,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
     }
   }, [inView, player, postId, currentlyPlaying]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!player) return;
 
     if (currentlyPlaying !== postId && player.paused() === false) {
@@ -87,7 +99,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
     }
   }, [currentlyPlaying, player, postId]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!player) return;
 
     const handleVolumeChange = () => {
@@ -104,19 +116,19 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
     };
   }, [player, isMuted, setIsMuted]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (player && timestamps[postId]) {
       player.currentTime(timestamps[postId]);
     }
   }, [player]);
 
-  const handleTimeUpdate = React.useCallback(() => {
+  const handleTimeUpdate = useCallback(() => {
     if (player && inView) {
       setTimestamp(postId, player.currentTime() as number);
     }
   }, [postId, player, inView, setTimestamp]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!player) return;
 
     const handleVisibilityChange = () => {
