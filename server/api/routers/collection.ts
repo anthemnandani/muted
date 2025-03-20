@@ -1,6 +1,14 @@
 import { PostMedia } from '@/lib/types';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
-import { GET_USER } from '@/server/constants';
+import {
+  GET_BOOKMARKS,
+  GET_COUNT,
+  GET_LIKES,
+  GET_LINK_PREVIEW,
+  GET_MENTIONS,
+  GET_REPOSTS,
+  GET_USER,
+} from '@/server/constants';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
@@ -410,9 +418,32 @@ export const collectionRouter = createTRPCRouter({
               post: {
                 select: {
                   id: true,
-                  media: true,
-                  pinned: true,
                   createdAt: true,
+                  text: true,
+                  media: true,
+                  parentPostId: true,
+                  quoteId: true,
+                  path: true,
+                  repliesCount: true,
+                  hideLikes: true,
+                  pinned: true,
+                  privacy: true,
+                  author: {
+                    select: {
+                      ...GET_USER,
+                    },
+                  },
+                  ...GET_LIKES,
+                  ...GET_BOOKMARKS,
+                  ...GET_COUNT,
+                  reposts: {
+                    ...GET_REPOSTS,
+                    orderBy: {
+                      createdAt: 'desc',
+                    },
+                  },
+                  ...GET_MENTIONS,
+                  ...GET_LINK_PREVIEW,
                 },
               },
               user: {
@@ -436,10 +467,14 @@ export const collectionRouter = createTRPCRouter({
       }
 
       const posts = collection.bookmarks.map((bookmark) => ({
-        id: bookmark.post.id,
+        ...bookmark.post,
         media: bookmark.post.media as PostMedia[],
-        pinned: bookmark.post.pinned,
-        createdAt: bookmark.post.createdAt,
+        likesCount: bookmark.post._count.likes,
+        repostsCount: bookmark.post._count.reposts,
+        bookmarksCount: new Set(
+          bookmark.post.bookmarks.map((bookmark) => bookmark.userId)
+        ).size,
+        type: 'post' as const,
       }));
 
       posts.sort((a, b) => {

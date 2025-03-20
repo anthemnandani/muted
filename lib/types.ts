@@ -86,7 +86,7 @@ export type UserProfilePostsProps = {
 };
 
 export interface UserPostsListProps {
-  posts: UserProfilePostsProps[];
+  posts: ParentPostProps[];
   fetchNextPage: () => void;
   hasNextPage?: boolean;
   type?: NavigationType;
@@ -542,7 +542,7 @@ export interface PostNavigatorContextType {
   setPostNavigation: (index: number, total: number) => void;
 }
 
-export type NavigationType = 'post' | 'liked' | 'reposted';
+export type NavigationType = 'post' | 'liked' | 'repost';
 
 export interface PostInfoClientProps {
   id: string;

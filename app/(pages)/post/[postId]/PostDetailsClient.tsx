@@ -3,8 +3,8 @@
 import NotFound from '@/app/not-found';
 import PostCard from '@/components/cards/PostCard';
 import PostCardSkeleton from '@/components/skeletons/PostCardSkeleton';
+import useGetPostsByType from '@/hooks/useGetPostsByType';
 import usePostStore from '@/store/postStore';
-import { api } from '@/trpc/react';
 import { useEffect, useRef } from 'react';
 
 const PostDetailsClient = ({ postId }: { postId: string }) => {
@@ -14,6 +14,7 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
     currentIndex,
     currentPostId,
     profileUsername,
+    postType,
     setInitialized,
     setCurrentPostId,
     setCurrentIndex,
@@ -29,13 +30,11 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
     data: userPosts,
     isLoading: isLoadingPosts,
     isError,
-  } = api.user.getUserPosts.useQuery(
-    { username: profileUsername!, sortBy: selectedFilter },
-    {
-      enabled: !!profileUsername,
-      staleTime: 10 * 60 * 1000,
-    }
-  );
+  } = useGetPostsByType({
+    postType,
+    username: profileUsername!,
+    sortBy: selectedFilter,
+  });
 
   useEffect(() => {
     if (currentPostId !== postId && postId) {

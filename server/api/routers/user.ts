@@ -50,15 +50,33 @@ export const userRouter = createTRPCRouter({
                 ? [{ pinned: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }]
                 : [{ createdAt: 'asc' }, { id: 'asc' }],
             select: {
-              _count: {
-                select: {
-                  likes: true,
-                },
-              },
               id: true,
               createdAt: true,
+              text: true,
               media: true,
+              parentPostId: true,
+              quoteId: true,
+              path: true,
+              repliesCount: true,
+              hideLikes: true,
               pinned: true,
+              privacy: true,
+              author: {
+                select: {
+                  ...GET_USER,
+                },
+              },
+              ...GET_LIKES,
+              ...GET_BOOKMARKS,
+              ...GET_COUNT,
+              reposts: {
+                ...GET_REPOSTS,
+                orderBy: {
+                  createdAt: 'desc',
+                },
+              },
+              ...GET_MENTIONS,
+              ...GET_LINK_PREVIEW,
             },
           },
         },
@@ -97,9 +115,14 @@ export const userRouter = createTRPCRouter({
           followers: userProfileInfo.followers,
           following: userProfileInfo.following,
           posts: posts.map((post) => ({
-            id: post.id,
+            ...post,
             media: post.media as PostMedia[],
-            pinned: post.pinned,
+            likesCount: post._count.likes,
+            repostsCount: post._count.reposts,
+            bookmarksCount: new Set(
+              post.bookmarks.map((bookmark) => bookmark.userId)
+            ).size,
+            type: 'post' as const,
           })),
           totalLikes,
         },
@@ -172,6 +195,70 @@ export const userRouter = createTRPCRouter({
       }));
     }),
 
+  getUserRepostsFeed: privateProcedure
+    .input(z.object({ username: z.string() }))
+    .query(async ({ input: { username }, ctx }) => {
+      console.log(username);
+      const user = await ctx.db.user.findUnique({
+        where: { username },
+      });
+
+      if (!user) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const reposts = await ctx.db.repost.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+        select: {
+          post: {
+            select: {
+              id: true,
+              createdAt: true,
+              text: true,
+              media: true,
+              parentPostId: true,
+              quoteId: true,
+              path: true,
+              repliesCount: true,
+              hideLikes: true,
+              pinned: true,
+              privacy: true,
+              author: {
+                select: {
+                  ...GET_USER,
+                },
+              },
+              ...GET_LIKES,
+              ...GET_BOOKMARKS,
+              ...GET_COUNT,
+              reposts: {
+                ...GET_REPOSTS,
+                orderBy: {
+                  createdAt: 'desc',
+                },
+              },
+              ...GET_MENTIONS,
+              ...GET_LINK_PREVIEW,
+            },
+          },
+        },
+      });
+
+      const formattedReposts = reposts.map((repost) => ({
+        ...repost.post,
+        media: repost.post.media as PostMedia[],
+        likesCount: repost.post._count.likes,
+        repostsCount: repost.post._count.reposts,
+        bookmarksCount: new Set(
+          repost.post.bookmarks.map((bookmark) => bookmark.userId)
+        ).size,
+        type: 'post' as const,
+      }));
+
+      return formattedReposts;
+    }),
+
   getUserReposts: privateProcedure
     .input(
       z.object({
@@ -186,6 +273,7 @@ export const userRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { username, limit = 20, cursor }, ctx }) => {
+      console.log(username);
       const user = await ctx.db.user.findUnique({
         where: { username },
       });
@@ -205,14 +293,32 @@ export const userRouter = createTRPCRouter({
           post: {
             select: {
               id: true,
+              createdAt: true,
+              text: true,
+              media: true,
+              parentPostId: true,
+              quoteId: true,
+              path: true,
+              repliesCount: true,
+              hideLikes: true,
+              pinned: true,
+              privacy: true,
               author: {
                 select: {
                   ...GET_USER,
                 },
               },
-              createdAt: true,
-              media: true,
-              pinned: true,
+              ...GET_LIKES,
+              ...GET_BOOKMARKS,
+              ...GET_COUNT,
+              reposts: {
+                ...GET_REPOSTS,
+                orderBy: {
+                  createdAt: 'desc',
+                },
+              },
+              ...GET_MENTIONS,
+              ...GET_LINK_PREVIEW,
             },
           },
         },
@@ -221,7 +327,12 @@ export const userRouter = createTRPCRouter({
       const formattedReposts = reposts.map((repost) => ({
         ...repost.post,
         media: repost.post.media as PostMedia[],
-        pinned: repost.post.pinned,
+        likesCount: repost.post._count.likes,
+        repostsCount: repost.post._count.reposts,
+        bookmarksCount: new Set(
+          repost.post.bookmarks.map((bookmark) => bookmark.userId)
+        ).size,
+        type: 'post' as const,
       }));
 
       let nextCursor: typeof cursor | undefined;
@@ -238,6 +349,69 @@ export const userRouter = createTRPCRouter({
         posts: formattedReposts,
         nextCursor,
       };
+    }),
+
+  getUserLikedPostsFeed: privateProcedure
+    .input(z.object({ username: z.string() }))
+    .query(async ({ input: { username }, ctx }) => {
+      const user = await ctx.db.user.findUnique({
+        where: { username },
+      });
+      if (!user) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const likedPosts = await ctx.db.like.findMany({
+        where: {
+          userId: user.id,
+        },
+
+        select: {
+          post: {
+            select: {
+              id: true,
+              createdAt: true,
+              text: true,
+              media: true,
+              parentPostId: true,
+              quoteId: true,
+              path: true,
+              repliesCount: true,
+              hideLikes: true,
+              pinned: true,
+              privacy: true,
+              author: {
+                select: {
+                  ...GET_USER,
+                },
+              },
+              ...GET_LIKES,
+              ...GET_BOOKMARKS,
+              ...GET_COUNT,
+              reposts: {
+                ...GET_REPOSTS,
+                orderBy: {
+                  createdAt: 'desc',
+                },
+              },
+              ...GET_MENTIONS,
+              ...GET_LINK_PREVIEW,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      return likedPosts.map((likedPost) => ({
+        ...likedPost.post,
+        media: likedPost.post.media as PostMedia[],
+        likesCount: likedPost.post._count.likes,
+        repostsCount: likedPost.post._count.reposts,
+        bookmarksCount: new Set(
+          likedPost.post.bookmarks.map((bookmark) => bookmark.userId)
+        ).size,
+        type: 'post' as const,
+      }));
     }),
 
   getUserLikedPosts: privateProcedure
@@ -277,13 +451,31 @@ export const userRouter = createTRPCRouter({
             select: {
               id: true,
               createdAt: true,
+              text: true,
               media: true,
+              parentPostId: true,
+              quoteId: true,
+              path: true,
+              repliesCount: true,
+              hideLikes: true,
               pinned: true,
+              privacy: true,
               author: {
                 select: {
                   ...GET_USER,
                 },
               },
+              ...GET_LIKES,
+              ...GET_BOOKMARKS,
+              ...GET_COUNT,
+              reposts: {
+                ...GET_REPOSTS,
+                orderBy: {
+                  createdAt: 'desc',
+                },
+              },
+              ...GET_MENTIONS,
+              ...GET_LINK_PREVIEW,
             },
           },
         },
@@ -303,7 +495,12 @@ export const userRouter = createTRPCRouter({
         posts: likedPosts.map((likedPost) => ({
           ...likedPost.post,
           media: likedPost.post.media as PostMedia[],
-          pinned: likedPost.post.pinned,
+          likesCount: likedPost.post._count.likes,
+          repostsCount: likedPost.post._count.reposts,
+          bookmarksCount: new Set(
+            likedPost.post.bookmarks.map((bookmark) => bookmark.userId)
+          ).size,
+          type: 'post' as const,
         })),
         nextCursor,
       };

@@ -16,7 +16,7 @@ const UserPostsList = ({
       title: 'No liked posts yet',
       description: 'Posts you liked will appear here',
     },
-    reposted: {
+    repost: {
       title: 'No reposted posts yet',
       description: 'Posts you reposted will appear here',
     },
@@ -51,7 +51,7 @@ const UserPostsList = ({
         {posts.map((post, index) => (
           <UserPostCard
             key={post.id}
-            username={post.author?.username || username}
+            username={username}
             media={post.media}
             postId={post.id}
             pinned={post.pinned}

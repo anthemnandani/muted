@@ -32,7 +32,7 @@ const UserRepostsList = ({ username }: { username: string }) => {
       fetchNextPage={fetchNextPage}
       hasNextPage={hasNextPage}
       username={username}
-      type='reposted'
+      type='repost'
     />
   );
 };

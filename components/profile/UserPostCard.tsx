@@ -76,7 +76,7 @@ const UserPostCard = ({
     setCurrentPostId(postId);
     setCurrentIndex(index);
     setProfileUsername(username);
-    setPostType(type as 'post' | 'repost' | 'liked');
+    setPostType(type);
     router.push(`/post/${postId}`, { scroll: false });
   };
 
