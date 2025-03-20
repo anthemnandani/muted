@@ -3,10 +3,10 @@
 import useMediaControls from '@/hooks/useMediaControls';
 import { VideoContainerProps } from '@/lib/types';
 import React from 'react';
+import { useInView } from 'react-intersection-observer';
 import PostFooter from '../posts/PostFooter';
 import MediaControls from './MediaControls';
 import VolumeControls from './VolumeControls';
-import { useInView } from 'react-intersection-observer';
 
 export const VideoContainer: React.FC<VideoContainerProps> = ({
   children,

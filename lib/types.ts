@@ -488,6 +488,7 @@ export interface UserPostCardProps {
   pinned: boolean;
   username: string;
   type: NavigationType;
+  index: number;
 }
 
 export interface ProfileTabsHeaderProps {

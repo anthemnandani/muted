@@ -48,7 +48,7 @@ const UserPostsList = ({
       }
     >
       <div className='main-grid'>
-        {posts.map((post) => (
+        {posts.map((post, index) => (
           <UserPostCard
             key={post.id}
             username={post.author?.username || username}
@@ -56,6 +56,7 @@ const UserPostsList = ({
             postId={post.id}
             pinned={post.pinned}
             type={type}
+            index={index}
           />
         ))}
       </div>

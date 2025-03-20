@@ -1,6 +1,7 @@
 'use client';
 
 import type { UserPostCardProps } from '@/lib/types';
+import usePostStore from '@/store/postStore';
 import { useProfileVideoPlayer } from '@/store/profileVideoPlayer';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -14,11 +15,14 @@ const UserPostCard = ({
   postId,
   pinned,
   username,
+  index,
   type = 'post',
 }: UserPostCardProps) => {
   const [player, setPlayer] = React.useState<Player | null>(null);
   const router = useRouter();
   const { playingVideoId, setPlayingVideoId } = useProfileVideoPlayer();
+  const { setCurrentPostId, setCurrentIndex, setProfileUsername, setPostType } =
+    usePostStore();
   const videoId = postId;
   const isCarousel = media.length > 1;
   const mediaItem = media?.[0];
@@ -68,12 +72,18 @@ const UserPostCard = ({
     }, 1000);
   };
 
+  const handlePostClick = () => {
+    setCurrentPostId(postId);
+    setCurrentIndex(index);
+    setProfileUsername(username);
+    setPostType(type as 'post' | 'repost' | 'liked');
+    router.push(`/post/${postId}`, { scroll: false });
+  };
+
   return (
     <div
       className='relative max-w-[320px] aspect-[3/4] rounded-[4px] overflow-hidden flex-center bg-no-repeat bg-center bg-white-12 cursor-pointer'
-      onClick={() => {
-        router.push(`/@${username}/${type}/${postId}`, { scroll: false });
-      }}
+      onClick={handlePostClick}
       onMouseEnter={handleMouseEnter}
     >
       {isVideo ? (

@@ -107,6 +107,71 @@ export const userRouter = createTRPCRouter({
       };
     }),
 
+  getUserPosts: privateProcedure
+    .input(
+      z.object({
+        username: z.string(),
+        sortBy: z.enum(['LATEST', 'OLDEST']).optional().default('LATEST'),
+      })
+    )
+    .query(async ({ input: { username, sortBy }, ctx }) => {
+      const user = await ctx.db.user.findUnique({
+        where: { username },
+      });
+
+      if (!user) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const posts = await ctx.db.post.findMany({
+        where: { authorId: user.id },
+        orderBy:
+          sortBy === 'LATEST'
+            ? [{ pinned: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }]
+            : [{ createdAt: 'asc' }, { id: 'asc' }],
+        select: {
+          id: true,
+          createdAt: true,
+          text: true,
+          media: true,
+          parentPostId: true,
+          quoteId: true,
+          path: true,
+          repliesCount: true,
+          hideLikes: true,
+          pinned: true,
+          privacy: true,
+          author: {
+            select: {
+              ...GET_USER,
+            },
+          },
+          ...GET_LIKES,
+          ...GET_BOOKMARKS,
+          ...GET_COUNT,
+          reposts: {
+            ...GET_REPOSTS,
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
+          ...GET_MENTIONS,
+          ...GET_LINK_PREVIEW,
+        },
+      });
+
+      return posts.map((post) => ({
+        ...post,
+        media: post.media as PostMedia[],
+        likesCount: post._count.likes,
+        repostsCount: post._count.reposts,
+        bookmarksCount: new Set(
+          post.bookmarks.map((bookmark) => bookmark.userId)
+        ).size,
+        type: 'post' as const,
+      }));
+    }),
+
   getUserReposts: privateProcedure
     .input(
       z.object({

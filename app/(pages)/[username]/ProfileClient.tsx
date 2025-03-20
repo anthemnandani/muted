@@ -5,7 +5,7 @@ import UserProfile from '@/components/profile/UserProfile';
 import UserProfileContent from '@/components/profile/UserProfileContent';
 import ProfileHeaderSkeleton from '@/components/skeletons/ProfileHeaderSkeleton';
 import SkeletonGrid from '@/components/skeletons/SkeletonGrid';
-import { usePostStore } from '@/store/postStore';
+import usePostStore from '@/store/postStore';
 import useVideoPlayer from '@/store/videoPlayer';
 import { api } from '@/trpc/react';
 import React from 'react';

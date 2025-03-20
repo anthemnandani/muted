@@ -2,7 +2,7 @@ import { MediaTypeIndicatorProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Icons } from '../icons';
 import { Pin } from 'lucide-react';
-import { usePostStore } from '@/store/postStore';
+import usePostStore from '@/store/postStore';
 
 const MediaTypeIndicator = ({
   type,
