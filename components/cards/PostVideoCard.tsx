@@ -2,7 +2,7 @@
 
 import { PostVideoCardProps } from '@/lib/types';
 import useVideoPlayer from '@/store/videoPlayer';
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Player from 'video.js/dist/types/player';
 import { VideoContainer } from '../shared/VideoContainer';
 import { VideoPlayer } from '../shared/VideoPlayer';
@@ -30,17 +30,17 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
     setTimestamp,
   } = useVideoPlayer();
 
-  // const isSafari = useMemo(() => {
-  //   if (typeof window === 'undefined') return false;
-  //   return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  // }, []);
+  const isSafari = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  }, []);
 
-  // const sourceType = useMemo(() => {
-  //   if (isSafari) {
-  //     return 'application/vnd.apple.mpegurl';
-  //   }
-  //   return 'application/x-mpegURL';
-  // }, [isSafari]);
+  const sourceType = useMemo(() => {
+    if (isSafari) {
+      return 'application/vnd.apple.mpegurl';
+    }
+    return 'application/x-mpegURL';
+  }, [isSafari]);
 
   const playerOptions = useMemo(
     () => ({
@@ -61,15 +61,15 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
         },
         children: ['progressControl'],
       },
-      sources: [{ src: video, type: 'application/x-mpegURL' }],
+      sources: [{ src: video, type: sourceType }],
       html5: {
         vhs: {
-          overrideNative: false,
+          overrideNative: !isSafari,
           withCredentials: false,
         },
-        nativeTextTracks: true,
-        nativeAudioTracks: true,
-        nativeVideoTracks: true,
+        nativeTextTracks: isSafari,
+        nativeAudioTracks: isSafari,
+        nativeVideoTracks: isSafari,
       },
       hls: {
         debug: false,

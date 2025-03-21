@@ -198,7 +198,6 @@ export const userRouter = createTRPCRouter({
   getUserRepostsFeed: privateProcedure
     .input(z.object({ username: z.string() }))
     .query(async ({ input: { username }, ctx }) => {
-      console.log(username);
       const user = await ctx.db.user.findUnique({
         where: { username },
       });
@@ -273,7 +272,6 @@ export const userRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { username, limit = 20, cursor }, ctx }) => {
-      console.log(username);
       const user = await ctx.db.user.findUnique({
         where: { username },
       });

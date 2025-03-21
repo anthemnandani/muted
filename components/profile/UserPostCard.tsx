@@ -17,12 +17,18 @@ const UserPostCard = ({
   username,
   index,
   type = 'post',
+  collectionId = null,
 }: UserPostCardProps) => {
   const [player, setPlayer] = React.useState<Player | null>(null);
   const router = useRouter();
   const { playingVideoId, setPlayingVideoId } = useProfileVideoPlayer();
-  const { setCurrentPostId, setCurrentIndex, setProfileUsername, setPostType } =
-    usePostStore();
+  const {
+    setCurrentPostId,
+    setCurrentIndex,
+    setCollectionId,
+    setProfileUsername,
+    setPostType,
+  } = usePostStore();
   const videoId = postId;
   const isCarousel = media.length > 1;
   const mediaItem = media?.[0];
@@ -77,6 +83,10 @@ const UserPostCard = ({
     setCurrentIndex(index);
     setProfileUsername(username);
     setPostType(type);
+    if (type === 'collection' && collectionId) {
+      setCollectionId(collectionId);
+    }
+
     router.push(`/post/${postId}`, { scroll: false });
   };
 

@@ -19,6 +19,7 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
     setCurrentPostId,
     setCurrentIndex,
     selectedFilter,
+    collectionId,
   } = usePostStore();
 
   const isUpdatingUrlRef = useRef(false);
@@ -34,6 +35,7 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
     postType,
     username: profileUsername!,
     sortBy: selectedFilter,
+    collectionId,
   });
 
   useEffect(() => {

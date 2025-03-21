@@ -91,6 +91,7 @@ export interface UserPostsListProps {
   hasNextPage?: boolean;
   type?: NavigationType;
   username: string;
+  collectionId?: string | null;
 }
 
 export interface UserProfileContentProps extends UserPostsListProps {
@@ -489,6 +490,7 @@ export interface UserPostCardProps {
   username: string;
   type: NavigationType;
   index: number;
+  collectionId?: string | null;
 }
 
 export interface ProfileTabsHeaderProps {
@@ -542,7 +544,7 @@ export interface PostNavigatorContextType {
   setPostNavigation: (index: number, total: number) => void;
 }
 
-export type NavigationType = 'post' | 'liked' | 'repost';
+export type NavigationType = 'post' | 'liked' | 'repost' | 'collection';
 
 export interface PostInfoClientProps {
   id: string;

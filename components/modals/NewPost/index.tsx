@@ -1,6 +1,5 @@
 'use client';
 
-import CreateThreadDesktop from '@/components/buttons/CreateThreadDesktop';
 import CreateThreadMobile from '@/components/buttons/CreateThreadMobile';
 import { Icons } from '@/components/icons';
 import { Card } from '@/components/ui/card';
@@ -77,7 +76,6 @@ const NewPost = () => {
             <div className='hidden md:flex relative w-15 h-12 flex-center rounded-xl bg-primary transition-colors duration-150 border-none text-secondary hover:text-foreground'>
               <Icons.plus className='size-6' />
             </div>
-            <CreateThreadDesktop />
           </React.Fragment>
         )}
       </DialogTrigger>

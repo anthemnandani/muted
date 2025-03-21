@@ -506,4 +506,94 @@ export const collectionRouter = createTRPCRouter({
         nextCursor,
       };
     }),
+
+  getCollectionPosts: privateProcedure
+    .input(
+      z.object({
+        id: z.string().nullable(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      if (!input.id) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Collection ID is required',
+        });
+      }
+
+      const collection = await ctx.db.collection.findUnique({
+        where: {
+          id: input.id,
+        },
+        select: {
+          id: true,
+          user: {
+            select: {
+              username: true,
+            },
+          },
+          bookmarks: {
+            orderBy: {
+              createdAt: 'desc',
+            },
+            select: {
+              post: {
+                select: {
+                  id: true,
+                  createdAt: true,
+                  text: true,
+                  media: true,
+                  parentPostId: true,
+                  quoteId: true,
+                  path: true,
+                  repliesCount: true,
+                  hideLikes: true,
+                  pinned: true,
+                  privacy: true,
+                  author: {
+                    select: {
+                      ...GET_USER,
+                    },
+                  },
+                  ...GET_LIKES,
+                  ...GET_BOOKMARKS,
+                  ...GET_COUNT,
+                  reposts: {
+                    ...GET_REPOSTS,
+                    orderBy: {
+                      createdAt: 'desc',
+                    },
+                  },
+                  ...GET_MENTIONS,
+                  ...GET_LINK_PREVIEW,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!collection) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const posts = collection.bookmarks.map((bookmark) => ({
+        ...bookmark.post,
+        media: bookmark.post.media as PostMedia[],
+        likesCount: bookmark.post._count.likes,
+        repostsCount: bookmark.post._count.reposts,
+        bookmarksCount: new Set(
+          bookmark.post.bookmarks.map((bookmark) => bookmark.userId)
+        ).size,
+        type: 'post' as const,
+      }));
+
+      posts.sort((a, b) => {
+        if (a.pinned && !b.pinned) return -1;
+        if (!a.pinned && b.pinned) return 1;
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      });
+
+      return posts;
+    }),
 });

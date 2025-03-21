@@ -10,6 +10,7 @@ const UserPostsList = ({
   fetchNextPage,
   hasNextPage,
   type = 'post',
+  collectionId = null,
 }: UserPostsListProps) => {
   const EMPTY_STATE_CONFIG = {
     liked: {
@@ -19,6 +20,10 @@ const UserPostsList = ({
     repost: {
       title: 'No reposted posts yet',
       description: 'Posts you reposted will appear here',
+    },
+    collection: {
+      title: 'No posts in the collection yet',
+      description: 'Add posts in the collection to see them here',
     },
     post: {
       title: 'Upload your first post',
@@ -57,6 +62,7 @@ const UserPostsList = ({
             pinned={post.pinned}
             type={type}
             index={index}
+            collectionId={collectionId}
           />
         ))}
       </div>

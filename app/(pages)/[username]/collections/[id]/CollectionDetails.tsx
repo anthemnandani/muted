@@ -41,6 +41,8 @@ const CollectionDetails = ({ id }: { id: string }) => {
             posts={allPosts!}
             fetchNextPage={fetchNextPage}
             hasNextPage={hasNextPage}
+            type='collection'
+            collectionId={id}
           />
         </React.Fragment>
       )}

@@ -5,12 +5,14 @@ interface UseGetPostsByTypeProps {
   postType: string;
   username: string;
   sortBy: ProfileFilter;
+  collectionId: string | null;
 }
 
 const useGetPostsByType = ({
   postType,
   username,
   sortBy,
+  collectionId,
 }: UseGetPostsByTypeProps) => {
   const regularPostsQuery = api.user.getUserPosts.useQuery(
     { username, sortBy },
@@ -36,6 +38,14 @@ const useGetPostsByType = ({
     }
   );
 
+  const collectionPostsQuery = api.collection.getCollectionPosts.useQuery(
+    { id: collectionId },
+    {
+      enabled: !!collectionId && postType === 'collection',
+      staleTime: 10 * 60 * 1000,
+    }
+  );
+
   if (postType === 'liked') {
     return {
       data: likedPostsQuery.data || [],
@@ -47,6 +57,12 @@ const useGetPostsByType = ({
       data: repostsQuery.data || [],
       isLoading: repostsQuery.isLoading,
       isError: repostsQuery.isError,
+    };
+  } else if (postType === 'collection') {
+    return {
+      data: collectionPostsQuery.data || [],
+      isLoading: collectionPostsQuery.isLoading,
+      isError: collectionPostsQuery.isError,
     };
   } else {
     return {

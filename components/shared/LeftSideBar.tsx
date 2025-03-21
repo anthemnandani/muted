@@ -2,7 +2,6 @@
 import useDevice from '@/hooks/useDevice';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Icons } from '../icons';
 import UserMenu from '../menus/UserMenu';
 import Navigation from './Navigation';
 
@@ -24,7 +23,6 @@ const LeftSideBar = () => {
           <Navigation />
         </ul>
         <div className='flex flex-col items-center gap-8 mt-[15px] mb-10'>
-          <Icons.pin className='menu-icon w-[26px] h-[26px]' />
           <UserMenu />
         </div>
       </section>
