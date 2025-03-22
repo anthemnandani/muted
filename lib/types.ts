@@ -254,6 +254,8 @@ export interface PostActionsProps {
     index: number;
   }>;
   hideLikes: boolean;
+  onCommentsToggle: () => void;
+  isCommentsOpen: boolean;
 }
 
 export interface RepostIndicatorProps {

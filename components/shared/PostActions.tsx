@@ -26,6 +26,8 @@ const PostActions: React.FC<PostActionsProps> = ({
   bookmarks,
   bookmarksCount,
   privacy,
+  onCommentsToggle,
+  isCommentsOpen,
 }) => {
   const { user } = useUser();
   return (
@@ -54,6 +56,8 @@ const PostActions: React.FC<PostActionsProps> = ({
         repliesCount={repliesCount}
         isParentPost
         canInteract
+        onCommentsToggle={onCommentsToggle}
+        isCommentsOpen={isCommentsOpen}
       />
       {user?.id !== author.id && (
         <RepostButton id={id} reposts={reposts} repostsCount={repostsCount} />
