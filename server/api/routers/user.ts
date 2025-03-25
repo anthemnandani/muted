@@ -10,6 +10,7 @@ import {
   GET_USER,
   getAuthorAndHiddenSelect,
 } from '@/server/constants';
+import { clerkClient } from '@clerk/nextjs/server';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '../trpc';
@@ -751,6 +752,19 @@ export const userRouter = createTRPCRouter({
           privacy,
         },
       });
+
+      if (image && image !== dbUser.image) {
+        try {
+          const imageResponse = await fetch(image);
+          const imageBlob = await imageResponse.blob();
+
+          await clerkClient.users.updateUserProfileImage(dbUser.id, {
+            file: imageBlob,
+          });
+        } catch (error) {
+          console.error('Failed to update Clerk profile image:', error);
+        }
+      }
 
       return {
         updatedUser,

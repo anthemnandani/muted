@@ -20,7 +20,6 @@ const CreatePost = () => {
   const {
     openDialog,
     setOpenDialog,
-    replyPostInfo,
     quoteInfo,
     editPostInfo,
     mentions,
@@ -34,14 +33,8 @@ const CreatePost = () => {
   //   mentions: replyPostInfo?.mentions!,
   // });
 
-  const {
-    postData,
-    setPostData,
-    isLoading,
-    isReplying,
-    isEditing,
-    handleMutation,
-  } = useCreatePost(setMentions);
+  const { postData, setPostData, isLoading, isEditing, handleMutation } =
+    useCreatePost(setMentions);
 
   const { isLinkPreviewLoading } = useLinkPreview(postData?.text, setPostData);
 
@@ -64,7 +57,7 @@ const CreatePost = () => {
           <div>
             <Icons.loading className='size-8' />
           </div>
-          {isEdit ? 'Editing...' : replyPostInfo ? 'Replying...' : 'Posting...'}
+          {isEdit ? 'Editing...' : 'Posting...'}
         </div>
       ),
       success: (data) => {
@@ -110,31 +103,14 @@ const CreatePost = () => {
           (postData.linkPreview || isLinkPreviewLoading) && '!pb-4'
         )}
       >
-        {replyPostInfo && (
-          <CreatePostInput
-            isOpen={openDialog}
-            onTextareaChange={handleFieldChange}
-            replyPostInfo={replyPostInfo}
-            textareaRef={textareaRef}
-            value={postData.text}
-            setPostData={setPostData}
-            handleMentionSearch={handleMentionSearch}
-            isReply
-          />
-        )}
         <CreatePostInput
           isOpen={openDialog}
           onTextareaChange={handleFieldChange}
           quoteInfo={quoteInfo}
-          placeholder={
-            replyPostInfo
-              ? `Reply to ${replyPostInfo?.author?.username}...`
-              : 'Write a caption...'
-          }
+          placeholder='Write a caption...'
           textareaRef={textareaRef}
           value={postData.text}
           setPostData={setPostData}
-          isReply={!!replyPostInfo?.text || !!replyPostInfo?.media}
           handleMentionSearch={handleMentionSearch}
         />
       </div>
@@ -170,11 +146,9 @@ const CreatePost = () => {
           onClick={() => handleSubmit(!!editPostInfo)}
           variant='ghost'
           className='bg-transparent border border-border-dark dark:border-border-light rounded-lg text-[14px] leading-none flex-center hover:bg-transparent dark:hover:bg-transparent disabled:cursor-not-allowed disabled:pointer-events-auto'
-          disabled={
-            postData?.text === '' || isLoading || isReplying || isEditing
-          }
+          disabled={postData?.text === '' || isLoading || isEditing}
         >
-          {(isLoading || isReplying) && (
+          {(isLoading || isEditing) && (
             <Icons.spinner
               className='mr-2 size-4 animate-spin'
               aria-hidden='true'

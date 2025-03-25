@@ -30,7 +30,7 @@ const UserPostCard = ({
     setPostType,
   } = usePostStore();
   const videoId = postId;
-  const isCarousel = media.length > 1;
+  const isCarousel = media?.length > 1;
   const mediaItem = media?.[0];
   if (!mediaItem) return null;
 

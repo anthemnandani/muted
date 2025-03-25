@@ -239,23 +239,18 @@ export interface PostActionsProps {
   privacy: PostPrivacy;
   likesCount: number;
   likes: { userId: string }[];
-  text: string | null;
   author: AuthorInfoProps;
-  createdAt: Date;
   repliesCount: number;
   reposts: Repost[];
   repostsCount: number;
   bookmarks: { userId: string; collection: { isDefault: boolean } }[];
   bookmarksCount: number;
-  media: PostMedia[];
-  linkPreview: LinkPreview | null;
   mentions: Array<{
     user: AuthorInfoProps;
     index: number;
   }>;
   hideLikes: boolean;
   onCommentsToggle: () => void;
-  isCommentsOpen: boolean;
 }
 
 export interface RepostIndicatorProps {
@@ -560,3 +555,18 @@ export interface NavigationButtonsProps {
   handleNavigation: (direction: 'up' | 'down') => void;
   isLoading?: boolean;
 }
+
+export interface CommentsProps {
+  postId: string;
+  onClose: () => void;
+  authorId: string;
+  isOpen: boolean;
+}
+
+export type Comment = {
+  id: string;
+  text: string;
+  likesCount: number;
+  author: AuthorInfoProps;
+  createdAt: Date;
+};

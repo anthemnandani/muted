@@ -7,8 +7,6 @@ interface ToggleState {
   setOpenDialog: (open: boolean) => void;
   postData: PostData;
   setPostData: (post: PostData) => void;
-  replyPostInfo: ReplyPostInfo | null;
-  setReplyPostInfo: (reply: ReplyPostInfo | null) => void;
   quoteInfo: ParentPostInfo | null;
   setQuoteInfo: (quote: ParentPostInfo | null) => void;
   editPostInfo: { id: string; text: string } | null;
@@ -36,8 +34,6 @@ const usePostDialog = create<ToggleState>((set) => ({
     linkPreview: null,
   },
   setPostData: (post) => set({ postData: post }),
-  replyPostInfo: null,
-  setReplyPostInfo: (reply) => set({ replyPostInfo: reply }),
   quoteInfo: null,
   setQuoteInfo: (quote) => set({ quoteInfo: quote }),
   editPostInfo: null,
@@ -52,7 +48,6 @@ const usePostDialog = create<ToggleState>((set) => ({
   setMentions: (mentions) => set({ mentions }),
   resetPostState: () =>
     set({
-      replyPostInfo: null,
       quoteInfo: null,
       editPostInfo: null,
       currentMediaIndex: 0,

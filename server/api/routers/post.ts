@@ -301,16 +301,10 @@ export const postRouter = createTRPCRouter({
       z.object({
         postAuthor: z.string(),
         postId: z.string(),
-        text: z.string().min(3, {
-          message: 'Text must be at least 3 characters',
+        text: z.string().min(1, {
+          message: 'Comment cannot be empty',
         }),
-        media: z
-          .object({
-            fileType: z.string(),
-            fileUrl: z.string(),
-          })
-          .optional(),
-        privacy: z.nativeEnum(PostPrivacy),
+        // privacy: z.nativeEnum(PostPrivacy),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -356,8 +350,6 @@ export const postRouter = createTRPCRouter({
           data: {
             id: postId,
             text: filteredText,
-            media: input.media,
-            privacy: input.privacy,
             authorId: userId,
             parentPostId: input.postId,
             path,

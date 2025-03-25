@@ -13,21 +13,14 @@ const PostActions: React.FC<PostActionsProps> = ({
   id,
   likesCount,
   likes,
-  text,
   author,
-  createdAt,
   repliesCount,
   hideLikes,
-  media,
   reposts,
   repostsCount,
-  linkPreview,
-  mentions,
   bookmarks,
   bookmarksCount,
-  privacy,
   onCommentsToggle,
-  isCommentsOpen,
 }) => {
   const { user } = useUser();
   return (
@@ -43,21 +36,9 @@ const PostActions: React.FC<PostActionsProps> = ({
         isParentPost
       />
       <ReplyButton
-        replyThreadInfo={{
-          id,
-          text,
-          media,
-          author,
-          createdAt,
-          privacy,
-          mentions,
-          linkPreview,
-        }}
         repliesCount={repliesCount}
-        isParentPost
         canInteract
         onCommentsToggle={onCommentsToggle}
-        isCommentsOpen={isCommentsOpen}
       />
       {user?.id !== author.id && (
         <RepostButton id={id} reposts={reposts} repostsCount={repostsCount} />

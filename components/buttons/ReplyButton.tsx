@@ -1,24 +1,17 @@
-import type { ReplyPostInfo } from '@/lib/types';
 import React from 'react';
 import { toast } from 'sonner';
 import { Icons } from '../icons';
 
 interface ReplyButtonProps {
-  replyThreadInfo: ReplyPostInfo;
   repliesCount: number;
-  isParentPost?: boolean;
   canInteract: boolean;
   onCommentsToggle: () => void;
-  isCommentsOpen: boolean;
 }
 
 const ReplyButton: React.FC<ReplyButtonProps> = ({
-  replyThreadInfo,
   repliesCount,
-  isParentPost,
   canInteract,
   onCommentsToggle,
-  isCommentsOpen,
 }) => {
   const handleReplyClick = () => {
     if (!canInteract) return toast.error('You cannot reply to this post');
@@ -35,7 +28,7 @@ const ReplyButton: React.FC<ReplyButtonProps> = ({
       >
         <Icons.comment className='size-5' fill='#fff' />
       </button>
-      {repliesCount > 0 && !isParentPost && (
+      {repliesCount > 0 && (
         <strong className='text-[13px] leading-4 text-center'>
           {repliesCount}
         </strong>

@@ -8,7 +8,6 @@ import useFileStore from '@/store/fileStore';
 import usePost from '@/store/post';
 import usePostDialog from '@/store/postDialog';
 import { api } from '@/trpc/react';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useBunnyUpload } from './useBunnyUpload';
@@ -16,12 +15,10 @@ import { useBunnyUpload } from './useBunnyUpload';
 const useCreatePost = (
   setMentions?: (mentions: Array<{ userId: string; index: number }>) => void
 ) => {
-  const router = useRouter();
   const { postPrivacy } = usePost();
   const { mediaFiles, setMediaFiles } = useFileStore();
   const { uploadToStorage, uploadToStream } = useBunnyUpload();
-  const { replyPostInfo, quoteInfo, editPostInfo, resetPostState } =
-    usePostDialog();
+  const { quoteInfo, editPostInfo, resetPostState } = usePostDialog();
 
   const [postData, setPostData] = useState<PostData>({
     privacy: postPrivacy,
@@ -76,20 +73,6 @@ const useCreatePost = (
       onSettled: async () => {
         await trpcUtils.invalidate();
       },
-    });
-
-  const { isLoading: isReplying, mutateAsync: replyToPost } =
-    api.post.replyToPost.useMutation({
-      onError: (err) => {
-        toast.error('ReplyingError: Something went wrong!');
-        if (err.data?.code === 'UNAUTHORIZED') {
-          router.push('/sign-in');
-        }
-      },
-      onSettled: async () => {
-        await trpcUtils.invalidate();
-      },
-      retry: false,
     });
 
   const handleMediaUpload = async () => {
@@ -167,14 +150,7 @@ const useCreatePost = (
       return Promise.reject(new Error('Media upload failed'));
     }
 
-    const promise = replyPostInfo
-      ? replyToPost({
-          text: postData.text.trim(),
-          postId: replyPostInfo.id,
-          privacy: postData.privacy,
-          postAuthor: replyPostInfo.author.id,
-        })
-      : editPostInfo
+    const promise = editPostInfo
       ? editPost({
           id: editPostInfo.id,
           text: postData.text.trim(),
@@ -197,7 +173,6 @@ const useCreatePost = (
     postData,
     setPostData,
     isLoading,
-    isReplying,
     handleMutation,
     isEditing,
   };

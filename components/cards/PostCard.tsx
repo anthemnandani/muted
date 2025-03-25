@@ -1,10 +1,13 @@
 'use client';
 
 import { PostCardProps } from '@/lib/types';
-import { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
+import useCommentPanelStore from '@/store/commentPanel';
+import { useEffect } from 'react';
+import { useInView } from 'react-intersection-observer';
+import CommentsPanel from '../comments/CommentsPanel';
 import PostMediaCarousel from '../posts/PostMediaCarousel';
 import PostActions from '../shared/PostActions';
-import CommentsPanel from '../comments/CommentsPanel';
 
 const PostCard: React.FC<PostCardProps> = ({
   media,
@@ -21,38 +24,54 @@ const PostCard: React.FC<PostCardProps> = ({
   repostsCount,
   privacy,
   mentions,
-  linkPreview,
   hideLikes,
   likesCount,
   pinned,
-  index,
-  totalPosts,
 }) => {
-  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const {
+    isPanelOpen,
+    openPanel,
+    closePanel,
+    currentPostId,
+    updateCurrentPost,
+    isShowingPost,
+  } = useCommentPanelStore();
 
-  // Function to toggle comments panel
+  const { ref: postRef, inView } = useInView({
+    threshold: 0.5,
+  });
+
+  useEffect(() => {
+    if (inView && isPanelOpen) {
+      updateCurrentPost(id);
+    }
+  }, [inView, isPanelOpen, id]);
+
   const toggleComments = () => {
-    setIsCommentsOpen(!isCommentsOpen);
-
-    // Add body lock to prevent scrolling when comments are open
-    if (isCommentsOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
+    if (isShowingPost(id)) {
+      closePanel();
       document.body.style.overflow = '';
+    } else {
+      openPanel(id);
+      document.body.style.overflow = 'hidden';
     }
   };
 
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
+
   return (
-    <div className='h-screen flex-center relative'>
-      {/* Main post content */}
+    <div className='h-screen flex-center relative' ref={postRef}>
       <div
-        className='flex justify-center items-end gap-4'
-        style={{
-          transform: isCommentsOpen ? 'translateX(-200px)' : 'translateX(0)',
-          transition: 'transform 0.5s ease',
-          position: 'relative',
-          zIndex: 10,
-        }}
+        className={cn(
+          'flex justify-center items-end gap-4',
+          'transform transition-transform duration-300 ease-in-out',
+          'relative z-10',
+          isPanelOpen ? 'translate-x-[-200px]' : 'translate-x-0'
+        )}
       >
         <PostMediaCarousel
           media={media}
@@ -69,50 +88,35 @@ const PostCard: React.FC<PostCardProps> = ({
           id={id}
           likesCount={likesCount ?? 0}
           likes={likes}
-          text={text}
           author={author}
-          createdAt={createdAt}
           repliesCount={repliesCount ?? 0}
           repostsCount={repostsCount ?? 0}
           reposts={reposts}
-          media={media}
-          linkPreview={linkPreview}
           mentions={mentions}
           hideLikes={hideLikes}
           bookmarksCount={bookmarksCount ?? 0}
           bookmarks={bookmarks}
           privacy={privacy}
           onCommentsToggle={toggleComments}
-          isCommentsOpen={isCommentsOpen}
         />
       </div>
 
-      {/* Comments panel - simple fixed position */}
-      {isCommentsOpen && (
+      {isPanelOpen && currentPostId === id && (
         <div
-          style={{
-            position: 'fixed',
-            top: '50%',
-            right: '50px',
-            width: '480px',
-            height: 'calc(100vh - 2rem)',
-            maxHeight: '100vh',
-            backgroundColor: '#000',
-            zIndex: 50,
-            transform: `translate(${isCommentsOpen ? '0' : '100%'}, -50%)`,
-            transition: 'transform 0.25s ease-in-out',
-            boxShadow: isCommentsOpen
-              ? '-2px 0 10px rgba(0, 0, 0, 0.5)'
-              : 'none',
-            visibility: isCommentsOpen ? 'visible' : 'hidden',
-            opacity: isCommentsOpen ? 1 : 0,
-            borderRadius: '8px',
-          }}
+          className={cn(
+            'fixed top-1/2 right-20 w-[480px] h-[calc(100vh-2rem)] z-50',
+            'transform -translate-y-1/2',
+            'shadow-lg'
+          )}
         >
           <CommentsPanel
-            postId={id!}
-            isOpen={isCommentsOpen}
-            onClose={toggleComments}
+            postId={id}
+            onClose={() => {
+              closePanel();
+              document.body.style.overflow = '';
+            }}
+            authorId={author.id}
+            isOpen={isPanelOpen}
           />
         </div>
       )}

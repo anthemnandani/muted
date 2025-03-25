@@ -69,6 +69,19 @@ const UploadPicture = () => {
     fileInputRef.current?.click();
   };
 
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const imageUrl = event.target?.result?.toString() || '';
+        setProfilePic(imageUrl);
+        setProfileFile(file);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -122,14 +135,14 @@ const UploadPicture = () => {
           Remove current picture
         </DropdownMenuItem>
       </DropdownMenuContent>
-      {/* <input
+      <input
         title='File Input'
         type='file'
         ref={fileInputRef}
         accept='image/*'
         className='hidden'
         onChange={handleImageChange}
-      /> */}
+      />
     </DropdownMenu>
   );
 };
