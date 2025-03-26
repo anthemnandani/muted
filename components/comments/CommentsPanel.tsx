@@ -4,11 +4,11 @@ import useGetComments from '@/hooks/useGetComments';
 import { CommentsProps } from '@/lib/types';
 import useAddCommentStore from '@/store/addComment';
 import useCommentPanelStore from '@/store/commentPanel';
-import { SlidersHorizontal, X } from 'lucide-react';
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import InfiniteScroll from 'react-infinite-scroll-component';
 import { Icons } from '../icons';
-import Loader from '../shared/Loader';
-import { ScrollArea } from '../ui/scroll-area';
+import CommentCardSkeleton from '../skeletons/CommentCardSkeleton';
 import AddComment from './AddComment';
 import CommentCard from './CommentCard';
 
@@ -17,6 +17,7 @@ const CommentsPanel: React.FC<CommentsProps> = ({
   onClose,
   authorId,
   isOpen,
+  repliesCount,
 }) => {
   const [isSwitchingPost, setIsSwitchingPost] = useState(false);
   const prevPostIdRef = useRef(postId);
@@ -28,9 +29,11 @@ const CommentsPanel: React.FC<CommentsProps> = ({
     }
   }, [postId]);
 
-  const { allReplies, isLoading, hasNextPage, fetchNextPage } = useGetComments({
-    postId,
-  });
+  const { allComments, isLoading, hasNextPage, fetchNextPage } = useGetComments(
+    {
+      postId,
+    }
+  );
 
   useEffect(() => {
     if (!isLoading && isSwitchingPost) {
@@ -68,39 +71,26 @@ const CommentsPanel: React.FC<CommentsProps> = ({
     }
   }, [postId, isLoading, isSwitchingPost, getScrollPosition]);
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const scrollContainer = e.currentTarget;
-    const scrollPosition = scrollContainer.scrollTop;
-    const scrollHeight = scrollContainer.scrollHeight;
-    const clientHeight = scrollContainer.clientHeight;
-
-    if (postId) {
-      setScrollPosition(postId, scrollPosition);
-    }
-
-    if (
-      scrollHeight - scrollPosition - clientHeight < 200 &&
-      hasNextPage &&
-      !isLoading
-    ) {
-      fetchNextPage();
-    }
-  };
-
   const showLoader = isLoading || isSwitchingPost;
 
+  const renderSkeletons = () => {
+    return Array(7)
+      .fill(0)
+      .map((_, index) => <CommentCardSkeleton key={`skeleton-${index}`} />);
+  };
+
   return (
-    <div className='flex flex-col h-full bg-[#101010D9] border border-border-light rounded-2xl'>
-      <div className='flex justify-between items-center px-4 py-3 border-b border-border-light'>
+    <div className='h-full bg-[#101010D9] border border-border-light rounded-2xl'>
+      <div className='flex-between px-4 py-3 border-b border-border-light'>
         <div className='flex items-center gap-2'>
-          <h2 className='text-lg font-semibold text-white'>Comments</h2>
-          {!showLoader && (
-            <span className='text-gray-400 text-sm'>{allReplies.length}</span>
-          )}
+          <h2 className='text-lg font-semibold text-white'>
+            Comment{repliesCount === 1 ? '' : 's'}
+          </h2>
+          <span className='text-gray-400 text-sm'>{repliesCount}</span>
         </div>
         <div className='flex items-center gap-3'>
           <button className='text-gray-400'>
-            <SlidersHorizontal className='size-5' />
+            <Icons.filter />
           </button>
           <button className='text-gray-400' onClick={onClose}>
             <X className='size-5' />
@@ -108,21 +98,30 @@ const CommentsPanel: React.FC<CommentsProps> = ({
         </div>
       </div>
 
-      {showLoader ? (
-        <div className='flex-center h-full'>
-          <Loader />
-        </div>
-      ) : (
-        <ScrollArea
-          className='flex-1 max-h-[calc(90vh-80px)]'
-          onScroll={handleScroll}
-          ref={scrollRef}
-        >
-          {allReplies.length === 0 ? (
-            <p className='text-center text-gray-400 py-8'>No comments yet</p>
-          ) : (
-            <Fragment>
-              {allReplies.map((comment) => (
+      <div
+        ref={scrollRef}
+        id='scrollableDiv'
+        className='h-full overflow-y-auto flex flex-col hide-scrollbar'
+        style={{ height: 'calc(90vh - 80px)' }}
+      >
+        {showLoader ? (
+          <div className='w-full'>{renderSkeletons()}</div>
+        ) : (
+          <InfiniteScroll
+            dataLength={allComments.length}
+            next={fetchNextPage}
+            hasMore={!!hasNextPage}
+            loader={
+              <div className='w-full flex-center py-4'>
+                <Icons.loading className='size-8' />
+              </div>
+            }
+            scrollableTarget='scrollableDiv'
+          >
+            {allComments.length === 0 ? (
+              <p className='text-center text-gray-400 py-8'>No comments yet</p>
+            ) : (
+              allComments.map((comment) => (
                 <CommentCard
                   key={comment.id}
                   comment={{
@@ -133,16 +132,11 @@ const CommentsPanel: React.FC<CommentsProps> = ({
                     likesCount: comment.likesCount,
                   }}
                 />
-              ))}
-              {hasNextPage && (
-                <div className='py-4 flex justify-center'>
-                  <Icons.loading className='size-8' />
-                </div>
-              )}
-            </Fragment>
-          )}
-        </ScrollArea>
-      )}
+              ))
+            )}
+          </InfiniteScroll>
+        )}
+      </div>
 
       <AddComment postId={postId} authorId={authorId} />
     </div>

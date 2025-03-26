@@ -441,7 +441,7 @@ export const postRouter = createTRPCRouter({
       };
     }),
 
-  getNestedPosts: publicProcedure
+  getComments: publicProcedure
     .input(
       z.object({
         id: z.string(),
@@ -457,10 +457,13 @@ export const postRouter = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       const { id, limit, cursor } = input;
 
-      const post = await ctx.db.post.findUnique({
+      const comments = await ctx.db.post.findMany({
         where: {
-          id,
+          parentPostId: id,
         },
+        take: limit + 1,
+        skip: 0,
+        cursor: cursor ? { id: cursor.id } : undefined,
         select: {
           id: true,
           createdAt: true,
@@ -486,111 +489,34 @@ export const postRouter = createTRPCRouter({
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
         },
+        orderBy: { createdAt: 'desc' },
       });
 
-      if (!post) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Post not found' });
-      }
-
-      const replies = await ctx.db.post.findMany({
-        where: {
-          path: {
-            startsWith: `${post.path}`,
-          },
-          id: {
-            not: post.id,
-          },
-        },
-        take: limit + 1,
-        cursor: cursor ? { id: cursor.id } : undefined,
-        select: {
-          id: true,
-          text: true,
-          createdAt: true,
-          media: true,
-          parentPostId: true,
-          parentPost: {
-            select: {
-              id: true,
-              ...getAuthorAndHiddenSelect(ctx.userId!),
-            },
-          },
-          quoteId: true,
-          path: true,
-          repliesCount: true,
-          hideLikes: true,
-          privacy: true,
-          pinned: true,
-          ...getAuthorAndHiddenSelect(ctx.userId!),
-          ...GET_LIKES,
-          reposts: {
-            ...GET_REPOSTS,
-            orderBy: {
-              createdAt: 'desc',
-            },
-          },
-          ...GET_COUNT,
-          ...GET_BOOKMARKS,
-          ...GET_LINK_PREVIEW,
-        },
-        orderBy: [{ path: 'asc' }, { createdAt: 'asc' }],
-      });
-
-      const formatReply = (reply: (typeof replies)[number]) => ({
-        ...reply,
-        media: reply.media as PostMedia[],
-        likesCount: reply._count.likes,
-        repostsCount: reply._count.reposts,
-        bookmarksCount: new Set(
-          reply.bookmarks.map((bookmark) => bookmark.userId)
-        ).size,
-        isHidden: reply.hiddenBy.length > 0,
-        isMuted: reply.author.mutedByUsers?.length > 0,
-        postChildren: [],
-      });
-
-      const replyMap = new Map();
-      const topLevelReplies: any = [];
-
-      replies.forEach((reply) => {
-        const formattedReply = formatReply(reply);
-        replyMap.set(reply.id, formattedReply);
-
-        if (reply.parentPostId === post.id) {
-          topLevelReplies.push(formattedReply);
-        } else {
-          const parentReply = replyMap.get(reply.parentPostId);
-          if (parentReply) {
-            parentReply.postChildren.push(formattedReply);
-          } else {
-            topLevelReplies.push(formattedReply);
-          }
-        }
-      });
-
-      let nextCursor: typeof cursor | undefined;
-      if (topLevelReplies.length > limit) {
-        const nextItem = topLevelReplies[limit];
+      let nextCursor: typeof cursor | undefined = undefined;
+      if (comments.length > limit) {
+        const nextItem = comments[limit];
         nextCursor = {
           id: nextItem.id,
           createdAt: nextItem.createdAt,
         };
-        topLevelReplies.length = limit;
+        comments.pop();
       }
 
+      const formattedComments = comments.map((comment) => ({
+        ...comment,
+        media: comment.media as PostMedia[],
+        likesCount: comment._count.likes,
+        repostsCount: comment._count.reposts,
+        bookmarksCount: new Set(
+          comment.bookmarks.map((bookmark) => bookmark.userId)
+        ).size,
+        type: 'post' as const,
+        isHidden: comment.hiddenBy.length > 0,
+        isMuted: comment.author.mutedByUsers?.length > 0,
+      }));
+
       return {
-        postInfo: {
-          ...post,
-          media: post.media as PostMedia[],
-          likesCount: post._count.likes,
-          repostsCount: post._count.reposts,
-          bookmarksCount: new Set(
-            post.bookmarks.map((bookmark) => bookmark.userId)
-          ).size,
-          isHidden: post.hiddenBy.length > 0,
-          isMuted: post.author.mutedByUsers?.length > 0,
-        },
-        replies: topLevelReplies,
+        comments: formattedComments,
         nextCursor,
       };
     }),

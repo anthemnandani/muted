@@ -18,6 +18,7 @@ const AddComment = ({
     authorId,
   });
   const { user } = useUser();
+
   const {
     commentText,
     setCommentText,

@@ -1,11 +1,9 @@
 import { api } from '@/trpc/react';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 
 const useGetComments = ({ postId }: { postId: string }) => {
-  const previousPostIdRef = useRef<string | null>(null);
-
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetching, refetch } =
-    api.post.getNestedPosts.useInfiniteQuery(
+  const { data, isLoading, hasNextPage, fetchNextPage } =
+    api.post.getComments.useInfiniteQuery(
       { id: postId },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -15,41 +13,23 @@ const useGetComments = ({ postId }: { postId: string }) => {
       }
     );
 
-  useEffect(() => {
-    if (
-      previousPostIdRef.current !== null &&
-      previousPostIdRef.current !== postId
-    ) {
-      refetch();
-    }
-    previousPostIdRef.current = postId;
-  }, [postId, refetch]);
+  const allComments = useMemo(() => {
+    const comments = data?.pages.flatMap((page) => page.comments) ?? [];
 
-  const allReplies = useMemo(() => {
-    const replies = data?.pages.flatMap((page) => page.replies) ?? [];
-    return [...replies].sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    const seenComments = new Set();
+    return comments.filter((comment) => {
+      const key = `comment-${comment.id}`;
+      if (seenComments.has(key)) return false;
+      seenComments.add(key);
+      return true;
+    });
   }, [data?.pages]);
 
-  const enhancedFetchNextPage = useCallback(async () => {
-    try {
-      await fetchNextPage();
-    } catch (error) {
-      console.error('Error fetching next page:', error);
-      setTimeout(() => {
-        fetchNextPage();
-      }, 2000);
-    }
-  }, [fetchNextPage]);
-
   return {
-    allReplies,
-    isLoading: isLoading || isFetching,
+    allComments,
+    isLoading: isLoading,
     hasNextPage,
-    fetchNextPage: enhancedFetchNextPage,
-    refetch,
+    fetchNextPage,
   };
 };
 

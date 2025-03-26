@@ -561,11 +561,12 @@ export interface CommentsProps {
   onClose: () => void;
   authorId: string;
   isOpen: boolean;
+  repliesCount: number;
 }
 
 export type Comment = {
   id: string;
-  text: string;
+  text: string | null;
   likesCount: number;
   author: AuthorInfoProps;
   createdAt: Date;
