@@ -25,7 +25,7 @@ export default function useToggleHidePost({ postId }: UseToggleHidePostProps) {
       onSettled: async (data) => {
         toast.success(data?.hidden ? 'Hidden' : 'Unhidden');
         await Promise.all([
-          trpcUtils.post.getNestedPosts.invalidate(),
+          trpcUtils.post.getComments.invalidate(),
           trpcUtils.user.postInfo.invalidate(),
           trpcUtils.user.repliesInfo.invalidate(),
           trpcUtils.user.repostsInfo.invalidate(),

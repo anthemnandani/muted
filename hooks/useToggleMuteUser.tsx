@@ -22,7 +22,7 @@ export default function useToggleMuteUser({ userId }: UseToggleMuteUserProps) {
       onSettled: async (data) => {
         toast.success(data?.muted ? 'Muted' : 'Unmuted');
         await Promise.all([
-          trpcUtils.post.getNestedPosts.invalidate(),
+          trpcUtils.post.getComments.invalidate(),
           trpcUtils.user.postInfo.invalidate(),
           trpcUtils.user.repliesInfo.invalidate(),
           trpcUtils.user.repostsInfo.invalidate(),

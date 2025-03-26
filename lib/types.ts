@@ -8,11 +8,6 @@ import Player from 'video.js/dist/types/player';
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
 type RouterOutput = inferRouterOutputs<AppRouter>;
 
-export type ParentThreadCardProps = Pick<
-  RouterOutput['post']['getNestedPosts'],
-  'postInfo'
->;
-
 export type PostProps = ArrayElement<
   RouterOutput['post']['getInfinitePosts']['posts']
 > & {

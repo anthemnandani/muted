@@ -56,7 +56,7 @@ export function useRepost({
           trpcUtils.post.getInfinitePosts.invalidate(),
           trpcUtils.post.getFollowingPosts.invalidate(),
           trpcUtils.user.getUserReposts.invalidate(),
-          trpcUtils.post.getNestedPosts.invalidate(),
+          trpcUtils.post.getComments.invalidate(),
           trpcUtils.post.getPostsByTag.invalidate(),
         ]);
       },
