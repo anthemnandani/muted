@@ -2,7 +2,6 @@ import useAddComment from '@/hooks/useAddComment';
 import { getFullName } from '@/lib/utils';
 import useAddCommentStore from '@/store/addComment';
 import { useUser } from '@clerk/nextjs';
-import { useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 
@@ -24,12 +23,9 @@ const AddComment = ({
     setCommentText,
     isCommentBoxOpen,
     setCommentBoxOpen,
+    activePostId,
     setActivePostId,
   } = useAddCommentStore();
-
-  useEffect(() => {
-    setActivePostId(postId);
-  }, [postId, setActivePostId]);
 
   const handleCancelComment = () => {
     setCommentText('');
@@ -45,7 +41,7 @@ const AddComment = ({
 
   return (
     <div className='p-4 pt-3 border-t border-border-light'>
-      {isCommentBoxOpen ? (
+      {isCommentBoxOpen && activePostId === postId ? (
         <div className='flex flex-col'>
           <div className='flex items-center mb-2'>
             <span className='text-white text-sm'>Commenting as</span>
@@ -94,7 +90,10 @@ const AddComment = ({
       ) : (
         <div
           className='flex items-center gap-3 cursor-text'
-          onClick={() => setCommentBoxOpen(true)}
+          onClick={() => {
+            setCommentBoxOpen(true);
+            setActivePostId(postId);
+          }}
         >
           <Avatar className='size-8'>
             <AvatarImage

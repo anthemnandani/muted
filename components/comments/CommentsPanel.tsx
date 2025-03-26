@@ -2,6 +2,7 @@
 
 import useGetComments from '@/hooks/useGetComments';
 import { CommentsProps } from '@/lib/types';
+import { cn } from '@/lib/utils';
 import useAddCommentStore from '@/store/addComment';
 import useCommentPanelStore from '@/store/commentPanel';
 import { X } from 'lucide-react';
@@ -21,6 +22,7 @@ const CommentsPanel: React.FC<CommentsProps> = ({
 }) => {
   const [isSwitchingPost, setIsSwitchingPost] = useState(false);
   const prevPostIdRef = useRef(postId);
+  const { isCommentBoxOpen, activePostId } = useAddCommentStore();
 
   useEffect(() => {
     if (prevPostIdRef.current !== postId) {
@@ -101,8 +103,12 @@ const CommentsPanel: React.FC<CommentsProps> = ({
       <div
         ref={scrollRef}
         id='scrollableDiv'
-        className='h-full overflow-y-auto flex flex-col hide-scrollbar'
-        style={{ height: 'calc(90vh - 80px)' }}
+        className={cn(
+          'h-full overflow-y-auto flex flex-col hide-scrollbar',
+          isCommentBoxOpen && activePostId === postId
+            ? 'max-h-[calc(90vh-15rem)]'
+            : 'max-h-[calc(90vh-5rem)]'
+        )}
       >
         {showLoader ? (
           <div className='w-full'>{renderSkeletons()}</div>
