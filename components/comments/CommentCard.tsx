@@ -1,63 +1,64 @@
+'use client';
+
+import useLike from '@/hooks/useLike';
 import { Comment } from '@/lib/types';
-import { formatCount, formatTimeAgo } from '@/lib/utils';
+import { cn, formatCount, formatTimeAgo } from '@/lib/utils';
 import { Heart } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 const CommentCard = ({ comment }: { comment: Comment }) => {
+  const { id, author, text, likesCount, createdAt, likes } = comment;
+  const {
+    isLikedByMe,
+    likesCount: updatedLikesCount,
+    isLoading,
+    toggleLike,
+  } = useLike({
+    initialLikesCount: likesCount,
+    likes,
+  });
   return (
-    <div key={comment.id} className='px-4 py-3 '>
+    <div key={id} className='px-4 py-3 '>
       <div className='flex items-start gap-3'>
         <div className='flex-shrink-0'>
           <Avatar className='rounded-full w-full h-full size-10'>
             <AvatarImage
-              src={comment.author.image ?? ''}
-              alt={comment.author.username ?? ''}
+              src={author.image ?? ''}
+              alt={author.username ?? ''}
               className='object-cover'
             />
             <AvatarFallback>
-              {comment.author.username?.slice(0, 2).toUpperCase()}
+              {author.username?.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         </div>
         <div className='flex-1 min-w-0'>
           <div className='flex items-center gap-1'>
-            <span className='font-medium text-white'>
-              {comment.author.username}
-            </span>
-            {/* {comment.verified && (
-              <svg
-                width='14'
-                height='14'
-                viewBox='0 0 24 24'
-                fill='none'
-                xmlns='http://www.w3.org/2000/svg'
-              >
-                <path
-                  d='M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z'
-                  fill='#1D9BF0'
-                />
-                <path
-                  d='M7.75 12.75L10 15.25L16.25 9'
-                  stroke='white'
-                  strokeWidth='2'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                />
-              </svg>
-            )} */}
+            <span className='font-medium text-white'>{author.username}</span>
           </div>
-          <p className='mt-1 text-white'>{comment.text}</p>
+          <p className='mt-1 text-white'>{text}</p>
           <div className='flex items-center mt-1 gap-6'>
             <span className='text-sm text-gray-400'>
-              {formatTimeAgo(comment.createdAt)}
+              {formatTimeAgo(createdAt)}
             </span>
             <div className='flex items-center'>
-              <button className='flex items-center text-gray-400 hover:text-gray-300'>
-                <Heart className='size-4' />
-                <span className='ml-1 text-sm'>
-                  {formatCount(comment.likesCount)}
-                </span>
+              <button
+                className=' text-gray-400 hover:text-gray-300'
+                type='button'
+                disabled={isLoading}
+                title={isLikedByMe ? 'Unlike' : 'Like'}
+                onClick={() => toggleLike({ id })}
+              >
+                <Heart
+                  fill={isLikedByMe ? '#ff3040' : ''}
+                  className={cn('size-4', {
+                    'text-primary-red': isLikedByMe,
+                  })}
+                />
               </button>
+              <span className='ml-1 text-sm'>
+                {formatCount(updatedLikesCount)}
+              </span>
             </div>
 
             <button className='text-gray-400 text-sm hover:text-gray-300'>

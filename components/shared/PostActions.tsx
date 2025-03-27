@@ -33,7 +33,6 @@ const PostActions: React.FC<PostActionsProps> = ({
           likes: likes!,
         }}
         hideLikes={hideLikes}
-        isParentPost
       />
       <ReplyButton
         repliesCount={repliesCount}

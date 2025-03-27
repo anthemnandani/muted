@@ -565,4 +565,5 @@ export type Comment = {
   likesCount: number;
   author: AuthorInfoProps;
   createdAt: Date;
+  likes: { userId: string }[];
 };
