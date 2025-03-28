@@ -1,8 +1,10 @@
 'use client';
 
 import useDeletePost from '@/store/deletePost';
+import { api } from '@/trpc/react';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
+import { toast } from 'sonner';
 import { Icons } from '../icons';
 import MenuItem from '../shared/MenuItem';
 import { Button } from '../ui/button';
@@ -13,10 +15,9 @@ import {
   DialogHeader,
   DialogTrigger,
 } from '../ui/dialog';
-import { toast } from 'sonner';
-import { api } from '@/trpc/react';
+import { DeletePostProps } from '@/lib/types';
 
-const DeletePost = ({ postId }: { postId: string }) => {
+const DeletePost = ({ postId, isComment, closeDropdown }: DeletePostProps) => {
   const { openDeleteDialog, setOpenDeleteDialog } = useDeletePost();
   const trpcUtils = api.useUtils();
 
@@ -30,21 +31,9 @@ const DeletePost = ({ postId }: { postId: string }) => {
     retry: false,
   });
 
-  const { mutateAsync: deleteRepost } = api.post.deleteRepost.useMutation({
-    onError: () => {
-      toast.error('Error: Something went wrong!');
-    },
-    onSettled: async () => {
-      await trpcUtils.invalidate();
-    },
-    retry: false,
-  });
-
   const handleDeletePost = () => {
     setOpenDeleteDialog(false);
-    // const promise = isRepost
-    //   ? deleteRepost({ id: postId })
-    //   : deletePost({ id: postId });
+    if (closeDropdown) closeDropdown();
     const promise = deletePost({ id: postId });
 
     toast.promise(promise, {
@@ -81,14 +70,19 @@ const DeletePost = ({ postId }: { postId: string }) => {
       >
         <DialogHeader>
           <DialogTitle>
-            <VisuallyHidden.Root>Delete Post</VisuallyHidden.Root>
+            <VisuallyHidden.Root>
+              Delete {isComment ? 'Comment' : 'Post'}
+            </VisuallyHidden.Root>
           </DialogTitle>
         </DialogHeader>
         <Card className='rounded-2xl border-none bg-background dark:bg-gray-6 shadow-2xl ring-1 ring-gray-7 ring-offset-0'>
           <div className='w-full text-center px-6 pt-6 pb-5'>
-            <div className='font-bold text-base pb-2'>Delete post?</div>
+            <div className='font-bold text-base pb-2'>
+              Delete {isComment ? 'comment' : 'post'}?
+            </div>
             <p className='text-[15px] pt-3 text-gray-3'>
-              If you delete this post, you won't be able to restore it.
+              If you delete this {isComment ? 'comment' : 'post'}, you won't be
+              able to restore it.
             </p>
           </div>
           <div className='flex-between w-full border-t-[0.8px] border-t-border-dark dark:border-t-gray-7'>

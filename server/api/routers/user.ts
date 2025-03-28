@@ -58,7 +58,6 @@ export const userRouter = createTRPCRouter({
               parentPostId: true,
               quoteId: true,
               path: true,
-              repliesCount: true,
               hideLikes: true,
               pinned: true,
               privacy: true,
@@ -120,6 +119,7 @@ export const userRouter = createTRPCRouter({
             media: post.media as PostMedia[],
             likesCount: post._count.likes,
             repostsCount: post._count.reposts,
+            repliesCount: post._count.replies,
             bookmarksCount: new Set(
               post.bookmarks.map((bookmark) => bookmark.userId)
             ).size,
@@ -161,7 +161,6 @@ export const userRouter = createTRPCRouter({
           parentPostId: true,
           quoteId: true,
           path: true,
-          repliesCount: true,
           hideLikes: true,
           pinned: true,
           privacy: true,
@@ -189,6 +188,7 @@ export const userRouter = createTRPCRouter({
         media: post.media as PostMedia[],
         likesCount: post._count.likes,
         repostsCount: post._count.reposts,
+        repliesCount: post._count.replies,
         bookmarksCount: new Set(
           post.bookmarks.map((bookmark) => bookmark.userId)
         ).size,
@@ -220,7 +220,6 @@ export const userRouter = createTRPCRouter({
               parentPostId: true,
               quoteId: true,
               path: true,
-              repliesCount: true,
               hideLikes: true,
               pinned: true,
               privacy: true,
@@ -250,6 +249,7 @@ export const userRouter = createTRPCRouter({
         media: repost.post.media as PostMedia[],
         likesCount: repost.post._count.likes,
         repostsCount: repost.post._count.reposts,
+        repliesCount: repost.post._count.replies,
         bookmarksCount: new Set(
           repost.post.bookmarks.map((bookmark) => bookmark.userId)
         ).size,
@@ -298,7 +298,6 @@ export const userRouter = createTRPCRouter({
               parentPostId: true,
               quoteId: true,
               path: true,
-              repliesCount: true,
               hideLikes: true,
               pinned: true,
               privacy: true,
@@ -328,6 +327,7 @@ export const userRouter = createTRPCRouter({
         media: repost.post.media as PostMedia[],
         likesCount: repost.post._count.likes,
         repostsCount: repost.post._count.reposts,
+        repliesCount: repost.post._count.replies,
         bookmarksCount: new Set(
           repost.post.bookmarks.map((bookmark) => bookmark.userId)
         ).size,
@@ -375,7 +375,6 @@ export const userRouter = createTRPCRouter({
               parentPostId: true,
               quoteId: true,
               path: true,
-              repliesCount: true,
               hideLikes: true,
               pinned: true,
               privacy: true,
@@ -406,6 +405,7 @@ export const userRouter = createTRPCRouter({
         media: likedPost.post.media as PostMedia[],
         likesCount: likedPost.post._count.likes,
         repostsCount: likedPost.post._count.reposts,
+        repliesCount: likedPost.post._count.replies,
         bookmarksCount: new Set(
           likedPost.post.bookmarks.map((bookmark) => bookmark.userId)
         ).size,
@@ -455,7 +455,6 @@ export const userRouter = createTRPCRouter({
               parentPostId: true,
               quoteId: true,
               path: true,
-              repliesCount: true,
               hideLikes: true,
               pinned: true,
               privacy: true,
@@ -496,6 +495,7 @@ export const userRouter = createTRPCRouter({
           media: likedPost.post.media as PostMedia[],
           likesCount: likedPost.post._count.likes,
           repostsCount: likedPost.post._count.reposts,
+          repliesCount: likedPost.post._count.replies,
           bookmarksCount: new Set(
             likedPost.post.bookmarks.map((bookmark) => bookmark.userId)
           ).size,
@@ -622,7 +622,6 @@ export const userRouter = createTRPCRouter({
             },
             quoteId: true,
             path: true,
-            repliesCount: true,
             hideLikes: true,
             pinned: true,
             privacy: true,
@@ -665,6 +664,7 @@ export const userRouter = createTRPCRouter({
                     ...post.parentPost,
                     media: post.parentPost.media as PostMedia[],
                     likesCount: post.parentPost._count.likes,
+                    repliesCount: post.parentPost._count.replies,
                     bookmarksCount: new Set(
                       post.parentPost.bookmarks.map(
                         (bookmark) => bookmark.userId
@@ -679,7 +679,7 @@ export const userRouter = createTRPCRouter({
               likesCount: post._count.likes,
               likes: post.likes,
               path: post.path,
-              repliesCount: post.repliesCount,
+              repliesCount: post._count.replies,
               hideLikes: post.hideLikes,
               pinned: post.pinned,
               quoteId: post.quoteId,

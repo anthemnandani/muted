@@ -2,7 +2,6 @@
 
 import useGetComments from '@/hooks/useGetComments';
 import { CommentsProps } from '@/lib/types';
-import { cn } from '@/lib/utils';
 import useAddCommentStore from '@/store/addComment';
 import useCommentPanelStore from '@/store/commentPanel';
 import { X } from 'lucide-react';
@@ -22,14 +21,16 @@ const CommentsPanel: React.FC<CommentsProps> = ({
 }) => {
   const [isSwitchingPost, setIsSwitchingPost] = useState(false);
   const prevPostIdRef = useRef(postId);
-  const { isCommentBoxOpen, activePostId } = useAddCommentStore();
+  const { reset, setCurrentPostId } = useAddCommentStore();
 
   useEffect(() => {
+    setCurrentPostId(postId);
+
     if (prevPostIdRef.current !== postId) {
       setIsSwitchingPost(true);
       prevPostIdRef.current = postId;
     }
-  }, [postId]);
+  }, [postId, setCurrentPostId, reset]);
 
   const { allComments, isLoading, hasNextPage, fetchNextPage } = useGetComments(
     {
@@ -43,7 +44,6 @@ const CommentsPanel: React.FC<CommentsProps> = ({
     }
   }, [isLoading, isSwitchingPost]);
 
-  const { reset } = useAddCommentStore();
   const { setScrollPosition, getScrollPosition } = useCommentPanelStore();
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -103,12 +103,7 @@ const CommentsPanel: React.FC<CommentsProps> = ({
       <div
         ref={scrollRef}
         id='scrollableDiv'
-        className={cn(
-          'h-full overflow-y-auto flex flex-col hide-scrollbar',
-          isCommentBoxOpen && activePostId === postId
-            ? 'max-h-[calc(90vh-15rem)]'
-            : 'max-h-[calc(90vh-5rem)]'
-        )}
+        className='h-full overflow-y-auto max-h-[calc(90vh-8rem)] flex flex-col hide-scrollbar'
       >
         {showLoader ? (
           <div className='w-full'>{renderSkeletons()}</div>

@@ -2,15 +2,17 @@
 
 import useCopyLink from '@/hooks/useCopyLink';
 import useHideLikes from '@/hooks/useHideLikes';
+import useTimeLeft from '@/hooks/useTimeLeft';
 import useToggleHidePost from '@/hooks/useToggleHidePost';
 import useToggleMuteUser from '@/hooks/useToggleMuteUser';
+import useTogglePinPost from '@/hooks/useTogglePinPost';
 import { PostActionMenuProps } from '@/lib/types';
 import { cn, formatTimeLeft } from '@/lib/utils';
 import { useMutedUsers } from '@/store/mutedUsers';
 import useDialog from '@/store/postDialog';
 import { useUser } from '@clerk/nextjs';
 import { Edit, MoreHorizontal, PinOff } from 'lucide-react';
-import React from 'react';
+import { Fragment, useEffect } from 'react';
 import { Icons } from '../icons';
 import DeletePost from '../modals/DeletePost';
 import MenuItem from '../shared/MenuItem';
@@ -20,7 +22,6 @@ import {
   HoverCardTrigger,
 } from '../ui/hover-card';
 import { Separator } from '../ui/separator';
-import useTogglePinPost from '@/hooks/useTogglePinPost';
 
 const PostActionMenu: React.FC<PostActionMenuProps> = ({
   author,
@@ -32,7 +33,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
   showControls,
 }) => {
   const { user } = useUser();
-  const [timeLeft, setTimeLeft] = React.useState<number>(0);
+  const { timeLeft } = useTimeLeft({ createdAt });
   const { setEditPostInfo, setOpenDialog } = useDialog();
   const { isMutedUser } = useMutedUsers();
 
@@ -60,31 +61,11 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
 
   const { handleCopyLink } = useCopyLink({ postId, username: author.username });
 
-  React.useEffect(() => {
-    const calculateTimeLeft = () => {
-      const createdTime = new Date(createdAt).getTime();
-      const editDeadline = createdTime + 15 * 60 * 1000;
-      const now = Date.now();
-      const difference = editDeadline - now;
-
-      return Math.max(0, Math.floor(difference / 1000));
-    };
-
-    const timer = setInterval(() => {
-      const remaining = calculateTimeLeft();
-      setTimeLeft(remaining);
-      if (remaining <= 0) {
-        clearInterval(timer);
-      }
-    }, 1000);
-
-    setTimeLeft(calculateTimeLeft());
+  useEffect(() => {
     if (timeLeft <= 0) {
       setEditPostInfo(null);
     }
-
-    return () => clearInterval(timer);
-  }, [createdAt]);
+  }, [timeLeft, setEditPostInfo]);
 
   return (
     <HoverCard>
@@ -105,7 +86,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
         className='w-[200px] p-2 bg-black/85 border-none rounded-xl'
       >
         {user?.id !== author.id ? (
-          <React.Fragment>
+          <Fragment>
             <MenuItem
               icon={Icons.notInterested}
               label='Not interested'
@@ -135,17 +116,17 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
               className='text-primary-red focus:text-primary-red'
               isActionMenuItem
             />
-          </React.Fragment>
+          </Fragment>
         ) : (
-          <React.Fragment>
+          <Fragment>
             {timeLeft > 0 && (
-              <React.Fragment>
+              <Fragment>
                 <MenuItem
                   icon={Edit}
                   label={
                     <div className='flex-between w-full'>
                       <p>Edit</p>
-                      <p className='text-[15px] text-[#999] dark":text-gray-3'>
+                      <p className='text-[15px] text-gray-3'>
                         {formatTimeLeft(timeLeft)}
                       </p>
                     </div>
@@ -156,7 +137,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
                   }}
                 />
                 <Separator />
-              </React.Fragment>
+              </Fragment>
             )}
 
             <MenuItem
@@ -177,7 +158,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
 
             <Separator />
             <DeletePost postId={postId} />
-          </React.Fragment>
+          </Fragment>
         )}
         <Separator />
         <MenuItem

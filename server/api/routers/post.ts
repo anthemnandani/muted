@@ -245,7 +245,6 @@ export const postRouter = createTRPCRouter({
             parentPostId: true,
             quoteId: true,
             path: true,
-            repliesCount: true,
             hideLikes: true,
             pinned: true,
             privacy: true,
@@ -273,6 +272,7 @@ export const postRouter = createTRPCRouter({
           media: post.media as PostMedia[],
           likesCount: post._count.likes,
           repostsCount: post._count.reposts,
+          repliesCount: post._count.replies,
           bookmarksCount: new Set(
             post.bookmarks.map((bookmark) => bookmark.userId)
           ).size,
@@ -445,7 +445,7 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-        limit: z.number().optional().default(10),
+        limit: z.number().optional().default(7),
         cursor: z
           .object({
             id: z.string(),
@@ -472,7 +472,6 @@ export const postRouter = createTRPCRouter({
           parentPostId: true,
           quoteId: true,
           path: true,
-          repliesCount: true,
           hideLikes: true,
           pinned: true,
           privacy: true,
@@ -507,6 +506,7 @@ export const postRouter = createTRPCRouter({
         media: comment.media as PostMedia[],
         likesCount: comment._count.likes,
         repostsCount: comment._count.reposts,
+        repliesCount: comment._count.replies,
         bookmarksCount: new Set(
           comment.bookmarks.map((bookmark) => bookmark.userId)
         ).size,
@@ -840,7 +840,6 @@ export const postRouter = createTRPCRouter({
                   },
                   quoteId: true,
                   path: true,
-                  repliesCount: true,
                   hideLikes: true,
                   pinned: true,
                   privacy: true,
@@ -888,6 +887,7 @@ export const postRouter = createTRPCRouter({
           media: bookmark.post.media as PostMedia[],
           likesCount: bookmark.post._count.likes,
           repostsCount: bookmark.post._count.reposts,
+          repliesCount: bookmark.post._count.replies,
           bookmarksCount: new Set(
             bookmark.post.bookmarks.map((bookmark) => bookmark.userId)
           ).size,
@@ -958,7 +958,6 @@ export const postRouter = createTRPCRouter({
               },
               quoteId: true,
               path: true,
-              repliesCount: true,
               hideLikes: true,
               pinned: true,
               privacy: true,
@@ -1001,6 +1000,7 @@ export const postRouter = createTRPCRouter({
           media: likedPost.post.media as PostMedia[],
           likesCount: likedPost.post._count.likes,
           repostsCount: likedPost.post._count.reposts,
+          repliesCount: likedPost.post._count.replies,
           bookmarksCount: new Set(
             likedPost.post.bookmarks.map((bookmark) => bookmark.userId)
           ).size,
@@ -1063,7 +1063,6 @@ export const postRouter = createTRPCRouter({
           parentPostId: true,
           quoteId: true,
           path: true,
-          repliesCount: true,
           hideLikes: true,
           pinned: true,
           privacy: true,
@@ -1106,6 +1105,7 @@ export const postRouter = createTRPCRouter({
           media: post.media as PostMedia[],
           likesCount: post._count.likes,
           repostsCount: post._count.reposts,
+          repliesCount: post._count.replies,
           bookmarksCount: new Set(
             post.bookmarks.map((bookmark) => bookmark.userId)
           ).size,
@@ -1186,7 +1186,6 @@ export const postRouter = createTRPCRouter({
           parentPostId: true,
           quoteId: true,
           path: true,
-          repliesCount: true,
           hideLikes: true,
           pinned: true,
           privacy: true,
@@ -1214,6 +1213,7 @@ export const postRouter = createTRPCRouter({
         media: post.media as PostMedia[],
         likesCount: post._count.likes,
         repostsCount: post._count.reposts,
+        repliesCount: post._count.replies,
         bookmarksCount: new Set(
           post.bookmarks.map((bookmark) => bookmark.userId)
         ).size,

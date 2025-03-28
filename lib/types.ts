@@ -567,3 +567,16 @@ export type Comment = {
   createdAt: Date;
   likes: { userId: string }[];
 };
+
+export interface CommentActionsProps {
+  authorId: string;
+  postId: string;
+  createdAt: Date;
+  text: string;
+}
+
+export interface DeletePostProps {
+  postId: string;
+  isComment?: boolean;
+  closeDropdown?: () => void;
+}

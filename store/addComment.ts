@@ -1,41 +1,50 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 interface AddCommentState {
   commentText: string;
+  isEdit: boolean;
+  editCommentId: string;
+  currentPostId: string;
   setCommentText: (text: string) => void;
-  isCommentBoxOpen: boolean;
-  setCommentBoxOpen: (open: boolean) => void;
-  activePostId: string | null;
-  setActivePostId: (postId: string | null) => void;
+  startEditing: (commentId: string, text: string) => void;
+  setCurrentPostId: (postId: string) => void;
   reset: () => void;
 }
 
-const useAddCommentStore = create<AddCommentState>()(
-  persist(
-    (set) => ({
-      commentText: '',
-      setCommentText: (text) => set({ commentText: text }),
-      isCommentBoxOpen: false,
-      setCommentBoxOpen: (open) => set({ isCommentBoxOpen: open }),
-      activePostId: null,
-      setActivePostId: (postId) => set({ activePostId: postId }),
-      reset: () =>
-        set({
-          commentText: '',
-          isCommentBoxOpen: false,
-          activePostId: null,
-        }),
+const useAddCommentStore = create<AddCommentState>()((set) => ({
+  commentText: '',
+  isEdit: false,
+  editCommentId: '',
+  currentPostId: '',
+
+  setCommentText: (text) => set({ commentText: text }),
+
+  startEditing: (commentId, text) =>
+    set({
+      isEdit: true,
+      editCommentId: commentId,
+      commentText: text,
     }),
-    {
-      name: 'comment-store',
-      partialize: (state) => ({
-        commentText: state.commentText,
-        isCommentBoxOpen: state.isCommentBoxOpen,
-        activePostId: state.activePostId,
-      }),
-    }
-  )
-);
+
+  setCurrentPostId: (postId) =>
+    set((state) => {
+      if (state.currentPostId !== postId) {
+        return {
+          currentPostId: postId,
+          isEdit: false,
+          editCommentId: '',
+          commentText: '',
+        };
+      }
+      return { currentPostId: postId };
+    }),
+
+  reset: () =>
+    set({
+      commentText: '',
+      isEdit: false,
+      editCommentId: '',
+    }),
+}));
 
 export default useAddCommentStore;
