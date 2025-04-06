@@ -75,6 +75,7 @@ module.exports = {
         'white-12': '#FFFFFF1F',
         'white-8': '#FFFFFF0D',
         'white-6': '#FFFFFF0F',
+        'white-4': '#FFFFFF04',
         'primary-red': '#ff3040',
         'primary-blue': '#18a3fe',
         'border-dark': '#00000026',

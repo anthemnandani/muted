@@ -4,13 +4,15 @@ import useGetComments from '@/hooks/useGetComments';
 import { CommentsProps } from '@/lib/types';
 import useAddCommentStore from '@/store/addComment';
 import useCommentPanelStore from '@/store/commentPanel';
-import { X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import PostInfoCard from '../cards/PostInfoCard';
 import { Icons } from '../icons';
 import CommentCardSkeleton from '../skeletons/CommentCardSkeleton';
 import AddComment from './AddComment';
 import CommentCard from './CommentCard';
+import CommentsPanelHeader from './CommentsPanelHeader';
+import LinkShare from './LinkShare';
 
 const CommentsPanel: React.FC<CommentsProps> = ({
   postId,
@@ -18,6 +20,9 @@ const CommentsPanel: React.FC<CommentsProps> = ({
   authorId,
   isOpen,
   repliesCount,
+  text,
+  createdAt,
+  author,
 }) => {
   const [isSwitchingPost, setIsSwitchingPost] = useState(false);
   const prevPostIdRef = useRef(postId);
@@ -83,27 +88,20 @@ const CommentsPanel: React.FC<CommentsProps> = ({
 
   return (
     <div className='h-full bg-[#101010D9] border border-border-light rounded-2xl'>
-      <div className='flex-between px-4 py-3 border-b border-border-light'>
-        <div className='flex items-center gap-2'>
-          <h2 className='text-lg font-semibold text-white'>
-            Comment{repliesCount === 1 ? '' : 's'}
-          </h2>
-          <span className='text-gray-400 text-sm'>{repliesCount}</span>
-        </div>
-        <div className='flex items-center gap-3'>
-          <button className='text-gray-400'>
-            <Icons.filter />
-          </button>
-          <button className='text-gray-400' onClick={onClose}>
-            <X className='size-5' />
-          </button>
-        </div>
+      <div className='p-4'>
+        <PostInfoCard
+          postText={text || ''}
+          author={author}
+          createdAt={createdAt}
+        />
+        <LinkShare url={`${process.env.NEXT_PUBLIC_APP_URL}/post/${postId}`} />
       </div>
+      <CommentsPanelHeader repliesCount={repliesCount} onClose={onClose} />
 
       <div
         ref={scrollRef}
         id='scrollableDiv'
-        className='h-full overflow-y-auto max-h-[calc(90vh-8rem)] flex flex-col hide-scrollbar'
+        className='h-full overflow-y-auto max-h-[90vh] flex flex-col hide-scrollbar'
       >
         {showLoader ? (
           <div className='w-full'>{renderSkeletons()}</div>

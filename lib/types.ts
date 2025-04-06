@@ -557,6 +557,9 @@ export interface CommentsProps {
   authorId: string;
   isOpen: boolean;
   repliesCount: number;
+  text: string;
+  createdAt: Date;
+  author: AuthorInfoProps;
 }
 
 export type Comment = {
@@ -579,4 +582,10 @@ export interface DeletePostProps {
   postId: string;
   isComment?: boolean;
   closeDropdown?: () => void;
+}
+
+export interface PostInfoCardProps {
+  postText: string;
+  author: AuthorInfoProps;
+  createdAt: Date;
 }

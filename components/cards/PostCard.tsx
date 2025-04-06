@@ -118,6 +118,9 @@ const PostCard: React.FC<PostCardProps> = ({
             authorId={author.id}
             isOpen={isPanelOpen}
             repliesCount={repliesCount ?? 0}
+            createdAt={createdAt}
+            text={text ?? ''}
+            author={author}
           />
         </div>
       )}

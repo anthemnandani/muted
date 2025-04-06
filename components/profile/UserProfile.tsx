@@ -70,8 +70,8 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
           {user?.id !== id && (
             <FollowButton
               size='default'
-              variant='destructive'
-              className='min-w-[120px] text-base font-medium overflow-hidden text-ellipsis whitespace-nowrap break-words'
+              variant='default'
+              className='bg-primary-blue !text-white min-w-[120px] text-base font-medium overflow-hidden text-ellipsis whitespace-nowrap break-words'
               author={props}
             />
           )}

@@ -445,7 +445,7 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-        limit: z.number().optional().default(7),
+        limit: z.number().optional().default(10),
         cursor: z
           .object({
             id: z.string(),

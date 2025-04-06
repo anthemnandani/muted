@@ -1,26 +1,25 @@
 import { Icons } from '@/components/icons';
 import type { AuthorInfoProps } from '@/lib/types';
-import useFollowUserStore from '@/store/followUser';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
+import { useMemo } from 'react';
 import { toast } from 'sonner';
 
 const useFollowUser = ({ author }: { author: AuthorInfoProps }) => {
   const { user: loggedUser } = useUser();
   const trpcUtils = api.useUtils();
-  const { follows, toggleFollow: toggleFollowGlobal } = useFollowUserStore();
 
   const isSameUser = author.id === loggedUser?.id;
-  const isFollowedByMe = follows[author.id] || false;
+  const isFollowedByMe = useMemo(() => {
+    return author.followers.some((follower) => follower.id === loggedUser?.id);
+  }, [author.followers, loggedUser?.id]);
 
   const { mutateAsync: toggleFollow, isLoading } =
     api.user.toggleFollow.useMutation({
       onMutate: () => {
-        toggleFollowGlobal(author.id);
         return { previousFollowedByMe: isFollowedByMe };
       },
       onError: (error, variables, context) => {
-        toggleFollowGlobal(author.id);
         toast.error('FollowError: Something went wrong!');
       },
       onSettled: async () => {

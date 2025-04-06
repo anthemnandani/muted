@@ -31,7 +31,7 @@ const Username: React.FC<UsernameProps> = ({
         >
           <span
             className={cn(
-              'text-accent-foreground text-[14px] font-semibold leading-[0] group-hover:underline',
+              'text-white/90 text-[14px] font-semibold leading-[0] group-hover:underline',
               isReposted && 'text-[13px] text-[#999] dark:text-gray-3',
               className
             )}

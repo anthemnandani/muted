@@ -3,7 +3,6 @@
 import { Follow } from '@/components/ui/follow-button';
 import useFollowUser from '@/hooks/useFollowUser';
 import type { AuthorInfoProps } from '@/lib/types';
-import { cn } from '@/lib/utils';
 import React from 'react';
 
 interface FollowButtonProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -29,9 +28,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
       onClick={handleToggleFollow}
       size={size}
       variant={!isFollowedByMe ? variant : 'outline'}
-      className={cn(className, {
-        'opacity-80': isFollowedByMe,
-      })}
+      className={className}
     >
       {isFollowedByMe ? 'Following' : 'Follow'}
     </Follow>
