@@ -1,7 +1,7 @@
 'use client';
 
 import type { PostInfoCardProps } from '@/lib/types';
-import { formatTimeAgo } from '@/lib/utils';
+import { formatTimeAgo, highlightHashtagsAndUrls } from '@/lib/utils';
 import Link from 'next/link';
 import { useState } from 'react';
 import FollowButton from '../buttons/FollowButton';
@@ -19,7 +19,7 @@ const PostInfoCard: React.FC<PostInfoCardProps> = ({
   createdAt,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const maxLength = 95;
+  const maxLength = 40;
   const isTextLong = postText.length > maxLength;
 
   const displayText = isExpanded
@@ -76,8 +76,14 @@ const PostInfoCard: React.FC<PostInfoCardProps> = ({
         />
       </div>
       <div className='mb-3'>
-        <p className='text-white text-base'>
-          {displayText}
+        <p className='text-white text-base antialiased whitespace-pre-line break-words'>
+          <span
+            dangerouslySetInnerHTML={{
+              __html: highlightHashtagsAndUrls(
+                displayText!.replace(/\\n/g, '\n')
+              ),
+            }}
+          />
           {isTextLong && !isExpanded && (
             <button
               onClick={() => setIsExpanded(true)}

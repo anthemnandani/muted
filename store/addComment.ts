@@ -47,6 +47,7 @@ const useAddCommentStore = create<AddCommentState>()((set) => ({
       commentText: '',
       isEdit: false,
       editCommentId: '',
+      charCount: 0,
     }),
 }));
 

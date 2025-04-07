@@ -20,7 +20,7 @@ const PostFooter: React.FC<PostFooterProps> = ({
   const pathname = usePathname();
 
   return (
-    <div className='absolute bottom-[30px] left-0 right-0 px-4 z-10'>
+    <div className='absolute bottom-7 left-0 right-0 px-4 z-10'>
       {repostedBy && (
         <Link href={`/@${repostedBy.username}`} className='repost-banner'>
           <div className='size-4 rounded-full overflow-hidden'>

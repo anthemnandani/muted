@@ -1,25 +1,20 @@
 'use client';
 
-import useWindow from '@/hooks/useWindow';
-import { cn } from '@/lib/utils';
 import data from '@emoji-mart/data/';
 import Picker from '@emoji-mart/react';
 import { Smile } from 'lucide-react';
-import { useTheme } from 'next-themes';
-import React from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 
 interface EmojiPickerProps {
   onChange?: (emoji: string) => void;
 }
 
 export function EmojiPicker({ onChange }: EmojiPickerProps) {
-  const [open, setOpen] = React.useState(false);
-  const { isMobile } = useWindow();
-  const { theme } = useTheme();
-  const triggerRef = React.useRef<HTMLDivElement>(null);
-  const pickerRef = React.useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const pickerRef = useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         pickerRef.current &&
@@ -40,13 +35,13 @@ export function EmojiPicker({ onChange }: EmojiPickerProps) {
   }, [open]);
 
   return (
-    <>
+    <Fragment>
       <div
         ref={triggerRef}
         onClick={() => {
           setOpen(!open);
         }}
-        className='text-gray-3 flex gap-1 select-none items-center text-[15px] cursor-pointer'
+        className='text-gray-400 flex gap-1 select-none items-center text-[15px] cursor-pointer'
       >
         <Smile className='size-5 select-none transform active:scale-75 transition-transform' />
       </div>
@@ -54,10 +49,7 @@ export function EmojiPicker({ onChange }: EmojiPickerProps) {
       {open && (
         <div
           ref={pickerRef}
-          className={cn(
-            'absolute z-[9999] top-[110px]',
-            isMobile ? 'left-16' : 'left-[120px]'
-          )}
+          className='absolute z-[9999] -top-[440px] -left-[270px]'
           onClick={(e) => e.stopPropagation()}
         >
           <Picker
@@ -65,13 +57,15 @@ export function EmojiPicker({ onChange }: EmojiPickerProps) {
             onEmojiSelect={(emoji: any) => {
               onChange?.(emoji.native);
             }}
-            theme={theme}
-            perLine={isMobile ? 6 : 9}
-            maxFrequentRows={isMobile ? 1 : 2}
+            theme='dark'
+            perLine={9}
+            maxFrequentRows={1}
             skinTonePosition='none'
+            previewPosition='none'
+            navPosition='bottom'
           />
         </div>
       )}
-    </>
+    </Fragment>
   );
 }

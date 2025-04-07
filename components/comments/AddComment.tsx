@@ -1,10 +1,13 @@
+'use client';
+
 import useAddComment from '@/hooks/useAddComment';
 import useEditComment from '@/hooks/useEditComment';
 import { cn } from '@/lib/utils';
 import useAddCommentStore from '@/store/addComment';
 import { useUser } from '@clerk/nextjs';
-import { AtSign, Smile, X } from 'lucide-react';
+import { AtSign, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+import { EmojiPicker } from '../modals/EmojiPicker';
 import { Avatar, AvatarImage } from '../ui/avatar';
 
 const AddComment = ({
@@ -77,6 +80,14 @@ const AddComment = ({
     setCharCount(trimmedText.length);
   };
 
+  const handleEmojiSelect = (emoji: string) => {
+    const newText = commentText + emoji;
+    if (newText.length <= MAX_CHARS) {
+      setCommentText(newText);
+      setCharCount(newText.length);
+    }
+  };
+
   const submitComment = async () => {
     if (!commentText.trim()) return;
 
@@ -138,8 +149,10 @@ const AddComment = ({
             />
 
             <div className='absolute bottom-2 right-3 flex items-center gap-2'>
-              <AtSign className='size-5 text-gray-400' />
-              <Smile className='size-5 text-gray-400' />
+              <div className='text-gray-400 flex gap-1 select-none items-center text-[15px] cursor-pointer'>
+                <AtSign className='size-5 select-none transform active:scale-75 transition-transform' />
+              </div>
+              <EmojiPicker onChange={handleEmojiSelect} />
             </div>
           </div>
 
