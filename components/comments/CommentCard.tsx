@@ -19,7 +19,7 @@ const CommentCard = ({ comment }: { comment: Comment }) => {
     likes,
   });
   return (
-    <div key={id} className='px-4 py-3'>
+    <div className='px-4 py-3'>
       <div className='flex items-start gap-3'>
         <div className='flex-shrink-0'>
           <Avatar className='rounded-full w-full h-full size-10'>

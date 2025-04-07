@@ -21,6 +21,12 @@ const CommentActions = ({
   const { timeLeft } = useTimeLeft({ createdAt });
   const { startEditing } = useAddCommentStore();
   const [isOpen, setIsOpen] = useState(false);
+
+  const handleStartEditing = () => {
+    startEditing(postId, text);
+    setIsOpen(false);
+  };
+
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
@@ -48,10 +54,7 @@ const CommentActions = ({
                   )}
                 </div>
               }
-              onClick={() => {
-                startEditing(postId, text);
-                setIsOpen(false);
-              }}
+              onClick={handleStartEditing}
             />
             <DeletePost
               postId={postId}

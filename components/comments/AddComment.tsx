@@ -1,9 +1,11 @@
 import useAddComment from '@/hooks/useAddComment';
 import useEditComment from '@/hooks/useEditComment';
+import { cn } from '@/lib/utils';
 import useAddCommentStore from '@/store/addComment';
 import { useUser } from '@clerk/nextjs';
-import { useEffect, useRef, useState } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { AtSign, Smile, X } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import { Avatar, AvatarImage } from '../ui/avatar';
 
 const AddComment = ({
   postId,
@@ -18,8 +20,7 @@ const AddComment = ({
   });
   const { handleEdit, isEditing } = useEditComment();
   const { user } = useUser();
-  const [charCount, setCharCount] = useState(0);
-  const MAX_CHARS = 150;
+  const MAX_CHARS = 200;
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const {
@@ -29,20 +30,34 @@ const AddComment = ({
     editCommentId,
     currentPostId,
     reset,
+    charCount,
+    setCharCount,
     setCurrentPostId,
   } = useAddCommentStore();
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto';
+      const newHeight = inputRef.current.scrollHeight;
+      const baseHeight = 24;
+
+      const lineCount = Math.ceil(newHeight / baseHeight);
+      const hasMultipleLines = lineCount > 1;
+
+      if (hasMultipleLines) {
+        inputRef.current.style.height = `${Math.min(newHeight, 170)}px`;
+      } else {
+        inputRef.current.style.height = '24px';
+      }
+    }
+  }, [commentText]);
 
   useEffect(() => {
     if (currentPostId !== postId) {
       setCurrentPostId(postId);
     }
-
     setCharCount(commentText.length);
-
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [inputRef, commentText, postId, currentPostId]);
+  }, [commentText, postId, currentPostId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = e.target.value;
@@ -53,6 +68,7 @@ const AddComment = ({
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    e.preventDefault();
     const pastedText = e.clipboardData.getData('text');
     const newText = commentText + pastedText;
     const trimmedText = newText.slice(0, MAX_CHARS);
@@ -73,75 +89,82 @@ const AddComment = ({
     setCharCount(0);
   };
 
-  const handleCancel = () => {
+  const cancelEdit = () => {
     reset();
     setCharCount(0);
   };
 
+  const isAtLimit = charCount >= MAX_CHARS;
+
   return (
-    <div className='fixed bottom-0 left-0 right-0 border-t border-gray-800 bg-black z-50'>
-      <div className='flex items-start p-3'>
-        <Avatar className='size-8 mr-3 mt-1 flex-shrink-0'>
+    <div className='border-t border-gray-800 bg-[#101010D9] py-2 px-4'>
+      {isEdit && (
+        <div className='flex items-center justify-between mb-2'>
+          <div className='text-sm text-gray-300'>Editing comment</div>
+          <button
+            onClick={cancelEdit}
+            className='text-gray-400 hover:text-gray-200 flex items-center gap-1 text-sm'
+          >
+            <X className='size-4' />
+            Cancel
+          </button>
+        </div>
+      )}
+
+      <div className='flex items-center gap-2'>
+        <Avatar className='size-8 flex-shrink-0'>
           <AvatarImage
             src={user?.imageUrl ?? ''}
             alt={user?.username ?? ''}
             className='object-cover'
           />
-          <AvatarFallback className='bg-gray-700 text-white'>
-            {user?.username?.slice(0, 2).toUpperCase()}
-          </AvatarFallback>
         </Avatar>
 
-        <div className='flex-1 relative'>
-          <div className='relative bg-white-12 rounded-2xl overflow-hidden'>
+        <div className='relative flex-1'>
+          <div className='flex items-center bg-white-13 rounded-lg px-3 pr-16'>
             <textarea
               ref={inputRef}
-              className='w-full bg-transparent text-white placeholder-gray-500 px-4 py-3 outline-none resize-none min-h-20 hide-scrollbar'
               placeholder={isEdit ? 'Edit comment...' : 'Add comment...'}
               value={commentText}
               onChange={handleInputChange}
               onPaste={handlePaste}
-              autoFocus
               rows={1}
+              autoFocus
               maxLength={MAX_CHARS}
+              className={cn(
+                'w-full text-sm resize-none bg-transparent text-white placeholder-gray-400 outline-none py-2 overflow-hidden',
+                charCount > 0 ? 'pb-7' : ''
+              )}
             />
-            <span
-              className={`text-xs absolute right-4 bottom-3 font-bold ${
-                charCount >= MAX_CHARS ? 'text-red-500' : 'text-gray-400'
-              }`}
-            >
-              {charCount}/{MAX_CHARS}
-            </span>
+
+            <div className='absolute bottom-2 right-3 flex items-center gap-2'>
+              <AtSign className='size-5 text-gray-400' />
+              <Smile className='size-5 text-gray-400' />
+            </div>
           </div>
 
-          {(commentText.trim() || isEdit) && (
-            <div className='flex justify-end mt-1 gap-2'>
-              {isEdit && (
-                <button
-                  onClick={handleCancel}
-                  className='text-sm font-medium text-gray-400 hover:text-gray-300'
-                >
-                  Cancel
-                </button>
+          {charCount > 0 && (
+            <div
+              className={cn(
+                `text-xs absolute bottom-2 left-3`,
+                isAtLimit ? 'text-primary-blue' : 'text-gray-400'
               )}
-              <button
-                onClick={submitComment}
-                disabled={isReplying || isEditing || !commentText.trim()}
-                className='text-sm font-bold text-primary-blue hover:text-primary-blue/80 disabled:opacity-50'
-              >
-                {isEdit ? 'Edit' : 'Post'}
-              </button>
+            >
+              {charCount}/{MAX_CHARS}
             </div>
           )}
         </div>
-      </div>
 
-      {!isEdit && (
-        <div
-          className='w-full h-0.5 bg-gradient-to-r from-blue-400 to-blue-500 opacity-70'
-          style={{ background: 'linear-gradient(to right, #18a3fe, #0d8edc)' }}
-        ></div>
-      )}
+        <button
+          onClick={submitComment}
+          disabled={isReplying || isEditing || !commentText.trim()}
+          className={`font-medium px-2 ${
+            !commentText.trim() ? 'text-gray-600' : 'text-primary-blue'
+          }`}
+        >
+          {isEdit ? 'Update' : 'Post'}
+        </button>
+      </div>
     </div>
   );
 };

@@ -87,7 +87,7 @@ const CommentsPanel: React.FC<CommentsProps> = ({
   };
 
   return (
-    <div className='h-full bg-[#101010D9] border border-border-light rounded-2xl'>
+    <div className='h-full flex flex-col bg-[#101010D9] border border-border-light overflow-hidden rounded-2xl'>
       <div className='p-4'>
         <PostInfoCard
           postText={text || ''}
@@ -101,7 +101,7 @@ const CommentsPanel: React.FC<CommentsProps> = ({
       <div
         ref={scrollRef}
         id='scrollableDiv'
-        className='h-full overflow-y-auto max-h-[90vh] flex flex-col hide-scrollbar'
+        className='flex-1 overflow-y-auto hide-scrollbar'
       >
         {showLoader ? (
           <div className='w-full'>{renderSkeletons()}</div>
@@ -138,7 +138,9 @@ const CommentsPanel: React.FC<CommentsProps> = ({
         )}
       </div>
 
-      <AddComment postId={postId} authorId={authorId} />
+      <div className='mt-auto'>
+        <AddComment postId={postId} authorId={authorId} />
+      </div>
     </div>
   );
 };
