@@ -23,7 +23,7 @@ import UploadError from './UploadError';
 import UploadStep from './UploadStep';
 
 const NewPost = () => {
-  const { openDialog, setOpenDialog, step, setStep, resetPostState, mentions } =
+  const { openDialog, setOpenDialog, step, setStep, resetPostState } =
     usePostDialog();
 
   const { handleMutation } = useCreatePost();
