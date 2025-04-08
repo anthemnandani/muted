@@ -4,6 +4,7 @@ import useFollowUser from '@/hooks/useFollowUser';
 import type { AuthorInfoProps } from '@/lib/types';
 import { Check, Plus } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import Link from 'next/link';
 
 const UserProfile = ({ author }: { author: AuthorInfoProps }) => {
   const { handleToggleFollow, isLoading, isSameUser, isFollowedByMe } =
@@ -12,16 +13,18 @@ const UserProfile = ({ author }: { author: AuthorInfoProps }) => {
   return (
     <button className='relative' type='button'>
       <div className='size-14 outline outline-1 outline-border rounded-full relative'>
-        <Avatar className='rounded-full w-full h-full'>
-          <AvatarImage
-            src={author?.image ?? ''}
-            alt={author?.username}
-            className='object-cover'
-          />
-          <AvatarFallback>
-            {author?.username?.slice(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        <Link href={`/@${author.username}`}>
+          <Avatar className='rounded-full w-full h-full'>
+            <AvatarImage
+              src={author?.image ?? ''}
+              alt={author?.username}
+              className='object-cover'
+            />
+            <AvatarFallback>
+              {author?.username?.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </Link>
         <button
           type='button'
           onClick={handleToggleFollow}
