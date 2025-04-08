@@ -1,24 +1,13 @@
 'use client';
 
 import useWindow from '@/hooks/useWindow';
-import type { MentionSuggestion } from '@/lib/types';
+import type { UsersMenuProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { UserX } from 'lucide-react';
 import { Icons } from '../icons';
 import UserAvatar from '../shared/UserAvatar';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { ScrollArea } from '../ui/scroll-area';
-
-interface UsersMenuProps {
-  showMentionSuggestions: boolean;
-  mentionSuggestions?: MentionSuggestion[];
-  cursorPosition: {
-    top: number;
-    left: number;
-  };
-  isLoading: boolean;
-  onSelect: (username: string, userId: string) => void;
-}
 
 const UsersMenu = ({
   showMentionSuggestions,
@@ -28,6 +17,10 @@ const UsersMenu = ({
   onSelect,
 }: UsersMenuProps) => {
   const { isMobile } = useWindow();
+
+  const menuOffset = 275;
+  const adjustedTop = cursorPosition.top - menuOffset;
+
   return (
     <Popover open={showMentionSuggestions} modal>
       <PopoverTrigger className='hidden'></PopoverTrigger>
@@ -37,18 +30,18 @@ const UsersMenu = ({
           isMobile ? 'w-[200px]' : 'w-[250px]'
         )}
         style={{
-          top: `${cursorPosition.top}px`,
+          top: `${Math.max(10, adjustedTop)}px`,
           left: `${cursorPosition.left}px`,
         }}
         onOpenAutoFocus={(e) => e.preventDefault()}
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
         <ScrollArea
-          className='max-h-[285px] overflow-y-auto flex flex-col'
+          className='max-h-[250px] overflow-y-auto flex flex-col'
           type='always'
         >
           {isLoading ? (
-            <div className='flex-center h-[285px]'>
+            <div className='flex-center h-[250px]'>
               <div className='flex flex-col items-center gap-2'>
                 <Icons.spinner className='size-5 animate-spin text-muted-foreground' />
                 <span className='text-sm text-muted-foreground'>
@@ -57,7 +50,7 @@ const UsersMenu = ({
               </div>
             </div>
           ) : mentionSuggestions?.length === 0 ? (
-            <div className='flex-center h-[285px]'>
+            <div className='flex-center h-[250px]'>
               <div className='flex flex-col items-center gap-2'>
                 <UserX className='size-5 text-muted-foreground' />
                 <span className='text-sm text-muted-foreground'>
@@ -66,33 +59,35 @@ const UsersMenu = ({
               </div>
             </div>
           ) : (
-            mentionSuggestions?.map((user, index) => (
-              <div
-                className='overflow-hidden cursor-pointer w-full hover:bg-accent'
-                key={user.id}
-                onClick={() => onSelect(user.username, user.id)}
-              >
-                <div className='flex items-center gap-3 p-3'>
-                  <UserAvatar
-                    image={user.image}
-                    username={user.username}
-                    fullname={user.fullName}
-                    className='size-8'
-                  />
-                  <div className='flex flex-col items-start'>
-                    <span className='text-sm font-medium antialiased'>
-                      {user.fullName}
-                    </span>
-                    <span className='text-xs text-muted-foreground antialiased'>
-                      @{user.username}
-                    </span>
+            <div className='h-[250px]'>
+              {mentionSuggestions?.map((user, index) => (
+                <div
+                  className='overflow-hidden cursor-pointer w-full hover:bg-accent'
+                  key={user.id}
+                  onClick={() => onSelect(user.username, user.id)}
+                >
+                  <div className='flex items-center gap-3 p-3'>
+                    <UserAvatar
+                      image={user.image}
+                      username={user.username}
+                      fullname={user.fullName}
+                      className='size-8'
+                    />
+                    <div className='flex flex-col items-start'>
+                      <span className='text-sm font-medium antialiased'>
+                        {user.fullName}
+                      </span>
+                      <span className='text-xs text-muted-foreground antialiased'>
+                        @{user.username}
+                      </span>
+                    </div>
                   </div>
+                  {index !== mentionSuggestions.length - 1 && (
+                    <div className='-mx-1 h-px bg-muted' />
+                  )}
                 </div>
-                {index !== mentionSuggestions.length - 1 && (
-                  <div className='-mx-1 h-px bg-muted' />
-                )}
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </ScrollArea>
       </PopoverContent>

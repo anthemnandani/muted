@@ -1,16 +1,17 @@
 'use client';
 
 import useLike from '@/hooks/useLike';
-import { Comment } from '@/lib/types';
+import type { Comment } from '@/lib/types';
 import { cn, formatCount, formatTimeAgo } from '@/lib/utils';
 import { Heart } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import Username from '../user/Username';
 import CommentActions from './CommentActions';
+import CommentText from './CommentText';
 
 const CommentCard = ({ comment }: { comment: Comment }) => {
-  const { id, author, text, likesCount, createdAt, likes } = comment;
+  const { id, author, text, likesCount, createdAt, likes, mentions } = comment;
   const {
     isLikedByMe,
     likesCount: updatedLikesCount,
@@ -37,9 +38,7 @@ const CommentCard = ({ comment }: { comment: Comment }) => {
         </Link>
         <div className='flex-1 min-w-0'>
           <Username author={author} className='truncate text-base' />
-          <p className='text-[0.9rem] leading-[1.1375rem] mt-1 text-white/90 break-words whitespace-pre-line antialiased'>
-            {text}
-          </p>
+          <CommentText text={text!} mentions={mentions} />
           <div className='flex items-center mt-1 gap-6'>
             <span className='text-sm text-gray-400'>
               {formatTimeAgo(createdAt)}

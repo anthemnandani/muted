@@ -2,11 +2,13 @@
 
 import useAddComment from '@/hooks/useAddComment';
 import useEditComment from '@/hooks/useEditComment';
+import useMentions from '@/hooks/useMentions';
 import { cn } from '@/lib/utils';
 import useAddCommentStore from '@/store/addComment';
 import { useUser } from '@clerk/nextjs';
 import { AtSign, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+import UsersMenu from '../menus/UsersMenu';
 import { EmojiPicker } from '../modals/EmojiPicker';
 import { Avatar, AvatarImage } from '../ui/avatar';
 
@@ -24,7 +26,7 @@ const AddComment = ({
   const { handleEdit, isEditing } = useEditComment();
   const { user } = useUser();
   const MAX_CHARS = 200;
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const {
     commentText,
@@ -36,21 +38,37 @@ const AddComment = ({
     charCount,
     setCharCount,
     setCurrentPostId,
+    mentions,
+    setMentions,
   } = useAddCommentStore();
 
+  const {
+    mentionSuggestions,
+    showMentionSuggestions,
+    cursorPosition,
+    handleMentionSearch,
+    isMentionsLoading,
+    insertMention,
+  } = useMentions({
+    textareaRef,
+    setCommentText,
+    setMentions,
+    mentions,
+  });
+
   useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.style.height = 'auto';
-      const newHeight = inputRef.current.scrollHeight;
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      const newHeight = textareaRef.current.scrollHeight;
       const baseHeight = 24;
 
       const lineCount = Math.ceil(newHeight / baseHeight);
       const hasMultipleLines = lineCount > 1;
 
       if (hasMultipleLines) {
-        inputRef.current.style.height = `${Math.min(newHeight, 170)}px`;
+        textareaRef.current.style.height = `${Math.min(newHeight, 170)}px`;
       } else {
-        inputRef.current.style.height = '24px';
+        textareaRef.current.style.height = '24px';
       }
     }
   }, [commentText]);
@@ -64,6 +82,8 @@ const AddComment = ({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = e.target.value;
+    handleMentionSearch(text, e.target.selectionStart || 0);
+
     if (text.length <= MAX_CHARS) {
       setCommentText(text);
       setCharCount(text.length);
@@ -134,7 +154,7 @@ const AddComment = ({
         <div className='relative flex-1'>
           <div className='flex items-center bg-white-13 rounded-lg px-3 pr-16'>
             <textarea
-              ref={inputRef}
+              ref={textareaRef}
               placeholder={isEdit ? 'Edit comment...' : 'Add comment...'}
               value={commentText}
               onChange={handleInputChange}
@@ -149,9 +169,9 @@ const AddComment = ({
             />
 
             <div className='absolute bottom-2 right-3 flex items-center gap-2'>
-              <div className='text-gray-400 flex gap-1 select-none items-center text-[15px] cursor-pointer'>
+              {/* <div className='text-gray-400 flex gap-1 select-none items-center text-[15px] cursor-pointer'>
                 <AtSign className='size-5 select-none transform active:scale-75 transition-transform' />
-              </div>
+              </div> */}
               <EmojiPicker onChange={handleEmojiSelect} />
             </div>
           </div>
@@ -165,6 +185,16 @@ const AddComment = ({
             >
               {charCount}/{MAX_CHARS}
             </div>
+          )}
+
+          {showMentionSuggestions && (
+            <UsersMenu
+              showMentionSuggestions={showMentionSuggestions}
+              mentionSuggestions={mentionSuggestions}
+              cursorPosition={cursorPosition}
+              isLoading={isMentionsLoading}
+              onSelect={insertMention}
+            />
           )}
         </div>
 

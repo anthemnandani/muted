@@ -12,9 +12,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useBunnyUpload } from './useBunnyUpload';
 
-const useCreatePost = (
-  setMentions?: (mentions: Array<{ userId: string; index: number }>) => void
-) => {
+const useCreatePost = () => {
   const { postPrivacy } = usePost();
   const { mediaFiles, setMediaFiles } = useFileStore();
   const { uploadToStorage, uploadToStream } = useBunnyUpload();
@@ -49,7 +47,6 @@ const useCreatePost = (
       onMutate: () => {
         resetPostState();
         setMediaFiles([]);
-        setMentions?.([]);
       },
       onError: () => {
         toast.error('PostingError: Something went wrong!');
@@ -138,12 +135,7 @@ const useCreatePost = (
     }
   };
 
-  const handleMutation = async (
-    mentions: Array<{
-      userId: string;
-      index: number;
-    }>
-  ) => {
+  const handleMutation = async () => {
     const mediaUploadResult = await handleMediaUpload();
 
     if (!mediaUploadResult.success) {
@@ -154,7 +146,6 @@ const useCreatePost = (
       ? editPost({
           id: editPostInfo.id,
           text: postData.text.trim(),
-          mentions,
         })
       : createPost({
           text: postData.text.trim(),
@@ -163,7 +154,6 @@ const useCreatePost = (
           quoteId: quoteInfo?.id,
           postAuthor: quoteInfo?.author.id,
           linkPreview: postData.linkPreview ?? undefined,
-          mentions,
         });
 
     return promise as any;

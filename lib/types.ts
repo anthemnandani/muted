@@ -210,7 +210,6 @@ export interface CreatePostInputProps {
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   value: string;
   setPostData: React.Dispatch<React.SetStateAction<PostData>>;
-  handleMentionSearch: (value: string, cursorPosition: number) => void;
   isReply?: boolean;
 }
 
@@ -569,7 +568,20 @@ export type Comment = {
   author: AuthorInfoProps;
   createdAt: Date;
   likes: { userId: string }[];
+  mentions: Array<{
+    user: AuthorInfoProps;
+    index: number;
+  }>;
 };
+
+export interface CommentTextProps {
+  text: string;
+  mentions?: Array<{
+    user: AuthorInfoProps;
+    index: number;
+  }>;
+  className?: string;
+}
 
 export interface CommentActionsProps {
   authorId: string;
@@ -588,4 +600,15 @@ export interface PostInfoCardProps {
   postText: string;
   author: AuthorInfoProps;
   createdAt: Date;
+}
+
+export interface UsersMenuProps {
+  showMentionSuggestions: boolean;
+  mentionSuggestions?: MentionSuggestion[];
+  cursorPosition: {
+    top: number;
+    left: number;
+  };
+  isLoading: boolean;
+  onSelect: (username: string, userId: string) => void;
 }

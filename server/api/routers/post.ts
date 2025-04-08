@@ -304,25 +304,33 @@ export const postRouter = createTRPCRouter({
         text: z.string().min(1, {
           message: 'Comment cannot be empty',
         }),
-        // privacy: z.nativeEnum(PostPrivacy),
+        mentions: z
+          .array(
+            z.object({
+              userId: z.string(),
+              index: z.number(),
+            })
+          )
+          .optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const { user, userId } = ctx;
       const email = getUserEmail(user);
-      const dbUser = await ctx.db.user.findUnique({
-        where: { email },
-        select: { verified: true },
-      });
-
-      if (!dbUser) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
-      }
-
-      const filter = new Filter();
-      const filteredText = filter.clean(input.text);
 
       const transactionResult = await ctx.db.$transaction(async (prisma) => {
+        const dbUser = await prisma.user.findUnique({
+          where: { email },
+          select: { verified: true },
+        });
+
+        if (!dbUser) {
+          throw new TRPCError({ code: 'NOT_FOUND' });
+        }
+
+        const filter = new Filter();
+        const filteredText = filter.clean(input.text);
+
         const postId = createId();
 
         const parentPost = await prisma.post.findUnique({
@@ -353,6 +361,14 @@ export const postRouter = createTRPCRouter({
             authorId: userId,
             parentPostId: input.postId,
             path,
+            mentions: input.mentions
+              ? {
+                  create: input.mentions.map((mention) => ({
+                    userId: mention.userId,
+                    index: mention.index,
+                  })),
+                }
+              : undefined,
           },
           select: {
             id: true,
@@ -370,6 +386,22 @@ export const postRouter = createTRPCRouter({
               message: input.text,
             },
           });
+        }
+
+        if (input.mentions?.length) {
+          await Promise.all(
+            input.mentions.map((mention) =>
+              prisma.notification.create({
+                data: {
+                  type: 'MENTION',
+                  senderUserId: userId,
+                  receiverUserId: mention.userId,
+                  postId: repliedPost.id,
+                  message: filteredText,
+                },
+              })
+            )
+          );
         }
 
         return { repliedPost };

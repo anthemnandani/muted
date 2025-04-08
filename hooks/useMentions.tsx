@@ -10,7 +10,7 @@ interface MentionPosition {
 
 interface UseMentionsProps {
   textareaRef: React.RefObject<HTMLTextAreaElement>;
-  setPostData: React.Dispatch<React.SetStateAction<PostData>>;
+  setCommentText: (commentText: string) => void;
   setMentions: (
     mentions: Array<{
       userId: string;
@@ -25,7 +25,7 @@ interface UseMentionsProps {
 
 const useMentions = ({
   textareaRef,
-  setPostData,
+  setCommentText,
   setMentions,
   mentions,
 }: UseMentionsProps) => {
@@ -148,7 +148,7 @@ const useMentions = ({
         `@${username} ` +
         text.slice(lastAtIndex + removeLength);
 
-      setPostData((prev) => ({ ...prev, text: newText }));
+      setCommentText(newText);
 
       setShowMentionSuggestions(false);
       setMentionSearch('');
@@ -168,7 +168,7 @@ const useMentions = ({
         textarea.focus();
       });
     },
-    [textareaRef, setPostData]
+    [textareaRef, setCommentText]
   );
 
   React.useEffect(() => {

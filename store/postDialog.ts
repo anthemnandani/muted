@@ -17,11 +17,6 @@ interface ToggleState {
   setCurrentMediaIndex: (index: number) => void;
   showGallery: boolean;
   setShowGallery: (show: boolean) => void;
-  mentions: Array<{
-    userId: string;
-    index: number;
-  }>;
-  setMentions: (mentions: Array<{ userId: string; index: number }>) => void;
   resetPostState: () => void;
 }
 
@@ -44,8 +39,6 @@ const usePostDialog = create<ToggleState>((set) => ({
   setCurrentMediaIndex: (index) => set({ currentMediaIndex: index }),
   showGallery: false,
   setShowGallery: (show) => set({ showGallery: show }),
-  mentions: [],
-  setMentions: (mentions) => set({ mentions }),
   resetPostState: () =>
     set({
       quoteInfo: null,

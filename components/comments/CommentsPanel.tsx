@@ -130,6 +130,7 @@ const CommentsPanel: React.FC<CommentsProps> = ({
                     createdAt: comment.createdAt,
                     likesCount: comment.likesCount,
                     likes: comment.likes,
+                    mentions: comment.mentions,
                   }}
                 />
               ))

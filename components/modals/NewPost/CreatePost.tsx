@@ -4,11 +4,9 @@ import LinkPreviewCard from '@/components/cards/LinkPreviewCard';
 import { Icons } from '@/components/icons';
 import CreatePostInput from '@/components/inputs/CreatePostInput';
 import PostPrivacyMenu from '@/components/menus/PostPrivacyMenu';
-import UsersMenu from '@/components/menus/UsersMenu';
 import { Button } from '@/components/ui/button';
 import useCreatePost from '@/hooks/useCreatePost';
 import useLinkPreview from '@/hooks/useLinkPreview';
-import useMentions from '@/hooks/useMentions';
 import { cn } from '@/lib/utils';
 import usePostDialog from '@/store/postDialog';
 import { Check } from 'lucide-react';
@@ -17,14 +15,8 @@ import React from 'react';
 import { toast } from 'sonner';
 
 const CreatePost = () => {
-  const {
-    openDialog,
-    setOpenDialog,
-    quoteInfo,
-    editPostInfo,
-    mentions,
-    setMentions,
-  } = usePostDialog();
+  const { openDialog, setOpenDialog, quoteInfo, editPostInfo } =
+    usePostDialog();
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   // const { isLoading: isCheckingPermissions } = usePostInteraction({
@@ -34,22 +26,13 @@ const CreatePost = () => {
   // });
 
   const { postData, setPostData, isLoading, isEditing, handleMutation } =
-    useCreatePost(setMentions);
+    useCreatePost();
 
   const { isLinkPreviewLoading } = useLinkPreview(postData?.text, setPostData);
 
-  const {
-    mentionSuggestions,
-    showMentionSuggestions,
-    cursorPosition,
-    handleMentionSearch,
-    isMentionsLoading,
-    insertMention,
-  } = useMentions({ textareaRef, setPostData, setMentions, mentions });
-
   const handleSubmit = (isEdit: boolean) => {
     setOpenDialog(false);
-    const promise = handleMutation(mentions);
+    const promise = handleMutation();
 
     toast.promise(promise, {
       loading: (
@@ -111,18 +94,9 @@ const CreatePost = () => {
           textareaRef={textareaRef}
           value={postData.text}
           setPostData={setPostData}
-          handleMentionSearch={handleMentionSearch}
         />
       </div>
-      {showMentionSuggestions && (
-        <UsersMenu
-          showMentionSuggestions={showMentionSuggestions}
-          mentionSuggestions={mentionSuggestions}
-          cursorPosition={cursorPosition}
-          isLoading={isMentionsLoading}
-          onSelect={insertMention}
-        />
-      )}
+
       {(postData.linkPreview || isLinkPreviewLoading) && (
         <div className='mx-6'>
           <LinkPreviewCard

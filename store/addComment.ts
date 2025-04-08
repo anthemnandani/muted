@@ -10,6 +10,11 @@ interface AddCommentState {
   setCurrentPostId: (postId: string) => void;
   charCount: number;
   setCharCount: (count: number) => void;
+  mentions: Array<{
+    userId: string;
+    index: number;
+  }>;
+  setMentions: (mentions: Array<{ userId: string; index: number }>) => void;
   reset: () => void;
 }
 
@@ -21,6 +26,8 @@ const useAddCommentStore = create<AddCommentState>()((set) => ({
   charCount: 0,
   setCommentText: (text) => set({ commentText: text }),
   setCharCount: (count) => set({ charCount: count }),
+  mentions: [],
+  setMentions: (mentions) => set({ mentions }),
   startEditing: (commentId, text) =>
     set({
       isEdit: true,
@@ -48,6 +55,7 @@ const useAddCommentStore = create<AddCommentState>()((set) => ({
       isEdit: false,
       editCommentId: '',
       charCount: 0,
+      mentions: [],
     }),
 }));
 

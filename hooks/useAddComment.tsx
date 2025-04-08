@@ -15,7 +15,7 @@ const useAddComment = ({
   const router = useRouter();
   const trpcUtils = api.useUtils();
 
-  const { commentText, setCommentText, reset } = useAddCommentStore();
+  const { commentText, mentions, reset } = useAddCommentStore();
 
   const { isLoading: isReplying, mutateAsync: replyToPost } =
     api.post.replyToPost.useMutation({
@@ -39,6 +39,7 @@ const useAddComment = ({
       postId,
       text: commentText,
       postAuthor: authorId,
+      mentions,
     });
 
     toast.promise(promise, {

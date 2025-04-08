@@ -22,7 +22,6 @@ const CreatePostInput = ({
   textareaRef,
   value,
   setPostData,
-  handleMentionSearch,
   isReply = false,
 }: CreatePostInputProps) => {
   const { isMobile } = useDevice();
@@ -66,7 +65,7 @@ const CreatePostInput = ({
     event: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     const newValue = event.target.value;
-    handleMentionSearch(newValue, event.target.selectionStart || 0);
+    // handleMentionSearch(newValue, event.target.selectionStart || 0);
     setPostData((prev) => ({ ...prev, text: newValue }));
     onTextareaChange(newValue);
   };
