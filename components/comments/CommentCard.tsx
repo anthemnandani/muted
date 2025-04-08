@@ -4,7 +4,9 @@ import useLike from '@/hooks/useLike';
 import { Comment } from '@/lib/types';
 import { cn, formatCount, formatTimeAgo } from '@/lib/utils';
 import { Heart } from 'lucide-react';
+import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import Username from '../user/Username';
 import CommentActions from './CommentActions';
 
 const CommentCard = ({ comment }: { comment: Comment }) => {
@@ -21,7 +23,7 @@ const CommentCard = ({ comment }: { comment: Comment }) => {
   return (
     <div className='px-4 py-3'>
       <div className='flex items-start gap-3'>
-        <div className='flex-shrink-0'>
+        <Link href={`/@${author.username}`} className='flex-shrink-0'>
           <Avatar className='rounded-full w-full h-full size-10'>
             <AvatarImage
               src={author.image ?? ''}
@@ -32,12 +34,10 @@ const CommentCard = ({ comment }: { comment: Comment }) => {
               {author.username?.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-        </div>
+        </Link>
         <div className='flex-1 min-w-0'>
-          <div className='flex items-center gap-1'>
-            <span className='font-medium text-white'>{author.username}</span>
-          </div>
-          <p className='mt-1 text-white break-words whitespace-pre-line antialiased'>
+          <Username author={author} className='truncate text-base' />
+          <p className='text-[0.9rem] leading-[1.1375rem] mt-1 text-white/90 break-words whitespace-pre-line antialiased'>
             {text}
           </p>
           <div className='flex items-center mt-1 gap-6'>
