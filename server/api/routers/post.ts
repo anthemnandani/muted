@@ -39,7 +39,7 @@ export const postRouter = createTRPCRouter({
         mentions: z
           .array(
             z.object({
-              userId: z.string(),
+              username: z.string(),
               index: z.number(),
             })
           )
@@ -116,14 +116,14 @@ export const postRouter = createTRPCRouter({
                 };
               }),
             },
-            mentions: input.mentions
-              ? {
-                  create: input.mentions.map((mention) => ({
-                    userId: mention.userId,
-                    index: mention.index,
-                  })),
-                }
-              : undefined,
+            // mentions: input.mentions
+            //   ? {
+            //       create: input.mentions.map((mention) => ({
+            //         username: mention.username,
+            //         index: mention.index,
+            //       })),
+            //     }
+            //   : undefined,
           },
           select: {
             id: true,
@@ -143,21 +143,21 @@ export const postRouter = createTRPCRouter({
           });
         }
 
-        if (input.mentions?.length) {
-          await Promise.all(
-            input.mentions.map((mention) =>
-              prisma.notification.create({
-                data: {
-                  type: 'MENTION',
-                  senderUserId: userId,
-                  receiverUserId: mention.userId,
-                  postId: newpost.id,
-                  message: filteredText,
-                },
-              })
-            )
-          );
-        }
+        // if (input.mentions?.length) {
+        //   await Promise.all(
+        //     input.mentions.map((mention) =>
+        //       prisma.notification.create({
+        //         data: {
+        //           type: 'MENTION',
+        //           senderUserId: userId,
+        //           receiverUserId: mention.userId,
+        //           postId: newpost.id,
+        //           message: filteredText,
+        //         },
+        //       })
+        //     )
+        //   );
+        // }
 
         return {
           newpost,
@@ -307,7 +307,7 @@ export const postRouter = createTRPCRouter({
         mentions: z
           .array(
             z.object({
-              userId: z.string(),
+              username: z.string(),
               index: z.number(),
             })
           )
@@ -315,106 +315,139 @@ export const postRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { user, userId } = ctx;
-      const email = getUserEmail(user);
+      const { userId } = ctx;
 
-      const transactionResult = await ctx.db.$transaction(async (prisma) => {
-        const dbUser = await prisma.user.findUnique({
-          where: { email },
-          select: { verified: true },
-        });
+      try {
+        const transactionResult = await ctx.db.$transaction(async (prisma) => {
+          const filter = new Filter();
+          const filteredText = filter.clean(input.text);
 
-        if (!dbUser) {
-          throw new TRPCError({ code: 'NOT_FOUND' });
-        }
+          const postId = createId();
 
-        const filter = new Filter();
-        const filteredText = filter.clean(input.text);
-
-        const postId = createId();
-
-        const parentPost = await prisma.post.findUnique({
-          where: { id: input.postId },
-          select: { path: true, id: true },
-        });
-
-        if (!parentPost) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'Parent post not found',
+          const parentPost = await prisma.post.findUnique({
+            where: { id: input.postId },
+            select: { path: true, id: true },
           });
-        }
 
-        const parentPath = parentPost.path ?? `/${parentPost.id}`;
-        const path = `${parentPath}${postId}/`;
-        const ancestorIds = parentPath.split('/').filter(Boolean);
+          if (!parentPost) {
+            throw new TRPCError({
+              code: 'NOT_FOUND',
+              message: 'Parent post not found',
+            });
+          }
 
-        await prisma.post.updateMany({
-          where: { id: { in: ancestorIds } },
-          data: { repliesCount: { increment: 1 } },
-        });
+          const parentPath = parentPost.path ?? `/${parentPost.id}`;
+          const path = `${parentPath}${postId}/`;
+          const ancestorIds = parentPath.split('/').filter(Boolean);
 
-        const repliedPost = await prisma.post.create({
-          data: {
-            id: postId,
-            text: filteredText,
-            authorId: userId,
-            parentPostId: input.postId,
-            path,
-            mentions: input.mentions
-              ? {
-                  create: input.mentions.map((mention) => ({
-                    userId: mention.userId,
-                    index: mention.index,
-                  })),
-                }
-              : undefined,
-          },
-          select: {
-            id: true,
-            author: true,
-          },
-        });
+          await prisma.post.updateMany({
+            where: { id: { in: ancestorIds } },
+            data: { repliesCount: { increment: 1 } },
+          });
 
-        if (userId !== input.postAuthor) {
-          await prisma.notification.create({
+          const repliedPost = await prisma.post.create({
             data: {
-              type: 'REPLY',
-              senderUserId: userId,
-              receiverUserId: input.postAuthor,
-              postId: input.postId,
-              message: input.text,
+              id: postId,
+              text: filteredText,
+              authorId: userId,
+              parentPostId: input.postId,
+              path,
+            },
+            select: {
+              id: true,
+              author: true,
             },
           });
-        }
 
-        if (input.mentions?.length) {
-          await Promise.all(
-            input.mentions.map((mention) =>
-              prisma.notification.create({
-                data: {
-                  type: 'MENTION',
+          if (input.mentions && input.mentions.length > 0) {
+            const uniqueUsernames = Array.from(
+              new Set(input.mentions.map((m) => m.username))
+            );
+
+            const mentionedUsers = await prisma.user.findMany({
+              where: {
+                username: {
+                  in: uniqueUsernames,
+                },
+              },
+              select: {
+                id: true,
+                username: true,
+              },
+            });
+
+            const usernameToIdMap = new Map(
+              mentionedUsers.map((user) => [user.username, user.id])
+            );
+
+            const validMentions = input.mentions.filter((mention) =>
+              usernameToIdMap.has(mention.username)
+            );
+
+            if (validMentions.length > 0) {
+              await prisma.mention.createMany({
+                data: validMentions.map((mention) => ({
+                  postId,
+                  userId: usernameToIdMap.get(mention.username)!,
+                  index: mention.index,
+                })),
+                skipDuplicates: true,
+              });
+
+              const mentionNotifications = mentionedUsers
+                .filter((user) => user.id !== userId)
+                .map((user) => ({
+                  type: NotificationType.MENTION,
                   senderUserId: userId,
-                  receiverUserId: mention.userId,
+                  receiverUserId: user.id,
                   postId: repliedPost.id,
                   message: filteredText,
-                },
-              })
-            )
-          );
+                }));
+
+              if (mentionNotifications.length > 0) {
+                await prisma.notification.createMany({
+                  data: mentionNotifications,
+                });
+              }
+            }
+          }
+
+          if (userId !== input.postAuthor) {
+            await prisma.notification.create({
+              data: {
+                type: 'REPLY',
+                senderUserId: userId,
+                receiverUserId: input.postAuthor,
+                postId: input.postId,
+                message: input.text,
+              },
+            });
+          }
+
+          return { repliedPost };
+        });
+
+        if (!transactionResult) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to create reply',
+          });
         }
 
-        return { repliedPost };
-      });
-
-      if (!transactionResult) {
-        throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+        return {
+          createPost: transactionResult.repliedPost,
+          success: true,
+        };
+      } catch (error) {
+        console.error('Error in replyToPost:', error);
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to process mentions. Please try again.',
+        });
       }
-
-      return {
-        createPost: transactionResult.repliedPost,
-        success: true,
-      };
     }),
 
   getPostDetails: publicProcedure
@@ -1279,7 +1312,7 @@ export const postRouter = createTRPCRouter({
         mentions: z
           .array(
             z.object({
-              userId: z.string(),
+              username: z.string(),
               index: z.number(),
             })
           )
@@ -1288,133 +1321,174 @@ export const postRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { userId } = ctx;
-      const post = await ctx.db.post.findUnique({
-        where: { id: input.id },
-        select: {
-          authorId: true,
-          createdAt: true,
-          mentions: {
-            select: {
-              userId: true,
-            },
-          },
-          hashtags: {
-            select: {
-              name: true,
-            },
-          },
-          text: true,
-        },
-      });
 
-      if (!post) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
-      }
-
-      if (post.authorId !== userId) {
-        throw new TRPCError({ code: 'FORBIDDEN' });
-      }
-
-      const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
-      if (post.createdAt < fifteenMinutesAgo) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Edit window has expired',
-        });
-      }
-
-      const filter = new Filter();
-      const filteredText = filter.clean(input.text);
-
-      const hashtags = extractHashtags(filteredText);
-
-      const existingMentionUserIds = new Set(
-        post.mentions.map((mention) => mention.userId)
-      );
-
-      const newMentionUserIds = new Set(
-        input.mentions?.map((mention) => mention.userId) ?? []
-      );
-
-      const transactionResult = await ctx.db.$transaction(async (prisma) => {
-        await prisma.mention.deleteMany({
-          where: {
-            postId: input.id,
-          },
-        });
-
-        await prisma.post.update({
+      try {
+        const post = await ctx.db.post.findUnique({
           where: { id: input.id },
-          data: {
-            hashtags: {
-              disconnect: post.hashtags.map((tag) => ({ name: tag.name })),
-            },
-          },
-        });
-
-        if (input.mentions && input.mentions.length > 0) {
-          await prisma.mention.createMany({
-            data: input.mentions.map((mention) => ({
-              postId: input.id,
-              userId: mention.userId,
-              index: mention.index,
-            })),
-          });
-        }
-
-        const notificationsToCreate = Array.from(newMentionUserIds)
-          .filter(
-            (userId) =>
-              !existingMentionUserIds.has(userId) && userId !== post.authorId
-          )
-          .map((userId) => ({
-            type: NotificationType.MENTION,
-            message: `@${ctx.user.username} mentioned you in their post`,
-            senderUserId: userId,
-            receiverUserId: userId,
-            postId: input.id,
-            isPublic: true,
-          }));
-
-        if (notificationsToCreate.length > 0) {
-          await prisma.notification.createMany({
-            data: notificationsToCreate,
-          });
-        }
-
-        const updatedPost = await prisma.post.update({
-          where: { id: input.id },
-          data: {
-            text: filteredText,
-            lastEditedAt: new Date(),
-            hashtags: {
-              connectOrCreate: hashtags.map((tag) => {
-                const tagName = tag.slice(1);
-                return {
-                  where: { name: tagName },
-                  create: { name: tagName },
-                };
-              }),
-            },
-          },
           select: {
-            id: true,
-            author: true,
+            authorId: true,
+            createdAt: true,
+            mentions: {
+              select: {
+                userId: true,
+              },
+            },
+            hashtags: {
+              select: {
+                name: true,
+              },
+            },
+            text: true,
           },
         });
 
-        return { updatedPost };
-      });
+        if (!post) {
+          throw new TRPCError({ code: 'NOT_FOUND' });
+        }
 
-      if (!transactionResult) {
-        throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+        if (post.authorId !== userId) {
+          throw new TRPCError({ code: 'FORBIDDEN' });
+        }
+
+        const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+        if (post.createdAt < fifteenMinutesAgo) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Edit window has expired',
+          });
+        }
+
+        const filter = new Filter();
+        const filteredText = filter.clean(input.text);
+
+        const hashtags = extractHashtags(filteredText);
+
+        const existingMentionUserIds = new Set(
+          post.mentions.map((mention) => mention.userId)
+        );
+
+        const transactionResult = await ctx.db.$transaction(async (prisma) => {
+          let newMentionUserIds = new Set<string>();
+
+          await prisma.mention.deleteMany({
+            where: {
+              postId: input.id,
+            },
+          });
+
+          await prisma.post.update({
+            where: { id: input.id },
+            data: {
+              hashtags: {
+                disconnect: post.hashtags.map((tag) => ({ name: tag.name })),
+              },
+            },
+          });
+
+          if (input.mentions && input.mentions.length > 0) {
+            const uniqueUsernames = Array.from(
+              new Set(input.mentions.map((m) => m.username))
+            );
+
+            const mentionedUsers = await prisma.user.findMany({
+              where: {
+                username: {
+                  in: uniqueUsernames,
+                },
+              },
+              select: {
+                id: true,
+                username: true,
+              },
+            });
+
+            const usernameToIdMap = new Map(
+              mentionedUsers.map((user) => [user.username, user.id])
+            );
+
+            const validMentions = input.mentions.filter((mention) =>
+              usernameToIdMap.has(mention.username)
+            );
+
+            if (validMentions.length > 0) {
+              await prisma.mention.createMany({
+                data: validMentions.map((mention) => ({
+                  postId: input.id,
+                  userId: usernameToIdMap.get(mention.username)!,
+                  index: mention.index,
+                })),
+                skipDuplicates: true,
+              });
+
+              newMentionUserIds = new Set(
+                mentionedUsers
+                  .map((user) => user.id)
+                  .filter(
+                    (id) => !existingMentionUserIds.has(id) && id !== userId
+                  )
+              );
+
+              if (newMentionUserIds.size > 0) {
+                await prisma.notification.createMany({
+                  data: Array.from(newMentionUserIds).map((id) => ({
+                    type: NotificationType.MENTION,
+                    message: filteredText,
+                    senderUserId: userId,
+                    receiverUserId: id,
+                    postId: input.id,
+                    isPublic: true,
+                  })),
+                });
+              }
+            }
+          }
+
+          const updatedPost = await prisma.post.update({
+            where: { id: input.id },
+            data: {
+              text: filteredText,
+              lastEditedAt: new Date(),
+              hashtags: {
+                connectOrCreate: hashtags.map((tag) => {
+                  const tagName = tag.slice(1);
+                  return {
+                    where: { name: tagName },
+                    create: { name: tagName },
+                  };
+                }),
+              },
+            },
+            select: {
+              id: true,
+              author: true,
+            },
+          });
+
+          return {
+            updatedPost,
+            newMentionCount: newMentionUserIds.size,
+          };
+        });
+
+        if (!transactionResult) {
+          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+        }
+
+        return {
+          updatedPost: transactionResult.updatedPost,
+          success: true,
+          isEdited: true,
+        };
+      } catch (error) {
+        console.error('Error in editPost:', error);
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to update post. Please try again.',
+        });
       }
-
-      return {
-        updatedPost: transactionResult.updatedPost,
-        success: true,
-        isEdited: true,
-      };
     }),
 
   toggleHidePost: privateProcedure

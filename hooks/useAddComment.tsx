@@ -4,6 +4,7 @@ import { api } from '@/trpc/react';
 import { Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { extractMentions } from '@/lib/utils';
 
 const useAddComment = ({
   postId,
@@ -15,7 +16,7 @@ const useAddComment = ({
   const router = useRouter();
   const trpcUtils = api.useUtils();
 
-  const { commentText, mentions, reset } = useAddCommentStore();
+  const { commentText, reset } = useAddCommentStore();
 
   const { isLoading: isReplying, mutateAsync: replyToPost } =
     api.post.replyToPost.useMutation({
@@ -35,11 +36,13 @@ const useAddComment = ({
     });
 
   const handleReply = () => {
+    const extractedMentions = extractMentions(commentText);
+
     const promise = replyToPost({
       postId,
       text: commentText,
       postAuthor: authorId,
-      mentions,
+      mentions: extractedMentions,
     });
 
     toast.promise(promise, {
@@ -65,6 +68,7 @@ const useAddComment = ({
       richColors: true,
     });
   };
+
   return {
     handleReply,
     isReplying,

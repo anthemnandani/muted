@@ -63,8 +63,8 @@ const UsersMenu = ({
               {mentionSuggestions?.map((user, index) => (
                 <div
                   className='overflow-hidden cursor-pointer w-full hover:bg-accent'
-                  key={user.id}
-                  onClick={() => onSelect(user.username, user.id)}
+                  key={user.username}
+                  onClick={() => onSelect(user.username)}
                 >
                   <div className='flex items-center gap-3 p-3'>
                     <UserAvatar

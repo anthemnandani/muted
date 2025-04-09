@@ -610,5 +610,15 @@ export interface UsersMenuProps {
     left: number;
   };
   isLoading: boolean;
-  onSelect: (username: string, userId: string) => void;
+  onSelect: (username: string) => void;
+}
+
+export type MentionPosition = {
+  top: number;
+  left: number;
+};
+
+export interface UseMentionsProps {
+  textareaRef: React.RefObject<HTMLTextAreaElement>;
+  setCommentText: (commentText: string) => void;
 }

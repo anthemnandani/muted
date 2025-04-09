@@ -1,34 +1,9 @@
-import type { PostData } from '@/lib/types';
+import { type MentionPosition, UseMentionsProps } from '@/lib/types';
 import { api } from '@/trpc/react';
 import { debounce } from 'lodash';
 import React from 'react';
 
-interface MentionPosition {
-  top: number;
-  left: number;
-}
-
-interface UseMentionsProps {
-  textareaRef: React.RefObject<HTMLTextAreaElement>;
-  setCommentText: (commentText: string) => void;
-  setMentions: (
-    mentions: Array<{
-      userId: string;
-      index: number;
-    }>
-  ) => void;
-  mentions: Array<{
-    userId: string;
-    index: number;
-  }>;
-}
-
-const useMentions = ({
-  textareaRef,
-  setCommentText,
-  setMentions,
-  mentions,
-}: UseMentionsProps) => {
+const useMentions = ({ textareaRef, setCommentText }: UseMentionsProps) => {
   const [mentionSearch, setMentionSearch] = React.useState<string>('');
   const [showMentionSuggestions, setShowMentionSuggestions] =
     React.useState(false);
@@ -129,11 +104,12 @@ const useMentions = ({
   );
 
   const insertMention = React.useCallback(
-    (username: string, userId: string) => {
+    (username: string) => {
       const textarea = textareaRef.current;
       if (!textarea) return;
 
       const text = textarea.value;
+
       const cursorPosition = textarea.selectionStart || 0;
       const textBeforeCursor = text.slice(0, cursorPosition);
 
@@ -152,14 +128,6 @@ const useMentions = ({
 
       setShowMentionSuggestions(false);
       setMentionSearch('');
-      const newMentions = [
-        ...mentions,
-        {
-          userId,
-          index: lastAtIndex,
-        },
-      ];
-      setMentions(newMentions);
 
       const newCursorPosition = lastAtIndex + username.length + 2;
 

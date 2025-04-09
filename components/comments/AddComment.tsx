@@ -6,7 +6,7 @@ import useMentions from '@/hooks/useMentions';
 import { cn } from '@/lib/utils';
 import useAddCommentStore from '@/store/addComment';
 import { useUser } from '@clerk/nextjs';
-import { AtSign, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import UsersMenu from '../menus/UsersMenu';
 import { EmojiPicker } from '../modals/EmojiPicker';
@@ -38,8 +38,6 @@ const AddComment = ({
     charCount,
     setCharCount,
     setCurrentPostId,
-    mentions,
-    setMentions,
   } = useAddCommentStore();
 
   const {
@@ -52,8 +50,6 @@ const AddComment = ({
   } = useMentions({
     textareaRef,
     setCommentText,
-    setMentions,
-    mentions,
   });
 
   useEffect(() => {
@@ -83,7 +79,6 @@ const AddComment = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = e.target.value;
     handleMentionSearch(text, e.target.selectionStart || 0);
-
     if (text.length <= MAX_CHARS) {
       setCommentText(text);
       setCharCount(text.length);
@@ -169,9 +164,6 @@ const AddComment = ({
             />
 
             <div className='absolute bottom-2 right-3 flex items-center gap-2'>
-              {/* <div className='text-gray-400 flex gap-1 select-none items-center text-[15px] cursor-pointer'>
-                <AtSign className='size-5 select-none transform active:scale-75 transition-transform' />
-              </div> */}
               <EmojiPicker onChange={handleEmojiSelect} />
             </div>
           </div>

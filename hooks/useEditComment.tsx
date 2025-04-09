@@ -1,4 +1,5 @@
 import { Icons } from '@/components/icons';
+import { extractMentions } from '@/lib/utils';
 import useAddCommentStore from '@/store/addComment';
 import { api } from '@/trpc/react';
 import { Check } from 'lucide-react';
@@ -29,9 +30,11 @@ const useEditComment = () => {
     });
 
   const handleEdit = () => {
+    const mentions = extractMentions(commentText);
     const promise = editComment({
       id: editCommentId,
       text: commentText,
+      mentions,
     });
 
     toast.promise(promise, {

@@ -15,8 +15,7 @@ const UserProfileCard: React.FC<AuthorInfoProps> = (props) => {
           <h1 className='text-[25px] font-extrabold tracking-normal truncate'>
             {fullName}
           </h1>
-
-          <h4 className='text-[15px] truncate'>{username}</h4>
+          <h4 className='text-[15px] mt-1 truncate'>{username}</h4>
         </div>
         <Avatar className='size-[64px] overflow-visible outline outline-2 outline-border relative'>
           <AvatarImage
