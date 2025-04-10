@@ -1,4 +1,4 @@
-import type { CommentTextProps } from '@/lib/types';
+import { CommentTextProps } from '@/lib/types';
 import { cn, highlightHashtagsAndUrls } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
@@ -49,8 +49,9 @@ const CommentText: React.FC<CommentTextProps> = ({
         <span
           key={index}
           dangerouslySetInnerHTML={{
-            __html: textPart.replace(/\\n/g, '\n'),
+            __html: highlightHashtagsAndUrls(textPart.replace(/\\n/g, '\n')),
           }}
+          onClick={handleClick}
         />
       );
     }
@@ -85,8 +86,11 @@ const CommentText: React.FC<CommentTextProps> = ({
       <span
         key={`text-${lastIndex}`}
         dangerouslySetInnerHTML={{
-          __html: text.slice(lastIndex).replace(/\\n/g, '\n'),
+          __html: highlightHashtagsAndUrls(
+            text.slice(lastIndex).replace(/\\n/g, '\n')
+          ),
         }}
+        onClick={handleClick}
       />
     );
   }
@@ -95,7 +99,6 @@ const CommentText: React.FC<CommentTextProps> = ({
     <div
       className={cn(
         'text-[0.9rem] leading-[1.1375rem] mt-1 text-white/90 break-words whitespace-pre-line antialiased',
-
         className
       )}
     >

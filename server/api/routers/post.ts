@@ -321,7 +321,7 @@ export const postRouter = createTRPCRouter({
         const transactionResult = await ctx.db.$transaction(async (prisma) => {
           const filter = new Filter();
           const filteredText = filter.clean(input.text);
-
+          const hashtags = extractHashtags(filteredText);
           const postId = createId();
 
           const parentPost = await prisma.post.findUnique({
@@ -352,6 +352,15 @@ export const postRouter = createTRPCRouter({
               authorId: userId,
               parentPostId: input.postId,
               path,
+              hashtags: {
+                connectOrCreate: hashtags.map((tag) => {
+                  const tagName = tag.slice(1);
+                  return {
+                    where: { name: tagName },
+                    create: { name: tagName },
+                  };
+                }),
+              },
             },
             select: {
               id: true,

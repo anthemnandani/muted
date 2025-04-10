@@ -1,6 +1,8 @@
 'use client';
 
-import FeedWrapper from '@/components/shared/FeedWrapper';
+import Error from '@/app/error';
+import PostsList from '@/components/shared/PostsList';
+import ScrollContainer from '@/components/shared/ScrollContainer';
 import { api } from '@/trpc/react';
 
 const TopicFeedClient = ({ tag }: { tag: string }) => {
@@ -16,20 +18,18 @@ const TopicFeedClient = ({ tag }: { tag: string }) => {
 
   const allPosts = data?.pages.flatMap((page) => page.posts);
 
+  if (isError) return <Error />;
+
   return (
-    <FeedWrapper
-      posts={allPosts}
-      isLoading={isLoading}
-      isError={isError}
-      hasNextPage={hasNextPage}
-      fetchNextPage={fetchNextPage}
-      emptyStateMessage={
-        <>
-          No posts found for the tag{' '}
-          <span className='font-bold text-primary-blue'>{tag}</span>.
-        </>
-      }
-    />
+    <ScrollContainer>
+      <PostsList
+        posts={allPosts}
+        fetchNextPage={fetchNextPage}
+        hasNextPage={hasNextPage}
+        isLoading={isLoading}
+        emptyStateMessage='No posts found.'
+      />
+    </ScrollContainer>
   );
 };
 

@@ -23,6 +23,8 @@ const CommentsPanel: React.FC<CommentsProps> = ({
   text,
   createdAt,
   author,
+  reposts,
+  repostedBy,
 }) => {
   const [isSwitchingPost, setIsSwitchingPost] = useState(false);
   const prevPostIdRef = useRef(postId);
@@ -93,6 +95,8 @@ const CommentsPanel: React.FC<CommentsProps> = ({
           postText={text || ''}
           author={author}
           createdAt={createdAt}
+          reposts={reposts}
+          repostedBy={repostedBy}
         />
         <LinkShare url={`${process.env.NEXT_PUBLIC_APP_URL}/post/${postId}`} />
       </div>
