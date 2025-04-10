@@ -2,11 +2,9 @@
 
 import { PostFooterProps } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils';
-import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import RepostersList from '../modals/RepostersList';
 import PostText from '../shared/PostText';
+import RepostBanner from '../shared/RepostBanner';
 import Username from '../user/Username';
 
 const PostFooter: React.FC<PostFooterProps> = ({
@@ -17,33 +15,9 @@ const PostFooter: React.FC<PostFooterProps> = ({
   reposts,
   repostedBy,
 }) => {
-  const pathname = usePathname();
-
   return (
     <div className='absolute bottom-7 left-0 right-0 px-4 z-10'>
-      {repostedBy && (
-        <Link href={`/@${repostedBy.username}`} className='repost-banner'>
-          <div className='size-4 rounded-full overflow-hidden'>
-            <Image
-              src={repostedBy.image!}
-              alt={repostedBy.fullName!}
-              width={16}
-              height={16}
-              className='object-cover'
-            />
-          </div>
-          <span className='text-sm text-white font-medium'>
-            {repostedBy?.fullName!.length! > 15
-              ? `${repostedBy?.fullName!.slice(0, 15)}...`
-              : repostedBy?.fullName}{' '}
-            reposted
-          </span>
-        </Link>
-      )}
-
-      {pathname !== '/following' && reposts.length > 0 && (
-        <RepostersList reposts={reposts} />
-      )}
+      <RepostBanner repostedBy={repostedBy} reposts={reposts} />
 
       <div className='flex items-center gap-2 mb-2'>
         <div className='max-w-[40%] overflow-hidden'>

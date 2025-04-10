@@ -559,6 +559,8 @@ export interface CommentsProps {
   text: string;
   createdAt: Date;
   author: AuthorInfoProps;
+  reposts: Repost[];
+  repostedBy?: AuthorInfoProps;
 }
 
 export type Comment = {
@@ -600,6 +602,8 @@ export interface PostInfoCardProps {
   postText: string;
   author: AuthorInfoProps;
   createdAt: Date;
+  reposts: Repost[];
+  repostedBy?: AuthorInfoProps;
 }
 
 export interface UsersMenuProps {
@@ -621,4 +625,9 @@ export type MentionPosition = {
 export interface UseMentionsProps {
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   setCommentText: (commentText: string) => void;
+}
+
+export interface RepostBannerProps {
+  repostedBy?: AuthorInfoProps;
+  reposts: Repost[];
 }

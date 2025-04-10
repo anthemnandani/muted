@@ -12,11 +12,14 @@ import {
   HoverCardTrigger,
 } from '../ui/hover-card';
 import UserProfileCard from './UserProfileCard';
+import RepostBanner from '../shared/RepostBanner';
 
 const PostInfoCard: React.FC<PostInfoCardProps> = ({
   postText,
   author,
   createdAt,
+  reposts,
+  repostedBy,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const maxLength = 40;
@@ -102,6 +105,7 @@ const PostInfoCard: React.FC<PostInfoCardProps> = ({
           </button>
         )}
       </div>
+      <RepostBanner repostedBy={repostedBy} reposts={reposts} />
     </div>
   );
 };

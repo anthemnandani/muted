@@ -121,6 +121,8 @@ const PostCard: React.FC<PostCardProps> = ({
             createdAt={createdAt}
             text={text ?? ''}
             author={author}
+            reposts={reposts}
+            repostedBy={repostedBy}
           />
         </div>
       )}
