@@ -4,8 +4,10 @@ import useGetComments from '@/hooks/useGetComments';
 import { CommentsProps } from '@/lib/types';
 import useAddCommentStore from '@/store/addComment';
 import useCommentPanelStore from '@/store/commentPanel';
+import { motion, useAnimation } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import { useInView } from 'react-intersection-observer';
 import PostInfoCard from '../cards/PostInfoCard';
 import { Icons } from '../icons';
 import CommentCardSkeleton from '../skeletons/CommentCardSkeleton';
@@ -28,16 +30,15 @@ const CommentsPanel: React.FC<CommentsProps> = ({
 }) => {
   const [isSwitchingPost, setIsSwitchingPost] = useState(false);
   const prevPostIdRef = useRef(postId);
-  const { reset, setCurrentPostId } = useAddCommentStore();
+  const { reset } = useAddCommentStore();
+  const { setScrollPosition, getScrollPosition } = useCommentPanelStore();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const headerControls = useAnimation();
 
-  useEffect(() => {
-    setCurrentPostId(postId);
-
-    if (prevPostIdRef.current !== postId) {
-      setIsSwitchingPost(true);
-      prevPostIdRef.current = postId;
-    }
-  }, [postId, setCurrentPostId, reset]);
+  const [infoCardSentinelRef, isInfoCardVisible] = useInView({
+    threshold: 0.1,
+    initialInView: true,
+  });
 
   const { allComments, isLoading, hasNextPage, fetchNextPage } = useGetComments(
     {
@@ -46,19 +47,35 @@ const CommentsPanel: React.FC<CommentsProps> = ({
   );
 
   useEffect(() => {
+    if (isInfoCardVisible) {
+      headerControls.start({
+        boxShadow: 'none',
+        backgroundColor: 'transparent',
+      });
+    } else {
+      headerControls.start({
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+        backgroundColor: '#101010',
+      });
+    }
+  }, [isInfoCardVisible, headerControls]);
+
+  useEffect(() => {
+    if (prevPostIdRef.current !== postId) {
+      setIsSwitchingPost(true);
+      prevPostIdRef.current = postId;
+      if (scrollRef.current) scrollRef.current.scrollTop = 0;
+    }
+  }, [postId]);
+
+  useEffect(() => {
     if (!isLoading && isSwitchingPost) {
       setIsSwitchingPost(false);
     }
   }, [isLoading, isSwitchingPost]);
 
-  const { setScrollPosition, getScrollPosition } = useCommentPanelStore();
-
-  const scrollRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
-    if (!isOpen) {
-      reset();
-    }
+    if (!isOpen) reset();
   }, [isOpen, reset]);
 
   useEffect(() => {
@@ -74,8 +91,6 @@ const CommentsPanel: React.FC<CommentsProps> = ({
       const savedPosition = getScrollPosition(postId);
       if (savedPosition > 0) {
         scrollRef.current.scrollTop = savedPosition;
-      } else {
-        scrollRef.current.scrollTop = 0;
       }
     }
   }, [postId, isLoading, isSwitchingPost, getScrollPosition]);
@@ -90,57 +105,75 @@ const CommentsPanel: React.FC<CommentsProps> = ({
 
   return (
     <div className='h-full flex flex-col bg-[#101010D9] border border-border-light overflow-hidden rounded-2xl'>
-      <div className='p-4'>
-        <PostInfoCard
-          postText={text || ''}
-          author={author}
-          createdAt={createdAt}
-          reposts={reposts}
-          repostedBy={repostedBy}
-        />
-        <LinkShare url={`${process.env.NEXT_PUBLIC_APP_URL}/post/${postId}`} />
-      </div>
-      <CommentsPanelHeader repliesCount={repliesCount} onClose={onClose} />
-
       <div
         ref={scrollRef}
         id='scrollableDiv'
-        className='flex-1 overflow-y-auto hide-scrollbar'
+        className='flex-1 overflow-y-auto hide-scrollbar flex flex-col'
       >
-        {showLoader ? (
-          <div className='w-full'>{renderSkeletons()}</div>
-        ) : (
-          <InfiniteScroll
-            dataLength={allComments.length}
-            next={fetchNextPage}
-            hasMore={!!hasNextPage}
-            loader={
-              <div className='w-full flex-center py-4'>
-                <Icons.loading className='size-8' />
-              </div>
-            }
-            scrollableTarget='scrollableDiv'
-          >
-            {allComments.length === 0 ? (
-              <p className='text-center text-gray-400 py-8'>No comments yet</p>
-            ) : (
-              allComments.map((comment) => (
-                <CommentCard
-                  key={comment.id}
-                  comment={{
-                    id: comment.id,
-                    text: comment.text,
-                    author: comment.author,
-                    createdAt: comment.createdAt,
-                    likesCount: comment.likesCount,
-                    likes: comment.likes,
-                    mentions: comment.mentions,
-                  }}
-                />
-              ))
-            )}
-          </InfiniteScroll>
-        )}
+        <div ref={infoCardSentinelRef} className='p-4'>
+          <PostInfoCard
+            postText={text || ''}
+            author={author}
+            createdAt={createdAt}
+            reposts={reposts}
+            repostedBy={repostedBy}
+          />
+          <LinkShare
+            url={`${process.env.NEXT_PUBLIC_APP_URL}/post/${postId}`}
+          />
+        </div>
+
+        <motion.div
+          className='sticky top-0 z-10 transition-all'
+          animate={headerControls}
+          initial={{ boxShadow: 'none', backgroundColor: 'transparent' }}
+          transition={{
+            duration: 0.7,
+            ease: 'easeInOut',
+          }}
+        >
+          <CommentsPanelHeader repliesCount={repliesCount} onClose={onClose} />
+        </motion.div>
+
+        <div className='flex-1'>
+          {showLoader ? (
+            <div className='w-full'>{renderSkeletons()}</div>
+          ) : (
+            <InfiniteScroll
+              dataLength={allComments.length}
+              next={fetchNextPage}
+              hasMore={!!hasNextPage}
+              loader={
+                <div className='w-full flex-center py-4'>
+                  <Icons.loading className='size-8' />
+                </div>
+              }
+              scrollableTarget='scrollableDiv'
+            >
+              {allComments.length === 0 ? (
+                <p className='text-center text-gray-400 py-8'>
+                  No comments yet
+                </p>
+              ) : (
+                allComments.map((comment, index) => (
+                  <CommentCard
+                    key={comment.id}
+                    comment={{
+                      id: comment.id,
+                      text: comment.text,
+                      author: comment.author,
+                      createdAt: comment.createdAt,
+                      likesCount: comment.likesCount,
+                      likes: comment.likes,
+                      mentions: comment.mentions,
+                    }}
+                    isLast={index === allComments.length - 1}
+                  />
+                ))
+              )}
+            </InfiniteScroll>
+          )}
+        </div>
       </div>
 
       <div className='mt-auto'>

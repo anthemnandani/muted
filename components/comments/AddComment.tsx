@@ -123,7 +123,7 @@ const AddComment = ({
   const isAtLimit = charCount >= MAX_CHARS;
 
   return (
-    <div className='border-t border-gray-800 bg-[#101010D9] py-2 px-4'>
+    <div className='border-t border-border-light bg-[#101010D9] py-2 px-4'>
       {isEdit && (
         <div className='flex items-center justify-between mb-2'>
           <div className='text-sm text-gray-300'>Editing comment</div>

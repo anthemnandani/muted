@@ -10,7 +10,13 @@ import Username from '../user/Username';
 import CommentActions from './CommentActions';
 import CommentText from './CommentText';
 
-const CommentCard = ({ comment }: { comment: Comment }) => {
+const CommentCard = ({
+  comment,
+  isLast,
+}: {
+  comment: Comment;
+  isLast: boolean;
+}) => {
   const { id, author, text, likesCount, createdAt, likes, mentions } = comment;
   const {
     isLikedByMe,
@@ -22,7 +28,7 @@ const CommentCard = ({ comment }: { comment: Comment }) => {
     likes,
   });
   return (
-    <div className='px-4 py-3'>
+    <div className={cn('px-4 py-3', { 'mb-10': isLast })}>
       <div className='flex items-start gap-3'>
         <Link href={`/@${author.username}`} className='flex-shrink-0'>
           <Avatar className='rounded-full w-full h-full size-10'>
