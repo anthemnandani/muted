@@ -569,6 +569,7 @@ export type Comment = {
   likesCount: number;
   author: AuthorInfoProps;
   createdAt: Date;
+  repliesCount: number;
   likes: { userId: string }[];
   mentions: Array<{
     user: AuthorInfoProps;
@@ -590,11 +591,14 @@ export interface CommentActionsProps {
   postId: string;
   createdAt: Date;
   text: string;
+  isReply?: boolean;
+  onEditClick?: () => void;
 }
 
 export interface DeletePostProps {
   postId: string;
   isComment?: boolean;
+  isReply?: boolean;
   closeDropdown?: () => void;
 }
 
@@ -630,4 +634,35 @@ export interface UseMentionsProps {
 export interface RepostBannerProps {
   repostedBy?: AuthorInfoProps;
   reposts: Repost[];
+}
+
+export interface ReplyInputProps {
+  postId: string;
+  commentId: string;
+  onCancel: () => void;
+}
+
+export interface ReplyCardProps {
+  reply: Comment;
+  isLast: boolean;
+  originalPostId: string;
+}
+
+export interface CommentInputProps {
+  placeholder: string;
+  textValue: string;
+  onTextChange: (text: string) => void;
+  onSubmit: () => void;
+  charCount: number;
+  maxChars: number;
+  isSubmitting: boolean;
+  showCancelButton?: boolean;
+  onCancel?: () => void;
+  isEdit?: boolean;
+}
+
+export interface CommentCardProps {
+  comment: Comment;
+  isLast: boolean;
+  originalPostId: string;
 }

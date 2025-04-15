@@ -49,7 +49,7 @@ export function EmojiPicker({ onChange }: EmojiPickerProps) {
       {open && (
         <div
           ref={pickerRef}
-          className='absolute z-[9999] -top-[440px] -left-[270px]'
+          className='absolute z-[9999] -top-[455px] -left-[270px]'
           onClick={(e) => e.stopPropagation()}
         >
           <Picker

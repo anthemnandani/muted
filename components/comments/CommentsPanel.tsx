@@ -12,7 +12,7 @@ import PostInfoCard from '../cards/PostInfoCard';
 import { Icons } from '../icons';
 import CommentCardSkeleton from '../skeletons/CommentCardSkeleton';
 import AddComment from './AddComment';
-import CommentCard from './CommentCard';
+import CommentCard from '../cards/CommentCard';
 import CommentsPanelHeader from './CommentsPanelHeader';
 import LinkShare from './LinkShare';
 
@@ -166,8 +166,10 @@ const CommentsPanel: React.FC<CommentsProps> = ({
                       likesCount: comment.likesCount,
                       likes: comment.likes,
                       mentions: comment.mentions,
+                      repliesCount: comment.repliesCount || 0,
                     }}
                     isLast={index === allComments.length - 1}
+                    originalPostId={postId}
                   />
                 ))
               )}

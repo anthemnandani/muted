@@ -16,6 +16,8 @@ const CommentActions = ({
   postId,
   createdAt,
   text,
+  isReply,
+  onEditClick,
 }: CommentActionsProps) => {
   const { user } = useUser();
   const { timeLeft } = useTimeLeft({ createdAt });
@@ -23,7 +25,11 @@ const CommentActions = ({
   const [isOpen, setIsOpen] = useState(false);
 
   const handleStartEditing = () => {
-    startEditing(postId, text);
+    if (onEditClick) {
+      onEditClick();
+    } else {
+      startEditing(postId, text);
+    }
     setIsOpen(false);
   };
 
@@ -59,6 +65,7 @@ const CommentActions = ({
             <DeletePost
               postId={postId}
               isComment
+              isReply={isReply}
               closeDropdown={() => setIsOpen(false)}
             />
           </Fragment>

@@ -17,7 +17,12 @@ import {
 } from '../ui/dialog';
 import { DeletePostProps } from '@/lib/types';
 
-const DeletePost = ({ postId, isComment, closeDropdown }: DeletePostProps) => {
+const DeletePost = ({
+  postId,
+  isComment,
+  isReply,
+  closeDropdown,
+}: DeletePostProps) => {
   const { openDeleteDialog, setOpenDeleteDialog } = useDeletePost();
   const trpcUtils = api.useUtils();
 
@@ -71,17 +76,18 @@ const DeletePost = ({ postId, isComment, closeDropdown }: DeletePostProps) => {
         <DialogHeader>
           <DialogTitle>
             <VisuallyHidden.Root>
-              Delete {isComment ? 'Comment' : 'Post'}
+              Delete {isReply ? 'Reply' : isComment ? 'Comment' : 'Post'}
             </VisuallyHidden.Root>
           </DialogTitle>
         </DialogHeader>
         <Card className='rounded-2xl border-none bg-background dark:bg-gray-6 shadow-2xl ring-1 ring-gray-7 ring-offset-0'>
           <div className='w-full text-center px-6 pt-6 pb-5'>
             <div className='font-bold text-base pb-2'>
-              Delete {isComment ? 'comment' : 'post'}?
+              Delete {isReply ? 'reply' : isComment ? 'comment' : 'post'}?
             </div>
             <p className='text-[15px] pt-3 text-gray-3'>
-              If you delete this {isComment ? 'comment' : 'post'}, you won't be
+              If you delete this{' '}
+              {isReply ? 'reply' : isComment ? 'comment' : 'post'}, you won't be
               able to restore it.
             </p>
           </div>

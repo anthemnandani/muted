@@ -1,5 +1,3 @@
-'use client';
-
 import { Icons } from '@/components/icons';
 import { extractMentions } from '@/lib/utils';
 import useAddCommentStore from '@/store/addComment';
@@ -8,16 +6,25 @@ import { Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
-const useEditComment = () => {
+const useAddReply = ({
+  postId,
+  commentId,
+}: {
+  postId: string;
+  commentId: string;
+}) => {
   const router = useRouter();
   const trpcUtils = api.useUtils();
 
-  const { commentText, editCommentId } = useAddCommentStore();
+  const { reset } = useAddCommentStore();
 
-  const { isLoading: isEditing, mutateAsync: editComment } =
-    api.post.editPost.useMutation({
+  const { isLoading: isReplying, mutateAsync: addReply } =
+    api.post.replyToComment.useMutation({
+      onMutate: () => {
+        reset();
+      },
       onError: (err) => {
-        toast.error('EditingError: Something went wrong!');
+        toast.error('ReplyingError: Something went wrong!');
         if (err.data?.code === 'UNAUTHORIZED') {
           router.push('/sign-in');
         }
@@ -28,17 +35,13 @@ const useEditComment = () => {
       retry: false,
     });
 
-  const handleEdit = (id?: string, text?: string) => {
-    const postId = id || editCommentId;
-    const content = text || commentText;
+  const handleAddReply = (text: string) => {
+    const extractedMentions = extractMentions(text);
 
-    if (!postId || !content.trim()) return;
-
-    const extractedMentions = extractMentions(content);
-
-    const promise = editComment({
-      id: postId,
-      text: content,
+    const promise = addReply({
+      parentCommentId: commentId,
+      originalPostId: postId,
+      text,
       mentions: extractedMentions,
     });
 
@@ -48,7 +51,7 @@ const useEditComment = () => {
           <div>
             <Icons.loading className='size-8' />
           </div>
-          Updating...
+          Replying...
         </div>
       ),
       success: () => {
@@ -56,7 +59,7 @@ const useEditComment = () => {
           <div className='flex-between w-[270px] p-0 '>
             <div className='flex-center gap-1.5'>
               <Check className='size-5' />
-              Updated
+              Replied
             </div>
           </div>
         );
@@ -69,9 +72,9 @@ const useEditComment = () => {
   };
 
   return {
-    handleEdit,
-    isEditing,
+    handleAddReply,
+    isReplying,
   };
 };
 
-export default useEditComment;
+export default useAddReply;

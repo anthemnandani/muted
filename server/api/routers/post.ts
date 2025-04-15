@@ -248,6 +248,7 @@ export const postRouter = createTRPCRouter({
             hideLikes: true,
             pinned: true,
             privacy: true,
+            repliesCount: true,
             author: {
               select: {
                 ...GET_USER,
@@ -272,7 +273,6 @@ export const postRouter = createTRPCRouter({
           media: post.media as PostMedia[],
           likesCount: post._count.likes,
           repostsCount: post._count.reposts,
-          repliesCount: post._count.replies,
           bookmarksCount: new Set(
             post.bookmarks.map((bookmark) => bookmark.userId)
           ).size,
@@ -337,7 +337,7 @@ export const postRouter = createTRPCRouter({
           }
 
           const parentPath = parentPost.path ?? `/${parentPost.id}`;
-          const path = `${parentPath}${postId}/`;
+          const path = `${parentPath}/${postId}/`;
           const ancestorIds = parentPath.split('/').filter(Boolean);
 
           await prisma.post.updateMany({
@@ -455,6 +455,174 @@ export const postRouter = createTRPCRouter({
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to process mentions. Please try again.',
+        });
+      }
+    }),
+
+  replyToComment: privateProcedure
+    .input(
+      z.object({
+        parentCommentId: z.string(),
+        originalPostId: z.string(),
+        text: z.string().min(1, {
+          message: 'Reply cannot be empty',
+        }),
+        mentions: z
+          .array(
+            z.object({
+              username: z.string(),
+              index: z.number(),
+            })
+          )
+          .optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { userId } = ctx;
+
+      try {
+        const transactionResult = await ctx.db.$transaction(async (prisma) => {
+          const filter = new Filter();
+          const filteredText = filter.clean(input.text);
+          const hashtags = extractHashtags(filteredText);
+          const replyId = createId();
+
+          const parentComment = await prisma.post.findUnique({
+            where: { id: input.parentCommentId },
+            select: {
+              path: true,
+              id: true,
+              authorId: true,
+            },
+          });
+
+          if (!parentComment) {
+            throw new TRPCError({
+              code: 'NOT_FOUND',
+              message: 'Parent comment not found',
+            });
+          }
+
+          const parentPath = parentComment.path ?? `/${parentComment.id}`;
+          const path = `${parentPath}${replyId}/`;
+
+          const ancestorIds = parentPath.split('/').filter(Boolean);
+
+          await prisma.post.updateMany({
+            where: { id: { in: ancestorIds } },
+            data: { repliesCount: { increment: 1 } },
+          });
+
+          const reply = await prisma.post.create({
+            data: {
+              id: replyId,
+              text: filteredText,
+              authorId: userId,
+              parentPostId: input.parentCommentId,
+              path,
+              hashtags: {
+                connectOrCreate: hashtags.map((tag) => {
+                  const tagName = tag.slice(1);
+                  return {
+                    where: { name: tagName },
+                    create: { name: tagName },
+                  };
+                }),
+              },
+            },
+            select: {
+              id: true,
+              author: true,
+            },
+          });
+
+          if (input.mentions && input.mentions.length > 0) {
+            const uniqueUsernames = Array.from(
+              new Set(input.mentions.map((m) => m.username))
+            );
+
+            const mentionedUsers = await prisma.user.findMany({
+              where: {
+                username: {
+                  in: uniqueUsernames,
+                },
+              },
+              select: {
+                id: true,
+                username: true,
+              },
+            });
+
+            const usernameToIdMap = new Map(
+              mentionedUsers.map((user) => [user.username, user.id])
+            );
+
+            const validMentions = input.mentions.filter((mention) =>
+              usernameToIdMap.has(mention.username)
+            );
+
+            if (validMentions.length > 0) {
+              await prisma.mention.createMany({
+                data: validMentions.map((mention) => ({
+                  postId: reply.id,
+                  userId: usernameToIdMap.get(mention.username)!,
+                  index: mention.index,
+                })),
+                skipDuplicates: true,
+              });
+
+              const mentionNotifications = mentionedUsers
+                .filter((user) => user.id !== userId)
+                .map((user) => ({
+                  type: NotificationType.MENTION,
+                  senderUserId: userId,
+                  receiverUserId: user.id,
+                  postId: reply.id,
+                  message: filteredText,
+                }));
+
+              if (mentionNotifications.length > 0) {
+                await prisma.notification.createMany({
+                  data: mentionNotifications,
+                });
+              }
+            }
+          }
+
+          if (userId !== parentComment.authorId) {
+            await prisma.notification.create({
+              data: {
+                type: 'REPLY',
+                senderUserId: userId,
+                receiverUserId: parentComment.authorId,
+                postId: reply.id,
+                message: filteredText,
+              },
+            });
+          }
+
+          return { reply };
+        });
+
+        if (!transactionResult) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to create reply',
+          });
+        }
+
+        return {
+          reply: transactionResult.reply,
+          success: true,
+        };
+      } catch (error) {
+        console.error('Error in replyToComment:', error);
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to process reply. Please try again.',
         });
       }
     }),
@@ -591,6 +759,87 @@ export const postRouter = createTRPCRouter({
 
       return {
         comments: formattedComments,
+        nextCursor,
+      };
+    }),
+
+  getReplies: publicProcedure
+    .input(
+      z.object({
+        parentCommentId: z.string(),
+        limit: z.number().optional().default(10),
+        cursor: z
+          .object({
+            id: z.string(),
+            createdAt: z.date(),
+          })
+          .optional(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const { parentCommentId, limit, cursor } = input;
+
+      const replies = await ctx.db.post.findMany({
+        where: {
+          parentPostId: parentCommentId,
+        },
+        take: limit + 1,
+        skip: 0,
+        cursor: cursor ? { id: cursor.id } : undefined,
+        select: {
+          id: true,
+          createdAt: true,
+          text: true,
+          media: true,
+          parentPostId: true,
+          quoteId: true,
+          path: true,
+          hideLikes: true,
+          pinned: true,
+          privacy: true,
+          repliesCount: true,
+          reposts: {
+            ...GET_REPOSTS,
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
+          ...getAuthorAndHiddenSelect(ctx.userId!),
+          ...GET_LIKES,
+          ...GET_BOOKMARKS,
+          ...GET_COUNT,
+          ...GET_MENTIONS,
+          ...GET_LINK_PREVIEW,
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      let nextCursor: typeof cursor | undefined = undefined;
+      if (replies.length > limit) {
+        const nextItem = replies[limit];
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
+        };
+        replies.pop();
+      }
+
+      const formattedReplies = replies.map((reply) => ({
+        ...reply,
+        media: reply.media as PostMedia[],
+        likesCount: reply._count.likes,
+        repostsCount: reply._count.reposts,
+        repliesCount: reply._count.replies,
+        bookmarksCount: new Set(
+          reply.bookmarks.map((bookmark) => bookmark.userId)
+        ).size,
+        type: 'post' as const,
+        isHidden: reply.hiddenBy.length > 0,
+        isMuted: reply.author.mutedByUsers?.length > 0,
+      }));
+
+      return {
+        replies: formattedReplies,
         nextCursor,
       };
     }),
@@ -773,38 +1022,79 @@ export const postRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       const { userId } = ctx;
-      const transactionResult = await ctx.db.$transaction(async (prisma) => {
-        const postInfo = await prisma.post.delete({
-          where: {
-            id: input.id,
-            authorId: userId,
-          },
-          select: {
-            id: true,
-          },
-        });
 
-        if (!postInfo) {
-          throw new TRPCError({ code: 'NOT_FOUND' });
-        }
+      try {
+        await ctx.db.$transaction(async (prisma) => {
+          const postToDelete = await prisma.post.findUnique({
+            where: { id: input.id },
+            select: {
+              id: true,
+              path: true,
+            },
+          });
 
-        await prisma.post.updateMany({
-          where: {
-            quoteId: input.id,
-          },
-          data: {
-            quoteId: null,
-          },
+          if (!postToDelete) {
+            throw new TRPCError({ code: 'NOT_FOUND' });
+          }
+
+          if (postToDelete.path) {
+            const ancestorIds = postToDelete.path.split('/').filter(Boolean);
+
+            if (ancestorIds.length > 0) {
+              const existingAncestors = await prisma.post.findMany({
+                where: { id: { in: ancestorIds } },
+                select: { id: true },
+              });
+
+              const existingAncestorIds = existingAncestors.map(
+                (post) => post.id
+              );
+
+              if (existingAncestorIds.length > 0) {
+                await prisma.post.updateMany({
+                  where: { id: { in: existingAncestorIds } },
+                  data: { repliesCount: { decrement: 1 } },
+                });
+              }
+            }
+          }
+
+          const deletedPost = await prisma.post.delete({
+            where: {
+              id: input.id,
+              authorId: userId,
+            },
+          });
+
+          if (!deletedPost) {
+            throw new TRPCError({ code: 'NOT_FOUND' });
+          }
+
+          await prisma.post.updateMany({
+            where: {
+              quoteId: input.id,
+            },
+            data: {
+              quoteId: null,
+            },
+          });
+
+          return { success: true };
         });
 
         return { success: true };
-      });
+      } catch (error) {
+        console.error('Error in deletePost:', error);
 
-      if (!transactionResult) {
-        throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to delete post',
+        });
       }
-
-      return { success: true };
     }),
 
   deleteRepost: privateProcedure
