@@ -95,6 +95,8 @@ const useAddCommentStore = create<AddCommentState>()((set) => ({
       isReplyEdit: false,
       editReplyId: '',
       replyCharCount: 0,
+      activeReplyCommentId: null,
+      isReply: false,
     }),
 
   setCurrentPostId: (postId) =>
