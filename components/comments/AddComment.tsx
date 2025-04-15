@@ -47,7 +47,6 @@ const AddComment = ({ postId, authorId }: AddCommentProps) => {
     } else if (!isReplying) {
       handleReply();
     }
-    reset();
   };
 
   const cancelEdit = () => {

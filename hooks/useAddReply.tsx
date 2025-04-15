@@ -16,12 +16,12 @@ const useAddReply = ({
   const router = useRouter();
   const trpcUtils = api.useUtils();
 
-  const { reset } = useAddCommentStore();
+  const { resetReply } = useAddCommentStore();
 
   const { isLoading: isReplying, mutateAsync: addReply } =
     api.post.replyToComment.useMutation({
       onMutate: () => {
-        reset();
+        resetReply();
       },
       onError: (err) => {
         toast.error('ReplyingError: Something went wrong!');

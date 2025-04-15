@@ -12,10 +12,15 @@ const useEditComment = () => {
   const router = useRouter();
   const trpcUtils = api.useUtils();
 
-  const { commentText, editCommentId } = useAddCommentStore();
+  const { commentText, editCommentId, reset, resetReply } =
+    useAddCommentStore();
 
   const { isLoading: isEditing, mutateAsync: editComment } =
     api.post.editPost.useMutation({
+      onMutate: () => {
+        reset();
+        resetReply();
+      },
       onError: (err) => {
         toast.error('EditingError: Something went wrong!');
         if (err.data?.code === 'UNAUTHORIZED') {

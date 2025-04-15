@@ -1,11 +1,11 @@
 'use client';
 
-import useAddCommentStore from '@/store/addComment';
 import useAddReply from '@/hooks/useAddReply';
 import useEditComment from '@/hooks/useEditComment';
+import { ReplyInputProps } from '@/lib/types';
+import useAddCommentStore from '@/store/addComment';
 import { useEffect } from 'react';
 import CommentInput from './CommentInput';
-import { ReplyInputProps } from '@/lib/types';
 
 const ReplyInput = ({ postId, commentId, onCancel }: ReplyInputProps) => {
   const {
@@ -15,7 +15,6 @@ const ReplyInput = ({ postId, commentId, onCancel }: ReplyInputProps) => {
     setReplyCharCount,
     isReplyEdit,
     editReplyId,
-    resetReply,
   } = useAddCommentStore();
 
   const { handleAddReply, isReplying } = useAddReply({
@@ -41,7 +40,6 @@ const ReplyInput = ({ postId, commentId, onCancel }: ReplyInputProps) => {
       if (!replyText.trim() || isReplying) return;
       handleAddReply(replyText);
     }
-    resetReply();
   };
 
   return (
