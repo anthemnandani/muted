@@ -688,6 +688,7 @@ export const postRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         limit: z.number().optional().default(10),
+        sortBy: z.enum(['LATEST', 'OLDEST']),
         cursor: z
           .object({
             id: z.string(),
@@ -697,7 +698,7 @@ export const postRouter = createTRPCRouter({
       })
     )
     .query(async ({ input, ctx }) => {
-      const { id, limit, cursor } = input;
+      const { id, limit, cursor, sortBy } = input;
 
       const comments = await ctx.db.post.findMany({
         where: {
@@ -730,7 +731,8 @@ export const postRouter = createTRPCRouter({
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy:
+          sortBy === 'LATEST' ? { createdAt: 'desc' } : { createdAt: 'asc' },
       });
 
       let nextCursor: typeof cursor | undefined = undefined;
@@ -811,7 +813,7 @@ export const postRouter = createTRPCRouter({
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: 'asc' },
       });
 
       let nextCursor: typeof cursor | undefined = undefined;

@@ -666,3 +666,5 @@ export interface CommentCardProps {
   isLast: boolean;
   originalPostId: string;
 }
+
+export type SortBy = 'LATEST' | 'OLDEST';

@@ -1,10 +1,17 @@
+import { type SortBy } from '@/lib/types';
 import { api } from '@/trpc/react';
 import { useMemo } from 'react';
 
-const useGetComments = ({ postId }: { postId: string }) => {
+const useGetComments = ({
+  postId,
+  sortBy,
+}: {
+  postId: string;
+  sortBy: SortBy;
+}) => {
   const { data, isLoading, hasNextPage, fetchNextPage } =
     api.post.getComments.useInfiniteQuery(
-      { id: postId },
+      { id: postId, sortBy },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         trpc: { abortOnUnmount: true },

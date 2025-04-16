@@ -15,6 +15,7 @@ import AddComment from './AddComment';
 import CommentCard from '../cards/CommentCard';
 import CommentsPanelHeader from './CommentsPanelHeader';
 import LinkShare from './LinkShare';
+import useSortByComments from '@/store/sortByComments';
 
 const CommentsPanel: React.FC<CommentsProps> = ({
   postId,
@@ -34,6 +35,7 @@ const CommentsPanel: React.FC<CommentsProps> = ({
   const { setScrollPosition, getScrollPosition } = useCommentPanelStore();
   const scrollRef = useRef<HTMLDivElement>(null);
   const headerControls = useAnimation();
+  const { sortBy } = useSortByComments();
 
   const [infoCardSentinelRef, isInfoCardVisible] = useInView({
     threshold: 0.1,
@@ -43,6 +45,7 @@ const CommentsPanel: React.FC<CommentsProps> = ({
   const { allComments, isLoading, hasNextPage, fetchNextPage } = useGetComments(
     {
       postId,
+      sortBy,
     }
   );
 

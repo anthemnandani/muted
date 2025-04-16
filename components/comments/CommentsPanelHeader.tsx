@@ -1,6 +1,5 @@
-import React from 'react';
-import { Icons } from '../icons';
 import { X } from 'lucide-react';
+import SortComments from '../menus/SortComments';
 
 const CommentsPanelHeader = ({
   repliesCount,
@@ -18,9 +17,7 @@ const CommentsPanelHeader = ({
         <span className='text-gray-400 text-sm'>{repliesCount}</span>
       </div>
       <div className='flex items-center gap-3'>
-        <button className='text-gray-400'>
-          <Icons.filter />
-        </button>
+        <SortComments />
         <button className='text-gray-400' onClick={onClose}>
           <X className='size-5' />
         </button>
