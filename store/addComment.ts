@@ -12,12 +12,13 @@ interface AddCommentState {
   currentPostId: string;
   charCount: number;
   replyCharCount: number;
+  replyToUsername: string | null;
 
   setCommentText: (text: string) => void;
   setReplyText: (text: string) => void;
   startEditing: (commentId: string, text: string) => void;
   startReplyEditing: (replyId: string, text: string) => void;
-  startReplying: (commentId: string) => void;
+  startReplying: (commentId: string, username?: string | null) => void;
   setCurrentPostId: (postId: string) => void;
   setCharCount: (count: number) => void;
   setReplyCharCount: (count: number) => void;
@@ -38,6 +39,7 @@ const useAddCommentStore = create<AddCommentState>()((set) => ({
   currentPostId: '',
   charCount: 0,
   replyCharCount: 0,
+  replyToUsername: null,
 
   setCommentText: (text) => set({ commentText: text }),
   setReplyText: (text) => set({ replyText: text }),
@@ -55,6 +57,7 @@ const useAddCommentStore = create<AddCommentState>()((set) => ({
       activeReplyCommentId: null,
       replyText: '',
       editReplyId: '',
+      replyToUsername: null,
     }),
 
   startReplyEditing: (replyId, text) =>
@@ -67,19 +70,24 @@ const useAddCommentStore = create<AddCommentState>()((set) => ({
       isReply: false,
       editCommentId: '',
       activeReplyCommentId: null,
+      replyToUsername: null,
     }),
 
-  startReplying: (commentId) =>
-    set({
+  startReplying: (commentId, username = null) => {
+    const initialText = username ? `@${username} ` : '';
+
+    return set((state) => ({
       isReply: true,
       activeReplyCommentId: commentId,
       isEdit: false,
       isReplyEdit: false,
       editCommentId: '',
       editReplyId: '',
-      replyText: '',
-      replyCharCount: 0,
-    }),
+      replyText: initialText,
+      replyCharCount: initialText.length,
+      replyToUsername: username,
+    }));
+  },
 
   cancelReply: () =>
     set({
@@ -87,6 +95,7 @@ const useAddCommentStore = create<AddCommentState>()((set) => ({
       activeReplyCommentId: null,
       replyText: '',
       replyCharCount: 0,
+      replyToUsername: null,
     }),
 
   resetReply: () =>
@@ -97,6 +106,7 @@ const useAddCommentStore = create<AddCommentState>()((set) => ({
       replyCharCount: 0,
       activeReplyCommentId: null,
       isReply: false,
+      replyToUsername: null,
     }),
 
   setCurrentPostId: (postId) =>
@@ -114,6 +124,7 @@ const useAddCommentStore = create<AddCommentState>()((set) => ({
           replyText: '',
           charCount: 0,
           replyCharCount: 0,
+          replyToUsername: null,
         };
       }
       return { currentPostId: postId };
@@ -125,6 +136,7 @@ const useAddCommentStore = create<AddCommentState>()((set) => ({
       isEdit: false,
       editCommentId: '',
       charCount: 0,
+      replyToUsername: null,
     }),
 }));
 

@@ -2,20 +2,18 @@
 
 import useGetReplies from '@/hooks/useGetReplies';
 import useLike from '@/hooks/useLike';
-import type { Comment } from '@/lib/types';
+import { CommentCardProps } from '@/lib/types';
 import { cn, formatCount, formatTimeAgo } from '@/lib/utils';
 import useAddCommentStore from '@/store/addComment';
-import { ChevronDown, ChevronUp, Heart } from 'lucide-react';
+import { ChevronDown, ChevronUp, Heart, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useState, Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import CommentActions from '../comments/CommentActions';
 import CommentText from '../comments/CommentText';
-import { Icons } from '../icons';
 import ReplyInput from '../inputs/ReplyInput';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import Username from '../user/Username';
 import ReplyCard from './ReplyCard';
-import { CommentCardProps } from '@/lib/types';
 
 const CommentCard = ({ comment, isLast, originalPostId }: CommentCardProps) => {
   const {
@@ -29,9 +27,15 @@ const CommentCard = ({ comment, isLast, originalPostId }: CommentCardProps) => {
     repliesCount,
   } = comment;
   const [showReplies, setShowReplies] = useState(false);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
 
-  const { startReplying, isReply, activeReplyCommentId, cancelReply } =
-    useAddCommentStore();
+  const {
+    startReplying,
+    isReply,
+    activeReplyCommentId,
+    cancelReply,
+    replyToUsername,
+  } = useAddCommentStore();
 
   const {
     isLikedByMe,
@@ -64,7 +68,14 @@ const CommentCard = ({ comment, isLast, originalPostId }: CommentCardProps) => {
     setShowReplies(!showReplies);
   };
 
-  const isActiveReplyInput = isReply && activeReplyCommentId === id;
+  const handleFetchMoreReplies = async () => {
+    setIsFetchingMore(true);
+    await fetchNextPage();
+    setIsFetchingMore(false);
+  };
+
+  const isActiveReplyInput =
+    isReply && activeReplyCommentId === id && !replyToUsername;
 
   return (
     <div className={cn('px-4 py-3', { 'mb-10': isLast })}>
@@ -128,65 +139,72 @@ const CommentCard = ({ comment, isLast, originalPostId }: CommentCardProps) => {
       {isActiveReplyInput && (
         <div className='mt-2 ml-12'>
           <ReplyInput
-            postId={originalPostId}
+            postId={originalPostId || id}
             commentId={id}
             onCancel={handleCancelReply}
           />
         </div>
       )}
 
-      {repliesCount > 0 && !showReplies && (
+      {repliesCount > 0 && (
         <div className='ml-12 mt-2'>
           <button
             className='text-primary-blue text-sm hover:text-blue-400 flex items-center gap-1'
             onClick={handleToggleReplies}
           >
-            <ChevronDown className='size-4' />
-            {repliesCount} {repliesCount === 1 ? 'reply' : 'replies'}
+            {showReplies ? (
+              <Fragment>
+                <ChevronUp className='size-4' />
+                Hide replies
+              </Fragment>
+            ) : (
+              <Fragment>
+                <ChevronDown className='size-4' />
+                {repliesCount} {repliesCount === 1 ? 'reply' : 'replies'}
+              </Fragment>
+            )}
           </button>
         </div>
       )}
 
       {showReplies && (
-        <Fragment>
-          <div className='mt-2 ml-12'>
-            {isLoadingReplies ? (
-              <div className='flex justify-center py-4'>
-                <Icons.loading className='size-8' />
-              </div>
-            ) : (
-              allReplies.length > 0 && (
-                <Fragment>
-                  {allReplies.map((reply, index) => (
-                    <ReplyCard
-                      key={reply.id}
-                      reply={reply}
-                      isLast={index === allReplies.length - 1}
-                      originalPostId={originalPostId}
-                    />
-                  ))}
+        <div className='mt-2 ml-12'>
+          {isLoadingReplies ? (
+            <div className='flex justify-center py-4'>
+              <Loader2 className='size-8 animate-spin' />
+            </div>
+          ) : (
+            allReplies.length > 0 && (
+              <Fragment>
+                {allReplies.map((reply, index) => (
+                  <ReplyCard
+                    key={reply.id}
+                    reply={reply}
+                    isLast={index === allReplies.length - 1}
+                    originalPostId={id}
+                  />
+                ))}
 
-                  {hasNextPage && (
-                    <button
-                      onClick={() => fetchNextPage()}
-                      className='text-primary-blue text-sm hover:underline mt-2'
-                    >
-                      Show more replies
-                    </button>
-                  )}
-
-                  <button
-                    className='text-primary-blue text-sm hover:text-blue-400 flex items-center gap-1 mt-2'
-                    onClick={handleToggleReplies}
-                  >
-                    <ChevronUp className='size-4' />
-                    Hide replies
-                  </button>
-                </Fragment>
-              )
-            )}
-          </div>
-        </Fragment>
+                {hasNextPage && (
+                  <div className='mt-2'>
+                    {isFetchingMore ? (
+                      <div className='flex justify-center py-4'>
+                        <Loader2 className='size-6 animate-spin' />
+                      </div>
+                    ) : (
+                      <button
+                        onClick={handleFetchMoreReplies}
+                        className='text-primary-blue text-sm hover:underline'
+                      >
+                        Show more replies
+                      </button>
+                    )}
+                  </div>
+                )}
+              </Fragment>
+            )
+          )}
+        </div>
       )}
     </div>
   );

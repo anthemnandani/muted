@@ -1,7 +1,6 @@
 'use client';
 
 import useLike from '@/hooks/useLike';
-import type { Comment } from '@/lib/types';
 import { cn, formatCount, formatTimeAgo } from '@/lib/utils';
 import useAddCommentStore from '@/store/addComment';
 import { Heart } from 'lucide-react';
@@ -21,9 +20,11 @@ const ReplyCard = ({ reply, isLast, originalPostId }: ReplyCardProps) => {
     isReply,
     activeReplyCommentId,
     isReplyEdit,
+    editReplyId,
     cancelReply,
     startReplyEditing,
     resetReply,
+    replyToUsername,
   } = useAddCommentStore();
 
   const {
@@ -37,7 +38,7 @@ const ReplyCard = ({ reply, isLast, originalPostId }: ReplyCardProps) => {
   });
 
   const handleReplyClick = () => {
-    startReplying(id);
+    startReplying(id, author.username);
   };
 
   const handleCancelReply = () => {
@@ -52,7 +53,12 @@ const ReplyCard = ({ reply, isLast, originalPostId }: ReplyCardProps) => {
     resetReply();
   };
 
-  const isActiveReplyInput = isReply && activeReplyCommentId === id;
+  const isActiveReplyInput =
+    isReply &&
+    activeReplyCommentId === id &&
+    replyToUsername === author.username;
+
+  const isActiveEditInput = isReplyEdit && editReplyId === id;
 
   return (
     <div className={cn('py-3', { 'mb-1': isLast })}>
@@ -118,13 +124,13 @@ const ReplyCard = ({ reply, isLast, originalPostId }: ReplyCardProps) => {
         <div className='mt-2 ml-10'>
           <ReplyInput
             postId={originalPostId}
-            commentId={id}
+            commentId={originalPostId}
             onCancel={handleCancelReply}
           />
         </div>
       )}
 
-      {isReplyEdit && (
+      {isActiveEditInput && (
         <div className='mt-2 ml-10'>
           <ReplyInput
             postId={originalPostId}

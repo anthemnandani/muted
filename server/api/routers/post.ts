@@ -769,7 +769,7 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         parentCommentId: z.string(),
-        limit: z.number().optional().default(10),
+        limit: z.number().optional().default(8),
         cursor: z
           .object({
             id: z.string(),
@@ -1032,6 +1032,13 @@ export const postRouter = createTRPCRouter({
             select: {
               id: true,
               path: true,
+              authorId: true,
+              parentPostId: true,
+              _count: {
+                select: {
+                  replies: true,
+                },
+              },
             },
           });
 
@@ -1039,8 +1046,34 @@ export const postRouter = createTRPCRouter({
             throw new TRPCError({ code: 'NOT_FOUND' });
           }
 
+          if (postToDelete.authorId !== userId) {
+            throw new TRPCError({
+              code: 'FORBIDDEN',
+              message: 'You can only delete your own posts',
+            });
+          }
+
+          const descendants = await prisma.post.findMany({
+            where: {
+              path: {
+                contains: postToDelete.id,
+              },
+              id: { not: postToDelete.id },
+            },
+            select: {
+              id: true,
+            },
+          });
+
+          const descendantIds = descendants.map((desc) => desc.id);
+
+          const totalCountToDecrement = 1 + descendantIds.length;
+
           if (postToDelete.path) {
-            const ancestorIds = postToDelete.path.split('/').filter(Boolean);
+            const ancestorIds = postToDelete.path
+              .split('/')
+              .filter(Boolean)
+              .filter((id) => id !== postToDelete.id);
 
             if (ancestorIds.length > 0) {
               const existingAncestors = await prisma.post.findMany({
@@ -1055,29 +1088,15 @@ export const postRouter = createTRPCRouter({
               if (existingAncestorIds.length > 0) {
                 await prisma.post.updateMany({
                   where: { id: { in: existingAncestorIds } },
-                  data: { repliesCount: { decrement: 1 } },
+                  data: { repliesCount: { decrement: totalCountToDecrement } },
                 });
               }
             }
           }
 
-          const deletedPost = await prisma.post.delete({
+          await prisma.post.delete({
             where: {
               id: input.id,
-              authorId: userId,
-            },
-          });
-
-          if (!deletedPost) {
-            throw new TRPCError({ code: 'NOT_FOUND' });
-          }
-
-          await prisma.post.updateMany({
-            where: {
-              quoteId: input.id,
-            },
-            data: {
-              quoteId: null,
             },
           });
 

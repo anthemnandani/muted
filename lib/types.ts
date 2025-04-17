@@ -640,6 +640,7 @@ export interface ReplyInputProps {
   postId: string;
   commentId: string;
   onCancel: () => void;
+  username?: string;
 }
 
 export interface ReplyCardProps {
@@ -659,6 +660,7 @@ export interface CommentInputProps {
   showCancelButton?: boolean;
   onCancel?: () => void;
   isEdit?: boolean;
+  replyToUsername?: string | null;
 }
 
 export interface CommentCardProps {

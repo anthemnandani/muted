@@ -1,14 +1,14 @@
 'use client';
 
 import useMentions from '@/hooks/useMentions';
+import { CommentInputProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
 import { X } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import UsersMenu from '../menus/UsersMenu';
 import { EmojiPicker } from '../modals/EmojiPicker';
 import { Avatar, AvatarImage } from '../ui/avatar';
-import { CommentInputProps } from '@/lib/types';
 
 const CommentInput = ({
   placeholder,
@@ -21,10 +21,12 @@ const CommentInput = ({
   showCancelButton = false,
   onCancel,
   isEdit,
+  replyToUsername,
 }: CommentInputProps) => {
   const { user } = useUser();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isAtLimit = charCount >= maxChars;
+  const [hasPrefixedReply, setHasPrefixedReply] = useState(false);
 
   const {
     mentionSuggestions,
@@ -55,11 +57,45 @@ const CommentInput = ({
     }
   }, [textValue]);
 
+  useEffect(() => {
+    if (replyToUsername && !hasPrefixedReply && !isEdit) {
+      const prefixedText = `@${replyToUsername} `;
+      onTextChange(prefixedText);
+      setHasPrefixedReply(true);
+
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          textareaRef.current.setSelectionRange(
+            prefixedText.length,
+            prefixedText.length
+          );
+        }
+      }, 0);
+    }
+  }, [replyToUsername, hasPrefixedReply, onTextChange, isEdit]);
+
   const hasText = textValue.length > 0;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = e.target.value;
-    handleMentionSearch(text, e.target.selectionStart || 0);
+    const cursorPos = e.target.selectionStart || 0;
+
+    if (replyToUsername && text.indexOf(`@${replyToUsername}`) !== 0) {
+      const preservedPrefix = `@${replyToUsername} `;
+      const newText = preservedPrefix + text.substring(cursorPos);
+      onTextChange(newText);
+      setTimeout(() => {
+        if (textareaRef.current) {
+          const newPos = Math.max(preservedPrefix.length, cursorPos);
+          textareaRef.current.setSelectionRange(newPos, newPos);
+        }
+      }, 0);
+
+      return;
+    }
+
+    handleMentionSearch(text, cursorPos);
     if (text.length <= maxChars) {
       onTextChange(text);
     }
@@ -68,16 +104,89 @@ const CommentInput = ({
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     e.preventDefault();
     const pastedText = e.clipboardData.getData('text');
-    const newText = textValue + pastedText;
-    const trimmedText = newText.slice(0, maxChars);
 
-    onTextChange(trimmedText);
+    if (replyToUsername) {
+      const prefixedReply = `@${replyToUsername} `;
+      const cursorPos = textareaRef.current?.selectionStart || 0;
+
+      if (cursorPos >= prefixedReply.length) {
+        const beforeCursor = textValue.substring(0, cursorPos);
+        const afterCursor = textValue.substring(cursorPos);
+        const newText = beforeCursor + pastedText + afterCursor;
+
+        const trimmedText = newText.slice(0, maxChars);
+        onTextChange(trimmedText);
+
+        setTimeout(() => {
+          if (textareaRef.current) {
+            const newPos = cursorPos + pastedText.length;
+            textareaRef.current.setSelectionRange(newPos, newPos);
+          }
+        }, 0);
+      }
+    } else {
+      const newText = textValue + pastedText;
+      const trimmedText = newText.slice(0, maxChars);
+      onTextChange(trimmedText);
+    }
   };
 
   const handleEmojiSelect = (emoji: string) => {
-    const newText = textValue + emoji;
-    if (newText.length <= maxChars) {
-      onTextChange(newText);
+    if (replyToUsername) {
+      const prefixedReply = `@${replyToUsername} `;
+      const cursorPos = textareaRef.current?.selectionStart || 0;
+
+      if (cursorPos >= prefixedReply.length) {
+        const beforeCursor = textValue.substring(0, cursorPos);
+        const afterCursor = textValue.substring(cursorPos);
+        const newText = beforeCursor + emoji + afterCursor;
+
+        if (newText.length <= maxChars) {
+          onTextChange(newText);
+          setTimeout(() => {
+            if (textareaRef.current) {
+              const newPos = cursorPos + emoji.length;
+              textareaRef.current.setSelectionRange(newPos, newPos);
+            }
+          }, 0);
+        }
+      }
+    } else {
+      const newText = textValue + emoji;
+      if (newText.length <= maxChars) {
+        onTextChange(newText);
+      }
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (replyToUsername) {
+      const prefixedReply = `@${replyToUsername} `;
+      const cursorPos = textareaRef.current?.selectionStart || 0;
+      if (
+        (e.key === 'Backspace' && cursorPos <= prefixedReply.length) ||
+        (e.key === 'Delete' && cursorPos < prefixedReply.length) ||
+        ((e.key === 'Backspace' || e.key === 'Delete') &&
+          textareaRef.current?.selectionStart !==
+            textareaRef.current?.selectionEnd &&
+          (textareaRef.current?.selectionStart || 0) < prefixedReply.length)
+      ) {
+        e.preventDefault();
+        return;
+      }
+      if (e.key === 'a' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+
+        setTimeout(() => {
+          if (textareaRef.current) {
+            textareaRef.current.setSelectionRange(
+              prefixedReply.length,
+              textValue.length
+            );
+          }
+        }, 0);
+        return;
+      }
     }
   };
 
@@ -99,6 +208,7 @@ const CommentInput = ({
             value={textValue}
             onChange={handleInputChange}
             onPaste={handlePaste}
+            onKeyDown={handleKeyDown}
             rows={1}
             autoFocus
             maxLength={maxChars}

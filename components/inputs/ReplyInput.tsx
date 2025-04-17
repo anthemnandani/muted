@@ -15,6 +15,7 @@ const ReplyInput = ({ postId, commentId, onCancel }: ReplyInputProps) => {
     setReplyCharCount,
     isReplyEdit,
     editReplyId,
+    replyToUsername,
   } = useAddCommentStore();
 
   const { handleAddReply, isReplying } = useAddReply({
@@ -42,10 +43,16 @@ const ReplyInput = ({ postId, commentId, onCancel }: ReplyInputProps) => {
     }
   };
 
+  const placeholder = isReplyEdit
+    ? 'Edit reply...'
+    : replyToUsername
+    ? `Reply to @${replyToUsername}...`
+    : 'Add a reply...';
+
   return (
     <div className='py-2'>
       <CommentInput
-        placeholder={isReplyEdit ? 'Edit reply...' : 'Add a reply...'}
+        placeholder={placeholder}
         textValue={replyText}
         onTextChange={setReplyText}
         onSubmit={submitContent}
@@ -55,6 +62,7 @@ const ReplyInput = ({ postId, commentId, onCancel }: ReplyInputProps) => {
         showCancelButton={true}
         onCancel={onCancel}
         isEdit={isReplyEdit}
+        replyToUsername={replyToUsername}
       />
     </div>
   );
