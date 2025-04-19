@@ -1,6 +1,6 @@
 import useTimeLeft from '@/hooks/useTimeLeft';
 import { CommentActionsProps } from '@/lib/types';
-import { formatTimeLeft } from '@/lib/utils';
+import { cn, formatTimeLeft } from '@/lib/utils';
 import useAddCommentStore from '@/store/addComment';
 import { useUser } from '@clerk/nextjs';
 import { DropdownMenu } from '@radix-ui/react-dropdown-menu';
@@ -13,6 +13,7 @@ import { DropdownMenuContent, DropdownMenuTrigger } from '../ui/dropdown-menu';
 
 const CommentActions = ({
   authorId,
+  postAuthorId,
   postId,
   createdAt,
   text,
@@ -70,12 +71,25 @@ const CommentActions = ({
             />
           </Fragment>
         ) : (
-          <MenuItem
-            icon={Icons.report}
-            label='Report'
-            className='text-primary-red focus:text-primary-red'
-            isActionMenuItem
-          />
+          <Fragment>
+            <MenuItem
+              icon={Icons.report}
+              label='Report'
+              className={cn(
+                'text-primary-red',
+                postAuthorId === user?.id && 'text-white/90'
+              )}
+              iconColor={postAuthorId === user?.id ? 'white' : '#ff3040'}
+            />
+            {postAuthorId === user?.id && (
+              <DeletePost
+                postId={postId}
+                isComment
+                isReply={isReply}
+                closeDropdown={() => setIsOpen(false)}
+              />
+            )}
+          </Fragment>
         )}
       </DropdownMenuContent>
     </DropdownMenu>

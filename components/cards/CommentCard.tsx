@@ -140,6 +140,7 @@ const CommentCard = ({
         </div>
         <CommentActions
           authorId={author.id}
+          postAuthorId={postAuthorId}
           postId={id}
           createdAt={createdAt}
           text={text ?? ''}

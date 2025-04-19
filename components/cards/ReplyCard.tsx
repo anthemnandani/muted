@@ -123,6 +123,7 @@ const ReplyCard = ({
         <CommentActions
           authorId={author.id}
           postId={id}
+          postAuthorId={postAuthorId}
           createdAt={createdAt}
           text={text ?? ''}
           isReply

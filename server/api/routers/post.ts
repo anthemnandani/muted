@@ -1023,8 +1023,6 @@ export const postRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { userId } = ctx;
-
       try {
         await ctx.db.$transaction(async (prisma) => {
           const postToDelete = await prisma.post.findUnique({
@@ -1044,13 +1042,6 @@ export const postRouter = createTRPCRouter({
 
           if (!postToDelete) {
             throw new TRPCError({ code: 'NOT_FOUND' });
-          }
-
-          if (postToDelete.authorId !== userId) {
-            throw new TRPCError({
-              code: 'FORBIDDEN',
-              message: 'You can only delete your own posts',
-            });
           }
 
           const descendants = await prisma.post.findMany({

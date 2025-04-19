@@ -8,7 +8,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
   onClick,
   className,
   disabled,
-  isActionMenuItem,
+  iconColor,
 }) => {
   if (React.isValidElement(label)) {
     return (
@@ -24,7 +24,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
         onClick={onClick}
         disabled={disabled}
       >
-        {Icon && <Icon className='size-4 min-w-4' />}
+        {Icon && <Icon className='size-4 min-w-4' color={iconColor} />}
         {label}
       </button>
     );
@@ -43,7 +43,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
       onClick={onClick}
       disabled={disabled}
     >
-      {Icon && <Icon className='size-4 min-w-4' />}
+      {Icon && <Icon className='size-4 min-w-4' color={iconColor} />}
       <span>{label}</span>
     </button>
   );

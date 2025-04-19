@@ -146,6 +146,7 @@ export interface MenuItemProps {
   className?: string;
   isActionMenuItem?: boolean;
   disabled?: boolean;
+  iconColor?: string;
 }
 
 export type Repost = {
@@ -588,6 +589,7 @@ export interface CommentTextProps {
 
 export interface CommentActionsProps {
   authorId: string;
+  postAuthorId: string;
   postId: string;
   createdAt: Date;
   text: string;
