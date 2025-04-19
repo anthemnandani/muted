@@ -1,6 +1,5 @@
 import type { UsernameProps } from '@/lib/types';
 import { cn, formatRepostTime } from '@/lib/utils';
-import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import React, { Fragment } from 'react';
 import UserProfileCard from '../cards/UserProfileCard';
@@ -18,7 +17,6 @@ const Username: React.FC<UsernameProps> = ({
   isComment,
   postAuthorId,
 }) => {
-  const { user } = useUser();
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
@@ -35,7 +33,7 @@ const Username: React.FC<UsernameProps> = ({
           >
             {author.username}{' '}
           </span>
-          {isComment && user?.id === postAuthorId && (
+          {isComment && author?.id === postAuthorId && (
             <Fragment>
               <span className='text-white/90 inline-block align-middle'>
                 &middot;
