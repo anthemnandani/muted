@@ -12,7 +12,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import Username from '../user/Username';
 import { ReplyCardProps } from '@/lib/types';
 
-const ReplyCard = ({ reply, isLast, originalPostId }: ReplyCardProps) => {
+const ReplyCard = ({
+  reply,
+  isLast,
+  originalPostId,
+  postAuthorId,
+}: ReplyCardProps) => {
   const { id, author, text, likesCount, createdAt, likes, mentions } = reply;
 
   const {
@@ -76,7 +81,12 @@ const ReplyCard = ({ reply, isLast, originalPostId }: ReplyCardProps) => {
           </Avatar>
         </Link>
         <div className='flex-1 min-w-0'>
-          <Username author={author} className='truncate text-base' />
+          <Username
+            author={author}
+            className='truncate text-base'
+            isComment
+            postAuthorId={postAuthorId}
+          />
           <CommentText text={text!} mentions={mentions} />
           <div className='flex items-center mt-1 gap-6'>
             <span className='text-sm text-gray-400'>

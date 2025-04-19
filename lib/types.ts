@@ -647,6 +647,7 @@ export interface ReplyCardProps {
   reply: Comment;
   isLast: boolean;
   originalPostId: string;
+  postAuthorId?: string;
 }
 
 export interface CommentInputProps {
@@ -667,6 +668,16 @@ export interface CommentCardProps {
   comment: Comment;
   isLast: boolean;
   originalPostId: string;
+  postAuthorId: string;
 }
 
 export type SortBy = 'LATEST' | 'OLDEST';
+
+export interface UsernameProps {
+  author: AuthorInfoProps;
+  isReposted?: boolean;
+  repostedAt?: Date;
+  className?: string;
+  isComment?: boolean;
+  postAuthorId: string;
+}

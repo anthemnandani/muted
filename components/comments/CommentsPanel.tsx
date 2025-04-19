@@ -171,6 +171,7 @@ const CommentsPanel: React.FC<CommentsProps> = ({
                       mentions: comment.mentions,
                       repliesCount: comment.repliesCount || 0,
                     }}
+                    postAuthorId={authorId}
                     isLast={index === allComments.length - 1}
                     originalPostId={postId}
                   />

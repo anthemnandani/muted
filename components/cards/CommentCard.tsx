@@ -15,7 +15,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import Username from '../user/Username';
 import ReplyCard from './ReplyCard';
 
-const CommentCard = ({ comment, isLast, originalPostId }: CommentCardProps) => {
+const CommentCard = ({
+  comment,
+  isLast,
+  originalPostId,
+  postAuthorId,
+}: CommentCardProps) => {
   const {
     id,
     author,
@@ -93,7 +98,12 @@ const CommentCard = ({ comment, isLast, originalPostId }: CommentCardProps) => {
           </Avatar>
         </Link>
         <div className='flex-1 min-w-0'>
-          <Username author={author} className='truncate text-base' />
+          <Username
+            author={author}
+            className='truncate text-base'
+            postAuthorId={postAuthorId}
+            isComment
+          />
           <CommentText text={text!} mentions={mentions} />
           <div className='flex items-center mt-1 gap-6'>
             <span className='text-sm text-gray-400'>
@@ -182,6 +192,7 @@ const CommentCard = ({ comment, isLast, originalPostId }: CommentCardProps) => {
                     reply={reply}
                     isLast={index === allReplies.length - 1}
                     originalPostId={id}
+                    postAuthorId={postAuthorId}
                   />
                 ))}
 

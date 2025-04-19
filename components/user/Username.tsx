@@ -1,7 +1,8 @@
-import type { AuthorInfoProps } from '@/lib/types';
+import type { UsernameProps } from '@/lib/types';
 import { cn, formatRepostTime } from '@/lib/utils';
+import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
-import React from 'react';
+import React, { Fragment } from 'react';
 import UserProfileCard from '../cards/UserProfileCard';
 import {
   HoverCard,
@@ -9,35 +10,41 @@ import {
   HoverCardTrigger,
 } from '../ui/hover-card';
 
-interface UsernameProps {
-  author: AuthorInfoProps;
-  isReposted?: boolean;
-  repostedAt?: Date;
-  className?: string;
-}
-
 const Username: React.FC<UsernameProps> = ({
   author,
   isReposted,
   repostedAt,
   className,
+  isComment,
+  postAuthorId,
 }) => {
+  const { user } = useUser();
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
         <Link
           href={`/@${author.username}`}
-          className='inline flex-center gap-1.5 w-fit group'
+          className='inline-flex items-center gap-1.5 w-fit group'
         >
           <span
             className={cn(
-              'text-white/90 text-[14px] font-semibold leading-[0] group-hover:underline',
+              'text-white/90 text-[14px] font-semibold group-hover:underline',
               isReposted && 'text-[13px] text-[#999] dark:text-gray-3',
               className
             )}
           >
             {author.username}{' '}
           </span>
+          {isComment && user?.id === postAuthorId && (
+            <Fragment>
+              <span className='text-white/90 inline-block align-middle'>
+                &middot;
+              </span>
+              <span className='text-[14px] text-primary-red font-semibold'>
+                Creator
+              </span>
+            </Fragment>
+          )}
           {isReposted && (
             <span className='text-[13px] text-[#999] dark:text-gray-3'>
               reposted {formatRepostTime(repostedAt!)}
