@@ -44,6 +44,9 @@ export const userRouter = createTRPCRouter({
           followers: true,
           following: true,
           posts: {
+            where: {
+              parentPostId: null,
+            },
             take: limit + 1,
             cursor: cursor ? { createdAt_id: cursor } : undefined,
             orderBy:
@@ -148,7 +151,7 @@ export const userRouter = createTRPCRouter({
       }
 
       const posts = await ctx.db.post.findMany({
-        where: { authorId: user.id },
+        where: { authorId: user.id, parentPostId: null },
         orderBy:
           sortBy === 'LATEST'
             ? [{ pinned: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }]
