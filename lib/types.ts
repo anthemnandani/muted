@@ -486,8 +486,8 @@ export interface UserPostCardProps {
 
 export interface ProfileTabsHeaderProps {
   isOwner: boolean;
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
+  activeTab: Tab;
+  setActiveTab: (tab: Tab) => void;
 }
 
 export type ProfileFilter = 'LATEST' | 'OLDEST';
@@ -672,6 +672,8 @@ export interface CommentCardProps {
 }
 
 export type SortBy = 'LATEST' | 'OLDEST';
+
+export type Tab = 'posts' | 'reposts' | 'liked' | 'collections';
 
 export interface UsernameProps {
   author: AuthorInfoProps;

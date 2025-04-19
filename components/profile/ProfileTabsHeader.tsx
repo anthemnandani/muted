@@ -1,6 +1,6 @@
 'use client';
 
-import { ProfileTabsHeaderProps } from '@/lib/types';
+import { ProfileTabsHeaderProps, type Tab } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import React from 'react';
 import { Icons } from '../icons';
@@ -47,7 +47,7 @@ const ProfileTabsHeader = ({
         <TabsTrigger
           key={tab.id}
           value={tab.id}
-          onClick={() => setActiveTab(tab.id)}
+          onClick={() => setActiveTab(tab.id as Tab)}
           className='flex-1 flex items-center relative data-[state=active]:text-white text-white/50 transition-colors'
         >
           <div

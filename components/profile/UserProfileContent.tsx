@@ -1,9 +1,9 @@
 'use client';
 
 import { Tabs, TabsContent } from '@/components/ui/tabs';
-import type { UserProfileContentProps } from '@/lib/types';
+import { type Tab, UserProfileContentProps } from '@/lib/types';
+import { useTabStore } from '@/store/tabStore';
 import { useUser } from '@clerk/nextjs';
-import { useState } from 'react';
 import NewCollection from '../modals/NewCollection';
 import ProfileFilters from './ProfileFilters';
 import ProfileTabsHeader from './ProfileTabsHeader';
@@ -22,14 +22,17 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
   username,
 }) => {
   const { user } = useUser();
-  const [activeTab, setActiveTab] = useState('posts');
-
+  const { activeTab, setActiveTab } = useTabStore();
   const isOwner = user?.id === userId;
 
   return (
     <div className='flex flex-[1_1_auto] justify-start items-start min-h-[490px] h-full min-w-0 relative'>
       <div className='w-full'>
-        <Tabs defaultValue='posts' className='w-full'>
+        <Tabs
+          defaultValue={activeTab}
+          className='w-full'
+          onValueChange={(value) => setActiveTab(value as Tab)}
+        >
           <div className='flex-between w-full'>
             <div className='flex-1'>
               <ProfileTabsHeader
