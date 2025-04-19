@@ -647,7 +647,7 @@ export interface ReplyCardProps {
   reply: Comment;
   isLast: boolean;
   originalPostId: string;
-  postAuthorId?: string;
+  postAuthorId: string;
 }
 
 export interface CommentInputProps {
@@ -679,5 +679,5 @@ export interface UsernameProps {
   repostedAt?: Date;
   className?: string;
   isComment?: boolean;
-  postAuthorId: string;
+  postAuthorId?: string;
 }
