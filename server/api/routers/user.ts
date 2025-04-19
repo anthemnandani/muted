@@ -211,7 +211,7 @@ export const userRouter = createTRPCRouter({
       }
 
       const reposts = await ctx.db.repost.findMany({
-        where: { userId: user.id },
+        where: { userId: user.id, post: { parentPostId: null } },
         orderBy: { createdAt: 'desc' },
         select: {
           post: {
@@ -285,7 +285,7 @@ export const userRouter = createTRPCRouter({
       }
 
       const reposts = await ctx.db.repost.findMany({
-        where: { userId: user.id },
+        where: { userId: user.id, post: { parentPostId: null } },
         cursor: cursor
           ? { postId_userId: { postId: cursor.postId, userId: user.id } }
           : undefined,
@@ -366,6 +366,9 @@ export const userRouter = createTRPCRouter({
       const likedPosts = await ctx.db.like.findMany({
         where: {
           userId: user.id,
+          post: {
+            parentPostId: null,
+          },
         },
 
         select: {
@@ -443,6 +446,9 @@ export const userRouter = createTRPCRouter({
       const likedPosts = await ctx.db.like.findMany({
         where: {
           userId: user.id,
+          post: {
+            parentPostId: null,
+          },
         },
         take: limit + 1,
         cursor: cursor
