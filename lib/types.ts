@@ -684,3 +684,8 @@ export interface UsernameProps {
   isComment?: boolean;
   postAuthorId?: string;
 }
+
+export interface EmojiPickerProps {
+  onChange?: (emoji: string) => void;
+  isComment?: boolean;
+}

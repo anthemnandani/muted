@@ -1,15 +1,13 @@
 'use client';
 
+import { EmojiPickerProps } from '@/lib/types';
+import { cn } from '@/lib/utils';
 import data from '@emoji-mart/data/';
 import Picker from '@emoji-mart/react';
 import { Smile } from 'lucide-react';
 import { Fragment, useEffect, useRef, useState } from 'react';
 
-interface EmojiPickerProps {
-  onChange?: (emoji: string) => void;
-}
-
-export function EmojiPicker({ onChange }: EmojiPickerProps) {
+export function EmojiPicker({ onChange, isComment = false }: EmojiPickerProps) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
@@ -49,7 +47,10 @@ export function EmojiPicker({ onChange }: EmojiPickerProps) {
       {open && (
         <div
           ref={pickerRef}
-          className='absolute z-[9999] -top-[455px] -left-[270px]'
+          className={cn(
+            'absolute z-[9999] top-[100px] left-[75px]',
+            isComment && '-top-[455px]'
+          )}
           onClick={(e) => e.stopPropagation()}
         >
           <Picker

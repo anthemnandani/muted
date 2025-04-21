@@ -4,9 +4,10 @@ import Error from '@/app/error';
 import PostsList from '@/components/shared/PostsList';
 import ScrollContainer from '@/components/shared/ScrollContainer';
 import { api } from '@/trpc/react';
+import { useEffect } from 'react';
 
 const PostsClient = () => {
-  const { data, isLoading, isError, hasNextPage, fetchNextPage } =
+  const { data, isLoading, isError, hasNextPage, fetchNextPage, refetch } =
     api.post.getInfinitePosts.useInfiniteQuery(
       {},
       {
@@ -15,6 +16,18 @@ const PostsClient = () => {
         staleTime: 10 * 60 * 1000,
       }
     );
+
+  useEffect(() => {
+    const handleRefresh = () => {
+      refetch();
+    };
+
+    window.addEventListener('refreshFeed', handleRefresh);
+
+    return () => {
+      window.removeEventListener('refreshFeed', handleRefresh);
+    };
+  }, [refetch]);
 
   const allPosts = data?.pages.flatMap((page) => page.posts);
 
