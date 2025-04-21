@@ -520,7 +520,6 @@ export interface CollectionsMenuProps {
   postId: string;
   isOpen: boolean;
   onClose: () => void;
-  anchorRect: DOMRect | null;
 }
 
 export interface SkeletonGridProps {

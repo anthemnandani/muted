@@ -1,12 +1,11 @@
 'use client';
 
-import useBookmark from '@/hooks/useBookmark';
 import useDevice from '@/hooks/useDevice';
 import { cn } from '@/lib/utils';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
+import { Loader2 } from 'lucide-react';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import { toast } from 'sonner';
 import { Icons } from '../icons';
 import { ScrollArea } from '../ui/scroll-area';
 import CollectionCover from './CollectionCover';
@@ -29,7 +28,7 @@ const CollectionsList = ({ postId }: { postId: string }) => {
   if (isLoading)
     return (
       <div className='flex-center h-20'>
-        <Icons.loading className='size-11' />
+        <Loader2 className='size-11 animate-spin' />
       </div>
     );
 

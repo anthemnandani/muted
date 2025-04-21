@@ -21,7 +21,6 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ bookmarkInfo }) => {
   const timeoutRef = React.useRef<NodeJS.Timeout>();
   const showTimeoutRef = React.useRef<NodeJS.Timeout>();
   const buttonRef = React.useRef<HTMLButtonElement>(null);
-  const [anchorRect, setAnchorRect] = React.useState<DOMRect | null>(null);
   const {
     isBookmarkedByMe,
     isLoading,
@@ -48,10 +47,6 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ bookmarkInfo }) => {
       clearTimeout(timeoutRef.current);
     }
     showTimeoutRef.current = setTimeout(() => {
-      if (buttonRef.current) {
-        const rect = buttonRef.current.getBoundingClientRect();
-        setAnchorRect(rect);
-      }
       setShowMenu(true);
     }, 1000);
   };
@@ -74,7 +69,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ bookmarkInfo }) => {
 
   return (
     <div
-      className='flex flex-col items-center'
+      className='flex flex-col items-center relative'
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -98,12 +93,15 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ bookmarkInfo }) => {
       <strong className='text-[13px] leading-4 text-center'>
         {bookmarksCount}
       </strong>
-      <CollectionsMenu
-        postId={postId}
-        isOpen={showMenu}
-        onClose={() => setShowMenu(false)}
-        anchorRect={anchorRect}
-      />
+
+      {showMenu && (
+        <CollectionsMenu
+          postId={postId}
+          isOpen={showMenu}
+          onClose={() => setShowMenu(false)}
+        />
+      )}
+
       <DeleteBookmark postId={postId} />
     </div>
   );
