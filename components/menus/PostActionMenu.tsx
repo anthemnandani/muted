@@ -45,7 +45,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
   const { handleTogglePinPost, isLoading: isLoadingPinPost } = useTogglePinPost(
     {
       postId,
-      isPinned: pinned,
+      isPinned: pinned!,
     }
   );
 

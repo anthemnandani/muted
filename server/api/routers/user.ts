@@ -302,7 +302,6 @@ export const userRouter = createTRPCRouter({
               quoteId: true,
               path: true,
               hideLikes: true,
-              pinned: true,
               privacy: true,
               author: {
                 select: {
@@ -465,7 +464,6 @@ export const userRouter = createTRPCRouter({
               quoteId: true,
               path: true,
               hideLikes: true,
-              pinned: true,
               privacy: true,
               author: {
                 select: {

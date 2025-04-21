@@ -180,7 +180,7 @@ export type ParentPostProps = {
   bookmarksCount?: number;
   repostsCount?: number;
   repostedAt?: Date;
-  pinned: boolean;
+  pinned?: boolean;
   hideLikes: boolean;
   isHidden?: boolean;
   isMuted?: boolean;
@@ -379,7 +379,7 @@ export interface VideoContainerProps {
   id: string;
   text: string | null;
   hideLikes: boolean;
-  pinned: boolean;
+  pinned?: boolean;
   setInView: (inView: boolean) => void;
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
@@ -391,7 +391,7 @@ export interface MediaControlsProps {
   createdAt: Date;
   text: string | null;
   hideLikes: boolean;
-  pinned: boolean;
+  pinned?: boolean;
   showControls: boolean;
   VolumeControls?: React.ReactNode;
 }
@@ -404,7 +404,7 @@ export interface PostImageCardProps {
   id: string;
   text: string | null;
   hideLikes: boolean;
-  pinned: boolean;
+  pinned?: boolean;
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
 }
@@ -417,7 +417,7 @@ export interface PostVideoCardProps {
   createdAt: Date;
   text: string | null;
   hideLikes: boolean;
-  pinned: boolean;
+  pinned?: boolean;
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
 }
@@ -429,7 +429,7 @@ export interface PostActionMenuProps {
   currentText: string;
   hideLikes: boolean;
   showControls: boolean;
-  pinned: boolean;
+  pinned?: boolean;
 }
 
 export interface PostMediaCarouselProps {
@@ -439,7 +439,7 @@ export interface PostMediaCarouselProps {
   postId: string;
   text: string | null;
   hideLikes: boolean;
-  pinned: boolean;
+  pinned?: boolean;
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
 }
@@ -478,7 +478,7 @@ export interface ProfileFiltersProps {
 export interface UserPostCardProps {
   media: PostMedia[];
   postId: string;
-  pinned: boolean;
+  pinned?: boolean;
   username: string;
   type: NavigationType;
   index: number;

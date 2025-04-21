@@ -426,7 +426,6 @@ export const collectionRouter = createTRPCRouter({
                   path: true,
                   repliesCount: true,
                   hideLikes: true,
-                  pinned: true,
                   privacy: true,
                   author: {
                     select: {
@@ -476,12 +475,6 @@ export const collectionRouter = createTRPCRouter({
         ).size,
         type: 'post' as const,
       }));
-
-      posts.sort((a, b) => {
-        if (a.pinned && !b.pinned) return -1;
-        if (!a.pinned && b.pinned) return 1;
-        return b.createdAt.getTime() - a.createdAt.getTime();
-      });
 
       let nextCursor: typeof cursor | undefined;
       if (posts.length > limit) {
@@ -548,7 +541,6 @@ export const collectionRouter = createTRPCRouter({
                   path: true,
                   repliesCount: true,
                   hideLikes: true,
-                  pinned: true,
                   privacy: true,
                   author: {
                     select: {
@@ -587,12 +579,6 @@ export const collectionRouter = createTRPCRouter({
         ).size,
         type: 'post' as const,
       }));
-
-      posts.sort((a, b) => {
-        if (a.pinned && !b.pinned) return -1;
-        if (!a.pinned && b.pinned) return 1;
-        return b.createdAt.getTime() - a.createdAt.getTime();
-      });
 
       return posts;
     }),
