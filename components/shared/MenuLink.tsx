@@ -1,13 +1,8 @@
 import { MenuLinkProps } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { cn, triggerFeedRefresh } from '@/lib/utils';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
-
-const triggerFeedRefresh = () => {
-  const event = new CustomEvent('refreshFeed');
-  window.dispatchEvent(event);
-};
 
 const MenuLink: React.FC<MenuLinkProps> = ({
   route,

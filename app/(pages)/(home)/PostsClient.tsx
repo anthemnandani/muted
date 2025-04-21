@@ -4,9 +4,11 @@ import Error from '@/app/error';
 import PostsList from '@/components/shared/PostsList';
 import ScrollContainer from '@/components/shared/ScrollContainer';
 import { api } from '@/trpc/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const PostsClient = () => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   const { data, isLoading, isError, hasNextPage, fetchNextPage, refetch } =
     api.post.getInfinitePosts.useInfiniteQuery(
       {},
@@ -18,8 +20,10 @@ const PostsClient = () => {
     );
 
   useEffect(() => {
-    const handleRefresh = () => {
-      refetch();
+    const handleRefresh = async () => {
+      setIsRefreshing(true);
+      await refetch();
+      setIsRefreshing(false);
     };
 
     window.addEventListener('refreshFeed', handleRefresh);
@@ -39,7 +43,7 @@ const PostsClient = () => {
         posts={allPosts}
         fetchNextPage={fetchNextPage}
         hasNextPage={hasNextPage}
-        isLoading={isLoading}
+        isLoading={isLoading || isRefreshing}
         emptyStateMessage='No posts found.'
       />
     </ScrollContainer>

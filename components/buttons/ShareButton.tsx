@@ -1,4 +1,3 @@
-import { Forward } from 'lucide-react';
 import { Icons } from '../icons';
 
 const ShareButton = () => {

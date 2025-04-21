@@ -366,3 +366,8 @@ export const extractMentions = (
 
   return mentions;
 };
+
+export const triggerFeedRefresh = () => {
+  const event = new CustomEvent('refreshFeed');
+  window.dispatchEvent(event);
+};
