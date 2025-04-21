@@ -95,7 +95,7 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
               {formatCount(following.length)}
             </strong>
             <span className='text-base text-white/75 hover:underline transition-all duration-200 antialiased'>
-              Following{following.length === 1 ? '' : 's'}
+              Following
             </span>
           </Link>
           <Link

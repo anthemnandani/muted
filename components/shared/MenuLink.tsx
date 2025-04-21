@@ -16,7 +16,7 @@ const MenuLink: React.FC<MenuLinkProps> = ({
     >
       <Icon
         className={cn(
-          'h-6 w-6 transition-colors duration-150',
+          'size-6 transition-colors duration-150',
           isActive ? 'text-foreground' : 'text-secondary'
         )}
         fill={isActive && addFill ? 'currentColor' : 'transparent'}

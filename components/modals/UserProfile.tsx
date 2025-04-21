@@ -11,8 +11,8 @@ const UserProfile = ({ author }: { author: AuthorInfoProps }) => {
     useFollowUser({ author });
 
   return (
-    <button className='relative' type='button'>
-      <div className='size-14 outline outline-1 outline-border rounded-full relative'>
+    <button className='relative mb-3' type='button'>
+      <div className='size-12 outline outline-1 outline-border rounded-full relative'>
         <Link href={`/@${author.username}`}>
           <Avatar className='rounded-full w-full h-full'>
             <AvatarImage

@@ -1,12 +1,15 @@
-import { Share2 } from 'lucide-react';
+import { Forward } from 'lucide-react';
+import { Icons } from '../icons';
 
 const ShareButton = () => {
   return (
-    <div className='flex flex-col items-center gap-1.5'>
-      <button className='btn-action'>
-        <Share2 className='size-5' fill='#fff' />
+    <div className='flex flex-col items-center'>
+      <button className='btn-action mt-2 mb-1.5'>
+        <Icons.share className='size-6' />
       </button>
-      {/* <strong className='text-[13px] text-center'>500</strong> */}
+      <strong className='text-[13px] leading-4 text-center text-gray-2'>
+        0
+      </strong>
     </div>
   );
 };

@@ -19,13 +19,13 @@ const RepostButton: React.FC<RepostButtonProps> = ({
     });
 
   return (
-    <div className='flex flex-col items-center gap-1.5'>
+    <div className='flex flex-col items-center'>
       <button
         type='button'
         disabled={isLoading}
         title={isRepostedByMe ? 'Remove Repost' : 'Repost'}
         onClick={handleToggleRepost}
-        className='btn-action'
+        className='btn-action mt-2 mb-1.5'
       >
         {isRepostedByMe ? (
           <Icons.reposted className='size-5' />
@@ -33,11 +33,10 @@ const RepostButton: React.FC<RepostButtonProps> = ({
           <Icons.repost className='size-5' />
         )}
       </button>
-      {repostsCount > 0 && (
-        <strong className={cn('text-[13px] leading-4 text-center text-gray-2')}>
-          {repostsCount}
-        </strong>
-      )}
+
+      <strong className={cn('text-[13px] leading-4 text-center text-gray-2')}>
+        {repostsCount}
+      </strong>
     </div>
   );
 };

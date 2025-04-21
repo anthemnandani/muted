@@ -5,13 +5,14 @@ import { usePathname } from 'next/navigation';
 import { Icons } from '../icons';
 import MenuLink from './MenuLink';
 import NewPost from '../modals/NewPost';
+import { Fragment } from 'react';
 
 const Navigation = () => {
   const pathname = usePathname();
   const { user } = useUser();
 
   return (
-    <>
+    <Fragment>
       <MenuLink
         route='/'
         icon={Icons.home}
@@ -26,8 +27,13 @@ const Navigation = () => {
       <NewPost />
       <MenuLink
         route='/following'
-        icon={Icons.followings}
+        icon={Icons.following}
         isActive={pathname === '/following'}
+      />
+      <MenuLink
+        route='/friends'
+        icon={Icons.friends}
+        isActive={pathname === '/friends'}
       />
       <MenuLink
         route='/activity'
@@ -41,7 +47,7 @@ const Navigation = () => {
         isActive={!!pathname.match(/^\/@\w+$/)}
         addFill
       />
-    </>
+    </Fragment>
   );
 };
 

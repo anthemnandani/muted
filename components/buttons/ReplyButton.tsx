@@ -19,20 +19,19 @@ const ReplyButton: React.FC<ReplyButtonProps> = ({
   };
 
   return (
-    <div className='flex flex-col items-center gap-1.5'>
+    <div className='flex flex-col items-center'>
       <button
         type='button'
         aria-label='Reply'
-        className='btn-action'
+        className='btn-action mt-2 mb-1.5'
         onClick={handleReplyClick}
       >
         <Icons.comment className='size-5' fill='#fff' />
       </button>
-      {repliesCount > 0 && (
-        <strong className='text-[13px] leading-4 text-center'>
-          {repliesCount}
-        </strong>
-      )}
+
+      <strong className='text-[13px] leading-4 text-center'>
+        {repliesCount}
+      </strong>
     </div>
   );
 };

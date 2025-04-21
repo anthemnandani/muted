@@ -24,7 +24,7 @@ const PostActions: React.FC<PostActionsProps> = ({
 }) => {
   const { user } = useUser();
   return (
-    <div className='flex flex-col items-center justify-end gap-4'>
+    <div className='flex flex-col items-center justify-end'>
       <UserProfile author={author} />
       <LikeButton
         likeInfo={{

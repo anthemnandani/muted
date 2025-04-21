@@ -48,7 +48,7 @@ const ProfileTabsHeader = ({
           key={tab.id}
           value={tab.id}
           onClick={() => setActiveTab(tab.id as Tab)}
-          className='flex-1 flex items-center relative data-[state=active]:text-white text-white/50 transition-colors'
+          className='flex items-center relative data-[state=active]:text-white text-white/50 transition-colors'
         >
           <div
             className='group flex items-center gap-1 text-lg font-semibold cursor-pointer px-8 relative'

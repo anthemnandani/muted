@@ -74,7 +74,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ bookmarkInfo }) => {
 
   return (
     <div
-      className='flex flex-col items-center gap-1.5'
+      className='flex flex-col items-center'
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -83,7 +83,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ bookmarkInfo }) => {
         type='button'
         ref={buttonRef}
         onClick={handleClick}
-        className='btn-action'
+        className='btn-action mt-2 mb-1.5'
       >
         <Bookmark
           fill={isBookmarkedByMe ? 'currentColor' : '#fff'}
@@ -94,11 +94,10 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ bookmarkInfo }) => {
           )}
         />
       </button>
-      {bookmarksCount > 0 && (
-        <strong className='text-[13px] leading-4 text-center'>
-          {bookmarksCount}
-        </strong>
-      )}
+
+      <strong className='text-[13px] leading-4 text-center'>
+        {bookmarksCount}
+      </strong>
       <CollectionsMenu
         postId={postId}
         isOpen={showMenu}

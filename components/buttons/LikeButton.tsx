@@ -18,13 +18,13 @@ const LikeButton: React.FC<LikeButtonProps> = ({ likeInfo, hideLikes }) => {
   });
 
   return (
-    <div className='flex flex-col items-center gap-1.5'>
+    <div className='flex flex-col items-center'>
       <button
         type='button'
         disabled={isLoading}
         title={isLikedByMe ? 'Unlike' : 'Like'}
         onClick={() => toggleLike({ id: likeInfo.id })}
-        className='btn-action'
+        className='btn-action mt-2 mb-1.5'
       >
         <Icons.heart
           fill={isLikedByMe ? '#ff3040' : '#fff '}
@@ -33,11 +33,11 @@ const LikeButton: React.FC<LikeButtonProps> = ({ likeInfo, hideLikes }) => {
           })}
         />
       </button>
-      {likesCount > 0 && !hideLikes && (
-        <strong className={cn('text-[13px] leading-4 text-center text-gray-2')}>
-          {likesCount}
-        </strong>
-      )}
+      {/* {likesCount > 0 && !hideLikes && ( */}
+      <strong className={cn('text-[13px] leading-4 text-center text-gray-2')}>
+        {likesCount}
+      </strong>
+      {/* )} */}
     </div>
   );
 };

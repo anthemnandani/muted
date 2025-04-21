@@ -34,7 +34,7 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
           onValueChange={(value) => setActiveTab(value as Tab)}
         >
           <div className='flex-between w-full'>
-            <div className='flex-1'>
+            <div>
               <ProfileTabsHeader
                 isOwner={isOwner}
                 activeTab={activeTab}
