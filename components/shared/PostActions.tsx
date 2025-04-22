@@ -5,8 +5,7 @@ import { useUser } from '@clerk/nextjs';
 import BookmarkButton from '../buttons/BookmarkButton';
 import LikeButton from '../buttons/LikeButton';
 import ReplyButton from '../buttons/ReplyButton';
-import RepostButton from '../buttons/RepostButton';
-import ShareButton from '../buttons/ShareButton';
+import SharePost from '../modals/SharePost';
 import UserProfile from '../modals/UserProfile';
 
 const PostActions: React.FC<PostActionsProps> = ({
@@ -39,9 +38,9 @@ const PostActions: React.FC<PostActionsProps> = ({
         canInteract
         onCommentsToggle={onCommentsToggle}
       />
-      {user?.id !== author.id && (
+      {/* {user?.id !== author.id && (
         <RepostButton id={id} reposts={reposts} repostsCount={repostsCount} />
-      )}
+      )} */}
       <BookmarkButton
         bookmarkInfo={{
           id,
@@ -49,7 +48,7 @@ const PostActions: React.FC<PostActionsProps> = ({
           bookmarks,
         }}
       />
-      <ShareButton />
+      <SharePost id={id} reposts={reposts} />
     </div>
   );
 };

@@ -689,3 +689,8 @@ export interface EmojiPickerProps {
   onChange?: (emoji: string) => void;
   isComment?: boolean;
 }
+
+export interface SharePostProps {
+  id: string;
+  reposts: Repost[];
+}
