@@ -10,12 +10,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../ui/dialog';
+import { useUser } from '@clerk/nextjs';
 
 const SharePost: React.FC<SharePostProps> = ({
   id,
   reposts,
   repostsCount: initialRepostsCount,
+  authorId,
 }) => {
+  const { user } = useUser();
   const [open, setOpen] = useState(false);
   const url = `${process.env.NEXT_PUBLIC_APP_URL}/post/${id}`;
 
@@ -66,23 +69,25 @@ const SharePost: React.FC<SharePostProps> = ({
                 </button>
               </div>
             </div>
-            <div className='flex px-4'>
-              <div className='relative p-5 cursor-pointer'>
-                <button
-                  type='button'
-                  onClick={handleRepost}
-                  title={isRepostedByMe ? 'Remove Repost' : 'Repost'}
-                  className='share-btn'
-                  disabled={isLoading}
-                >
-                  <div className='flex'>
-                    {isRepostedByMe ? <Icons.reposted /> : <Icons.repost />}
-                  </div>
-                  <p className='text-neutral-100 antialiased font-medium text-sm'>
-                    {isRepostedByMe ? 'Reposted' : 'Repost'}
-                  </p>
-                </button>
-              </div>
+            <div className='flex px-2'>
+              {user?.id !== authorId && (
+                <div className='relative p-5 cursor-pointer'>
+                  <button
+                    type='button'
+                    onClick={handleRepost}
+                    title={isRepostedByMe ? 'Remove Repost' : 'Repost'}
+                    className='share-btn'
+                    disabled={isLoading}
+                  >
+                    <div className='flex'>
+                      {isRepostedByMe ? <Icons.reposted /> : <Icons.repost />}
+                    </div>
+                    <p className='text-neutral-100 antialiased font-medium text-sm'>
+                      {isRepostedByMe ? 'Reposted' : 'Repost'}
+                    </p>
+                  </button>
+                </div>
+              )}
               <div className='relative p-5 cursor-pointer'>
                 <button
                   type='button'

@@ -694,6 +694,7 @@ export interface SharePostProps {
   id: string;
   reposts: Repost[];
   repostsCount: number;
+  authorId: string;
 }
 
 export interface UseRepostProps {

@@ -44,7 +44,12 @@ const PostActions: React.FC<PostActionsProps> = ({
           bookmarks,
         }}
       />
-      <SharePost id={id} reposts={reposts} repostsCount={repostsCount} />
+      <SharePost
+        id={id}
+        reposts={reposts}
+        repostsCount={repostsCount}
+        authorId={author?.id}
+      />
     </div>
   );
 };
