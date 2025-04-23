@@ -15,7 +15,7 @@ const ProfileTabsHeader = ({
     { id: 'posts', icon: <Icons.posts className='size-5' />, label: 'Posts' },
     {
       id: 'reposts',
-      icon: <Icons.repost className='size-5' />,
+      icon: <Icons.repost2 className='size-5' />,
       label: 'Reposts',
     },
     ...(isOwner
