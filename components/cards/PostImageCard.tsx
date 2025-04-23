@@ -1,8 +1,5 @@
-'use client';
-
 import useMediaControls from '@/hooks/useMediaControls';
 import { PostImageCardProps } from '@/lib/types';
-import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import React from 'react';
 import PostFooter from '../posts/PostFooter';
@@ -45,13 +42,15 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
         }
       }}
     >
-      <Image
-        alt='Post'
-        fill
-        loading='lazy'
-        src={image}
-        className={cn(isVerticalImage ? 'object-cover' : 'object-contain')}
-      />
+      <div className='relative w-full h-full'>
+        <Image
+          alt='Post'
+          fill
+          loading='lazy'
+          src={image}
+          className='object-contain'
+        />
+      </div>
       <MediaControls
         author={author}
         postId={id}
