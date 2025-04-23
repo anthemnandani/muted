@@ -1,7 +1,6 @@
 'use client';
 
 import { PostActionsProps } from '@/lib/types';
-import { useUser } from '@clerk/nextjs';
 import BookmarkButton from '../buttons/BookmarkButton';
 import LikeButton from '../buttons/LikeButton';
 import ReplyButton from '../buttons/ReplyButton';
@@ -21,7 +20,6 @@ const PostActions: React.FC<PostActionsProps> = ({
   bookmarksCount,
   onCommentsToggle,
 }) => {
-  const { user } = useUser();
   return (
     <div className='flex flex-col items-center justify-end'>
       <UserProfile author={author} />
@@ -38,9 +36,7 @@ const PostActions: React.FC<PostActionsProps> = ({
         canInteract
         onCommentsToggle={onCommentsToggle}
       />
-      {/* {user?.id !== author.id && (
-        <RepostButton id={id} reposts={reposts} repostsCount={repostsCount} />
-      )} */}
+
       <BookmarkButton
         bookmarkInfo={{
           id,
@@ -48,7 +44,7 @@ const PostActions: React.FC<PostActionsProps> = ({
           bookmarks,
         }}
       />
-      <SharePost id={id} reposts={reposts} />
+      <SharePost id={id} reposts={reposts} repostsCount={repostsCount} />
     </div>
   );
 };

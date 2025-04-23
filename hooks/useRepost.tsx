@@ -3,6 +3,7 @@ import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { Icons } from '@/components/icons';
 
 interface UseRepostProps {
   reposts: Repost[];
@@ -30,41 +31,42 @@ export function useRepost({
     setRepostsCount(initialRepostsCount || 0);
   }, [isRepostedByMeInitial, initialRepostsCount]);
 
-  const { mutate: toggleRepost, isLoading } = api.post.toggleRepost.useMutation(
-    {
-      onMutate: async () => {
-        setIsRepostedByMe((prev) => !prev);
-        setRepostsCount((prev) => (isRepostedByMe ? prev - 1 : prev + 1));
-
-        return {
-          previousIsRepostedByMe: isRepostedByMe,
-          previousRepostsCount: repostsCount,
-        };
+  const { mutateAsync: toggleRepost, isLoading } =
+    api.post.toggleRepost.useMutation({
+      onError: (error) => {
+        toast.error('RepostError: Something went wrong!');
       },
-      onError: (error, variables, context) => {
-        if (
-          context?.previousIsRepostedByMe !== undefined &&
-          context?.previousRepostsCount !== undefined
-        ) {
-          setIsRepostedByMe(context.previousIsRepostedByMe);
-          setRepostsCount(context.previousRepostsCount);
-        }
-        toast.error('Something went wrong!');
-      },
-      onSuccess: async () => {
+      onSettled: async () => {
         await Promise.all([
-          trpcUtils.post.getInfinitePosts.invalidate(),
-          trpcUtils.post.getFollowingPosts.invalidate(),
           trpcUtils.user.getUserReposts.invalidate(),
-          trpcUtils.post.getComments.invalidate(),
-          trpcUtils.post.getPostsByTag.invalidate(),
+          trpcUtils.post.getInfinitePosts.invalidate(),
+          trpcUtils.post.getPostDetails.invalidate({ id: postId }),
         ]);
       },
-    }
-  );
+    });
 
   const handleToggleRepost = () => {
-    toggleRepost({ id: postId });
+    toast.promise(toggleRepost({ id: postId }), {
+      loading: (
+        <div className='flex w-[270px] items-center justify-start gap-1.5 p-0'>
+          <div>
+            <Icons.loading className='size-8' />
+          </div>
+          {isRepostedByMe ? 'Removing repost...' : 'Reposting...'}
+        </div>
+      ),
+      success: (data) => {
+        return (
+          <div className='flex-center p-0'>
+            {data.createdRepost
+              ? 'Post reposted successfully'
+              : 'Repost removed successfully'}
+          </div>
+        );
+      },
+      error: 'Failed to update repost',
+      richColors: true,
+    });
   };
 
   return {

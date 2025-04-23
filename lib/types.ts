@@ -693,4 +693,11 @@ export interface EmojiPickerProps {
 export interface SharePostProps {
   id: string;
   reposts: Repost[];
+  repostsCount: number;
+}
+
+export interface UseRepostProps {
+  reposts: Repost[];
+  initialRepostsCount: number;
+  postId: string;
 }
