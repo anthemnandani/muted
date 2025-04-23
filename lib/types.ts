@@ -701,3 +701,9 @@ export interface UseRepostProps {
   initialRepostsCount: number;
   postId: string;
 }
+
+export interface ReplyButtonProps {
+  repliesCount: number;
+  canInteract: boolean;
+  onCommentsToggle: () => void;
+}

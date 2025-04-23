@@ -160,6 +160,17 @@ const CommentInput = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter') {
+      e.stopPropagation();
+
+      if (!e.shiftKey) {
+        e.preventDefault();
+        if (textValue.trim() && !isSubmitting) {
+          onSubmit();
+        }
+        return;
+      }
+    }
     if (replyToUsername) {
       const prefixedReply = `@${replyToUsername} `;
       const cursorPos = textareaRef.current?.selectionStart || 0;

@@ -1,12 +1,7 @@
+import { ReplyButtonProps } from '@/lib/types';
 import React from 'react';
 import { toast } from 'sonner';
 import { Icons } from '../icons';
-
-interface ReplyButtonProps {
-  repliesCount: number;
-  canInteract: boolean;
-  onCommentsToggle: () => void;
-}
 
 const ReplyButton: React.FC<ReplyButtonProps> = ({
   repliesCount,
@@ -18,6 +13,13 @@ const ReplyButton: React.FC<ReplyButtonProps> = ({
     onCommentsToggle();
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    e.stopPropagation();
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
+  };
+
   return (
     <div className='flex flex-col items-center'>
       <button
@@ -25,6 +27,7 @@ const ReplyButton: React.FC<ReplyButtonProps> = ({
         aria-label='Reply'
         className='btn-action mt-2 mb-1.5'
         onClick={handleReplyClick}
+        onKeyDown={handleKeyDown}
       >
         <Icons.comment className='size-5' fill='#fff' />
       </button>
