@@ -1385,7 +1385,7 @@ export const postRouter = createTRPCRouter({
       };
     }),
 
-    getFollowingPosts: privateProcedure
+  getFollowingPosts: privateProcedure
     .input(
       z.object({
         limit: z.number().optional(),
@@ -1412,7 +1412,7 @@ export const postRouter = createTRPCRouter({
                     },
                   },
                 },
-               
+
                 {
                   reposts: {
                     some: {
@@ -1423,7 +1423,7 @@ export const postRouter = createTRPCRouter({
                       },
                     },
                   },
-                  
+
                   NOT: {
                     authorId: userId,
                   },
@@ -1838,6 +1838,7 @@ export const postRouter = createTRPCRouter({
         return { hidden: false };
       }
     }),
+
   togglePinPost: privateProcedure
     .input(
       z.object({

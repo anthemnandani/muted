@@ -403,6 +403,15 @@ export const collectionRouter = createTRPCRouter({
           privacy: true,
           isDefault: true,
           bookmarks: {
+            where: {
+              post: {
+                hiddenBy: {
+                  none: {
+                    userId: ctx.userId,
+                  },
+                },
+              },
+            },
             take: limit + 1,
             cursor: cursor
               ? {
@@ -526,6 +535,15 @@ export const collectionRouter = createTRPCRouter({
             },
           },
           bookmarks: {
+            where: {
+              post: {
+                hiddenBy: {
+                  none: {
+                    userId: ctx.userId,
+                  },
+                },
+              },
+            },
             orderBy: {
               createdAt: 'desc',
             },

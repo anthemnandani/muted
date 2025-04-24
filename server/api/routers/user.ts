@@ -151,7 +151,15 @@ export const userRouter = createTRPCRouter({
       }
 
       const posts = await ctx.db.post.findMany({
-        where: { authorId: user.id, parentPostId: null },
+        where: {
+          authorId: user.id,
+          parentPostId: null,
+          hiddenBy: {
+            none: {
+              userId: ctx.userId,
+            },
+          },
+        },
         orderBy:
           sortBy === 'LATEST'
             ? [{ pinned: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }]
@@ -211,7 +219,21 @@ export const userRouter = createTRPCRouter({
       }
 
       const reposts = await ctx.db.repost.findMany({
-        where: { userId: user.id, post: { parentPostId: null } },
+        where: {
+          userId: user.id,
+          post: {
+            AND: [
+              { parentPostId: null },
+              {
+                hiddenBy: {
+                  none: {
+                    userId: ctx.userId,
+                  },
+                },
+              },
+            ],
+          },
+        },
         orderBy: { createdAt: 'desc' },
         select: {
           post: {
@@ -285,7 +307,21 @@ export const userRouter = createTRPCRouter({
       }
 
       const reposts = await ctx.db.repost.findMany({
-        where: { userId: user.id, post: { parentPostId: null } },
+        where: {
+          userId: user.id,
+          post: {
+            AND: [
+              { parentPostId: null },
+              {
+                hiddenBy: {
+                  none: {
+                    userId: ctx.userId,
+                  },
+                },
+              },
+            ],
+          },
+        },
         cursor: cursor
           ? { postId_userId: { postId: cursor.postId, userId: user.id } }
           : undefined,
@@ -366,10 +402,18 @@ export const userRouter = createTRPCRouter({
         where: {
           userId: user.id,
           post: {
-            parentPostId: null,
+            AND: [
+              { parentPostId: null },
+              {
+                hiddenBy: {
+                  none: {
+                    userId: ctx.userId,
+                  },
+                },
+              },
+            ],
           },
         },
-
         select: {
           post: {
             select: {
@@ -446,7 +490,16 @@ export const userRouter = createTRPCRouter({
         where: {
           userId: user.id,
           post: {
-            parentPostId: null,
+            AND: [
+              { parentPostId: null },
+              {
+                hiddenBy: {
+                  none: {
+                    userId: ctx.userId,
+                  },
+                },
+              },
+            ],
           },
         },
         take: limit + 1,
