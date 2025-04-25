@@ -2,11 +2,7 @@ import { useHiddenPosts } from '@/store/hiddenPosts';
 import { api } from '@/trpc/react';
 import { toast } from 'sonner';
 
-interface UseToggleHidePostProps {
-  postId: string;
-}
-
-const useToggleHidePost = ({ postId }: UseToggleHidePostProps) => {
+const useToggleHidePost = ({ postId }: { postId: string }) => {
   const { hidePost, unhidePost, isTemporarilyHidden } = useHiddenPosts();
 
   const { mutateAsync: toggleHidePost, isLoading } =
@@ -18,16 +14,15 @@ const useToggleHidePost = ({ postId }: UseToggleHidePostProps) => {
       onError: () => {
         toast.error('Something went wrong!');
       },
-
-      onSettled: async (data) => {
-        toast.success(data?.hidden ? 'Hidden' : 'Unhidden');
-        // await Promise.all([
-        //   trpcUtils.post.getComments.invalidate(),
-        //   trpcUtils.user.postInfo.invalidate(),
-        //   trpcUtils.user.repliesInfo.invalidate(),
-        //   trpcUtils.user.repostsInfo.invalidate(),
-        // ]);
-      },
+      // onSettled: async (data) => {
+      //   toast.success(data?.hidden ? 'Hidden' : 'Unhidden');
+      //   await Promise.all([
+      //     trpcUtils.post.getComments.invalidate(),
+      //     trpcUtils.user.postInfo.invalidate(),
+      //     trpcUtils.user.repliesInfo.invalidate(),
+      //     trpcUtils.user.repostsInfo.invalidate(),
+      //   ]);
+      // },
     });
 
   return {

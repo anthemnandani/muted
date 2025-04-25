@@ -141,6 +141,22 @@ export const collectionRouter = createTRPCRouter({
         ],
         include: {
           bookmarks: {
+            where: {
+              post: {
+                hiddenBy: {
+                  none: {
+                    userId: ctx.userId,
+                  },
+                },
+                author: {
+                  mutedByUsers: {
+                    none: {
+                      mutedByUserId: ctx.userId,
+                    },
+                  },
+                },
+              },
+            },
             include: {
               post: {
                 select: {
@@ -410,6 +426,13 @@ export const collectionRouter = createTRPCRouter({
                     userId: ctx.userId,
                   },
                 },
+                author: {
+                  mutedByUsers: {
+                    none: {
+                      mutedByUserId: ctx.userId,
+                    },
+                  },
+                },
               },
             },
             take: limit + 1,
@@ -474,7 +497,7 @@ export const collectionRouter = createTRPCRouter({
         });
       }
 
-      const posts = collection.bookmarks.map((bookmark) => ({
+      const posts = collection?.bookmarks.map((bookmark) => ({
         ...bookmark.post,
         media: bookmark.post.media as PostMedia[],
         likesCount: bookmark.post._count.likes,
@@ -502,7 +525,7 @@ export const collectionRouter = createTRPCRouter({
           description: collection.description,
           privacy: collection.privacy,
           isDefault: collection.isDefault,
-          username: collection.bookmarks[0].user.username,
+          username: collection?.bookmarks[0]?.user?.username,
         },
         posts,
         nextCursor,
@@ -540,6 +563,13 @@ export const collectionRouter = createTRPCRouter({
                 hiddenBy: {
                   none: {
                     userId: ctx.userId,
+                  },
+                },
+                author: {
+                  mutedByUsers: {
+                    none: {
+                      mutedByUserId: ctx.userId,
+                    },
                   },
                 },
               },

@@ -159,6 +159,13 @@ export const userRouter = createTRPCRouter({
               userId: ctx.userId,
             },
           },
+          author: {
+            mutedByUsers: {
+              none: {
+                mutedByUserId: ctx.userId,
+              },
+            },
+          },
         },
         orderBy:
           sortBy === 'LATEST'
@@ -228,6 +235,15 @@ export const userRouter = createTRPCRouter({
                 hiddenBy: {
                   none: {
                     userId: ctx.userId,
+                  },
+                },
+              },
+              {
+                author: {
+                  mutedByUsers: {
+                    none: {
+                      mutedByUserId: ctx.userId,
+                    },
                   },
                 },
               },
@@ -316,6 +332,15 @@ export const userRouter = createTRPCRouter({
                 hiddenBy: {
                   none: {
                     userId: ctx.userId,
+                  },
+                },
+              },
+              {
+                author: {
+                  mutedByUsers: {
+                    none: {
+                      mutedByUserId: ctx.userId,
+                    },
                   },
                 },
               },
@@ -411,6 +436,15 @@ export const userRouter = createTRPCRouter({
                   },
                 },
               },
+              {
+                author: {
+                  mutedByUsers: {
+                    none: {
+                      mutedByUserId: ctx.userId,
+                    },
+                  },
+                },
+              },
             ],
           },
         },
@@ -496,6 +530,15 @@ export const userRouter = createTRPCRouter({
                 hiddenBy: {
                   none: {
                     userId: ctx.userId,
+                  },
+                },
+              },
+              {
+                author: {
+                  mutedByUsers: {
+                    none: {
+                      mutedByUserId: ctx.userId,
+                    },
                   },
                 },
               },

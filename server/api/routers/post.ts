@@ -1432,6 +1432,15 @@ export const postRouter = createTRPCRouter({
             },
             { parentPostId: null },
             { hiddenBy: { none: { userId } } },
+            {
+              author: {
+                mutedByUsers: {
+                  none: {
+                    mutedByUserId: userId,
+                  },
+                },
+              },
+            },
           ],
         },
         take: limit + 1,

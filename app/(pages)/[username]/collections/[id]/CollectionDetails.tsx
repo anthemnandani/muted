@@ -1,7 +1,6 @@
 'use client';
 
 import Error from '@/app/error';
-import NotFound from '@/app/not-found';
 import UserPostsList from '@/components/profile/UserPostsList';
 import TopHeader from '@/components/shared/TopHeader';
 import HeaderSkeleton from '@/components/skeletons/HeaderSkeleton';
@@ -24,7 +23,6 @@ const CollectionDetails = ({ id }: { id: string }) => {
   const collection = data?.pages[0].collection;
 
   if (isError) return <Error />;
-  if (!isLoading && !data) return <NotFound />;
 
   return (
     <div className='main-container'>
@@ -33,6 +31,10 @@ const CollectionDetails = ({ id }: { id: string }) => {
           <HeaderSkeleton />
           <SkeletonGrid />
         </React.Fragment>
+      ) : allPosts?.length === 0 ? (
+        <div className='flex-center w-full h-screen'>
+          <p className='text-gray-3'>No posts found in this collection</p>
+        </div>
       ) : (
         <React.Fragment>
           <TopHeader title={collection?.name as string} />

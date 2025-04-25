@@ -17,7 +17,6 @@ const MenuLink: React.FC<MenuLinkProps> = ({
     if (isHome) {
       e.preventDefault();
       triggerFeedRefresh();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 

@@ -4,12 +4,14 @@ import { PostCardProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import useCommentPanelStore from '@/store/commentPanel';
 import { useHiddenPosts } from '@/store/hiddenPosts';
+import { useMutedUsers } from '@/store/mutedUsers';
 import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import CommentsPanel from '../comments/CommentsPanel';
 import PostMediaCarousel from '../posts/PostMediaCarousel';
 import PostActions from '../shared/PostActions';
 import HiddenPost from './HiddenPost';
+import MutedPost from './MutedPost';
 
 const PostCard: React.FC<PostCardProps> = ({
   media,
@@ -39,7 +41,10 @@ const PostCard: React.FC<PostCardProps> = ({
     isShowingPost,
   } = useCommentPanelStore();
   const { isTemporarilyHidden } = useHiddenPosts();
+  const { isMutedUser } = useMutedUsers();
+
   const isHidden = isTemporarilyHidden(id);
+  const isMuted = isMutedUser(author.id);
 
   const { ref: postRef, inView } = useInView({
     threshold: 0.5,
@@ -71,6 +76,8 @@ const PostCard: React.FC<PostCardProps> = ({
     <div className='h-screen flex-center relative' ref={postRef}>
       {isHidden ? (
         <HiddenPost postId={id} />
+      ) : isMuted ? (
+        <MutedPost userId={author.id} username={author.username} />
       ) : (
         <div
           className={cn(

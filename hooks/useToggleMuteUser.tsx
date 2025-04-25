@@ -2,13 +2,8 @@ import { useMutedUsers } from '@/store/mutedUsers';
 import { api } from '@/trpc/react';
 import { toast } from 'sonner';
 
-interface UseToggleMuteUserProps {
-  userId: string;
-}
-
-export default function useToggleMuteUser({ userId }: UseToggleMuteUserProps) {
+const useToggleMuteUser = ({ userId }: { userId: string }) => {
   const { muteUser, unmuteUser } = useMutedUsers();
-  const trpcUtils = api.useUtils();
 
   const { mutateAsync: toggleMuteUser, isLoading } =
     api.user.toggleMuteUser.useMutation({
@@ -21,12 +16,12 @@ export default function useToggleMuteUser({ userId }: UseToggleMuteUserProps) {
       },
       onSettled: async (data) => {
         toast.success(data?.muted ? 'Muted' : 'Unmuted');
-        await Promise.all([
-          trpcUtils.post.getComments.invalidate(),
-          trpcUtils.user.postInfo.invalidate(),
-          trpcUtils.user.repliesInfo.invalidate(),
-          trpcUtils.user.repostsInfo.invalidate(),
-        ]);
+        // await Promise.all([
+        //   trpcUtils.post.getComments.invalidate(),
+        //   trpcUtils.user.postInfo.invalidate(),
+        //   trpcUtils.user.repliesInfo.invalidate(),
+        //   trpcUtils.user.repostsInfo.invalidate(),
+        // ]);
       },
     });
 
@@ -34,4 +29,6 @@ export default function useToggleMuteUser({ userId }: UseToggleMuteUserProps) {
     handleToggleMuteUser: toggleMuteUser,
     isLoading,
   };
-}
+};
+
+export default useToggleMuteUser;
