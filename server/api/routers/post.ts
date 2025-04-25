@@ -1431,6 +1431,7 @@ export const postRouter = createTRPCRouter({
               ],
             },
             { parentPostId: null },
+            { hiddenBy: { none: { userId } } },
           ],
         },
         take: limit + 1,
