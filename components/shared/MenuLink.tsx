@@ -1,7 +1,8 @@
+'use client';
+
 import { MenuLinkProps } from '@/lib/types';
 import { cn, triggerFeedRefresh } from '@/lib/utils';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import React from 'react';
 
 const MenuLink: React.FC<MenuLinkProps> = ({
@@ -10,16 +11,12 @@ const MenuLink: React.FC<MenuLinkProps> = ({
   addFill,
   icon: Icon,
 }) => {
-  const pathname = usePathname();
-
-  const isHome = route === '/' && pathname === '/';
+  const isHome = route === '/';
 
   const handleClick = (e: React.MouseEvent) => {
     if (isHome) {
       e.preventDefault();
-
       triggerFeedRefresh();
-
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
@@ -27,8 +24,8 @@ const MenuLink: React.FC<MenuLinkProps> = ({
   return (
     <Link
       href={route}
-      className='relative w-15 h-12 flex-center rounded-xl hover:bg-primary transition-colors duration-150'
       onClick={handleClick}
+      className='relative w-15 h-12 flex-center rounded-xl hover:bg-primary transition-colors duration-150'
     >
       <Icon
         className={cn(

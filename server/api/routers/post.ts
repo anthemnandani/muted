@@ -189,7 +189,7 @@ export const postRouter = createTRPCRouter({
       })
     )
     .query(
-      async ({ input: { limit = 20, cursor, searchQuery, sortBy }, ctx }) => {
+      async ({ input: { limit = 15, cursor, searchQuery, sortBy }, ctx }) => {
         const posts = await ctx.db.post.findMany({
           where: {
             AND: [
