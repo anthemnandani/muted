@@ -1,7 +1,7 @@
 'use client';
 
 import { PostsListProps } from '@/lib/types';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import PostCard from '../cards/PostCard';
 import { Icons } from '../icons';
@@ -14,7 +14,12 @@ const PostsList: React.FC<PostsListProps> = ({
   hasNextPage,
   showMuted,
   emptyStateMessage,
+  resetToFirst = false,
+  onResetComplete,
+  containerRef,
 }) => {
+  const firstPostRef = useRef<HTMLDivElement>(null);
+
   const uniquePosts = React.useMemo(() => {
     if (!posts) return [];
     const seenPosts = new Set();
@@ -27,6 +32,29 @@ const PostsList: React.FC<PostsListProps> = ({
       return true;
     });
   }, [posts]);
+
+  useEffect(() => {
+    if (resetToFirst && !isLoading && uniquePosts.length > 0) {
+      containerRef?.current?.scrollTo({ top: 0, behavior: 'instant' });
+
+      if (firstPostRef.current) {
+        firstPostRef.current.scrollIntoView({
+          block: 'start',
+          behavior: 'instant',
+        });
+      }
+
+      if (onResetComplete) {
+        onResetComplete();
+      }
+    }
+  }, [
+    resetToFirst,
+    isLoading,
+    uniquePosts.length,
+    onResetComplete,
+    containerRef,
+  ]);
 
   return (
     <React.Fragment>
@@ -61,6 +89,8 @@ const PostsList: React.FC<PostsListProps> = ({
                   ? `repost-${post.repostedBy.id}-${post.id}`
                   : `post-${post.id}`
               }
+              ref={index === 0 ? firstPostRef : null}
+              className='post-card-item'
             >
               <PostCard
                 {...post}
@@ -70,7 +100,6 @@ const PostsList: React.FC<PostsListProps> = ({
               />
             </div>
           ))}
-          {/* <PostNavigator /> */}
         </InfiniteScroll>
       )}
     </React.Fragment>

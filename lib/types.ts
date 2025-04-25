@@ -221,6 +221,9 @@ export interface PostsListProps {
   showMuted?: boolean;
   isLoading?: boolean;
   emptyStateMessage?: string | React.ReactNode;
+  resetToFirst?: boolean;
+  onResetComplete?: () => void;
+  containerRef?: React.RefObject<HTMLDivElement>;
 }
 
 export interface EditProfileProps {
@@ -707,4 +710,9 @@ export interface ReplyButtonProps {
   repliesCount: number;
   canInteract: boolean;
   onCommentsToggle: () => void;
+}
+
+export interface MutedPostProps {
+  userId: string;
+  username: string;
 }

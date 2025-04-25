@@ -368,6 +368,8 @@ export const extractMentions = (
 };
 
 export const triggerFeedRefresh = () => {
-  const event = new CustomEvent('refreshFeed');
+  const event = new CustomEvent('refreshFeed', {
+    detail: { resetToFirstPost: true },
+  });
   window.dispatchEvent(event);
 };
