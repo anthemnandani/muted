@@ -3,6 +3,7 @@
 import { MenuLinkProps } from '@/lib/types';
 import { cn, triggerFeedRefresh } from '@/lib/utils';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import React from 'react';
 
 const MenuLink: React.FC<MenuLinkProps> = ({
@@ -11,7 +12,8 @@ const MenuLink: React.FC<MenuLinkProps> = ({
   addFill,
   icon: Icon,
 }) => {
-  const isHome = route === '/';
+  const pathname = usePathname();
+  const isHome = pathname === '/' && route === '/';
 
   const handleClick = (e: React.MouseEvent) => {
     if (isHome) {
