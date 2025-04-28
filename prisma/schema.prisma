@@ -35,6 +35,8 @@ model User {
   senderNotifications   Notification[] @relation("sender")
   receiverNotifications Notification[] @relation("receiver")
   collections           Collection[]
+  blockedUsers          BlockedUser[]  @relation("blocking")
+  blockedByUsers        BlockedUser[]  @relation("blocked")
 
   @@unique([createdAt, id])
 }
@@ -240,4 +242,15 @@ model MutedUser {
 
   @@id([mutedUserId, mutedByUserId])
   @@index([mutedByUserId])
+}
+
+model BlockedUser {
+  createdAt      DateTime @default(now())
+  blockedUser    User     @relation("blocked", fields: [blockedUserId], references: [id], onDelete: Cascade)
+  blockedUserId  String
+  blockingUser   User     @relation("blocking", fields: [blockingUserId], references: [id], onDelete: Cascade)
+  blockingUserId String
+
+  @@id([blockedUserId, blockingUserId])
+  @@index([blockingUserId])
 }

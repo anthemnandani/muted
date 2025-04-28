@@ -716,3 +716,16 @@ export interface MutedPostProps {
   userId: string;
   username: string;
 }
+
+export interface BlockUserDialogProps {
+  username: string;
+  userId: string;
+  closeMenu: () => void;
+}
+
+export interface UseToggleBlockUserProps {
+  userId: string;
+  username: string;
+  setIsOpen: (isOpen: boolean) => void;
+  closeMenu: () => void;
+}

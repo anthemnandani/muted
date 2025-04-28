@@ -245,6 +245,16 @@ export const userRouter = createTRPCRouter({
                       mutedByUserId: ctx.userId,
                     },
                   },
+                  blockedByUsers: {
+                    none: {
+                      blockingUserId: ctx.userId,
+                    },
+                  },
+                  blockedUsers: {
+                    none: {
+                      blockedUserId: ctx.userId,
+                    },
+                  },
                 },
               },
             ],
@@ -340,6 +350,16 @@ export const userRouter = createTRPCRouter({
                   mutedByUsers: {
                     none: {
                       mutedByUserId: ctx.userId,
+                    },
+                  },
+                  blockedByUsers: {
+                    none: {
+                      blockingUserId: ctx.userId,
+                    },
+                  },
+                  blockedUsers: {
+                    none: {
+                      blockedUserId: ctx.userId,
                     },
                   },
                 },
@@ -443,6 +463,16 @@ export const userRouter = createTRPCRouter({
                       mutedByUserId: ctx.userId,
                     },
                   },
+                  blockedByUsers: {
+                    none: {
+                      blockingUserId: ctx.userId,
+                    },
+                  },
+                  blockedUsers: {
+                    none: {
+                      blockedUserId: ctx.userId,
+                    },
+                  },
                 },
               },
             ],
@@ -538,6 +568,16 @@ export const userRouter = createTRPCRouter({
                   mutedByUsers: {
                     none: {
                       mutedByUserId: ctx.userId,
+                    },
+                  },
+                  blockedByUsers: {
+                    none: {
+                      blockingUserId: ctx.userId,
+                    },
+                  },
+                  blockedUsers: {
+                    none: {
+                      blockedUserId: ctx.userId,
                     },
                   },
                 },
@@ -1471,6 +1511,89 @@ export const userRouter = createTRPCRouter({
           },
         });
         return { muted: false };
+      }
+    }),
+
+  toggleBlockUser: privateProcedure
+    .input(
+      z.object({
+        targetUserId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { userId } = ctx;
+      const { targetUserId } = input;
+
+      if (userId === targetUserId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'You cannot block yourself',
+        });
+      }
+
+      try {
+        const existingBlock = await ctx.db.blockedUser.findUnique({
+          where: {
+            blockedUserId_blockingUserId: {
+              blockedUserId: targetUserId,
+              blockingUserId: userId,
+            },
+          },
+        });
+
+        if (existingBlock) {
+          await ctx.db.blockedUser.delete({
+            where: {
+              blockedUserId_blockingUserId: {
+                blockedUserId: targetUserId,
+                blockingUserId: userId,
+              },
+            },
+          });
+
+          return {
+            blocked: false,
+            message: 'User unblocked successfully',
+          };
+        }
+
+        return await ctx.db.$transaction(async (prisma) => {
+          await prisma.blockedUser.create({
+            data: {
+              blockingUserId: userId,
+              blockedUserId: targetUserId,
+            },
+          });
+
+          await prisma.user.update({
+            where: { id: userId },
+            data: {
+              following: {
+                disconnect: { id: targetUserId },
+              },
+            },
+          });
+
+          await prisma.user.update({
+            where: { id: targetUserId },
+            data: {
+              following: {
+                disconnect: { id: userId },
+              },
+            },
+          });
+
+          return {
+            blocked: true,
+            message: 'User blocked successfully',
+          };
+        });
+      } catch (error) {
+        console.error('Error in toggleBlockUser:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to toggle block status',
+        });
       }
     }),
 });

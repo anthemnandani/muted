@@ -227,6 +227,16 @@ export const postRouter = createTRPCRouter({
                       mutedByUserId: ctx.userId,
                     },
                   },
+                  blockedByUsers: {
+                    none: {
+                      blockingUserId: ctx.userId,
+                    },
+                  },
+                  blockedUsers: {
+                    none: {
+                      blockedUserId: ctx.userId,
+                    },
+                  },
                 },
               },
             ],
@@ -703,6 +713,18 @@ export const postRouter = createTRPCRouter({
       const comments = await ctx.db.post.findMany({
         where: {
           parentPostId: id,
+          author: {
+            blockedByUsers: {
+              none: {
+                blockingUserId: ctx.userId,
+              },
+            },
+            blockedUsers: {
+              none: {
+                blockedUserId: ctx.userId,
+              },
+            },
+          },
         },
         take: limit + 1,
         skip: 0,
@@ -784,6 +806,18 @@ export const postRouter = createTRPCRouter({
       const replies = await ctx.db.post.findMany({
         where: {
           parentPostId: parentCommentId,
+          author: {
+            blockedByUsers: {
+              none: {
+                blockingUserId: ctx.userId,
+              },
+            },
+            blockedUsers: {
+              none: {
+                blockedUserId: ctx.userId,
+              },
+            },
+          },
         },
         take: limit + 1,
         skip: 0,
@@ -1439,6 +1473,16 @@ export const postRouter = createTRPCRouter({
                     mutedByUserId: userId,
                   },
                 },
+                blockedByUsers: {
+                  none: {
+                    blockingUserId: userId,
+                  },
+                },
+                blockedUsers: {
+                  none: {
+                    blockedUserId: userId,
+                  },
+                },
               },
             },
           ],
@@ -1560,6 +1604,16 @@ export const postRouter = createTRPCRouter({
                 mutedByUsers: {
                   none: {
                     mutedByUserId: ctx.userId,
+                  },
+                },
+                blockedByUsers: {
+                  none: {
+                    blockingUserId: ctx.userId,
+                  },
+                },
+                blockedUsers: {
+                  none: {
+                    blockedUserId: ctx.userId,
                   },
                 },
               },

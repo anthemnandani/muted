@@ -154,6 +154,16 @@ export const collectionRouter = createTRPCRouter({
                       mutedByUserId: ctx.userId,
                     },
                   },
+                  blockedByUsers: {
+                    none: {
+                      blockingUserId: ctx.userId,
+                    },
+                  },
+                  blockedUsers: {
+                    none: {
+                      blockedUserId: ctx.userId,
+                    },
+                  },
                 },
               },
             },
@@ -432,6 +442,16 @@ export const collectionRouter = createTRPCRouter({
                       mutedByUserId: ctx.userId,
                     },
                   },
+                  blockedByUsers: {
+                    none: {
+                      blockingUserId: ctx.userId,
+                    },
+                  },
+                  blockedUsers: {
+                    none: {
+                      blockedUserId: ctx.userId,
+                    },
+                  },
                 },
               },
             },
@@ -569,6 +589,16 @@ export const collectionRouter = createTRPCRouter({
                   mutedByUsers: {
                     none: {
                       mutedByUserId: ctx.userId,
+                    },
+                  },
+                  blockedByUsers: {
+                    none: {
+                      blockingUserId: ctx.userId,
+                    },
+                  },
+                  blockedUsers: {
+                    none: {
+                      blockedUserId: ctx.userId,
                     },
                   },
                 },

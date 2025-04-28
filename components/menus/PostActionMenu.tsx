@@ -12,8 +12,9 @@ import { useMutedUsers } from '@/store/mutedUsers';
 import useDialog from '@/store/postDialog';
 import { useUser } from '@clerk/nextjs';
 import { Edit, MoreHorizontal, PinOff } from 'lucide-react';
-import { Fragment, useEffect } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { Icons } from '../icons';
+import BlockUser from '../modals/BlockUser';
 import DeletePost from '../modals/DeletePost';
 import MenuItem from '../shared/MenuItem';
 import {
@@ -36,6 +37,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
   const { timeLeft } = useTimeLeft({ createdAt });
   const { setEditPostInfo, setOpenDialog } = useDialog();
   const { isMutedUser } = useMutedUsers();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const { handleToggleHideLikes, isLoading } = useHideLikes({
     postId,
@@ -68,11 +70,10 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
   }, [timeLeft, setEditPostInfo]);
 
   return (
-    <HoverCard>
+    <HoverCard open={menuOpen} onOpenChange={setMenuOpen}>
       <HoverCardTrigger asChild>
         <div
           className={cn(
-            // 'relative hover:before:content-[""] hover:before:absolute hover:before:bg-primary hover:before:z-[2] hover:before:-inset-2 hover:before:rounded-full cursor-pointer transition-opacity duration-200',
             'relative h-10 flex-center cursor-pointer transition-opacity duration-200 drop-shadow-lg',
             showControls ? 'opacity-100' : 'opacity-0'
           )}
@@ -103,11 +104,10 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
               isActionMenuItem
             />
             <Separator />
-            <MenuItem
-              icon={Icons.block}
-              label='Block'
-              className='text-primary-red focus:text-primary-red'
-              isActionMenuItem
+            <BlockUser
+              username={author.username}
+              userId={author.id}
+              closeMenu={() => setMenuOpen(false)}
             />
             <Separator />
             <MenuItem
