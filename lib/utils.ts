@@ -10,6 +10,8 @@ import {
 } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
 import { ParentPostProps } from './types';
+import useVideoPlayer from '@/store/videoPlayer';
+import useCommentPanelStore from '@/store/commentPanel';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -367,9 +369,25 @@ export const extractMentions = (
   return mentions;
 };
 
-export const triggerFeedRefresh = () => {
+export const triggerHardRefresh = (resetToFirstPost = true) => {
+  const videoPlayerStore = useVideoPlayer.getState();
+  videoPlayerStore.resetState();
+
+  const commentPanelStore = useCommentPanelStore.getState();
+  commentPanelStore.resetState();
+
+  document.body.style.overflow = '';
+
+  if (document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur();
+  }
+
+  triggerFeedRefresh(resetToFirstPost);
+};
+
+export const triggerFeedRefresh = (resetToFirstPost = true) => {
   const event = new CustomEvent('refreshFeed', {
-    detail: { resetToFirstPost: true },
+    detail: { resetToFirstPost },
   });
   window.dispatchEvent(event);
 };

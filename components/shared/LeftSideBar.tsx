@@ -1,28 +1,20 @@
 'use client';
 
 import useDevice from '@/hooks/useDevice';
-import { triggerFeedRefresh } from '@/lib/utils';
+import useHomeNavigation from '@/hooks/useHomeNavigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import UserMenu from '../menus/UserMenu';
 import Navigation from './Navigation';
 
 const LeftSideBar = () => {
   const { isMobile } = useDevice();
-  const pathname = usePathname();
-
-  const handleLogoClick = (e: React.MouseEvent) => {
-    if (pathname === '/') {
-      e.preventDefault();
-      triggerFeedRefresh();
-    }
-  };
+  const { handleHomeClick } = useHomeNavigation();
 
   return (
     !isMobile && (
       <section className='hidden fixed left-0 top-0 z-20 w-[76px] h-screen md:flex-col-between'>
-        <Link href='/' className='logo' onClick={handleLogoClick}>
+        <Link href='/' className='logo' onClick={handleHomeClick}>
           <Image
             src={`/assets/muted-logo-white.svg`}
             alt='Logo'

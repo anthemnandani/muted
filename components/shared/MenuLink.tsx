@@ -1,7 +1,8 @@
 'use client';
 
+import useHomeNavigation from '@/hooks/useHomeNavigation';
 import { MenuLinkProps } from '@/lib/types';
-import { cn, triggerFeedRefresh } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
@@ -13,14 +14,10 @@ const MenuLink: React.FC<MenuLinkProps> = ({
   icon: Icon,
 }) => {
   const pathname = usePathname();
+  const { handleHomeClick } = useHomeNavigation();
   const isHome = pathname === '/' && route === '/';
 
-  const handleClick = (e: React.MouseEvent) => {
-    if (isHome) {
-      e.preventDefault();
-      triggerFeedRefresh();
-    }
-  };
+  const handleClick = isHome ? handleHomeClick : undefined;
 
   return (
     <Link

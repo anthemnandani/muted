@@ -19,6 +19,7 @@ const PostsClient = () => {
         trpc: { abortOnUnmount: true },
         staleTime: 0,
         cacheTime: 0,
+        refetchOnWindowFocus: false,
       }
     );
 
