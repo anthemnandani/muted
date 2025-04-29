@@ -7,6 +7,7 @@ interface VideoPlayerStore {
   setCurrentlyPlaying: (videoId: string | null) => void;
   setIsMuted: (muted: boolean) => void;
   setTimestamp: (videoId: string, time: number) => void;
+  resetState: () => void;
 }
 
 const useVideoPlayer = create<VideoPlayerStore>((set) => ({
@@ -19,6 +20,11 @@ const useVideoPlayer = create<VideoPlayerStore>((set) => ({
     set((state) => ({
       timestamps: { ...state.timestamps, [videoId]: time },
     })),
+  resetState: () =>
+    set({
+      currentlyPlaying: null,
+      timestamps: {},
+    }),
 }));
 
 export default useVideoPlayer;

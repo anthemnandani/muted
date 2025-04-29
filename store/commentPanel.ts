@@ -11,6 +11,7 @@ interface CommentPanelState {
   scrollPositions: Record<string, number>;
   setScrollPosition: (postId: string, position: number) => void;
   getScrollPosition: (postId: string) => number;
+  resetState: () => void;
 }
 
 const useCommentPanelStore = create<CommentPanelState>()(
@@ -52,6 +53,12 @@ const useCommentPanelStore = create<CommentPanelState>()(
       getScrollPosition: (postId) => {
         return get().scrollPositions[postId] || 0;
       },
+
+      resetState: () =>
+        set({
+          isPanelOpen: false,
+          currentPostId: null,
+        }),
     }),
     {
       name: 'comment-panel-store',
