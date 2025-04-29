@@ -391,3 +391,16 @@ export const triggerFeedRefresh = (resetToFirstPost = true) => {
   });
   window.dispatchEvent(event);
 };
+
+export const getTotalRepliesCount = (post: any) => {
+  const directCommentsCount = post._count.replies;
+
+  const nestedRepliesCount = post.replies.reduce(
+    (total: number, comment: any) => {
+      return total + comment._count.replies;
+    },
+    0
+  );
+
+  return directCommentsCount + nestedRepliesCount;
+};

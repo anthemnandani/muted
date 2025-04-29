@@ -24,12 +24,15 @@ const useAddComment = ({
         reset();
       },
       onError: (err) => {
-        toast.error('ReplyingError: Something went wrong!');
         if (err.data?.code === 'UNAUTHORIZED') {
-          router.push('/sign-in');
+          return router.push('/sign-in');
         }
+        if (err.data?.code === 'FORBIDDEN') {
+          return toast.error('You are not allowed to reply to this post');
+        }
+        toast.error('ReplyingError: Something went wrong!');
       },
-      onSettled: async () => {
+      onSuccess: async () => {
         await trpcUtils.invalidate();
       },
       retry: false,
@@ -64,7 +67,6 @@ const useAddComment = ({
           </div>
         );
       },
-      error: 'Error',
       richColors: true,
     });
   };

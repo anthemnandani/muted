@@ -1,14 +1,19 @@
 import type { PostMedia } from '@/lib/types';
-import { extractHashtags, getUserEmail } from '@/lib/utils';
 import {
-  GET_BOOKMARKS,
-  GET_COUNT,
-  GET_LIKES,
+  extractHashtags,
+  getTotalRepliesCount,
+  getUserEmail,
+} from '@/lib/utils';
+import {
   GET_LINK_PREVIEW,
   GET_MENTIONS,
   GET_REPOSTS,
   GET_USER,
   getAuthorAndHiddenSelect,
+  getBookmarksWithBlockFilter,
+  getCommentRepliesCount,
+  getLikesWithBlockFilter,
+  getPostRepliesCount,
 } from '@/server/constants';
 import { createId } from '@paralleldrive/cuid2';
 import { NotificationType, PostPrivacy } from '@prisma/client';
@@ -264,13 +269,31 @@ export const postRouter = createTRPCRouter({
                 ...GET_USER,
               },
             },
-            ...GET_LIKES,
-            ...GET_BOOKMARKS,
-            ...GET_COUNT,
+            ...getLikesWithBlockFilter(ctx.userId),
+            ...getBookmarksWithBlockFilter(ctx.userId),
+            ...getPostRepliesCount(ctx.userId),
             ...GET_MENTIONS,
             ...GET_LINK_PREVIEW,
             reposts: {
               ...GET_REPOSTS,
+              where: {
+                user: {
+                  blockedByUsers: {
+                    none: {
+                      blockingUserId: {
+                        equals: ctx.userId,
+                      },
+                    },
+                  },
+                  blockedUsers: {
+                    none: {
+                      blockedUserId: {
+                        equals: ctx.userId,
+                      },
+                    },
+                  },
+                },
+              },
               orderBy: {
                 createdAt: 'desc',
               },
@@ -281,8 +304,9 @@ export const postRouter = createTRPCRouter({
         const formattedPosts = posts.map((post) => ({
           ...post,
           media: post.media as PostMedia[],
-          likesCount: post._count.likes,
-          repostsCount: post._count.reposts,
+          likesCount: post.likes.length,
+          repostsCount: post.reposts.length,
+          repliesCount: getTotalRepliesCount(post) as number,
           bookmarksCount: new Set(
             post.bookmarks.map((bookmark) => bookmark.userId)
           ).size,
@@ -336,7 +360,19 @@ export const postRouter = createTRPCRouter({
 
           const parentPost = await prisma.post.findUnique({
             where: { id: input.postId },
-            select: { path: true, id: true },
+            select: {
+              path: true,
+              id: true,
+              author: {
+                select: {
+                  blockedUsers: {
+                    select: {
+                      blockedUserId: true,
+                    },
+                  },
+                },
+              },
+            },
           });
 
           if (!parentPost) {
@@ -344,6 +380,16 @@ export const postRouter = createTRPCRouter({
               code: 'NOT_FOUND',
               message: 'Parent post not found',
             });
+          }
+
+          const blockedUsers = parentPost.author.blockedUsers.map(
+            (blockedUser) => blockedUser.blockedUserId
+          );
+
+          const isBlocked = blockedUsers.includes(ctx.userId);
+
+          if (isBlocked) {
+            throw new TRPCError({ code: 'FORBIDDEN' });
           }
 
           const parentPath = parentPost.path ?? `/${parentPost.id}`;
@@ -503,6 +549,13 @@ export const postRouter = createTRPCRouter({
               path: true,
               id: true,
               authorId: true,
+              author: {
+                select: {
+                  blockedUsers: {
+                    select: { blockedUserId: true },
+                  },
+                },
+              },
             },
           });
 
@@ -513,6 +566,15 @@ export const postRouter = createTRPCRouter({
             });
           }
 
+          const blockedUsers = parentComment.author.blockedUsers.map(
+            (blockedUser) => blockedUser.blockedUserId
+          );
+
+          const isBlocked = blockedUsers.includes(ctx.userId);
+
+          if (isBlocked) {
+            throw new TRPCError({ code: 'FORBIDDEN' });
+          }
           const parentPath = parentComment.path ?? `/${parentComment.id}`;
           const path = `${parentPath}${replyId}/`;
 
@@ -637,61 +699,61 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
-  getPostDetails: publicProcedure
-    .input(z.object({ id: z.string() }))
-    .query(async ({ input, ctx }) => {
-      const { id } = input;
+  // getPostDetails: publicProcedure
+  //   .input(z.object({ id: z.string() }))
+  //   .query(async ({ input, ctx }) => {
+  //     const { id } = input;
 
-      const post = await ctx.db.post.findUnique({
-        where: { id },
-        select: {
-          id: true,
-          createdAt: true,
-          text: true,
-          media: true,
-          parentPostId: true,
-          quoteId: true,
-          path: true,
-          repliesCount: true,
-          hideLikes: true,
-          pinned: true,
-          privacy: true,
-          author: {
-            select: {
-              ...GET_USER,
-            },
-          },
-          ...GET_LIKES,
-          ...GET_BOOKMARKS,
-          ...GET_COUNT,
-          reposts: {
-            ...GET_REPOSTS,
-            orderBy: {
-              createdAt: 'desc',
-            },
-          },
-          ...GET_MENTIONS,
-          ...GET_LINK_PREVIEW,
-        },
-      });
+  //     const post = await ctx.db.post.findUnique({
+  //       where: { id },
+  //       select: {
+  //         id: true,
+  //         createdAt: true,
+  //         text: true,
+  //         media: true,
+  //         parentPostId: true,
+  //         quoteId: true,
+  //         path: true,
+  //         repliesCount: true,
+  //         hideLikes: true,
+  //         pinned: true,
+  //         privacy: true,
+  //         author: {
+  //           select: {
+  //             ...GET_USER,
+  //           },
+  //         },
+  //         ...getLikesWithBlockFilter(ctx.userId),
+  //         ...GET_BOOKMARKS,
+  //         ...GET_COUNT,
+  //         reposts: {
+  //           ...GET_REPOSTS,
+  //           orderBy: {
+  //             createdAt: 'desc',
+  //           },
+  //         },
+  //         ...GET_MENTIONS,
+  //         ...GET_LINK_PREVIEW,
+  //       },
+  //     });
 
-      if (!post) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Post not found' });
-      }
+  //     if (!post) {
+  //       throw new TRPCError({ code: 'NOT_FOUND', message: 'Post not found' });
+  //     }
 
-      return {
-        post: {
-          ...post,
-          media: post.media as PostMedia[],
-          likesCount: post._count.likes,
-          repostsCount: post._count.reposts,
-          bookmarksCount: new Set(
-            post.bookmarks.map((bookmark) => bookmark.userId)
-          ).size,
-          type: 'post' as const,
-        },
-      };
-    }),
+  //     return {
+  //       post: {
+  //         ...post,
+  //         media: post.media as PostMedia[],
+  //         likesCount: post._count.likes,
+  //         repostsCount: post._count.reposts,
+  //         bookmarksCount: new Set(
+  //           post.bookmarks.map((bookmark) => bookmark.userId)
+  //         ).size,
+  //         type: 'post' as const,
+  //       },
+  //     };
+  //   }),
 
   getComments: publicProcedure
     .input(
@@ -747,9 +809,9 @@ export const postRouter = createTRPCRouter({
             },
           },
           ...getAuthorAndHiddenSelect(ctx.userId!),
-          ...GET_LIKES,
-          ...GET_BOOKMARKS,
-          ...GET_COUNT,
+          ...getLikesWithBlockFilter(ctx.userId!),
+          ...getBookmarksWithBlockFilter(ctx.userId!),
+          ...getCommentRepliesCount(ctx.userId!),
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
         },
@@ -770,8 +832,8 @@ export const postRouter = createTRPCRouter({
       const formattedComments = comments.map((comment) => ({
         ...comment,
         media: comment.media as PostMedia[],
-        likesCount: comment._count.likes,
-        repostsCount: comment._count.reposts,
+        likesCount: comment.likes.length,
+        repostsCount: comment.reposts.length,
         repliesCount: comment._count.replies,
         bookmarksCount: new Set(
           comment.bookmarks.map((bookmark) => bookmark.userId)
@@ -833,7 +895,6 @@ export const postRouter = createTRPCRouter({
           hideLikes: true,
           pinned: true,
           privacy: true,
-          repliesCount: true,
           reposts: {
             ...GET_REPOSTS,
             orderBy: {
@@ -841,9 +902,8 @@ export const postRouter = createTRPCRouter({
             },
           },
           ...getAuthorAndHiddenSelect(ctx.userId!),
-          ...GET_LIKES,
-          ...GET_BOOKMARKS,
-          ...GET_COUNT,
+          ...getLikesWithBlockFilter(ctx.userId!),
+          ...getBookmarksWithBlockFilter(ctx.userId!),
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
         },
@@ -863,9 +923,8 @@ export const postRouter = createTRPCRouter({
       const formattedReplies = replies.map((reply) => ({
         ...reply,
         media: reply.media as PostMedia[],
-        likesCount: reply._count.likes,
-        repostsCount: reply._count.reposts,
-        repliesCount: reply._count.replies,
+        likesCount: reply.likes.length,
+        repostsCount: reply.reposts.length,
         bookmarksCount: new Set(
           reply.bookmarks.map((bookmark) => bookmark.userId)
         ).size,
@@ -1022,9 +1081,7 @@ export const postRouter = createTRPCRouter({
               ...GET_USER,
             },
           },
-
-          ...GET_LIKES,
-          ...GET_COUNT,
+          ...getLikesWithBlockFilter(ctx.userId!),
           ...GET_LINK_PREVIEW,
           ...GET_MENTIONS,
         },
@@ -1039,7 +1096,7 @@ export const postRouter = createTRPCRouter({
           id: postInfo.id,
           text: postInfo.text,
           createdAt: postInfo.createdAt,
-          likeCount: postInfo._count.likes,
+          likeCount: postInfo.likes.length,
           user: postInfo.author,
           likes: postInfo.likes,
           repliesCount: postInfo.repliesCount,
@@ -1061,62 +1118,10 @@ export const postRouter = createTRPCRouter({
         await ctx.db.$transaction(async (prisma) => {
           const postToDelete = await prisma.post.findUnique({
             where: { id: input.id },
-            select: {
-              id: true,
-              path: true,
-              authorId: true,
-              parentPostId: true,
-              _count: {
-                select: {
-                  replies: true,
-                },
-              },
-            },
           });
 
           if (!postToDelete) {
             throw new TRPCError({ code: 'NOT_FOUND' });
-          }
-
-          const descendants = await prisma.post.findMany({
-            where: {
-              path: {
-                contains: postToDelete.id,
-              },
-              id: { not: postToDelete.id },
-            },
-            select: {
-              id: true,
-            },
-          });
-
-          const descendantIds = descendants.map((desc) => desc.id);
-
-          const totalCountToDecrement = 1 + descendantIds.length;
-
-          if (postToDelete.path) {
-            const ancestorIds = postToDelete.path
-              .split('/')
-              .filter(Boolean)
-              .filter((id) => id !== postToDelete.id);
-
-            if (ancestorIds.length > 0) {
-              const existingAncestors = await prisma.post.findMany({
-                where: { id: { in: ancestorIds } },
-                select: { id: true },
-              });
-
-              const existingAncestorIds = existingAncestors.map(
-                (post) => post.id
-              );
-
-              if (existingAncestorIds.length > 0) {
-                await prisma.post.updateMany({
-                  where: { id: { in: existingAncestorIds } },
-                  data: { repliesCount: { decrement: totalCountToDecrement } },
-                });
-              }
-            }
           }
 
           await prisma.post.delete({
@@ -1253,20 +1258,20 @@ export const postRouter = createTRPCRouter({
                   hideLikes: true,
                   pinned: true,
                   privacy: true,
+                  replies: true,
                   author: {
                     select: {
                       ...GET_USER,
                     },
                   },
-                  ...GET_LIKES,
+                  ...getLikesWithBlockFilter(ctx.userId),
                   reposts: {
                     ...GET_REPOSTS,
                     orderBy: {
                       createdAt: 'desc',
                     },
                   },
-                  ...GET_COUNT,
-                  ...GET_BOOKMARKS,
+                  ...getBookmarksWithBlockFilter(ctx.userId),
                   ...GET_MENTIONS,
                   ...GET_LINK_PREVIEW,
                 },
@@ -1295,9 +1300,9 @@ export const postRouter = createTRPCRouter({
         posts: allBookmarks.map((bookmark) => ({
           ...bookmark.post,
           media: bookmark.post.media as PostMedia[],
-          likesCount: bookmark.post._count.likes,
-          repostsCount: bookmark.post._count.reposts,
-          repliesCount: bookmark.post._count.replies,
+          likesCount: bookmark.post.likes.length,
+          repostsCount: bookmark.post.reposts.length,
+          repliesCount: bookmark.post.replies.length,
           bookmarksCount: new Set(
             bookmark.post.bookmarks.map((bookmark) => bookmark.userId)
           ).size,
@@ -1371,20 +1376,20 @@ export const postRouter = createTRPCRouter({
               hideLikes: true,
               pinned: true,
               privacy: true,
+              replies: true,
               author: {
                 select: {
                   ...GET_USER,
                 },
               },
-              ...GET_LIKES,
+              ...getLikesWithBlockFilter(ctx.userId),
               reposts: {
                 ...GET_REPOSTS,
                 orderBy: {
                   createdAt: 'desc',
                 },
               },
-              ...GET_COUNT,
-              ...GET_BOOKMARKS,
+              ...getBookmarksWithBlockFilter(ctx.userId),
               ...GET_MENTIONS,
               ...GET_LINK_PREVIEW,
             },
@@ -1408,9 +1413,9 @@ export const postRouter = createTRPCRouter({
         posts: likedPosts.map((likedPost) => ({
           ...likedPost.post,
           media: likedPost.post.media as PostMedia[],
-          likesCount: likedPost.post._count.likes,
-          repostsCount: likedPost.post._count.reposts,
-          repliesCount: likedPost.post._count.replies,
+          likesCount: likedPost.post.likes.length,
+          repostsCount: likedPost.post.reposts.length,
+          repliesCount: likedPost.post.replies.length,
           bookmarksCount: new Set(
             likedPost.post.bookmarks.map((bookmark) => bookmark.userId)
           ).size,
@@ -1512,9 +1517,9 @@ export const postRouter = createTRPCRouter({
               createdAt: 'desc',
             },
           },
-          ...GET_LIKES,
-          ...GET_BOOKMARKS,
-          ...GET_COUNT,
+          ...getLikesWithBlockFilter(ctx.userId),
+          ...getBookmarksWithBlockFilter(ctx.userId),
+          ...getPostRepliesCount(ctx.userId),
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
         },
@@ -1538,9 +1543,9 @@ export const postRouter = createTRPCRouter({
         return {
           ...post,
           media: post.media as PostMedia[],
-          likesCount: post._count.likes,
-          repostsCount: post._count.reposts,
-          repliesCount: post._count.replies,
+          likesCount: post.likes.length,
+          repostsCount: post.reposts.length,
+          repliesCount: getTotalRepliesCount(post) as number,
           bookmarksCount: new Set(
             post.bookmarks.map((bookmark) => bookmark.userId)
           ).size,
@@ -1639,9 +1644,9 @@ export const postRouter = createTRPCRouter({
               ...GET_USER,
             },
           },
-          ...GET_LIKES,
-          ...GET_BOOKMARKS,
-          ...GET_COUNT,
+          ...getLikesWithBlockFilter(ctx.userId!),
+          ...getBookmarksWithBlockFilter(ctx.userId!),
+          ...getPostRepliesCount(ctx.userId!),
           reposts: {
             ...GET_REPOSTS,
             orderBy: {
@@ -1656,9 +1661,9 @@ export const postRouter = createTRPCRouter({
       const formattedPosts = posts.map((post) => ({
         ...post,
         media: post.media as PostMedia[],
-        likesCount: post._count.likes,
-        repostsCount: post._count.reposts,
-        repliesCount: post._count.replies,
+        likesCount: post.likes.length,
+        repostsCount: post.reposts.length,
+        repliesCount: getTotalRepliesCount(post) as number,
         bookmarksCount: new Set(
           post.bookmarks.map((bookmark) => bookmark.userId)
         ).size,

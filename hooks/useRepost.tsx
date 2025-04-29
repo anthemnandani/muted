@@ -40,7 +40,7 @@ export function useRepost({
         await Promise.all([
           trpcUtils.user.getUserReposts.invalidate(),
           trpcUtils.post.getInfinitePosts.invalidate(),
-          trpcUtils.post.getPostDetails.invalidate({ id: postId }),
+          // trpcUtils.post.getPostDetails.invalidate({ id: postId }),
         ]);
       },
     });

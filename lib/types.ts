@@ -71,6 +71,7 @@ export type UserProfileInfoProps = {
     media: PostMedia[];
   }[];
   totalLikes: number;
+  isBlocked: boolean;
 };
 
 export type UserProfilePostsProps = {
@@ -94,6 +95,7 @@ export interface UserProfileContentProps extends UserPostsListProps {
   username: string;
   selectedFilter: ProfileFilter;
   setSelectedFilter: (filter: ProfileFilter) => void;
+  isBlocked: boolean;
 }
 
 export type UserCardProps = ArrayElement<
@@ -185,10 +187,11 @@ export type ParentPostProps = {
   isHidden?: boolean;
   isMuted?: boolean;
   privacy: PostPrivacy;
-  _count?: {
-    likes: number;
-    reposts: number;
-  };
+  // _count?: {
+  //   likes: number;
+  //   reposts: number;
+  //   replies: number;
+  // };
   path: string | null;
   repliesCount: number;
   parentRepliesCount?: number;
@@ -648,7 +651,7 @@ export interface ReplyInputProps {
 }
 
 export interface ReplyCardProps {
-  reply: Comment;
+  reply: Omit<Comment, 'repliesCount'>;
   isLast: boolean;
   originalPostId: string;
   postAuthorId: string;
@@ -720,12 +723,20 @@ export interface MutedPostProps {
 export interface BlockUserDialogProps {
   username: string;
   userId: string;
-  closeMenu: () => void;
+  closeMenu?: () => void;
+  isProfile?: boolean;
 }
 
 export interface UseToggleBlockUserProps {
   userId: string;
   username: string;
   setIsOpen: (isOpen: boolean) => void;
-  closeMenu: () => void;
+  closeMenu?: () => void;
+  isProfile?: boolean;
+}
+
+export interface EmptyStateProps {
+  icon?: React.ReactNode;
+  title: string;
+  description?: string;
 }

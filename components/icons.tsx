@@ -1,3 +1,5 @@
+'use client';
+
 import { IconProps } from '@/lib/types';
 
 export const Icons = {
@@ -661,7 +663,7 @@ export const Icons = {
   ),
   reposted: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
     <svg
-      font-size='24px'
+      fontSize='24px'
       viewBox='0 0 48 48'
       fill='currentColor'
       xmlns='http://www.w3.org/2000/svg'
@@ -1079,7 +1081,7 @@ export const Icons = {
     <svg
       fill='currentColor'
       color='inherit'
-      font-size='44px'
+      fontSize='44px'
       viewBox='0 0 48 48'
       xmlns='http://www.w3.org/2000/svg'
       width='1em'
@@ -1087,6 +1089,43 @@ export const Icons = {
       {...props}
     >
       <path d='M4 28a2.5 2.5 0 0 1 2.5-2.5H20a2.5 2.5 0 0 1 2.5 2.5v13.5A2.5 2.5 0 0 1 20 44H6.5A2.5 2.5 0 0 1 4 41.5V28Zm4 1.5V40h10.5V29.5H8ZM25.5 28a2.5 2.5 0 0 1 2.5-2.5h13.5A2.5 2.5 0 0 1 44 28v13.5a2.5 2.5 0 0 1-2.5 2.5H28a2.5 2.5 0 0 1-2.5-2.5V28Zm4 1.5V40H40V29.5H29.5ZM25.5 6.5A2.5 2.5 0 0 1 28 4h13.5A2.5 2.5 0 0 1 44 6.5V20a2.5 2.5 0 0 1-2.5 2.5H28a2.5 2.5 0 0 1-2.5-2.5V6.5Zm4 1.5v10.5H40V8H29.5ZM4 6.5A2.5 2.5 0 0 1 6.5 4H20a2.5 2.5 0 0 1 2.5 2.5V20a2.5 2.5 0 0 1-2.5 2.5H6.5A2.5 2.5 0 0 1 4 20V6.5ZM8 8v10.5h10.5V8H8Z'></path>
+    </svg>
+  ),
+  userLock: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      width='24'
+      height='24'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      {...props}
+    >
+      <circle cx='10' cy='7' r='4' />
+      <path d='M10.3 15H7a4 4 0 0 0-4 4v2' />
+      <path d='M15 15.5V14a2 2 0 0 1 4 0v1.5' />
+      <rect width='8' height='5' x='13' y='16' rx='.899' />
+    </svg>
+  ),
+  userRoundCheck: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      width='24'
+      height='24'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      {...props}
+    >
+      <path d='M2 21a8 8 0 0 1 13.292-6' />
+      <circle cx='10' cy='8' r='5' />
+      <path d='m16 19 2 2 4-4' />
     </svg>
   ),
   following: (props: IconProps | React.SVGProps<SVGSVGElement>) => (

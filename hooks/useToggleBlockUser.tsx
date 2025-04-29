@@ -9,17 +9,20 @@ const useToggleBlockUser = ({
   username,
   setIsOpen,
   closeMenu,
+  isProfile = false,
 }: UseToggleBlockUserProps) => {
   const { isUserBlocked, addBlockedUser, removeBlockedUser } =
     useBlockedUsers();
 
-  const isBlockedByMe = isUserBlocked(userId);
+  const trpcUtils = api.useUtils();
+
+  const isBlockedByMe = isProfile ? true : isUserBlocked(userId);
 
   const { mutateAsync: toggleBlockUser, isLoading } =
     api.user.toggleBlockUser.useMutation({
       onMutate: () => {
-        closeMenu();
-        setIsOpen(false);
+        closeMenu?.();
+        setIsOpen?.(false);
         return { previousBlockedByMe: isBlockedByMe };
       },
       onSuccess: (data) => {
@@ -32,9 +35,12 @@ const useToggleBlockUser = ({
       onError: (error) => {
         toast.error(`BlockError: ${error.message || 'Something went wrong!'}`);
       },
-      //   onSettled: async () => {
-      //     await trpcUtils.invalidate();
-      //   },
+      onSettled: async () => {
+        await trpcUtils.user.userInfo.invalidate();
+        await trpcUtils.user.getUserReposts.invalidate();
+        await trpcUtils.user.getUserLikedPosts.invalidate();
+        await trpcUtils.collection.getUserCollections.invalidate();
+      },
     });
 
   const handleToggleBlock = () => {

@@ -4,13 +4,23 @@ import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { type Tab, UserProfileContentProps } from '@/lib/types';
 import { useTabStore } from '@/store/tabStore';
 import { useUser } from '@clerk/nextjs';
+import { Icons } from '../icons';
 import NewCollection from '../modals/NewCollection';
+import EmptyState from '../shared/EmptyState';
 import ProfileFilters from './ProfileFilters';
 import ProfileTabsHeader from './ProfileTabsHeader';
 import UserCollectionsList from './UserCollectionsList';
 import UserLikedPostsList from './UserLikedPostsList';
 import UserPostsList from './UserPostsList';
 import UserRepostsList from './UserRepostsList';
+
+const BlockedContent = () => (
+  <EmptyState
+    icon={<Icons.userLock className='size-11 text-white/90' />}
+    title='No content'
+    description="You've blocked this user and unable to view this user's posts."
+  />
+);
 
 const UserProfileContent: React.FC<UserProfileContentProps> = ({
   posts,
@@ -20,6 +30,7 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
   setSelectedFilter,
   hasNextPage,
   username,
+  isBlocked,
 }) => {
   const { user } = useUser();
   const { activeTab, setActiveTab } = useTabStore();
@@ -57,21 +68,40 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
           </div>
 
           <TabsContent value='posts' className='w-full'>
-            <UserPostsList
-              posts={posts}
-              username={username}
-              fetchNextPage={fetchNextPage}
-              hasNextPage={hasNextPage}
-            />
+            {isBlocked ? (
+              <BlockedContent />
+            ) : (
+              <UserPostsList
+                posts={posts}
+                username={username}
+                fetchNextPage={fetchNextPage}
+                hasNextPage={hasNextPage}
+              />
+            )}
           </TabsContent>
+
           <TabsContent value='reposts' className='w-full'>
-            <UserRepostsList username={username} />
+            {isBlocked ? (
+              <BlockedContent />
+            ) : (
+              <UserRepostsList username={username} />
+            )}
           </TabsContent>
+
           <TabsContent value='liked' className='w-full'>
-            <UserLikedPostsList username={username} />
+            {isBlocked ? (
+              <BlockedContent />
+            ) : (
+              <UserLikedPostsList username={username} />
+            )}
           </TabsContent>
+
           <TabsContent value='collections' className='w-full'>
-            <UserCollectionsList username={username} />
+            {isBlocked ? (
+              <BlockedContent />
+            ) : (
+              <UserCollectionsList username={username} />
+            )}
           </TabsContent>
         </Tabs>
       </div>

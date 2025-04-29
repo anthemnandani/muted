@@ -1,13 +1,14 @@
 import { PostMedia } from '@/lib/types';
+import { getTotalRepliesCount } from '@/lib/utils';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
 import {
-  GET_BOOKMARKS,
-  GET_COUNT,
-  GET_LIKES,
   GET_LINK_PREVIEW,
   GET_MENTIONS,
   GET_REPOSTS,
   GET_USER,
+  getBookmarksWithBlockFilter,
+  getLikesWithBlockFilter,
+  getPostRepliesCount,
 } from '@/server/constants';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
@@ -484,9 +485,8 @@ export const collectionRouter = createTRPCRouter({
                       ...GET_USER,
                     },
                   },
-                  ...GET_LIKES,
-                  ...GET_BOOKMARKS,
-                  ...GET_COUNT,
+                  ...getLikesWithBlockFilter(ctx.userId),
+                  ...getBookmarksWithBlockFilter(ctx.userId),
                   reposts: {
                     ...GET_REPOSTS,
                     orderBy: {
@@ -520,8 +520,8 @@ export const collectionRouter = createTRPCRouter({
       const posts = collection?.bookmarks.map((bookmark) => ({
         ...bookmark.post,
         media: bookmark.post.media as PostMedia[],
-        likesCount: bookmark.post._count.likes,
-        repostsCount: bookmark.post._count.reposts,
+        likesCount: bookmark.post.likes.length,
+        repostsCount: bookmark.post.reposts.length,
         bookmarksCount: new Set(
           bookmark.post.bookmarks.map((bookmark) => bookmark.userId)
         ).size,
@@ -623,11 +623,16 @@ export const collectionRouter = createTRPCRouter({
                   author: {
                     select: {
                       ...GET_USER,
+                      blockedUsers: {
+                        select: {
+                          blockedUserId: true,
+                        },
+                      },
                     },
                   },
-                  ...GET_LIKES,
-                  ...GET_BOOKMARKS,
-                  ...GET_COUNT,
+                  ...getLikesWithBlockFilter(ctx.userId),
+                  ...getBookmarksWithBlockFilter(ctx.userId),
+                  ...getPostRepliesCount(ctx.userId),
                   reposts: {
                     ...GET_REPOSTS,
                     orderBy: {
@@ -647,11 +652,22 @@ export const collectionRouter = createTRPCRouter({
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
 
+      const blockedUsers = collection.bookmarks[0].post.author.blockedUsers.map(
+        (blockedUser) => blockedUser.blockedUserId
+      );
+
+      const isBlocked = blockedUsers.includes(ctx.userId);
+
+      if (isBlocked) {
+        throw new TRPCError({ code: 'FORBIDDEN' });
+      }
+
       const posts = collection.bookmarks.map((bookmark) => ({
         ...bookmark.post,
         media: bookmark.post.media as PostMedia[],
-        likesCount: bookmark.post._count.likes,
-        repostsCount: bookmark.post._count.reposts,
+        likesCount: bookmark.post.likes.length,
+        repostsCount: bookmark.post.reposts.length,
+        repliesCount: getTotalRepliesCount(bookmark.post) as number,
         bookmarksCount: new Set(
           bookmark.post.bookmarks.map((bookmark) => bookmark.userId)
         ).size,

@@ -6,7 +6,7 @@ interface SortByCommentsState {
 }
 
 const useSortByComments = create<SortByCommentsState>((set) => ({
-  sortBy: 'LATEST',
+  sortBy: 'OLDEST',
   setSortBy: (sortBy) => set({ sortBy }),
 }));
 

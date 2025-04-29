@@ -2,9 +2,11 @@
 
 import NotFound from '@/app/not-found';
 import PostCard from '@/components/cards/PostCard';
+import EmptyState from '@/components/shared/EmptyState';
 import PostCardSkeleton from '@/components/skeletons/PostCardSkeleton';
 import useGetPostsByType from '@/hooks/useGetPostsByType';
 import usePostStore from '@/store/postStore';
+import { Video } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
 const PostDetailsClient = ({ postId }: { postId: string }) => {
@@ -31,6 +33,7 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
     data: userPosts,
     isLoading: isLoadingPosts,
     isError,
+    isBlocked,
   } = useGetPostsByType({
     postType,
     username: profileUsername!,
@@ -114,6 +117,17 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
     container.addEventListener('scroll', handleScroll, { passive: true });
     return () => container.removeEventListener('scroll', handleScroll);
   }, [userPosts, setCurrentPostId, setCurrentIndex]);
+
+  if (isBlocked) {
+    return (
+      <div className='flex-center w-full h-screen'>
+        <EmptyState
+          icon={<Video className='size-11 text-white/90' />}
+          title='Post currently unavailable'
+        />
+      </div>
+    );
+  }
 
   if (isError) return <NotFound />;
 

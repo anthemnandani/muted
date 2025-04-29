@@ -3,6 +3,7 @@
 import useCopyLink from '@/hooks/useCopyLink';
 import type { UserProfileInfoProps } from '@/lib/types';
 import { formatCount } from '@/lib/utils';
+import { useBlockedUsers } from '@/store/blockedUsers';
 import { useUser } from '@clerk/nextjs';
 import { Privacy } from '@prisma/client';
 import { Lock, Settings } from 'lucide-react';
@@ -12,6 +13,7 @@ import React from 'react';
 import FollowButton from '../buttons/FollowButton';
 import { Icons } from '../icons';
 import UserProfileMenu from '../menus/UserProfileMenu';
+import BlockUser from '../modals/BlockUser';
 import EditProfile from '../modals/EditProfile';
 import { Button } from '../ui/button';
 
@@ -26,6 +28,7 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
     followers,
     following,
     totalLikes,
+    isBlocked,
   } = props;
   const { user } = useUser();
   const { handleCopyProfileLink } = useCopyLink({ username });
@@ -61,13 +64,16 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
               />
               <Button
                 size='icon'
-                className='size-10 bg-white-13 hover:bg-white-8 rounded-md transition-colors duration-200'
+                className='size-10 bg-white-13 hover:bg-white/20 rounded-md transition-colors duration-200'
               >
                 <Settings className='size-5 text-neutral-50' />
               </Button>
             </React.Fragment>
           )}
-          {user?.id !== id && (
+          {user?.id !== id && isBlocked && (
+            <BlockUser username={username} userId={id} isProfile />
+          )}
+          {user?.id !== id && !isBlocked && (
             <FollowButton
               size='default'
               variant='default'
@@ -79,7 +85,7 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
           {user?.id === id && (
             <Button
               size='icon'
-              className='size-10 bg-white-13 hover:bg-white-8 rounded-md transition-colors duration-200'
+              className='size-10 bg-white-13 hover:bg-white/20 rounded-md transition-colors duration-200'
               onClick={handleCopyProfileLink}
             >
               <Icons.share className='size-5 text-neutral-50' />

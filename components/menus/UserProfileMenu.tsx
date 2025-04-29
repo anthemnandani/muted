@@ -1,4 +1,5 @@
 'use client';
+
 import { Info } from 'lucide-react';
 import { Icons } from '../icons';
 import MenuItem from '../shared/MenuItem';
@@ -16,7 +17,7 @@ const UserProfileMenu = () => {
       <DropdownMenuTrigger asChild>
         <Button
           size='icon'
-          className='size-10 bg-white-13 hover:bg-white-8 rounded-md transition-colors duration-200'
+          className='size-10 bg-white-13 hover:bg-white/20 rounded-md transition-colors duration-200'
         >
           <Icons.ellipsis className='size-5 text-neutral-50' />
         </Button>

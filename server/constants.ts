@@ -37,22 +37,60 @@ export const GET_REPOSTS = {
     user: {
       select: {
         ...GET_USER,
+        blockedUsers: {
+          select: {
+            blockedUserId: true,
+          },
+        },
+        blockedByUsers: {
+          select: {
+            blockingUserId: true,
+          },
+        },
       },
     },
     createdAt: true,
   },
 };
 
-export const GET_LIKES = {
+export const getLikesWithBlockFilter = (userId: string) => ({
   likes: {
+    where: {
+      user: {
+        blockedByUsers: {
+          none: {
+            blockingUserId: userId,
+          },
+        },
+        blockedUsers: {
+          none: {
+            blockedUserId: userId,
+          },
+        },
+      },
+    },
     select: {
       userId: true,
     },
   },
-};
+});
 
-export const GET_BOOKMARKS = {
+export const getBookmarksWithBlockFilter = (userId: string) => ({
   bookmarks: {
+    where: {
+      user: {
+        blockedByUsers: {
+          none: {
+            blockingUserId: userId,
+          },
+        },
+        blockedUsers: {
+          none: {
+            blockedUserId: userId,
+          },
+        },
+      },
+    },
     select: {
       userId: true,
       collection: {
@@ -62,29 +100,7 @@ export const GET_BOOKMARKS = {
       },
     },
   },
-};
-
-export const GET_REPLIES = {
-  replies: {
-    select: {
-      id: true,
-      text: true,
-      createdAt: true,
-      media: true,
-      parentPostId: true,
-      quoteId: true,
-      path: true,
-      repliesCount: true,
-      author: {
-        select: {
-          ...GET_USER,
-        },
-      },
-      ...GET_LIKES,
-      ...GET_REPOSTS,
-    },
-  },
-};
+});
 
 export const GET_MENTIONS = {
   mentions: {
@@ -130,6 +146,91 @@ export const getAuthorAndHiddenSelect = (userId: string) => ({
     },
     select: {
       userId: true,
+    },
+  },
+});
+
+export const getCommentRepliesCount = (userId: string) => ({
+  _count: {
+    select: {
+      replies: {
+        where: {
+          author: {
+            blockedByUsers: {
+              none: {
+                blockingUserId: userId,
+              },
+            },
+            blockedUsers: {
+              none: {
+                blockedUserId: userId,
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+});
+
+export const getPostRepliesCount = (userId: string) => ({
+  _count: {
+    select: {
+      replies: {
+        where: {
+          author: {
+            blockedByUsers: {
+              none: {
+                blockingUserId: userId,
+              },
+            },
+            blockedUsers: {
+              none: {
+                blockedUserId: userId,
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  replies: {
+    where: {
+      author: {
+        blockedByUsers: {
+          none: {
+            blockingUserId: userId,
+          },
+        },
+        blockedUsers: {
+          none: {
+            blockedUserId: userId,
+          },
+        },
+      },
+    },
+    select: {
+      id: true,
+      _count: {
+        select: {
+          replies: {
+            where: {
+              author: {
+                blockedByUsers: {
+                  none: {
+                    blockingUserId: userId,
+                  },
+                },
+                blockedUsers: {
+                  none: {
+                    blockedUserId: userId,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     },
   },
 });

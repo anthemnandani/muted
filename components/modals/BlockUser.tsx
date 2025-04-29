@@ -2,8 +2,8 @@
 
 import useToggleBlockUser from '@/hooks/useToggleBlockUser';
 import { BlockUserDialogProps } from '@/lib/types';
+import { useBlockedUsers } from '@/store/blockedUsers';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
-import { useState } from 'react';
 import { Icons } from '../icons';
 import MenuItem from '../shared/MenuItem';
 import { Button } from '../ui/button';
@@ -16,48 +16,67 @@ import {
   DialogTrigger,
 } from '../ui/dialog';
 
-const BlockUser = ({ username, userId, closeMenu }: BlockUserDialogProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+const BlockUser = ({
+  username,
+  userId,
+  closeMenu,
+  isProfile = false,
+}: BlockUserDialogProps) => {
+  const { isOpen, setIsOpen } = useBlockedUsers();
+
   const { handleToggleBlock, isLoading, isBlockedByMe } = useToggleBlockUser({
     userId,
     username,
     setIsOpen,
     closeMenu,
+    isProfile,
   });
 
   const handleCancel = () => {
     setIsOpen(false);
-    closeMenu();
+    closeMenu?.();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <MenuItem
-          icon={isBlockedByMe ? Icons.unblock : Icons.block}
-          label={isBlockedByMe ? 'Unblock' : 'Block'}
-          className='text-primary-red focus:text-primary-red'
-          onSelect={(e) => e.preventDefault()}
-          isActionMenuItem
-        />
+        {isProfile ? (
+          <Button
+            size='default'
+            variant='default'
+            className='bg-white-13 hover:bg-white/20 rounded-md transition-colors duration-200 min-w-[120px] text-base font-medium text-white-90'
+            disabled={isLoading}
+          >
+            <Icons.userRoundCheck className='mr-2 size-5 text-white-90' />
+            Unblock
+          </Button>
+        ) : (
+          <MenuItem
+            icon={isBlockedByMe ? Icons.unblock : Icons.block}
+            label={isBlockedByMe ? 'Unblock' : 'Block'}
+            className='text-primary-red focus:text-primary-red'
+            onSelect={(e) => e.preventDefault()}
+            isActionMenuItem
+          />
+        )}
       </DialogTrigger>
       <DialogContent
         isSecondDialog
-        className='w-full !max-w-[300px] select-none border-none bg-transparent shadow-none outline-none z-[9999] box-content'
+        className='w-full !max-w-[400px] select-none border-none bg-transparent shadow-none outline-none z-[9999] box-content'
       >
         <DialogHeader>
           <DialogTitle>
             <VisuallyHidden.Root>
-              {isBlockedByMe ? `Unblock @${username}` : `Block @${username}`}
+              {isBlockedByMe ? `Unblock ${username}` : `Block ${username}`}
             </VisuallyHidden.Root>
           </DialogTitle>
         </DialogHeader>
         <Card className='rounded-2xl border-none bg-gray-6 shadow-2xl ring-1 ring-gray-7 ring-offset-0'>
-          <div className='w-full text-center px-6 pt-6 pb-5'>
-            <div className='font-bold text-base pb-2'>
-              {isBlockedByMe ? `Unblock @${username}?` : `Block @${username}?`}
-            </div>
-            <p className='text-[15px] pt-3 text-gray-3'>
+          <div className='w-full text-center p-6'>
+            <h2 className='font-bold text-2xl leading-9 break-all text-white/90'>
+              {isBlockedByMe ? `Unblock ${username}` : `Block ${username}`}
+            </h2>
+            <p className='text-base pt-4 text-white/75 text-center'>
               {isBlockedByMe
                 ? `${username} will be able to send you messages, view your posts, and follow you. They will not be notified that you unblocked them.`
                 : `${username} will not be able to send you messages, see your posts, or find your profile. They will not be notified that you blocked them.`}
