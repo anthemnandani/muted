@@ -7,41 +7,42 @@ import { toast } from 'sonner';
 const useToggleBlockUser = ({
   userId,
   username,
-  setIsOpen,
-  closeMenu,
-  isProfile = false,
+  isProfile,
+  isBlocked,
 }: UseToggleBlockUserProps) => {
-  const { isUserBlocked, addBlockedUser, removeBlockedUser } =
-    useBlockedUsers();
+  const {
+    isUserBlocked,
+    addBlockedUser,
+    removeBlockedUser,
+    setIsLoading,
+    isLoading,
+  } = useBlockedUsers();
 
   const trpcUtils = api.useUtils();
 
-  const isBlockedByMe = isProfile ? true : isUserBlocked(userId);
+  const isBlockedByMe = isProfile || isBlocked || isUserBlocked(userId);
 
-  const { mutateAsync: toggleBlockUser, isLoading } =
-    api.user.toggleBlockUser.useMutation({
+  const { mutateAsync: toggleBlockUser } = api.user.toggleBlockUser.useMutation(
+    {
       onMutate: () => {
-        closeMenu?.();
-        setIsOpen?.(false);
+        setIsLoading(true);
         return { previousBlockedByMe: isBlockedByMe };
       },
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
+        await trpcUtils.user.userInfo.invalidate();
         if (data.blocked) {
           addBlockedUser(userId);
         } else {
           removeBlockedUser(userId);
         }
+        setIsLoading(false);
       },
       onError: (error) => {
+        setIsLoading(false);
         toast.error(`BlockError: ${error.message || 'Something went wrong!'}`);
       },
-      onSettled: async () => {
-        await trpcUtils.user.userInfo.invalidate();
-        await trpcUtils.user.getUserReposts.invalidate();
-        await trpcUtils.user.getUserLikedPosts.invalidate();
-        await trpcUtils.collection.getUserCollections.invalidate();
-      },
-    });
+    }
+  );
 
   const handleToggleBlock = () => {
     toast.promise(toggleBlockUser({ targetUserId: userId }), {

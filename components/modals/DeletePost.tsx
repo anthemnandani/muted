@@ -65,8 +65,6 @@ const DeletePost = ({
           icon={Icons.delete}
           label='Delete'
           className='text-primary-red focus:text-primary-red'
-          onSelect={(e) => e.preventDefault()}
-          isActionMenuItem
         />
       </DialogTrigger>
       <DialogContent

@@ -24,7 +24,6 @@ const PinToHome = () => {
           icon={Icons.pin}
           label='Pin to home'
           className='flex-between focus:rounded-lg !py-4'
-          isActionMenuItem
         />
       </DropdownMenuContent>
     </DropdownMenu>

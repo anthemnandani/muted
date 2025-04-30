@@ -32,28 +32,24 @@ const ThreadFilterMenu = ({
           icon={selectedFilter === ThreadFilter.FOR_YOU ? Check : null}
           label={ThreadFilter.FOR_YOU}
           className='flex-between focus:rounded-lg !py-4'
-          isActionMenuItem
           onClick={() => router.push('/')}
         />
         <MenuItem
           icon={selectedFilter === ThreadFilter.FOLLOWING ? Check : null}
           label={ThreadFilter.FOLLOWING}
           className='flex-between focus:rounded-lg !py-4'
-          isActionMenuItem
           onClick={() => router.push('/following')}
         />
         <MenuItem
           icon={selectedFilter === ThreadFilter.LIKED ? Check : null}
           label={ThreadFilter.LIKED}
           className='flex-between focus:rounded-lg !py-4'
-          isActionMenuItem
           onClick={() => router.push('/liked')}
         />
         <MenuItem
           icon={selectedFilter === ThreadFilter.SAVED ? Check : null}
           label={ThreadFilter.SAVED}
           className='flex-between focus:rounded-lg !py-4'
-          isActionMenuItem
           onClick={() => router.push('/saved')}
         />
       </DropdownMenuContent>

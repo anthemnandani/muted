@@ -52,6 +52,11 @@ export const userRouter = createTRPCRouter({
               blockedUserId: true,
             },
           },
+          mutedByUsers: {
+            select: {
+              mutedByUserId: true,
+            },
+          },
           posts: {
             where: {
               parentPostId: null,
@@ -113,6 +118,10 @@ export const userRouter = createTRPCRouter({
         0
       );
 
+      const isMuted = userProfileInfo.mutedByUsers.some(
+        (mutedUser) => mutedUser.mutedByUserId === ctx.userId
+      );
+
       return {
         userDetails: {
           id: userProfileInfo.id,
@@ -128,6 +137,7 @@ export const userRouter = createTRPCRouter({
           following: userProfileInfo.following,
           blockedByUsers: userProfileInfo.blockedByUsers,
           blockedUsers: userProfileInfo.blockedUsers,
+          isMuted,
           posts: posts.map((post) => ({
             ...post,
             media: post.media as PostMedia[],

@@ -29,6 +29,7 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
     following,
     totalLikes,
     isBlocked,
+    isMuted,
   } = props;
   const { user } = useUser();
   const { handleCopyProfileLink } = useCopyLink({ username });
@@ -77,11 +78,18 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
             <FollowButton
               size='default'
               variant='default'
-              className='bg-primary-blue !text-white min-w-[120px] text-base font-medium overflow-hidden text-ellipsis whitespace-nowrap break-words'
+              className='bg-primary-blue !text-white/90 min-w-[120px] text-base font-medium overflow-hidden text-ellipsis whitespace-nowrap break-words'
               author={props}
             />
           )}
-          {user?.id !== id && <UserProfileMenu />}
+          {user?.id !== id && (
+            <UserProfileMenu
+              username={username}
+              isMuted={isMuted}
+              isBlocked={isBlocked}
+              userId={id}
+            />
+          )}
           {user?.id === id && (
             <Button
               size='icon'

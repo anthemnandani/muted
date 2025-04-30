@@ -93,7 +93,6 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
               label='Not interested'
               onClick={() => handleToggleHidePost({ postId })}
               disabled={isLoadingHidePost}
-              isActionMenuItem
             />
             <Separator />
             <MenuItem
@@ -101,7 +100,6 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
               label={isMutedUser(author.id) ? 'Unmute' : 'Mute'}
               onClick={() => handleToggleMuteUser({ userId: author.id })}
               disabled={isLoadingMuteUser}
-              isActionMenuItem
             />
             <Separator />
             <BlockUser
@@ -114,7 +112,6 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
               icon={Icons.report}
               label='Report'
               className='text-primary-red focus:text-primary-red'
-              isActionMenuItem
             />
           </Fragment>
         ) : (
@@ -145,7 +142,6 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
               label={pinned ? 'Unpin from profile' : 'Pin to profile'}
               onClick={handleTogglePinPost}
               disabled={isLoadingPinPost}
-              isActionMenuItem
             />
             <Separator />
             <MenuItem
@@ -153,7 +149,6 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
               label={hideLikes ? 'Unhide like counts' : 'Hide like counts'}
               onClick={handleToggleHideLikes}
               disabled={isLoading}
-              isActionMenuItem
             />
 
             <Separator />
@@ -165,7 +160,6 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
           icon={Icons.copyLink}
           label='Copy link'
           onClick={handleCopyLink}
-          isActionMenuItem
         />
       </HoverCardContent>
     </HoverCard>

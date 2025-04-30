@@ -1,7 +1,11 @@
 'use client';
 
-import { Info } from 'lucide-react';
+import useCopyLink from '@/hooks/useCopyLink';
+import useToggleMuteUser from '@/hooks/useToggleMuteUser';
+import { UserProfileMenuProps } from '@/lib/types';
+import { useState } from 'react';
 import { Icons } from '../icons';
+import BlockUser from '../modals/BlockUser';
 import MenuItem from '../shared/MenuItem';
 import { Button } from '../ui/button';
 import {
@@ -11,9 +15,23 @@ import {
 } from '../ui/dropdown-menu';
 import { Separator } from '../ui/separator';
 
-const UserProfileMenu = () => {
+const UserProfileMenu = ({
+  username,
+  isMuted,
+  userId,
+  isBlocked,
+}: UserProfileMenuProps) => {
+  const { handleCopyProfileLink } = useCopyLink({ username });
+  const { handleToggleMuteUser, isLoading } = useToggleMuteUser({ userId });
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleCopyLink = () => {
+    handleCopyProfileLink();
+    setIsOpen(false);
+  };
+
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button
           size='icon'
@@ -27,15 +45,31 @@ const UserProfileMenu = () => {
         align='start'
         className='min-w-[190px] p-0 bg-neutral-900 rounded-xl'
       >
-        <MenuItem icon={Icons.copyLink} label='Copy link' isActionMenuItem />
-        <MenuItem icon={Info} label='About this profile' isActionMenuItem />
-        <Separator />
-        <MenuItem icon={Icons.mute} label='Mute' isActionMenuItem />
-        <MenuItem icon={Icons.restrict} label='Restrict' isActionMenuItem />
+        <MenuItem
+          icon={Icons.copyLink}
+          label='Copy link'
+          onClick={handleCopyLink}
+        />
+
+        <MenuItem
+          icon={Icons.mute}
+          label={isMuted ? 'Unmute' : 'Mute'}
+          onClick={() => {
+            handleToggleMuteUser({ userId });
+            setIsOpen(false);
+          }}
+          disabled={isLoading}
+        />
         <Separator />
 
-        <MenuItem icon={Icons.block} label='Block' isActionMenuItem />
-        <MenuItem icon={Icons.report} label='Report' isActionMenuItem />
+        <BlockUser
+          username={username}
+          userId={userId}
+          closeMenu={() => setIsOpen(false)}
+          isBlocked={isBlocked}
+        />
+
+        <MenuItem icon={Icons.report} label='Report' />
       </DropdownMenuContent>
     </DropdownMenu>
   );

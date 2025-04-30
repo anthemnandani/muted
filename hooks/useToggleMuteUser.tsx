@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 
 const useToggleMuteUser = ({ userId }: { userId: string }) => {
   const { muteUser, unmuteUser } = useMutedUsers();
+  const trpcUtils = api.useUtils();
 
   const { mutateAsync: toggleMuteUser, isLoading } =
     api.user.toggleMuteUser.useMutation({
@@ -14,14 +15,9 @@ const useToggleMuteUser = ({ userId }: { userId: string }) => {
       onError: () => {
         toast.error('Something went wrong!');
       },
-      onSettled: async (data) => {
+      onSuccess: async (data) => {
+        await trpcUtils.user.userInfo.invalidate();
         toast.success(data?.muted ? 'Muted' : 'Unmuted');
-        // await Promise.all([
-        //   trpcUtils.post.getComments.invalidate(),
-        //   trpcUtils.user.postInfo.invalidate(),
-        //   trpcUtils.user.repliesInfo.invalidate(),
-        //   trpcUtils.user.repostsInfo.invalidate(),
-        // ]);
       },
     });
 

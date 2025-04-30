@@ -20,6 +20,7 @@ const BlockUser = ({
   username,
   userId,
   closeMenu,
+  isBlocked,
   isProfile = false,
 }: BlockUserDialogProps) => {
   const { isOpen, setIsOpen } = useBlockedUsers();
@@ -27,14 +28,19 @@ const BlockUser = ({
   const { handleToggleBlock, isLoading, isBlockedByMe } = useToggleBlockUser({
     userId,
     username,
-    setIsOpen,
-    closeMenu,
     isProfile,
+    isBlocked,
   });
 
   const handleCancel = () => {
     setIsOpen(false);
     closeMenu?.();
+  };
+
+  const handleToggleBlockUser = () => {
+    setIsOpen(false);
+    closeMenu?.();
+    handleToggleBlock();
   };
 
   return (
@@ -55,8 +61,7 @@ const BlockUser = ({
             icon={isBlockedByMe ? Icons.unblock : Icons.block}
             label={isBlockedByMe ? 'Unblock' : 'Block'}
             className='text-primary-red focus:text-primary-red'
-            onSelect={(e) => e.preventDefault()}
-            isActionMenuItem
+            disabled={isLoading}
           />
         )}
       </DialogTrigger>
@@ -95,7 +100,7 @@ const BlockUser = ({
             <Button
               variant='ghost'
               className='flex-1 text-base font-bold rounded-none rounded-r-2xl h-[54px] ring-0 hover:bg-transparent text-primary-red hover:text-primary-red'
-              onClick={handleToggleBlock}
+              onClick={handleToggleBlockUser}
               disabled={isLoading}
               type='button'
             >

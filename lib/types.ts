@@ -72,6 +72,7 @@ export type UserProfileInfoProps = {
   }[];
   totalLikes: number;
   isBlocked: boolean;
+  isMuted: boolean;
 };
 
 export type UserProfilePostsProps = {
@@ -144,9 +145,7 @@ export interface MenuItemProps {
   icon?: LucideIcon | ((props: IconProps) => JSX.Element) | null;
   label: string | React.ReactNode;
   onClick?: () => void;
-  onSelect?: (e: Event) => void;
   className?: string;
-  isActionMenuItem?: boolean;
   disabled?: boolean;
   iconColor?: string;
 }
@@ -725,18 +724,25 @@ export interface BlockUserDialogProps {
   userId: string;
   closeMenu?: () => void;
   isProfile?: boolean;
+  isBlocked?: boolean;
 }
 
 export interface UseToggleBlockUserProps {
   userId: string;
   username: string;
-  setIsOpen: (isOpen: boolean) => void;
-  closeMenu?: () => void;
   isProfile?: boolean;
+  isBlocked?: boolean;
 }
 
 export interface EmptyStateProps {
   icon?: React.ReactNode;
   title: string;
   description?: string;
+}
+
+export interface UserProfileMenuProps {
+  username: string;
+  isMuted: boolean;
+  userId: string;
+  isBlocked: boolean;
 }
