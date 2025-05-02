@@ -2,6 +2,7 @@
 
 import NewCollection from '@/components/modals/NewCollection';
 import React, { forwardRef } from 'react';
+import ReportPost from '../modals/ReportPost';
 
 interface ScrollContainerProps {
   children: React.ReactNode;
@@ -19,6 +20,7 @@ const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
           <div className='h-full'>{children}</div>
         </div>
         <NewCollection />
+        <ReportPost />
       </main>
     );
   }

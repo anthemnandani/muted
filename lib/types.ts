@@ -3,6 +3,7 @@ import type { CollectionPrivacy, User } from '@prisma/client';
 import { PostPrivacy, Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
 import { LucideIcon } from 'lucide-react';
+import { createInterface } from 'node:readline/promises';
 import Player from 'video.js/dist/types/player';
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
@@ -745,4 +746,56 @@ export interface UserProfileMenuProps {
   isMuted: boolean;
   userId: string;
   isBlocked: boolean;
+}
+
+export type ReportPoint = string;
+
+export interface BaseReportCategory {
+  id: string;
+  label: string;
+  points?: ReportPoint[];
+}
+
+export interface DetailCategory extends BaseReportCategory {
+  points: ReportPoint[];
+}
+
+export interface SubCategory extends BaseReportCategory {
+  points?: ReportPoint[];
+  children?: DetailCategory[];
+}
+
+export interface Category extends BaseReportCategory {
+  points?: ReportPoint[];
+  children?: SubCategory[];
+}
+
+export interface ReportCategories {
+  [key: string]: Category;
+}
+
+export interface ReportHeaderProps {
+  currentView: string;
+  goBack: () => void;
+  handleOpenChange: (open: boolean) => void;
+}
+
+type CategoryItem = {
+  id: string;
+  label: string;
+  children?: CategoryItem[];
+  points?: string[];
+};
+
+export interface ReportCategoriesListProps {
+  title: string;
+  items: CategoryItem[];
+  onSelect: (item: CategoryItem) => void;
+}
+
+export interface ReportDetailsProps {
+  categoryLabel: string;
+  points: string[];
+  onSubmit: () => void;
+  loading: boolean;
 }

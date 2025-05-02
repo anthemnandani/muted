@@ -16,7 +16,7 @@ import {
   getPostRepliesCount,
 } from '@/server/constants';
 import { createId } from '@paralleldrive/cuid2';
-import { NotificationType, PostPrivacy } from '@prisma/client';
+import { NotificationType, PostPrivacy, ReportStatus } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
 import { z } from 'zod';
@@ -1936,5 +1936,72 @@ export const postRouter = createTRPCRouter({
       });
 
       return { pinned: !postExists.pinned };
+    }),
+
+  createReportPost: privateProcedure
+    .input(
+      z.object({
+        postId: z.string().optional(),
+        userId: z.string().optional(),
+        categoryId: z.string(),
+        subCategoryId: z.string().optional(),
+        detailId: z.string().optional(),
+        reason: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { userId } = ctx;
+
+      if (!input.postId && !input.userId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Either postId or userId must be provided',
+        });
+      }
+
+      const existingReport = await ctx.db.report.findFirst({
+        where: {
+          reporterId: userId,
+          postId: input.postId,
+          status: ReportStatus.PENDING,
+        },
+      });
+
+      if (existingReport) {
+        const updatedReport = await ctx.db.report.update({
+          where: { id: existingReport.id },
+          data: {
+            categoryId: input.categoryId,
+            subCategoryId: input.subCategoryId ?? null,
+            detailId: input.detailId ?? null,
+            reason: input.reason,
+            updatedAt: new Date(),
+          },
+        });
+
+        return {
+          success: true,
+          report: updatedReport,
+          isNew: false,
+        };
+      }
+
+      const report = await ctx.db.report.create({
+        data: {
+          reporterId: userId,
+          postId: input.postId,
+          userId: input.userId,
+          categoryId: input.categoryId,
+          subCategoryId: input.subCategoryId,
+          detailId: input.detailId,
+          reason: input.reason,
+        },
+      });
+
+      return {
+        success: true,
+        report,
+        isNew: true,
+      };
     }),
 });

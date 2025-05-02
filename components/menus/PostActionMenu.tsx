@@ -10,6 +10,7 @@ import { PostActionMenuProps } from '@/lib/types';
 import { cn, formatTimeLeft } from '@/lib/utils';
 import { useMutedUsers } from '@/store/mutedUsers';
 import useDialog from '@/store/postDialog';
+import { useReportStore } from '@/store/reportStore';
 import { useUser } from '@clerk/nextjs';
 import { Edit, MoreHorizontal, PinOff } from 'lucide-react';
 import { Fragment, useEffect, useState } from 'react';
@@ -38,6 +39,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
   const { setEditPostInfo, setOpenDialog } = useDialog();
   const { isMutedUser } = useMutedUsers();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { setOpen, setCurrentPostId } = useReportStore();
 
   const { handleToggleHideLikes, isLoading } = useHideLikes({
     postId,
@@ -112,6 +114,10 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
               icon={Icons.report}
               label='Report'
               className='text-primary-red focus:text-primary-red'
+              onClick={() => {
+                setOpen(true);
+                setCurrentPostId(postId);
+              }}
             />
           </Fragment>
         ) : (

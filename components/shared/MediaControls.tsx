@@ -18,6 +18,7 @@ const MediaControls: React.FC<MediaControlsProps> = ({
     <div className='absolute top-2 w-full z-50'>
       <div className='flex-between px-4'>
         {VolumeControls || <div />}
+
         <PostActionMenu
           author={author}
           postId={postId}
