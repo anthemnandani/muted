@@ -8,7 +8,7 @@ import { REPORT_CATEGORIES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { useReportStore } from '@/store/reportStore';
 import { api } from '@/trpc/react';
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import ReportCategoriesList from './ReportCategoriesList';
 import ReportConfirmation from './ReportConfirmation';
@@ -27,6 +27,7 @@ const ReportPost = () => {
     reason,
     currentPostId,
     additionalInfo,
+    targetUserId,
   } = useReportStore();
 
   const [loading, setLoading] = useState(false);
@@ -40,14 +41,17 @@ const ReportPost = () => {
     handleSubcategorySelect,
     handleDetailSelect,
     shouldShowAdditionalForm,
+    shouldShowUserSearch,
+    shouldEnableSubmit,
   } = useReportNavigation();
 
-  const handleOpenChange = (open: boolean) => {
-    setOpen(open);
-    if (!open) {
-      reset();
+  useEffect(() => {
+    if (!isOpen) {
+      setTimeout(() => {
+        reset();
+      }, 100);
     }
-  };
+  }, [isOpen]);
 
   const handleConfirmationClose = () => {
     setShowConfirmation(false);
@@ -59,7 +63,7 @@ const ReportPost = () => {
       setOpen(false);
       setTimeout(() => {
         setShowConfirmation(true);
-      }, 100);
+      }, 200);
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to submit report');
@@ -76,6 +80,7 @@ const ReportPost = () => {
       detailId: detailId || undefined,
       reason: reason || getCurrentCategoryLabel(),
       additionalInfo: additionalInfo || undefined,
+      targetUserId: targetUserId || undefined,
     });
   };
 
@@ -128,6 +133,7 @@ const ReportPost = () => {
             categoryLabel={getCurrentCategoryLabel()}
             points={getPoints()}
             showAdditionalForm={shouldShowAdditionalForm()}
+            showUserSearch={shouldShowUserSearch()}
           />
         );
       default:
@@ -145,7 +151,7 @@ const ReportPost = () => {
     <Fragment>
       <Dialog
         open={isOpen && !showConfirmation}
-        onOpenChange={handleOpenChange}
+        onOpenChange={setOpen}
         modal={true}
       >
         <DialogContent
@@ -157,10 +163,10 @@ const ReportPost = () => {
           <ReportHeader
             currentView={currentView}
             goBack={goBack}
-            handleOpenChange={handleOpenChange}
+            handleOpenChange={setOpen}
           />
           <ScrollArea className='flex-1 w-full'>
-            <div className='min-h-[calc(60vh-64px)]'>{renderContent()}</div>
+            <div className='max-h-[60vh]'>{renderContent()}</div>
           </ScrollArea>
 
           {currentView === 'details' && (
@@ -169,7 +175,7 @@ const ReportPost = () => {
                 <Button
                   className='bg-primary-red hover:bg-primary-red/90 text-white px-4 py-2 rounded-md border-none text-base'
                   onClick={handleSubmitReport}
-                  disabled={loading}
+                  disabled={loading || !shouldEnableSubmit()}
                 >
                   {loading ? 'Submitting...' : 'Submit'}
                 </Button>

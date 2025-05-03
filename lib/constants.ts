@@ -104,6 +104,12 @@ export const REPORT_CATEGORIES: ReportCategories = {
             ],
           },
           {
+            id: 'someone_bullied_harassed',
+            label: 'Someone I know has been bullied or harassed',
+            points: [],
+            showUserSearch: true,
+          },
+          {
             id: 'celebrity_official_harassment',
             label:
               'A celebrity or government official has been bullied or harassed',
@@ -334,6 +340,14 @@ export const REPORT_CATEGORIES: ReportCategories = {
         id: 'counterfeits_products',
         label: 'Counterfeit products',
         children: [
+          {
+            id: 'rights_holder',
+            label: 'I am the rights holder',
+            points: [
+              'Copyright infringement of my original work (music, videos, artwork, or other content) being used without my permission or valid legal reason',
+              'My copyrighted content is being used commercially or in a way that could cause confusion about its origin or ownership',
+            ],
+          },
           {
             id: 'suspected_infringement',
             label: 'Suspected infringement of others',

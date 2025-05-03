@@ -13,6 +13,7 @@ export type ReportState = {
   reason: string | null;
   currentPostId: string | null;
   additionalInfo: string | null;
+  targetUserId: string | null;
 
   setOpen: (isOpen: boolean) => void;
   setCategoryId: (id: string | null) => void;
@@ -22,6 +23,7 @@ export type ReportState = {
   setReason: (reason: string | null) => void;
   setCurrentPostId: (postId: string) => void;
   setAdditionalInfo: (info: string | null) => void;
+  setTargetUserId: (userId: string | null) => void;
   reset: () => void;
 };
 
@@ -34,6 +36,7 @@ export const useReportStore = create<ReportState>()((set) => ({
   reason: null,
   currentPostId: null,
   additionalInfo: null,
+  targetUserId: null,
 
   setOpen: (isOpen) => set({ isOpen }),
   setCategoryId: (id) => set({ categoryId: id }),
@@ -43,6 +46,7 @@ export const useReportStore = create<ReportState>()((set) => ({
   setReason: (reason) => set({ reason }),
   setCurrentPostId: (postId) => set({ currentPostId: postId }),
   setAdditionalInfo: (info) => set({ additionalInfo: info }),
+  setTargetUserId: (userId) => set({ targetUserId: userId }),
 
   reset: () =>
     set({
@@ -52,5 +56,6 @@ export const useReportStore = create<ReportState>()((set) => ({
       currentView: 'categories',
       reason: null,
       additionalInfo: null,
+      targetUserId: null,
     }),
 }));

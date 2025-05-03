@@ -755,6 +755,7 @@ export interface BaseReportCategory {
   label: string;
   points?: ReportPoint[];
   showAdditionalForm?: boolean;
+  showUserSearch?: boolean;
 }
 
 export interface DetailCategory extends BaseReportCategory {
@@ -798,4 +799,5 @@ export interface ReportDetailsProps {
   categoryLabel: string;
   points: string[];
   showAdditionalForm: boolean;
+  showUserSearch: boolean;
 }

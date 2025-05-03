@@ -1365,6 +1365,50 @@ export const userRouter = createTRPCRouter({
       }
     }),
 
+  searchUsers: privateProcedure
+    .input(
+      z.object({
+        searchQuery: z.string().optional(),
+        targetUserId: z.string().optional(),
+      })
+    )
+    .query(async ({ input: { searchQuery, targetUserId }, ctx }) => {
+      const allUsers = await ctx.db.user.findMany({
+        where: searchQuery
+          ? {
+              AND: [
+                {
+                  OR: [
+                    {
+                      username: {
+                        contains: searchQuery,
+                        mode: 'insensitive',
+                      },
+                    },
+                    {
+                      fullName: {
+                        contains: searchQuery,
+                        mode: 'insensitive',
+                      },
+                    },
+                  ],
+                },
+                { id: { not: ctx.userId } },
+                // { id: { not: targetUserId } },
+              ],
+            }
+          : undefined,
+        take: 10,
+        orderBy: searchQuery
+          ? [{ createdAt: 'desc' }, { id: 'desc' }]
+          : [{ followers: { _count: 'desc' } }, { createdAt: 'desc' }],
+        select: {
+          ...GET_USER,
+        },
+      });
+
+      return allUsers;
+    }),
   allUsers: privateProcedure
     .input(
       z.object({

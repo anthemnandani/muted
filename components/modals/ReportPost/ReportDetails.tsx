@@ -1,15 +1,16 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ReportDetailsProps } from '@/lib/types';
 import { useReportStore } from '@/store/reportStore';
 import { useState } from 'react';
+import UserSearchInput from './UserSearchInput';
 
 const ReportDetails = ({
   categoryLabel,
   points,
   showAdditionalForm,
+  showUserSearch,
 }: ReportDetailsProps) => {
   const { additionalInfo, setAdditionalInfo } = useReportStore();
   const [charCount, setCharCount] = useState(0);
@@ -28,21 +29,25 @@ const ReportDetails = ({
       <div className='w-full px-5 py-3 bg-zinc-800 border-b border-zinc-800/50'>
         <h3 className='text-lg font-semibold text-white/90'>{categoryLabel}</h3>
       </div>
-      <div className='px-5 py-4'>
-        <p className='text-white/90 font-medium mb-4'>
-          We don't allow the following:
-        </p>
+      {showUserSearch ? (
+        <UserSearchInput />
+      ) : (
+        <div className='px-5 py-4'>
+          <p className='text-white/90 font-medium mb-4'>
+            We don't allow the following:
+          </p>
 
-        {points && points.length > 0 && (
-          <div className='text-white/90'>
-            <ul className='list-disc pl-5 space-y-2'>
-              {points.map((point, idx) => (
-                <li key={idx}>{point}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
+          {points && points.length > 0 && (
+            <div className='text-white/90'>
+              <ul className='list-disc pl-5 space-y-2'>
+                {points.map((point, idx) => (
+                  <li key={idx}>{point}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
       {showAdditionalForm && (
         <div className='px-5 py-4'>
           <p className='text-white/90 font-semibold text-lg mb-3'>

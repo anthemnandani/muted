@@ -28,6 +28,7 @@ model User {
   reposts               Repost[]
   reports               Report[]
   reportSubmissions     Report[]       @relation("ReportSubmissions")
+  reportTargets         Report[]       @relation("ReportTargets")
   bookmarks             Bookmark[]
   mentions              Mention[]
   hiddenPosts           HiddenPost[]
@@ -264,9 +265,14 @@ model Report {
   detailId       String?
   reason         String
   additionalInfo String?
+  targetUserId   String?
+  targetUser     User?   @relation("ReportTargets", fields: [targetUserId], references: [id], onDelete: SetNull)
 
   status ReportStatus @default(PENDING)
 
+  @@unique([reporterId, postId])
+  @@unique([reporterId, userId])
+  @@unique([reporterId, targetUserId])
   @@index([status])
   @@index([createdAt])
   @@index([categoryId])

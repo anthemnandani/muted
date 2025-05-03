@@ -1948,22 +1948,34 @@ export const postRouter = createTRPCRouter({
         detailId: z.string().optional(),
         reason: z.string(),
         additionalInfo: z.string().optional(),
+        targetUserId: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { userId } = ctx;
+      const {
+        postId,
+        userId,
+        categoryId,
+        subCategoryId,
+        detailId,
+        reason,
+        additionalInfo,
+        targetUserId,
+      } = input;
 
-      if (!input.postId && !input.userId) {
+      if (!postId && !userId) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message: 'Either postId or userId must be provided',
         });
       }
 
-      const existingReport = await ctx.db.report.findFirst({
+      const existingReport = await ctx.db.report.findUnique({
         where: {
-          reporterId: userId,
-          postId: input.postId,
+          reporterId_postId: {
+            reporterId: ctx.userId!,
+            postId: postId!,
+          },
           status: ReportStatus.PENDING,
         },
       });
@@ -1972,11 +1984,12 @@ export const postRouter = createTRPCRouter({
         const updatedReport = await ctx.db.report.update({
           where: { id: existingReport.id },
           data: {
-            categoryId: input.categoryId,
-            subCategoryId: input.subCategoryId ?? null,
-            detailId: input.detailId ?? null,
-            reason: input.reason,
-            additionalInfo: input.additionalInfo ?? null,
+            categoryId,
+            subCategoryId: subCategoryId ?? null,
+            detailId: detailId ?? null,
+            reason,
+            additionalInfo: additionalInfo ?? null,
+            targetUserId: targetUserId ?? null,
             updatedAt: new Date(),
           },
         });
@@ -1990,14 +2003,15 @@ export const postRouter = createTRPCRouter({
 
       const report = await ctx.db.report.create({
         data: {
-          reporterId: userId,
-          postId: input.postId,
-          userId: input.userId,
-          categoryId: input.categoryId,
-          subCategoryId: input.subCategoryId,
-          detailId: input.detailId,
-          reason: input.reason,
-          additionalInfo: input.additionalInfo,
+          reporterId: ctx.userId!,
+          postId,
+          userId,
+          categoryId,
+          subCategoryId: subCategoryId ?? null,
+          detailId: detailId ?? null,
+          reason,
+          targetUserId: targetUserId ?? null,
+          additionalInfo: additionalInfo ?? null,
         },
       });
 

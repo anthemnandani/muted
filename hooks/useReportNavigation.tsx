@@ -12,6 +12,7 @@ export const useReportNavigation = () => {
     currentView,
     setCurrentView,
     setReason,
+    targetUserId,
   } = useReportStore();
 
   const hasChildren = (category: any) => {
@@ -171,6 +172,39 @@ export const useReportNavigation = () => {
     return detail.showAdditionalForm || false;
   };
 
+  const shouldShowUserSearch = () => {
+    if (!categoryId) return false;
+
+    const category = Object.values(REPORT_CATEGORIES).find(
+      (c) => c.id === categoryId
+    );
+    if (!category) return false;
+
+    if (category.showUserSearch && !subcategoryId) return true;
+
+    if (!subcategoryId || !category.children) return false;
+
+    const subcategory = category.children.find((sc) => sc.id === subcategoryId);
+    if (!subcategory) return false;
+
+    if (subcategory.showUserSearch && !detailId) return true;
+
+    if (!detailId || !subcategory.children) return false;
+
+    const detail = subcategory.children.find((d) => d.id === detailId);
+    if (!detail) return false;
+
+    return detail.showUserSearch || false;
+  };
+
+  const shouldEnableSubmit = (): boolean => {
+    if (shouldShowUserSearch()) {
+      return Boolean(targetUserId);
+    }
+
+    return true;
+  };
+
   return {
     getCurrentCategoryLabel,
     getPoints,
@@ -178,6 +212,8 @@ export const useReportNavigation = () => {
     handleCategorySelect,
     handleSubcategorySelect,
     shouldShowAdditionalForm,
+    shouldShowUserSearch,
     handleDetailSelect,
+    shouldEnableSubmit,
   };
 };
