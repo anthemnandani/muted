@@ -76,11 +76,14 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
       <HoverCardTrigger asChild>
         <div
           className={cn(
-            'relative h-10 flex-center cursor-pointer transition-opacity duration-200 drop-shadow-lg',
+            'relative h-12 flex-center cursor-pointer transition-all duration-200 drop-shadow-lg',
+            'group',
+            'before:content-[""] before:absolute before:size-10 before:rounded-full before:bg-white-13 before:scale-0 before:transition-transform before:duration-200',
+            'hover:before:scale-100',
             showControls ? 'opacity-100' : 'opacity-0'
           )}
         >
-          <MoreHorizontal className='aspect-square object-cover object-center size-6 overflow-hidden flex-1 text-white' />
+          <MoreHorizontal className='aspect-square object-cover object-center size-6 overflow-hidden flex-1 text-white z-10' />
         </div>
       </HoverCardTrigger>
 

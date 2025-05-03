@@ -112,6 +112,7 @@ export const REPORT_CATEGORIES: ReportCategories = {
               'Showing, promoting, or threatening harassment or bullying, physical or otherwise, of others - including coordinated harassment',
               'Showing, promoting, or threatening behaviors such as doxing, blackmailing, revealing, or calling for the reveal of private or sensitive information',
             ],
+            showAdditionalForm: true,
           },
           {
             id: 'other_harassment',
@@ -340,6 +341,15 @@ export const REPORT_CATEGORIES: ReportCategories = {
               'Faciliating the trade of counterfeit products, such as luxury goods',
             ],
           },
+        ],
+      },
+      // TODO: Make a separate page for this
+      {
+        id: 'intellectual_property_violation',
+        label: 'Intellectual property violation',
+        points: [
+          'Copyright infringement, including unauthorized use of music, videos, artwork, or other original works without permission or valid legal reason',
+          'Trademark infringement, including unauthorized use of brand names, logos, or symbols that could cause confusion about product/service origin or affiliation',
         ],
       },
     ],

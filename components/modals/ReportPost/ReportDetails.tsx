@@ -1,20 +1,33 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { ReportDetailsProps } from '@/lib/types';
+import { useReportStore } from '@/store/reportStore';
+import { useState } from 'react';
 
 const ReportDetails = ({
   categoryLabel,
   points,
-  onSubmit,
-  loading,
+  showAdditionalForm,
 }: ReportDetailsProps) => {
-  return (
-    <div className='px-0'>
-      <div className='px-5 py-4 bg-zinc-800 border-b border-zinc-800/50'>
-        <h3 className='text-xl font-semibold text-white'>{categoryLabel}</h3>
-      </div>
+  const { additionalInfo, setAdditionalInfo } = useReportStore();
+  const [charCount, setCharCount] = useState(0);
+  const maxChars = 200;
 
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const text = e.target.value;
+    if (text.length <= maxChars) {
+      setAdditionalInfo(text);
+      setCharCount(text.length);
+    }
+  };
+
+  return (
+    <div className='px-0 relative pb-24'>
+      <div className='w-full px-5 py-3 bg-zinc-800 border-b border-zinc-800/50'>
+        <h3 className='text-lg font-semibold text-white/90'>{categoryLabel}</h3>
+      </div>
       <div className='px-5 py-4'>
         <p className='text-white/90 font-medium mb-4'>
           We don't allow the following:
@@ -30,16 +43,24 @@ const ReportDetails = ({
           </div>
         )}
       </div>
-
-      <div className='px-5 pb-6 pt-4'>
-        <Button
-          className='w-full bg-primary-red hover:bg-primary-red/90 text-white rounded-full py-6'
-          onClick={onSubmit}
-          disabled={loading}
-        >
-          {loading ? 'Submitting...' : 'Submit'}
-        </Button>
-      </div>
+      {showAdditionalForm && (
+        <div className='px-5 py-4'>
+          <p className='text-white/90 font-semibold text-lg mb-3'>
+            Report description
+          </p>
+          <Textarea
+            placeholder='Provide additional details to help us better understand the problem.'
+            className='!bg-white-8 border-none text-white/90 resize-none h-48 rounded-md text-base focus-visible:ring-0 focus-visible:ring-offset-0'
+            value={additionalInfo || ''}
+            onChange={handleTextChange}
+          />
+          <div className='flex justify-end mt-2'>
+            <span className='text-white/60 text-sm'>
+              {charCount}/{maxChars}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

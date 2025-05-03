@@ -259,10 +259,11 @@ model Report {
   reporterId String
   reporter   User   @relation("ReportSubmissions", fields: [reporterId], references: [id], onDelete: Cascade)
 
-  categoryId    String
-  subCategoryId String?
-  detailId      String?
-  reason        String
+  categoryId     String
+  subCategoryId  String?
+  detailId       String?
+  reason         String
+  additionalInfo String?
 
   status ReportStatus @default(PENDING)
 

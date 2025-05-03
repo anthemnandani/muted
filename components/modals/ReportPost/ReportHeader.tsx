@@ -8,11 +8,9 @@ const ReportHeader = ({
   goBack,
   handleOpenChange,
 }: ReportHeaderProps) => {
-  if (currentView === 'confirmation') return null;
-
   if (currentView !== 'categories') {
     return (
-      <div className='flex-between p-4 border-b border-zinc-800'>
+      <div className='flex-between p-4 border-b border-zinc-800 h-fit'>
         <div className='flex items-center'>
           <button
             onClick={goBack}

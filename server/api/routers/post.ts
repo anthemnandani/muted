@@ -1947,6 +1947,7 @@ export const postRouter = createTRPCRouter({
         subCategoryId: z.string().optional(),
         detailId: z.string().optional(),
         reason: z.string(),
+        additionalInfo: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -1975,6 +1976,7 @@ export const postRouter = createTRPCRouter({
             subCategoryId: input.subCategoryId ?? null,
             detailId: input.detailId ?? null,
             reason: input.reason,
+            additionalInfo: input.additionalInfo ?? null,
             updatedAt: new Date(),
           },
         });
@@ -1995,6 +1997,7 @@ export const postRouter = createTRPCRouter({
           subCategoryId: input.subCategoryId,
           detailId: input.detailId,
           reason: input.reason,
+          additionalInfo: input.additionalInfo,
         },
       });
 

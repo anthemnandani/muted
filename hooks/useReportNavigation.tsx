@@ -146,12 +146,38 @@ export const useReportNavigation = () => {
     setCurrentView('details');
   };
 
+  const shouldShowAdditionalForm = () => {
+    if (!categoryId) return false;
+
+    const category = Object.values(REPORT_CATEGORIES).find(
+      (c) => c.id === categoryId
+    );
+    if (!category) return false;
+
+    if (category.showAdditionalForm && !subcategoryId) return true;
+
+    if (!subcategoryId || !category.children) return false;
+
+    const subcategory = category.children.find((sc) => sc.id === subcategoryId);
+    if (!subcategory) return false;
+
+    if (subcategory.showAdditionalForm && !detailId) return true;
+
+    if (!detailId || !subcategory.children) return false;
+
+    const detail = subcategory.children.find((d) => d.id === detailId);
+    if (!detail) return false;
+
+    return detail.showAdditionalForm || false;
+  };
+
   return {
     getCurrentCategoryLabel,
     getPoints,
     goBack,
     handleCategorySelect,
     handleSubcategorySelect,
+    shouldShowAdditionalForm,
     handleDetailSelect,
   };
 };

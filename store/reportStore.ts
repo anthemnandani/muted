@@ -2,12 +2,7 @@
 
 import { create } from 'zustand';
 
-export type ReportViewType =
-  | 'categories'
-  | 'level1'
-  | 'level2'
-  | 'details'
-  | 'confirmation';
+export type ReportViewType = 'categories' | 'level1' | 'level2' | 'details';
 
 export type ReportState = {
   isOpen: boolean;
@@ -17,6 +12,7 @@ export type ReportState = {
   currentView: ReportViewType;
   reason: string | null;
   currentPostId: string | null;
+  additionalInfo: string | null;
 
   setOpen: (isOpen: boolean) => void;
   setCategoryId: (id: string | null) => void;
@@ -25,6 +21,7 @@ export type ReportState = {
   setCurrentView: (view: ReportViewType) => void;
   setReason: (reason: string | null) => void;
   setCurrentPostId: (postId: string) => void;
+  setAdditionalInfo: (info: string | null) => void;
   reset: () => void;
 };
 
@@ -36,6 +33,7 @@ export const useReportStore = create<ReportState>()((set) => ({
   currentView: 'categories',
   reason: null,
   currentPostId: null,
+  additionalInfo: null,
 
   setOpen: (isOpen) => set({ isOpen }),
   setCategoryId: (id) => set({ categoryId: id }),
@@ -44,6 +42,7 @@ export const useReportStore = create<ReportState>()((set) => ({
   setCurrentView: (view) => set({ currentView: view }),
   setReason: (reason) => set({ reason }),
   setCurrentPostId: (postId) => set({ currentPostId: postId }),
+  setAdditionalInfo: (info) => set({ additionalInfo: info }),
 
   reset: () =>
     set({
@@ -52,5 +51,6 @@ export const useReportStore = create<ReportState>()((set) => ({
       detailId: null,
       currentView: 'categories',
       reason: null,
+      additionalInfo: null,
     }),
 }));
