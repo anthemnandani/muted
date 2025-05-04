@@ -3,6 +3,7 @@
 import useCopyLink from '@/hooks/useCopyLink';
 import useToggleMuteUser from '@/hooks/useToggleMuteUser';
 import { UserProfileMenuProps } from '@/lib/types';
+import { useReportStore } from '@/store/reportStore';
 import { useState } from 'react';
 import { Icons } from '../icons';
 import BlockUser from '../modals/BlockUser';
@@ -14,7 +15,6 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import { Separator } from '../ui/separator';
-import { useReportStore } from '@/store/reportStore';
 
 const UserProfileMenu = ({
   username,
