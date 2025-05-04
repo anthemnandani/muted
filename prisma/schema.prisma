@@ -272,7 +272,6 @@ model Report {
 
   @@unique([reporterId, postId])
   @@unique([reporterId, userId])
-  @@unique([reporterId, targetUserId])
   @@index([status])
   @@index([createdAt])
   @@index([categoryId])

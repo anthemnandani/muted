@@ -39,7 +39,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
   const { setEditPostInfo, setOpenDialog } = useDialog();
   const { isMutedUser } = useMutedUsers();
   const [menuOpen, setMenuOpen] = useState(false);
-  const { setOpen, setCurrentPostId } = useReportStore();
+  const { openPostReport } = useReportStore();
 
   const { handleToggleHideLikes, isLoading } = useHideLikes({
     postId,
@@ -118,8 +118,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
               label='Report'
               className='text-primary-red focus:text-primary-red'
               onClick={() => {
-                setOpen(true);
-                setCurrentPostId(postId);
+                openPostReport(postId);
               }}
             />
           </Fragment>

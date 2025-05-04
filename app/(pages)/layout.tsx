@@ -1,3 +1,4 @@
+import Report from '@/components/modals/Report';
 import BottomBar from '@/components/shared/BottomBar';
 import LeftSideBar from '@/components/shared/LeftSideBar';
 import TopBar from '@/components/shared/TopBar';
@@ -31,6 +32,7 @@ export default async function PagesLayout({
       <LeftSideBar />
       <PostNavigatorProvider>{children}</PostNavigatorProvider>
       <BottomBar />
+      <Report />
     </React.Fragment>
   );
 }

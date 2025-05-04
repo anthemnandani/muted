@@ -3,35 +3,42 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import useReport from '@/hooks/useReport';
 import { useReportNavigation } from '@/hooks/useReportNavigation';
-import { REPORT_CATEGORIES } from '@/lib/constants';
+import {
+  REPORT_POST_CATEGORIES,
+  REPORT_USER_CATEGORIES,
+} from '@/lib/constants';
+import { type ReportCategories } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useReportStore } from '@/store/reportStore';
-import { api } from '@/trpc/react';
 import { Fragment, useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import ReportCategoriesList from './ReportCategoriesList';
 import ReportConfirmation from './ReportConfirmation';
 import ReportDetails from './ReportDetails';
 import ReportHeader from './ReportHeader';
 
-const ReportPost = () => {
+const Report = () => {
   const {
     isOpen,
     setOpen,
     categoryId,
     subcategoryId,
-    detailId,
     currentView,
     reset,
-    reason,
-    currentPostId,
-    additionalInfo,
-    targetUserId,
+    currentUserId,
   } = useReportStore();
 
-  const [loading, setLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [reportCategories, setReportCategories] = useState<ReportCategories>(
+    REPORT_POST_CATEGORIES
+  );
+
+  useEffect(() => {
+    if (currentUserId) {
+      setReportCategories(REPORT_USER_CATEGORIES);
+    }
+  }, [currentUserId]);
 
   const {
     getCurrentCategoryLabel,
@@ -43,7 +50,7 @@ const ReportPost = () => {
     shouldShowAdditionalForm,
     shouldShowUserSearch,
     shouldEnableSubmit,
-  } = useReportNavigation();
+  } = useReportNavigation({ reportCategories });
 
   useEffect(() => {
     if (!isOpen) {
@@ -53,50 +60,19 @@ const ReportPost = () => {
     }
   }, [isOpen]);
 
-  const handleConfirmationClose = () => {
-    setShowConfirmation(false);
-  };
-
-  const { mutate: createReport } = api.post.createReportPost.useMutation({
-    onSuccess: () => {
-      setLoading(false);
-      setOpen(false);
-      setTimeout(() => {
-        setShowConfirmation(true);
-      }, 200);
-    },
-    onError: (error) => {
-      toast.error(error.message || 'Failed to submit report');
-      setLoading(false);
-    },
-  });
-
-  const handleSubmitReport = () => {
-    setLoading(true);
-    createReport({
-      postId: currentPostId!,
-      categoryId: categoryId!,
-      subCategoryId: subcategoryId || undefined,
-      detailId: detailId || undefined,
-      reason: reason || getCurrentCategoryLabel(),
-      additionalInfo: additionalInfo || undefined,
-      targetUserId: targetUserId || undefined,
-    });
-  };
-
   const renderContent = () => {
     switch (currentView) {
       case 'categories':
         return (
           <ReportCategoriesList
             title='Please select a scenario'
-            items={Object.values(REPORT_CATEGORIES)}
+            items={Object.values(reportCategories)}
             onSelect={handleCategorySelect}
           />
         );
       case 'level1':
         if (!categoryId) return null;
-        const category = Object.values(REPORT_CATEGORIES).find(
+        const category = Object.values(reportCategories).find(
           (c) => c.id === categoryId
         );
         if (!category || !category.children) return null;
@@ -110,7 +86,7 @@ const ReportPost = () => {
         );
       case 'level2':
         if (!categoryId || !subcategoryId) return null;
-        const parentCategory = Object.values(REPORT_CATEGORIES).find(
+        const parentCategory = Object.values(reportCategories).find(
           (c) => c.id === categoryId
         );
         if (!parentCategory || !parentCategory.children) return null;
@@ -134,18 +110,24 @@ const ReportPost = () => {
             points={getPoints()}
             showAdditionalForm={shouldShowAdditionalForm()}
             showUserSearch={shouldShowUserSearch()}
+            isUserReport={!!currentUserId}
           />
         );
       default:
         return (
           <ReportCategoriesList
             title='Please select a scenario'
-            items={Object.values(REPORT_CATEGORIES)}
+            items={Object.values(reportCategories)}
             onSelect={handleCategorySelect}
           />
         );
     }
   };
+
+  const { handleSubmitReport, loading } = useReport({
+    getCurrentCategoryLabel,
+    setShowConfirmation,
+  });
 
   return (
     <Fragment>
@@ -157,7 +139,7 @@ const ReportPost = () => {
         <DialogContent
           className={cn(
             'p-0 border-none bg-[#121212] text-white/90 overflow-hidden rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.12)] flex flex-col',
-            '!max-w-2xl h-[60vh]'
+            '!max-w-2xl h-[70vh]'
           )}
         >
           <ReportHeader
@@ -166,7 +148,7 @@ const ReportPost = () => {
             handleOpenChange={setOpen}
           />
           <ScrollArea className='flex-1 w-full'>
-            <div className='max-h-[60vh]'>{renderContent()}</div>
+            <div className='max-h-[70vh]'>{renderContent()}</div>
           </ScrollArea>
 
           {currentView === 'details' && (
@@ -191,11 +173,11 @@ const ReportPost = () => {
         modal={true}
       >
         <DialogContent className='p-0 border-none bg-[#121212] text-white/90 overflow-hidden rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.12)] !max-w-md'>
-          <ReportConfirmation onClose={handleConfirmationClose} />
+          <ReportConfirmation onClose={() => setShowConfirmation(false)} />
         </DialogContent>
       </Dialog>
     </Fragment>
   );
 };
 
-export default ReportPost;
+export default Report;

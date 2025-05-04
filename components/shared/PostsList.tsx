@@ -6,7 +6,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import PostCard from '../cards/PostCard';
 import { Icons } from '../icons';
 import PostCardSkeleton from '../skeletons/PostCardSkeleton';
-import ReportPost from '../modals/ReportPost';
+import ReportPost from '../modals/Report';
 
 const PostsList: React.FC<PostsListProps> = ({
   isLoading,

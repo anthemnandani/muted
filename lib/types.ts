@@ -800,4 +800,5 @@ export interface ReportDetailsProps {
   points: string[];
   showAdditionalForm: boolean;
   showUserSearch: boolean;
+  isUserReport: boolean;
 }

@@ -12,6 +12,7 @@ export type ReportState = {
   currentView: ReportViewType;
   reason: string | null;
   currentPostId: string | null;
+  currentUserId: string | null;
   additionalInfo: string | null;
   targetUserId: string | null;
 
@@ -21,9 +22,12 @@ export type ReportState = {
   setDetailId: (id: string | null) => void;
   setCurrentView: (view: ReportViewType) => void;
   setReason: (reason: string | null) => void;
-  setCurrentPostId: (postId: string) => void;
+  setCurrentPostId: (postId: string | null) => void;
+  setCurrentUserId: (userId: string | null) => void;
   setAdditionalInfo: (info: string | null) => void;
   setTargetUserId: (userId: string | null) => void;
+  openPostReport: (postId: string) => void;
+  openUserReport: (userId: string) => void;
   reset: () => void;
 };
 
@@ -35,6 +39,7 @@ export const useReportStore = create<ReportState>()((set) => ({
   currentView: 'categories',
   reason: null,
   currentPostId: null,
+  currentUserId: null,
   additionalInfo: null,
   targetUserId: null,
 
@@ -45,8 +50,33 @@ export const useReportStore = create<ReportState>()((set) => ({
   setCurrentView: (view) => set({ currentView: view }),
   setReason: (reason) => set({ reason }),
   setCurrentPostId: (postId) => set({ currentPostId: postId }),
+  setCurrentUserId: (userId) => set({ currentUserId: userId }),
   setAdditionalInfo: (info) => set({ additionalInfo: info }),
   setTargetUserId: (userId) => set({ targetUserId: userId }),
+
+  openPostReport: (postId) =>
+    set({
+      isOpen: true,
+      currentPostId: postId,
+      currentUserId: null,
+      currentView: 'categories',
+      categoryId: null,
+      subcategoryId: null,
+      detailId: null,
+      reason: null,
+    }),
+
+  openUserReport: (userId) =>
+    set({
+      isOpen: true,
+      currentUserId: userId,
+      currentPostId: null,
+      currentView: 'categories',
+      categoryId: null,
+      subcategoryId: null,
+      detailId: null,
+      reason: null,
+    }),
 
   reset: () =>
     set({
@@ -55,6 +85,8 @@ export const useReportStore = create<ReportState>()((set) => ({
       detailId: null,
       currentView: 'categories',
       reason: null,
+      currentPostId: null,
+      currentUserId: null,
       additionalInfo: null,
       targetUserId: null,
     }),

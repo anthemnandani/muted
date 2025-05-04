@@ -11,6 +11,7 @@ const ReportDetails = ({
   points,
   showAdditionalForm,
   showUserSearch,
+  isUserReport,
 }: ReportDetailsProps) => {
   const { additionalInfo, setAdditionalInfo } = useReportStore();
   const [charCount, setCharCount] = useState(0);
@@ -27,10 +28,14 @@ const ReportDetails = ({
   return (
     <div className='px-0 relative pb-24'>
       <div className='w-full px-5 py-3 bg-zinc-800 border-b border-zinc-800/50'>
-        <h3 className='text-lg font-semibold text-white/90'>{categoryLabel}</h3>
+        <h3 className='text-lg font-semibold text-white/90'>
+          {showUserSearch && isUserReport
+            ? 'Report reason: Pretending to Be Someone'
+            : categoryLabel}
+        </h3>
       </div>
       {showUserSearch ? (
-        <UserSearchInput />
+        <UserSearchInput isUserReport={isUserReport} />
       ) : (
         <div className='px-5 py-4'>
           <p className='text-white/90 font-medium mb-4'>

@@ -1369,46 +1369,53 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         searchQuery: z.string().optional(),
-        targetUserId: z.string().optional(),
       })
     )
-    .query(async ({ input: { searchQuery, targetUserId }, ctx }) => {
+    .query(async ({ input: { searchQuery }, ctx }) => {
+      if (!searchQuery || searchQuery.trim() === '') {
+        return [];
+      }
+
       const allUsers = await ctx.db.user.findMany({
-        where: searchQuery
-          ? {
-              AND: [
+        where: {
+          AND: [
+            {
+              OR: [
                 {
-                  OR: [
-                    {
-                      username: {
-                        contains: searchQuery,
-                        mode: 'insensitive',
-                      },
-                    },
-                    {
-                      fullName: {
-                        contains: searchQuery,
-                        mode: 'insensitive',
-                      },
-                    },
-                  ],
+                  username: {
+                    contains: searchQuery,
+                    mode: 'insensitive',
+                  },
                 },
-                { id: { not: ctx.userId } },
-                // { id: { not: targetUserId } },
+                {
+                  fullName: {
+                    contains: searchQuery,
+                    mode: 'insensitive',
+                  },
+                },
               ],
-            }
-          : undefined,
+            },
+            { id: { not: ctx.userId } },
+          ],
+        },
         take: 10,
-        orderBy: searchQuery
-          ? [{ createdAt: 'desc' }, { id: 'desc' }]
-          : [{ followers: { _count: 'desc' } }, { createdAt: 'desc' }],
+        orderBy: [{ followers: { _count: 'desc' } }],
         select: {
           ...GET_USER,
+          _count: {
+            select: {
+              followers: true,
+            },
+          },
         },
       });
 
-      return allUsers;
+      return allUsers.map((user) => {
+        const { _count, ...userData } = user;
+        return userData;
+      });
     }),
+
   allUsers: privateProcedure
     .input(
       z.object({

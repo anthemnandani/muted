@@ -1,7 +1,11 @@
-import { REPORT_CATEGORIES } from '@/lib/constants';
+import { ReportCategories } from '@/lib/types';
 import { useReportStore } from '@/store/reportStore';
 
-export const useReportNavigation = () => {
+export const useReportNavigation = ({
+  reportCategories,
+}: {
+  reportCategories: ReportCategories;
+}) => {
   const {
     categoryId,
     setCategoryId,
@@ -21,7 +25,7 @@ export const useReportNavigation = () => {
 
   const getCurrentCategoryLabel = () => {
     if (detailId && subcategoryId && categoryId) {
-      const category = Object.values(REPORT_CATEGORIES).find(
+      const category = Object.values(reportCategories).find(
         (c) => c.id === categoryId
       );
       if (!category || !category.children) return '';
@@ -36,7 +40,7 @@ export const useReportNavigation = () => {
     }
 
     if (subcategoryId && categoryId) {
-      const category = Object.values(REPORT_CATEGORIES).find(
+      const category = Object.values(reportCategories).find(
         (c) => c.id === categoryId
       );
       if (!category || !category.children) return '';
@@ -48,7 +52,7 @@ export const useReportNavigation = () => {
     }
 
     if (categoryId) {
-      const category = Object.values(REPORT_CATEGORIES).find(
+      const category = Object.values(reportCategories).find(
         (c) => c.id === categoryId
       );
       return category?.label || '';
@@ -60,7 +64,7 @@ export const useReportNavigation = () => {
   const getPoints = () => {
     if (!categoryId) return [];
 
-    const category = Object.values(REPORT_CATEGORIES).find(
+    const category = Object.values(reportCategories).find(
       (c) => c.id === categoryId
     );
     if (!category) return [];
@@ -117,7 +121,7 @@ export const useReportNavigation = () => {
   const handleSubcategorySelect = (subcategory: any) => {
     setSubcategoryId(subcategory.id);
 
-    const category = Object.values(REPORT_CATEGORIES).find(
+    const category = Object.values(reportCategories).find(
       (c) => c.id === categoryId
     );
     if (!category) return;
@@ -134,7 +138,7 @@ export const useReportNavigation = () => {
   const handleDetailSelect = (detail: any) => {
     setDetailId(detail.id);
 
-    const category = Object.values(REPORT_CATEGORIES).find(
+    const category = Object.values(reportCategories).find(
       (c) => c.id === categoryId
     );
     if (!category || !category.children) return;
@@ -150,7 +154,7 @@ export const useReportNavigation = () => {
   const shouldShowAdditionalForm = () => {
     if (!categoryId) return false;
 
-    const category = Object.values(REPORT_CATEGORIES).find(
+    const category = Object.values(reportCategories).find(
       (c) => c.id === categoryId
     );
     if (!category) return false;
@@ -175,7 +179,7 @@ export const useReportNavigation = () => {
   const shouldShowUserSearch = () => {
     if (!categoryId) return false;
 
-    const category = Object.values(REPORT_CATEGORIES).find(
+    const category = Object.values(reportCategories).find(
       (c) => c.id === categoryId
     );
     if (!category) return false;

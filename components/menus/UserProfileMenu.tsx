@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import { Separator } from '../ui/separator';
+import { useReportStore } from '@/store/reportStore';
 
 const UserProfileMenu = ({
   username,
@@ -24,6 +25,7 @@ const UserProfileMenu = ({
   const { handleCopyProfileLink } = useCopyLink({ username });
   const { handleToggleMuteUser, isLoading } = useToggleMuteUser({ userId });
   const [isOpen, setIsOpen] = useState(false);
+  const { openUserReport } = useReportStore();
 
   const handleCopyLink = () => {
     handleCopyProfileLink();
@@ -69,7 +71,14 @@ const UserProfileMenu = ({
           isBlocked={isBlocked}
         />
 
-        <MenuItem icon={Icons.report} label='Report' />
+        <MenuItem
+          icon={Icons.report}
+          label='Report'
+          onClick={() => {
+            openUserReport(userId);
+            setIsOpen(false);
+          }}
+        />
       </DropdownMenuContent>
     </DropdownMenu>
   );
