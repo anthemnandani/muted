@@ -10,7 +10,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
-import useCreatePost from '@/hooks/useCreatePost';
 import useDevice from '@/hooks/useDevice';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import useFileStore from '@/store/fileStore';
@@ -25,8 +24,6 @@ import UploadStep from './UploadStep';
 const NewPost = () => {
   const { openDialog, setOpenDialog, step, setStep, resetPostState } =
     usePostDialog();
-
-  const { handleMutation } = useCreatePost();
 
   const { setMediaFiles } = useFileStore();
 
@@ -66,7 +63,7 @@ const NewPost = () => {
           <CreateThreadMobile />
         ) : (
           <React.Fragment>
-            <div className='hidden md:flex relative w-15 h-12 flex-center rounded-xl bg-primary transition-colors duration-150 border-none text-secondary hover:text-foreground'>
+            <div className='hidden md:flex relative size-12 flex-center rounded-xl hover:bg-primary transition-colors duration-150 border-none text-secondary hover:text-foreground'>
               <Icons.plus className='size-6' />
             </div>
           </React.Fragment>

@@ -3,6 +3,7 @@ import { collectionRouter } from './routers/collection';
 import { likeRouter } from './routers/like';
 import { postRouter } from './routers/post';
 import { reportRouter } from './routers/report';
+import { searchRouter } from './routers/search';
 import { userRouter } from './routers/user';
 import { createTRPCRouter } from './trpc';
 
@@ -13,6 +14,7 @@ export const appRouter = createTRPCRouter({
   like: likeRouter,
   collection: collectionRouter,
   report: reportRouter,
+  search: searchRouter,
 });
 
 export type AppRouter = typeof appRouter;
