@@ -9,17 +9,18 @@ import { Fragment, useState } from 'react';
 import { cn } from '@/lib/utils';
 import SearchSidebar from '../search/SearchSidebar';
 
-const Navigation = () => {
+const Navigation = ({
+  isSearchOpen,
+  setIsSearchOpen,
+}: {
+  isSearchOpen: boolean;
+  setIsSearchOpen: (isOpen: boolean) => void;
+}) => {
   const pathname = usePathname();
   const { user } = useUser();
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-
-  const toggleSearch = () => {
-    setIsSearchOpen(!isSearchOpen);
-  };
 
   return (
-    <Fragment>
+    <ul className='flex flex-col items-center gap-4 w-full'>
       <MenuLink
         route='/'
         icon={Icons.home}
@@ -27,7 +28,7 @@ const Navigation = () => {
         addFill
       />
       <button
-        onClick={toggleSearch}
+        onClick={() => setIsSearchOpen(!isSearchOpen)}
         className={cn(
           'flex-center size-12 transition-all duration-150',
           isSearchOpen
@@ -65,11 +66,7 @@ const Navigation = () => {
         isActive={!!pathname.match(/^\/@\w+$/) && !isSearchOpen}
         addFill
       />
-      <SearchSidebar
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-      />
-    </Fragment>
+    </ul>
   );
 };
 

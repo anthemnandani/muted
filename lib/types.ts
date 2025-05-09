@@ -802,3 +802,10 @@ export interface ReportDetailsProps {
   showUserSearch: boolean;
   isUserReport: boolean;
 }
+
+export type UserSuggestion = {
+  id: string;
+  username: string;
+  fullName: string | null;
+  image: string | null;
+};
