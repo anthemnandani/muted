@@ -3,7 +3,6 @@ import type { CollectionPrivacy, User } from '@prisma/client';
 import { PostPrivacy, Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
 import { LucideIcon } from 'lucide-react';
-import { createInterface } from 'node:readline/promises';
 import Player from 'video.js/dist/types/player';
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
@@ -494,6 +493,7 @@ export interface UserPostCardProps {
   text?: string;
   createdAt?: Date;
   author?: AuthorInfoProps;
+  query?: string;
 }
 
 export interface ProfileTabsHeaderProps {
@@ -546,7 +546,13 @@ export interface PostNavigatorContextType {
   setPostNavigation: (index: number, total: number) => void;
 }
 
-export type NavigationType = 'post' | 'liked' | 'repost' | 'collection';
+export type NavigationType =
+  | 'post'
+  | 'liked'
+  | 'repost'
+  | 'collection'
+  | 'topPosts'
+  | 'videoPosts';
 
 export interface PostInfoClientProps {
   id: string;

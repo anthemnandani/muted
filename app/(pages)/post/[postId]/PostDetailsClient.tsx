@@ -7,10 +7,15 @@ import PostCardSkeleton from '@/components/skeletons/PostCardSkeleton';
 import useGetPostsByType from '@/hooks/useGetPostsByType';
 import usePostStore from '@/store/postStore';
 import { Video } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 
 const PostDetailsClient = ({ postId }: { postId: string }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get('q')?.trim();
+
+  const searchQueryRef = useRef<string | undefined>(searchQuery);
 
   const {
     currentIndex,
@@ -38,6 +43,7 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
     postType,
     username: profileUsername!,
     sortBy: selectedFilter,
+    query: searchQuery,
     collectionId,
   });
 
@@ -85,7 +91,10 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
       setCurrentPostId(post.id);
       setCurrentIndex(index);
 
-      const newUrl = `/post/${post.id}`;
+      const newUrl = searchQueryRef.current
+        ? `/post/${post.id}?q=${encodeURIComponent(searchQueryRef.current)}`
+        : `/post/${post.id}`;
+
       window.history.replaceState(null, '', newUrl);
 
       setTimeout(() => {

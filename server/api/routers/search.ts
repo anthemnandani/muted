@@ -219,6 +219,129 @@ export const searchRouter = createTRPCRouter({
       };
     }),
 
+  getTopResultsFeed: privateProcedure
+    .input(
+      z.object({
+        query: z.string().min(1),
+      })
+    )
+    .query(async ({ input: { query }, ctx }) => {
+      const posts = await ctx.db.post.findMany({
+        where: {
+          AND: [
+            {
+              parentPostId: null,
+            },
+            {
+              hiddenBy: {
+                none: {
+                  userId: ctx.userId,
+                },
+              },
+            },
+            {
+              author: {
+                mutedByUsers: {
+                  none: {
+                    mutedByUserId: ctx.userId,
+                  },
+                },
+                blockedByUsers: {
+                  none: {
+                    blockingUserId: ctx.userId,
+                  },
+                },
+                blockedUsers: {
+                  none: {
+                    blockedUserId: ctx.userId,
+                  },
+                },
+              },
+            },
+            {
+              privacy: 'ANYONE',
+            },
+            {
+              OR: [
+                { text: { contains: query, mode: 'insensitive' } },
+                {
+                  hashtags: {
+                    some: { name: { contains: query, mode: 'insensitive' } },
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        orderBy: [
+          { likes: { _count: 'desc' } },
+          { replies: { _count: 'desc' } },
+          { createdAt: 'desc' },
+        ],
+        select: {
+          id: true,
+          createdAt: true,
+          text: true,
+          media: true,
+          parentPostId: true,
+          quoteId: true,
+          path: true,
+          hideLikes: true,
+          pinned: true,
+          privacy: true,
+          repliesCount: true,
+          author: {
+            select: {
+              ...GET_USER,
+            },
+          },
+          ...getLikesWithBlockFilter(ctx.userId),
+          ...getBookmarksWithBlockFilter(ctx.userId),
+          ...getPostRepliesCount(ctx.userId),
+          ...GET_MENTIONS,
+          ...GET_LINK_PREVIEW,
+          reposts: {
+            ...GET_REPOSTS,
+            where: {
+              user: {
+                blockedByUsers: {
+                  none: {
+                    blockingUserId: {
+                      equals: ctx.userId,
+                    },
+                  },
+                },
+                blockedUsers: {
+                  none: {
+                    blockedUserId: {
+                      equals: ctx.userId,
+                    },
+                  },
+                },
+              },
+            },
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
+        },
+      });
+
+      const formattedPosts = posts.map((post) => ({
+        ...post,
+        media: post.media as PostMedia[],
+        likesCount: post.likes.length,
+        repostsCount: post.reposts.length,
+        repliesCount: getTotalRepliesCount(post) as number,
+        bookmarksCount: new Set(
+          post.bookmarks.map((bookmark) => bookmark.userId)
+        ).size,
+        type: 'post' as const,
+      }));
+
+      return formattedPosts;
+    }),
+
   getUserResults: privateProcedure
     .input(
       z.object({
@@ -456,11 +579,136 @@ export const searchRouter = createTRPCRouter({
         formattedPosts.length = limit;
       }
 
-      console.log(formattedPosts);
-
       return {
         posts: formattedPosts,
         nextCursor,
       };
+    }),
+
+  getVideoPostsFeed: privateProcedure
+    .input(
+      z.object({
+        query: z.string().min(1),
+      })
+    )
+    .query(async ({ input: { query }, ctx }) => {
+      const posts = await ctx.db.post.findMany({
+        where: {
+          AND: [
+            {
+              parentPostId: null,
+            },
+            {
+              hiddenBy: {
+                none: {
+                  userId: ctx.userId,
+                },
+              },
+            },
+            {
+              author: {
+                mutedByUsers: {
+                  none: {
+                    mutedByUserId: ctx.userId,
+                  },
+                },
+                blockedByUsers: {
+                  none: {
+                    blockingUserId: ctx.userId,
+                  },
+                },
+                blockedUsers: {
+                  none: {
+                    blockedUserId: ctx.userId,
+                  },
+                },
+              },
+            },
+            {
+              privacy: 'ANYONE',
+            },
+            {
+              OR: [
+                { text: { contains: query, mode: 'insensitive' } },
+                {
+                  hashtags: {
+                    some: { name: { contains: query, mode: 'insensitive' } },
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        orderBy: [
+          { likes: { _count: 'desc' } },
+          { replies: { _count: 'desc' } },
+          { createdAt: 'desc' },
+        ],
+        select: {
+          id: true,
+          createdAt: true,
+          text: true,
+          media: true,
+          parentPostId: true,
+          quoteId: true,
+          path: true,
+          hideLikes: true,
+          pinned: true,
+          privacy: true,
+          repliesCount: true,
+          author: {
+            select: {
+              ...GET_USER,
+            },
+          },
+          ...getLikesWithBlockFilter(ctx.userId),
+          ...getBookmarksWithBlockFilter(ctx.userId),
+          ...getPostRepliesCount(ctx.userId),
+          ...GET_MENTIONS,
+          ...GET_LINK_PREVIEW,
+          reposts: {
+            ...GET_REPOSTS,
+            where: {
+              user: {
+                blockedByUsers: {
+                  none: {
+                    blockingUserId: {
+                      equals: ctx.userId,
+                    },
+                  },
+                },
+                blockedUsers: {
+                  none: {
+                    blockedUserId: {
+                      equals: ctx.userId,
+                    },
+                  },
+                },
+              },
+            },
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
+        },
+      });
+
+      const formattedPosts = posts
+        .map((post) => ({
+          ...post,
+          media: post.media as PostMedia[],
+          likesCount: post.likes.length,
+          repostsCount: post.reposts.length,
+          repliesCount: getTotalRepliesCount(post) as number,
+          bookmarksCount: new Set(
+            post.bookmarks.map((bookmark) => bookmark.userId)
+          ).size,
+          type: 'post' as const,
+        }))
+        .filter((post) =>
+          post.media.some((media) => media.fileType === 'video')
+        );
+
+      return formattedPosts;
     }),
 });

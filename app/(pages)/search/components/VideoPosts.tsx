@@ -1,12 +1,12 @@
 import NotFound from '@/app/not-found';
 import SkeletonGrid from '@/components/skeletons/SkeletonGrid';
-import { useSearchTabStore } from '@/store/searchTabs';
+import { useSearchStore } from '@/store/searchStore';
 import { api } from '@/trpc/react';
 import React from 'react';
 import PostsGrid from './PostsGrid';
 
 const VideoPosts = ({ query }: { query: string }) => {
-  const { activeTab } = useSearchTabStore();
+  const { activeTab } = useSearchStore();
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
     api.search.getVideoPosts.useInfiniteQuery(
       { query },
@@ -24,11 +24,20 @@ const VideoPosts = ({ query }: { query: string }) => {
 
   const videoPosts = data?.pages.flatMap((page) => page.posts);
 
+  if (!videoPosts || videoPosts.length === 0) {
+    return (
+      <div className='flex-center p-10'>
+        <p className='text-white/70'>No posts found</p>
+      </div>
+    );
+  }
+
   return (
     <PostsGrid
       posts={videoPosts}
       fetchNextPage={fetchNextPage}
       hasNextPage={hasNextPage}
+      postType='videoPosts'
     />
   );
 };

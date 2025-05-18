@@ -1,16 +1,23 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
-import SearchHeader from './components/SearchHeader';
 import NotFound from '@/app/not-found';
+import useVideoPlayer from '@/store/videoPlayer';
+import { useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
+import SearchHeader from './components/SearchHeader';
 
 const SearchClient = () => {
   const params = useSearchParams();
+  const { setCurrentlyPlaying } = useVideoPlayer();
   const query = params.get('q')?.trim();
 
   if (!query) {
     return <NotFound />;
   }
+
+  useEffect(() => {
+    setCurrentlyPlaying(null);
+  }, []);
 
   return (
     <div className='main-container md:!pt-0 !max-w-[1200px]'>

@@ -25,6 +25,7 @@ const UserPostCard = ({
   text,
   createdAt,
   author,
+  query,
   type = 'post',
   collectionId = null,
   isSearch = false,
@@ -97,7 +98,11 @@ const UserPostCard = ({
       setCollectionId(collectionId);
     }
 
-    router.push(`/post/${postId}`, { scroll: false });
+    const postLink = isSearch
+      ? `/post/${postId}?q=${query}`
+      : `/post/${postId}`;
+
+    router.push(postLink, { scroll: false });
   };
 
   return (

@@ -1,12 +1,12 @@
 import { type SearchTab } from '@/lib/types';
 import { create } from 'zustand';
 
-interface SearchTabState {
+interface SearchStore {
   activeTab: SearchTab;
   setActiveTab: (tab: SearchTab) => void;
 }
 
-export const useSearchTabStore = create<SearchTabState>((set) => ({
+export const useSearchStore = create<SearchStore>((set) => ({
   activeTab: 'top',
   setActiveTab: (tab) => set({ activeTab: tab }),
 }));

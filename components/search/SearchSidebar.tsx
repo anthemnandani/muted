@@ -45,7 +45,6 @@ const SearchSidebar = ({
       inputRef.current.focus();
     }
     if (!isOpen) {
-      setSearchQuery('');
       setDebouncedText('');
     }
   }, [isOpen]);

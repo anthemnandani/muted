@@ -17,7 +17,7 @@ const SkeletonTabs = () => {
   return (
     <div className='sticky top-0 z-50'>
       <div className='w-full'>
-        <div className='flex-between w-full bg-[#222]'>
+        <div className='flex-between w-full'>
           <div className='relative flex h-14 w-full bg-transparent'>
             <SkeletonTab />
             <SkeletonTab />

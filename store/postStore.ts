@@ -1,4 +1,4 @@
-import type { ProfileFilter } from '@/lib/types';
+import type { NavigationType, ProfileFilter } from '@/lib/types';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -6,7 +6,7 @@ interface PostStore {
   currentPostId: string | null;
   currentIndex: number;
   profileUsername: string | null;
-  postType: 'post' | 'repost' | 'liked' | 'collection';
+  postType: NavigationType;
   collectionId: string | null;
   selectedFilter: ProfileFilter;
   initialized: boolean;
@@ -14,7 +14,7 @@ interface PostStore {
   setCurrentPostId: (postId: string | null) => void;
   setCurrentIndex: (index: number) => void;
   setProfileUsername: (username: string | null) => void;
-  setPostType: (type: 'post' | 'repost' | 'liked' | 'collection') => void;
+  setPostType: (type: NavigationType) => void;
   setCollectionId: (collectionId: string | null) => void;
   setInitialized: (initialized: boolean) => void;
   setSelectedFilter: (filter: ProfileFilter) => void;

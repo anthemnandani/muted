@@ -5,7 +5,7 @@ import SkeletonTabs from '@/components/skeletons/SearchSkeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { type SearchTab } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { useSearchTabStore } from '@/store/searchTabs';
+import { useSearchStore } from '@/store/searchStore';
 import { api } from '@/trpc/react';
 import { useState } from 'react';
 import PostsGrid from './PostsGrid';
@@ -13,7 +13,7 @@ import Users from './Users';
 import VideoPosts from './VideoPosts';
 
 const SearchHeader = ({ query }: { query: string }) => {
-  const { activeTab, setActiveTab } = useSearchTabStore();
+  const { activeTab, setActiveTab } = useSearchStore();
   const [hoverTab, setHoverTab] = useState<string | null>(null);
   const [isTabsContainerHovered, setIsTabsContainerHovered] = useState(false);
   const tabs = [
@@ -91,11 +91,19 @@ const SearchHeader = ({ query }: { query: string }) => {
           </div>
 
           <TabsContent value='top' className='w-full'>
-            <PostsGrid
-              posts={topPosts!}
-              fetchNextPage={fetchNextPage}
-              hasNextPage={hasNextPage}
-            />
+            {topPosts && topPosts.length > 0 ? (
+              <PostsGrid
+                posts={topPosts!}
+                fetchNextPage={fetchNextPage}
+                hasNextPage={hasNextPage}
+                postType='topPosts'
+                query={query}
+              />
+            ) : (
+              <div className='flex-center p-10'>
+                <p className='text-white/70'>No posts found</p>
+              </div>
+            )}
           </TabsContent>
           <TabsContent value='users' className='w-full'>
             <Users query={query} />
