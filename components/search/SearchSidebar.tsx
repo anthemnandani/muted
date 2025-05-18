@@ -1,10 +1,10 @@
 'use client';
 
-import { Loader2, Search, X } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { debounce } from 'lodash';
 import { api } from '@/trpc/react';
+import { debounce } from 'lodash';
+import { Loader2, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const SearchSidebar = ({
   isOpen,
@@ -23,20 +23,30 @@ const SearchSidebar = ({
   const debouncedSearch = useCallback(
     debounce((value: string) => {
       setDebouncedText(value);
-    }, 500),
+    }, 750),
     []
   );
 
-  const { data: users, isLoading } = api.search.getSearchResults.useQuery(
+  const {
+    data: users,
+    isLoading,
+    isFetching,
+  } = api.search.getSearchResults.useQuery(
     { query: debouncedText },
     {
       enabled: debouncedText.length > 0,
+      cacheTime: 0,
+      staleTime: 0,
     }
   );
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus();
+    }
+    if (!isOpen) {
+      setSearchQuery('');
+      setDebouncedText('');
     }
   }, [isOpen]);
 
@@ -50,6 +60,7 @@ const SearchSidebar = ({
 
   const clearSearch = () => {
     setSearchQuery('');
+    setDebouncedText('');
     if (inputRef.current) {
       inputRef.current.focus();
     }
@@ -69,7 +80,7 @@ const SearchSidebar = ({
 
   return (
     <div
-      className='fixed left-[76px] top-0 h-screen w-[20rem] bg-background shadow-[5px_0px_15px_rgba(0,0,0,0.25)] border-l border-white/5 overflow-hidden transition-transform duration-300 ease-in-out z-10'
+      className='fixed left-[76px] top-0 h-screen w-[20rem] bg-background shadow-[5px_0px_15px_rgba(0,0,0,0.25)] border-l border-white/5 overflow-hidden transition-transform duration-300 ease-in-out z-50'
       style={{
         transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
         pointerEvents: isOpen ? 'auto' : 'none',
@@ -109,7 +120,7 @@ const SearchSidebar = ({
             className='text-sm border-none outline-none w-full bg-transparent text-white/90 text-ellipsis placeholder:text-white/25'
           />
 
-          {isLoading ? (
+          {(isLoading || isFetching) && debouncedText.length > 0 ? (
             <div className='pr-2'>
               <Loader2 size={16} className='animate-spin text-white/50' />
             </div>
@@ -117,9 +128,9 @@ const SearchSidebar = ({
             <button
               type='button'
               onClick={clearSearch}
-              className='flex items-center justify-center w-6 h-6 mr-1 rounded-full hover:bg-white/20 transition-colors'
+              className='flex-center size-4 mr-1 rounded-full bg-white/35'
             >
-              <X size={14} className='text-white/90' />
+              <X size={12} className='text-black' />
             </button>
           ) : null}
         </form>
@@ -142,9 +153,8 @@ const SearchSidebar = ({
             ))}
           </div>
         )} */}
-        {searchQuery.length > 0 && (
+        {debouncedText.length > 0 && (
           <div className='mt-4'>
-            {/* User results */}
             {users && users.length > 0 && (
               <div className='mb-4'>
                 <div className='px-2 pb-2'>
@@ -157,9 +167,9 @@ const SearchSidebar = ({
                     <button
                       key={user.id}
                       onClick={() => handleUserClick(user.username)}
-                      className='w-full flex items-center gap-3 hover:bg-white/10 p-2 rounded-md transition-colors text-left'
+                      className='w-full flex items-center gap-3 hover:bg-white/5 p-2 rounded-md transition-colors text-left'
                     >
-                      <div className='w-10 h-10 rounded-full bg-white/10 overflow-hidden flex-shrink-0'>
+                      <div className='size-10 rounded-full bg-white/10 overflow-hidden flex-shrink-0'>
                         {user.image ? (
                           <img
                             src={user.image}
@@ -167,7 +177,7 @@ const SearchSidebar = ({
                             className='w-full h-full object-cover'
                           />
                         ) : (
-                          <div className='w-full h-full flex items-center justify-center bg-white/10 text-white/90'>
+                          <div className='w-full h-full flex-center bg-white/10 text-white/90'>
                             {user.username.charAt(0).toUpperCase()}
                           </div>
                         )}
@@ -190,10 +200,10 @@ const SearchSidebar = ({
 
             <button
               onClick={handleViewAllResults}
-              className='w-full text-left px-4 py-3 hover:bg-white/10 transition-colors rounded-md'
+              className='w-full text-left px-4 py-3 hover:bg-white/5 transition-colors rounded-md'
             >
               <span className='text-sm font-medium text-white/90 text-ellipsis overflow-hidden'>
-                View all results for “{searchQuery}”
+                View all results for “{debouncedText}”
               </span>
             </button>
           </div>

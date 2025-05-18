@@ -489,6 +489,11 @@ export interface UserPostCardProps {
   type: NavigationType;
   index: number;
   collectionId?: string | null;
+  isSearch?: boolean;
+  likesCount?: number;
+  text?: string;
+  createdAt?: Date;
+  author?: AuthorInfoProps;
 }
 
 export interface ProfileTabsHeaderProps {
@@ -682,6 +687,8 @@ export type SortBy = 'LATEST' | 'OLDEST';
 
 export type Tab = 'posts' | 'reposts' | 'liked' | 'collections';
 
+export type SearchTab = 'top' | 'users' | 'videos';
+
 export interface UsernameProps {
   author: AuthorInfoProps;
   isReposted?: boolean;
@@ -689,6 +696,7 @@ export interface UsernameProps {
   className?: string;
   isComment?: boolean;
   postAuthorId?: string;
+  isSearch?: boolean;
 }
 
 export interface EmojiPickerProps {

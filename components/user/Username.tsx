@@ -1,4 +1,4 @@
-import type { UsernameProps } from '@/lib/types';
+import { UsernameProps } from '@/lib/types';
 import { cn, formatRepostTime } from '@/lib/utils';
 import Link from 'next/link';
 import React, { Fragment } from 'react';
@@ -15,6 +15,7 @@ const Username: React.FC<UsernameProps> = ({
   repostedAt,
   className,
   isComment,
+  isSearch,
   postAuthorId,
 }) => {
   return (
@@ -22,7 +23,10 @@ const Username: React.FC<UsernameProps> = ({
       <HoverCardTrigger asChild>
         <Link
           href={`/@${author.username}`}
-          className='inline-flex items-center gap-1.5 w-fit group'
+          className={cn(
+            'inline-flex items-center gap-1.5 group w-fit',
+            isSearch && 'max-w-[80%]'
+          )}
         >
           <span
             className={cn(
