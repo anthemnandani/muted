@@ -12,7 +12,10 @@ const UserPostsList = ({
   type = 'post',
   collectionId = null,
 }: UserPostsListProps) => {
-  const EMPTY_STATE_CONFIG = {
+  const EMPTY_STATE_CONFIG: Record<
+    string,
+    { title: string; description: string }
+  > = {
     liked: {
       title: 'No liked posts yet',
       description: 'Posts you liked will appear here',
@@ -30,6 +33,7 @@ const UserPostsList = ({
       description: 'Upload your first post',
     },
   } as const;
+
   return posts.length === 0 ? (
     <EmptyState
       icon={

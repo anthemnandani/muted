@@ -1,18 +1,14 @@
 'use client';
 
+import { useSearchStore } from '@/store/searchStore';
 import { api } from '@/trpc/react';
 import { debounce } from 'lodash';
 import { Loader2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-const SearchSidebar = ({
-  isOpen,
-  onClose,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-}) => {
+const SearchSidebar = () => {
+  const { isSearchOpen, setIsSearchOpen } = useSearchStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedText, setDebouncedText] = useState('');
 
@@ -41,19 +37,19 @@ const SearchSidebar = ({
   );
 
   useEffect(() => {
-    if (isOpen && inputRef.current) {
+    if (isSearchOpen && inputRef.current) {
       inputRef.current.focus();
     }
-    if (!isOpen) {
+    if (!isSearchOpen) {
       setDebouncedText('');
     }
-  }, [isOpen]);
+  }, [isSearchOpen]);
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      onClose();
+      setIsSearchOpen(false);
     }
   };
 
@@ -67,13 +63,13 @@ const SearchSidebar = ({
 
   const handleUserClick = (username: string) => {
     router.push(`/@${username}`);
-    onClose();
+    setIsSearchOpen(false);
   };
 
   const handleViewAllResults = () => {
     if (searchQuery.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      onClose();
+      setIsSearchOpen(false);
     }
   };
 
@@ -81,9 +77,9 @@ const SearchSidebar = ({
     <div
       className='fixed left-[76px] top-0 h-screen w-[20rem] bg-background shadow-[5px_0px_15px_rgba(0,0,0,0.25)] border-l border-white/5 overflow-hidden transition-transform duration-300 ease-in-out z-50'
       style={{
-        transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
-        pointerEvents: isOpen ? 'auto' : 'none',
-        opacity: isOpen ? 1 : 0,
+        transform: isSearchOpen ? 'translateX(0)' : 'translateX(-100%)',
+        pointerEvents: isSearchOpen ? 'auto' : 'none',
+        opacity: isSearchOpen ? 1 : 0,
       }}
     >
       <div className='p-2 w-full'>
@@ -91,7 +87,7 @@ const SearchSidebar = ({
           <div className='flex items-center'>
             <h2 className='text-xl font-bold text-white/90'>Search</h2>
             <button
-              onClick={onClose}
+              onClick={() => setIsSearchOpen(false)}
               className='ml-auto bg-white/10 hover:bg-white/20 transition-colors duration-150 size-7 rounded-full flex-center'
             >
               <X size={16} className='text-white/90' />

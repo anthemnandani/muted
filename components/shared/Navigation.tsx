@@ -1,21 +1,15 @@
 'use client';
 
+import { cn } from '@/lib/utils';
+import { useSearchStore } from '@/store/searchStore';
 import { useUser } from '@clerk/nextjs';
 import { usePathname } from 'next/navigation';
 import { Icons } from '../icons';
-import MenuLink from './MenuLink';
 import NewPost from '../modals/NewPost';
-import { Fragment, useState } from 'react';
-import { cn } from '@/lib/utils';
-import SearchSidebar from '../search/SearchSidebar';
+import MenuLink from './MenuLink';
 
-const Navigation = ({
-  isSearchOpen,
-  setIsSearchOpen,
-}: {
-  isSearchOpen: boolean;
-  setIsSearchOpen: (isOpen: boolean) => void;
-}) => {
+const Navigation = () => {
+  const { isSearchOpen, setIsSearchOpen } = useSearchStore();
   const pathname = usePathname();
   const { user } = useUser();
 

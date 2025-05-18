@@ -38,6 +38,7 @@ const VideoPosts = ({ query }: { query: string }) => {
       fetchNextPage={fetchNextPage}
       hasNextPage={hasNextPage}
       postType='videoPosts'
+      query={query}
     />
   );
 };
