@@ -3,7 +3,7 @@
 import { useSearchStore } from '@/store/searchStore';
 import { api } from '@/trpc/react';
 import { debounce } from 'lodash';
-import { Loader2, X } from 'lucide-react';
+import { Loader2, Search, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -19,9 +19,11 @@ const SearchSidebar = () => {
   const debouncedSearch = useCallback(
     debounce((value: string) => {
       setDebouncedText(value);
-    }, 750),
+    }, 500),
     []
   );
+
+  const { mutate: trackSearch } = api.search.trackSearch.useMutation();
 
   const {
     data: users,
@@ -33,6 +35,21 @@ const SearchSidebar = () => {
       enabled: debouncedText.length > 0,
       cacheTime: 0,
       staleTime: 0,
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  const {
+    data: suggestions,
+    isLoading: isLoadingSuggestions,
+    isFetching: isFetchingSuggestions,
+  } = api.search.getSearchSuggestions.useQuery(
+    { query: debouncedText, limit: 8 },
+    {
+      enabled: debouncedText.length > 0,
+      cacheTime: 0,
+      staleTime: 0,
+      refetchOnWindowFocus: false,
     }
   );
 
@@ -41,16 +58,22 @@ const SearchSidebar = () => {
       inputRef.current.focus();
     }
     if (!isSearchOpen) {
+      setSearchQuery('');
       setDebouncedText('');
     }
   }, [isSearchOpen]);
 
+  const trackSearchAndNavigate = (query: string) => {
+    if (query.trim()) {
+      trackSearch({ query: query.trim() });
+
+      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+    }
+  };
+
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setIsSearchOpen(false);
-    }
+    trackSearchAndNavigate(searchQuery);
   };
 
   const clearSearch = () => {
@@ -61,21 +84,27 @@ const SearchSidebar = () => {
     }
   };
 
+  const handleSuggestionClick = (suggestion: string) => {
+    trackSearch({ query: suggestion });
+    setSearchQuery(suggestion);
+    setDebouncedText(suggestion);
+    router.push(`/search?q=${encodeURIComponent(suggestion)}`);
+    setIsSearchOpen(false);
+  };
+
   const handleUserClick = (username: string) => {
     router.push(`/@${username}`);
     setIsSearchOpen(false);
   };
 
   const handleViewAllResults = () => {
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setIsSearchOpen(false);
-    }
+    trackSearchAndNavigate(debouncedText);
+    setIsSearchOpen(false);
   };
 
   return (
     <div
-      className='fixed left-[76px] top-0 h-screen w-[20rem] bg-background shadow-[5px_0px_15px_rgba(0,0,0,0.25)] border-l border-white/5 overflow-hidden transition-transform duration-300 ease-in-out z-50'
+      className='fixed left-[76px] top-0 h-screen w-[20rem] bg-background shadow-[5px_0px_15px_rgba(0,0,0,0.25)] border-l border-white/5 overflow-hidden transition-transform duration-300 ease-in-out z-[100]'
       style={{
         transform: isSearchOpen ? 'translateX(0)' : 'translateX(-100%)',
         pointerEvents: isSearchOpen ? 'auto' : 'none',
@@ -115,7 +144,11 @@ const SearchSidebar = () => {
             className='text-sm border-none outline-none w-full bg-transparent text-white/90 text-ellipsis placeholder:text-white/25'
           />
 
-          {(isLoading || isFetching) && debouncedText.length > 0 ? (
+          {(isLoading ||
+            isFetching ||
+            isLoadingSuggestions ||
+            isFetchingSuggestions) &&
+          debouncedText.length > 0 ? (
             <div className='pr-2'>
               <Loader2 size={16} className='animate-spin text-white/50' />
             </div>
@@ -130,26 +163,26 @@ const SearchSidebar = () => {
           ) : null}
         </form>
 
-        {/* {searchResults?.suggestions && searchResults.suggestions.length > 0 && (
-          <div className='space-y-1 mt-4'>
-            {searchResults.suggestions.map((suggestion, index) => (
-              <button
-                key={index}
-                onClick={() => handleSuggestionClick(suggestion.text)}
-                className='w-full flex items-center gap-3 hover:bg-white/10 p-2 rounded-md transition-colors text-left'
-              >
-                <div className='size-8 flex-center bg-white/10 rounded-full flex-shrink-0'>
-                  <Search size={14} className='text-white/90' />
-                </div>
-                <span className='text-white/90 text-sm truncate'>
-                  {suggestion.text}
-                </span>
-              </button>
-            ))}
-          </div>
-        )} */}
         {debouncedText.length > 0 && (
           <div className='mt-4'>
+            {suggestions && suggestions.length > 0 && (
+              <div className='space-y-1 mt-2 mb-4'>
+                {suggestions.map((suggestion, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    className='w-full flex items-center gap-3 hover:bg-white/10 p-2 rounded-md transition-colors text-left'
+                  >
+                    <div className='size-8 flex-center bg-white/10 rounded-full flex-shrink-0'>
+                      <Search size={14} className='text-white/90' />
+                    </div>
+                    <span className='text-white/90 text-sm truncate'>
+                      {suggestion}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
             {users && users.length > 0 && (
               <div className='mb-4'>
                 <div className='px-2 pb-2'>

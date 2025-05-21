@@ -404,3 +404,90 @@ export const getTotalRepliesCount = (post: any) => {
 
   return directCommentsCount + nestedRepliesCount;
 };
+
+export const extractSuggestions = (
+  texts: string[],
+  query: string,
+  limit: number
+): string[] => {
+  const bestSuggestionPerPost: Map<string, string> = new Map();
+  const queryLower = query.toLowerCase();
+
+  for (const text of texts) {
+    if (!text) continue;
+
+    if (text.toLowerCase() === queryLower) continue;
+
+    if (
+      text.toLowerCase().includes(queryLower) &&
+      text.length > query.length &&
+      text.length <= 50 &&
+      !text.startsWith('@') &&
+      !text.startsWith('#')
+    ) {
+      bestSuggestionPerPost.set(text, text);
+    } else {
+      let bestPhrase = '';
+
+      const sentences = text.split(/[.!?;]/);
+
+      for (const sentence of sentences) {
+        const words = sentence.trim().split(/\s+/);
+
+        if (sentence.toLowerCase().includes(queryLower)) {
+          for (let size = 4; size >= 1; size--) {
+            for (let i = 0; i <= words.length - size; i++) {
+              const phrase = words
+                .slice(i, i + size)
+                .join(' ')
+                .trim();
+
+              if (
+                phrase.toLowerCase().includes(queryLower) &&
+                phrase.length > query.length &&
+                phrase.length <= 50 &&
+                !phrase.startsWith('@') &&
+                !phrase.startsWith('#') &&
+                phrase.toLowerCase() !== queryLower
+              ) {
+                if (
+                  !bestPhrase ||
+                  (phrase.toLowerCase().startsWith(queryLower) &&
+                    !bestPhrase.toLowerCase().startsWith(queryLower))
+                ) {
+                  bestPhrase = phrase;
+
+                  if (phrase.toLowerCase().startsWith(queryLower)) {
+                    break;
+                  }
+                }
+              }
+            }
+
+            if (bestPhrase) {
+              break;
+            }
+          }
+        }
+      }
+
+      if (bestPhrase) {
+        bestSuggestionPerPost.set(text, bestPhrase);
+      }
+    }
+  }
+
+  const uniqueSuggestions = Array.from(new Set(bestSuggestionPerPost.values()));
+
+  return uniqueSuggestions
+    .sort((a, b) => {
+      const aStartsWithQuery = a.toLowerCase().startsWith(queryLower);
+      const bStartsWithQuery = b.toLowerCase().startsWith(queryLower);
+
+      if (aStartsWithQuery && !bStartsWithQuery) return -1;
+      if (!aStartsWithQuery && bStartsWithQuery) return 1;
+
+      return a.length - b.length;
+    })
+    .slice(0, limit);
+};

@@ -4,10 +4,10 @@ import useDevice from '@/hooks/useDevice';
 import useHomeNavigation from '@/hooks/useHomeNavigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Fragment } from 'react';
 import UserMenu from '../menus/UserMenu';
 import SearchSidebar from '../search/SearchSidebar';
 import Navigation from './Navigation';
-import { Fragment } from 'react';
 
 const LeftSideBar = () => {
   const { isMobile } = useDevice();

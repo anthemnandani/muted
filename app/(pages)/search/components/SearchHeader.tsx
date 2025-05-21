@@ -22,7 +22,7 @@ const SearchHeader = ({ query }: { query: string }) => {
     { id: 'videos', label: 'Videos' },
   ];
 
-  const { data, isLoading, isError, hasNextPage, fetchNextPage } =
+  const { data, isLoading, isFetching, isError, hasNextPage, fetchNextPage } =
     api.search.getTopResults.useInfiniteQuery(
       { query },
       {
@@ -35,7 +35,7 @@ const SearchHeader = ({ query }: { query: string }) => {
 
   if (isError) return <NotFound />;
 
-  if (isLoading) return <SkeletonTabs />;
+  if (isLoading || isFetching) return <SkeletonTabs />;
 
   const topPosts = data?.pages.flatMap((page) => page.posts);
 

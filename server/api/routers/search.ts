@@ -1,5 +1,5 @@
 import { PostMedia } from '@/lib/types';
-import { getTotalRepliesCount } from '@/lib/utils';
+import { extractSuggestions, getTotalRepliesCount } from '@/lib/utils';
 import {
   GET_LINK_PREVIEW,
   GET_MENTIONS,
@@ -13,6 +13,115 @@ import { z } from 'zod';
 import { createTRPCRouter, privateProcedure, publicProcedure } from '../trpc';
 
 export const searchRouter = createTRPCRouter({
+  trackSearch: publicProcedure
+    .input(
+      z.object({
+        query: z.string().min(1),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { query } = input;
+
+      try {
+        await ctx.db.searchQuery.upsert({
+          where: { query: query.trim() },
+          update: {
+            count: { increment: 1 },
+            updatedAt: new Date(),
+          },
+          create: {
+            query: query.trim(),
+            count: 1,
+          },
+        });
+        return { success: true };
+      } catch (error) {
+        console.error('Failed to track search query:', error);
+        return { success: false };
+      }
+    }),
+
+  getSearchSuggestions: publicProcedure
+    .input(
+      z.object({
+        query: z.string().min(1),
+        limit: z.number().optional().default(8),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const { query, limit } = input;
+
+        const existingSearches = await ctx.db.searchQuery.findMany({
+          where: {
+            query: {
+              contains: query,
+              mode: 'insensitive',
+            },
+          },
+          orderBy: [{ count: 'desc' }, { updatedAt: 'desc' }],
+          take: limit,
+          select: {
+            query: true,
+          },
+        });
+
+        let suggestions = existingSearches.map((s) => s.query);
+
+        if (suggestions.length < limit) {
+          const remainingCount = limit - suggestions.length;
+
+          const postTexts = await ctx.db.post.findMany({
+            where: {
+              AND: [
+                {
+                  text: {
+                    contains: query,
+                    mode: 'insensitive',
+                  },
+                },
+                { privacy: 'ANYONE' },
+                { parentPostId: null },
+              ],
+            },
+            orderBy: [{ likes: { _count: 'desc' } }, { createdAt: 'desc' }],
+            take: remainingCount,
+            select: {
+              text: true,
+              id: true,
+            },
+          });
+
+          const uniqueTexts = Array.from(
+            new Map(postTexts.map((p) => [p.id, p.text])).values()
+          );
+
+          const extractedSuggestions = extractSuggestions(
+            uniqueTexts.filter((text) => !!text) as string[],
+            query,
+            remainingCount
+          );
+
+          suggestions = [
+            ...suggestions,
+            ...extractedSuggestions.filter(
+              (suggestion) =>
+                !suggestions.some(
+                  (s) => s.toLowerCase() === suggestion.toLowerCase()
+                )
+            ),
+          ];
+
+          suggestions = Array.from(new Set(suggestions)).slice(0, limit);
+        }
+
+        return suggestions;
+      } catch (error) {
+        console.error('Search suggestions error:', error);
+        return [];
+      }
+    }),
+
   getSearchResults: publicProcedure
     .input(
       z.object({
@@ -22,22 +131,6 @@ export const searchRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       try {
         const { query } = input;
-
-        try {
-          await ctx.db.searchQuery.upsert({
-            where: { query },
-            update: {
-              count: { increment: 1 },
-              updatedAt: new Date(),
-            },
-            create: {
-              query,
-              count: 1,
-            },
-          });
-        } catch (error) {
-          console.error('Failed to log search query:', error);
-        }
 
         const users = await ctx.db.user.findMany({
           where: {
@@ -76,18 +169,6 @@ export const searchRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { query, limit = 21, cursor }, ctx }) => {
-      await ctx.db.searchQuery.upsert({
-        where: { query: query.trim() },
-        update: {
-          count: { increment: 1 },
-          updatedAt: new Date(),
-        },
-        create: {
-          query: query.trim(),
-          count: 1,
-        },
-      });
-
       const posts = await ctx.db.post.findMany({
         where: {
           AND: [
@@ -356,18 +437,6 @@ export const searchRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { query, limit = 20, cursor }, ctx }) => {
-      await ctx.db.searchQuery.upsert({
-        where: { query },
-        update: {
-          count: { increment: 1 },
-          updatedAt: new Date(),
-        },
-        create: {
-          query,
-          count: 1,
-        },
-      });
-
       const users = await ctx.db.user.findMany({
         where: {
           AND: [
@@ -438,18 +507,6 @@ export const searchRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { query, limit = 21, cursor }, ctx }) => {
-      await ctx.db.searchQuery.upsert({
-        where: { query },
-        update: {
-          count: { increment: 1 },
-          updatedAt: new Date(),
-        },
-        create: {
-          query,
-          count: 1,
-        },
-      });
-
       const posts = await ctx.db.post.findMany({
         where: {
           AND: [
