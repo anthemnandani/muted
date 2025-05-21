@@ -49,7 +49,7 @@ export function EmojiPicker({ onChange, isComment = false }: EmojiPickerProps) {
           ref={pickerRef}
           className={cn(
             'absolute z-[9999] top-[100px] left-[75px]',
-            isComment && '-top-[455px]'
+            isComment && '-top-[455px] -left-[250px]'
           )}
           onClick={(e) => e.stopPropagation()}
         >
