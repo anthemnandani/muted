@@ -79,7 +79,7 @@ const NewPost = () => {
           />
         </DialogHeader>
 
-        <Card className='relative rounded-2xl border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6'>
+        <Card className='relative rounded-2xl border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6 size-[500px]'>
           {isValidating && (
             <Progress
               value={progress}

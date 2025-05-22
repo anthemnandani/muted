@@ -325,6 +325,11 @@ export type MediaFile = {
   preview: string;
   id: string;
   type: 'image' | 'video';
+  aspectRatio?: 'original' | '1:1' | '4:5' | '16:9';
+  originalDimensions?: {
+    width: number;
+    height: number;
+  };
 };
 
 export interface PreviewStepProps {
@@ -823,3 +828,8 @@ export type UserSuggestion = {
   fullName: string | null;
   image: string | null;
 };
+
+export interface AspectRatioSelectorProps {
+  selectedRatio: string;
+  onChange: (ratio: string) => void;
+}

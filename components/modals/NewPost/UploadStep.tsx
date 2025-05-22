@@ -11,10 +11,10 @@ const UploadStep = ({
   isDragActive,
 }: UploadStepProps) => {
   return (
-    <div className='p-6'>
+    <div className='p-6 w-full h-full'>
       <div
         {...getRootProps()}
-        className='flex flex-col items-center justify-center p-6 transition-colors'
+        className='w-full h-full flex-col-center transition-colors'
       >
         <input {...getInputProps()} />
         <Icons.media

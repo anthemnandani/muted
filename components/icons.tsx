@@ -279,6 +279,62 @@ export const Icons = {
       />
     </svg>
   ),
+  crop: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
+    <svg
+      aria-label='Select crop'
+      fill='currentColor'
+      height='16'
+      role='img'
+      viewBox='0 0 24 24'
+      width='16'
+      {...props}
+    >
+      <title>Select crop</title>
+      <path d='M10 20H4v-6a1 1 0 0 0-2 0v7a1 1 0 0 0 1 1h7a1 1 0 0 0 0-2ZM20.999 2H14a1 1 0 0 0 0 2h5.999v6a1 1 0 0 0 2 0V3a1 1 0 0 0-1-1Z'></path>
+    </svg>
+  ),
+  square: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
+    <svg
+      aria-label='Crop square icon'
+      fill='currentColor'
+      height='24'
+      role='img'
+      viewBox='0 0 24 24'
+      width='24'
+      {...props}
+    >
+      <title>Crop square icon</title>
+      <path d='M19 23H5a4.004 4.004 0 0 1-4-4V5a4.004 4.004 0 0 1 4-4h14a4.004 4.004 0 0 1 4 4v14a4.004 4.004 0 0 1-4 4ZM5 3a2.002 2.002 0 0 0-2 2v14a2.002 2.002 0 0 0 2 2h14a2.002 2.002 0 0 0 2-2V5a2.002 2.002 0 0 0-2-2Z'></path>
+    </svg>
+  ),
+  portrait: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
+    <svg
+      aria-label='Crop portrait icon'
+      fill='currentColor'
+      height='24'
+      role='img'
+      viewBox='0 0 24 24'
+      width='24'
+      {...props}
+    >
+      <title>Crop portrait icon</title>
+      <path d='M16 23H8a4.004 4.004 0 0 1-4-4V5a4.004 4.004 0 0 1 4-4h8a4.004 4.004 0 0 1 4 4v14a4.004 4.004 0 0 1-4 4ZM8 3a2.002 2.002 0 0 0-2 2v14a2.002 2.002 0 0 0 2 2h8a2.002 2.002 0 0 0 2-2V5a2.002 2.002 0 0 0-2-2Z'></path>
+    </svg>
+  ),
+  landscape: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
+    <svg
+      aria-label='Crop landscape icon'
+      fill='currentColor'
+      height='24'
+      role='img'
+      viewBox='0 0 24 24'
+      width='24'
+      {...props}
+    >
+      <title>Crop landscape icon</title>
+      <path d='M19 20H5a4.004 4.004 0 0 1-4-4V8a4.004 4.004 0 0 1 4-4h14a4.004 4.004 0 0 1 4 4v8a4.004 4.004 0 0 1-4 4ZM5 6a2.002 2.002 0 0 0-2 2v8a2.002 2.002 0 0 0 2 2h14a2.002 2.002 0 0 0 2-2V8a2.002 2.002 0 0 0-2-2Z'></path>
+    </svg>
+  ),
   profile: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
     <svg
       aria-label='Profile'
