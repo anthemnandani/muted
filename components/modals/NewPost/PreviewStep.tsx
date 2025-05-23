@@ -1,12 +1,8 @@
 'use client';
 
-import { Icons } from '@/components/icons';
-import { Button } from '@/components/ui/button';
-import { PreviewStepProps } from '@/lib/types';
+import { type AspectRatio, PreviewStepProps } from '@/lib/types';
 import useFileStore from '@/store/fileStore';
 import usePostDialog from '@/store/postDialog';
-import { Plus } from 'lucide-react';
-import { useState } from 'react';
 import AspectRatioSelector from './AspectRatioSelector';
 import Gallery from './Gallery';
 import MainPreview from './MainPreview';
@@ -17,14 +13,7 @@ const PreviewStep = ({
   isDragActive,
 }: PreviewStepProps) => {
   const { mediaFiles, setMediaFiles, updateMediaFile } = useFileStore();
-  const [showRatioSelector, setShowRatioSelector] = useState(false);
-  const {
-    setStep,
-    currentMediaIndex,
-    setCurrentMediaIndex,
-    showGallery,
-    setShowGallery,
-  } = usePostDialog();
+  const { setStep, currentMediaIndex, setCurrentMediaIndex } = usePostDialog();
 
   const currentFile = mediaFiles[currentMediaIndex];
 
@@ -40,53 +29,30 @@ const PreviewStep = ({
     setMediaFiles(newFiles);
   };
 
-  const handleAspectRatioChange = (ratio: string) => {
+  const handleAspectRatioChange = (ratio: AspectRatio) => {
     updateMediaFile(currentFile.id, { aspectRatio: ratio });
   };
 
   return (
-    <div className='relative bg-[#121212] rounded-2xl overflow-hidden'>
+    <div className='relative bg-[#121212] rounded-lg overflow-hidden'>
       <div className='relative h-full'>
         <MainPreview mediaFiles={mediaFiles} />
+      </div>
 
-        <div className='absolute bottom-5 left-4 right-4 flex-between'>
-          <Button
-            variant='ghost'
-            size='icon'
-            className='rounded-full opacity-100 bg-[#1A1A1ACC] hover:opacity-70 transition-all duration-200 size-8'
-            onClick={() => setShowRatioSelector(!showRatioSelector)}
-          >
-            <Icons.crop className='size-4' />
-          </Button>
+      <div className='absolute bottom-5 left-4 right-4 flex-between'>
+        <AspectRatioSelector
+          selectedRatio={selectedRatio}
+          onChange={handleAspectRatioChange}
+        />
 
-          <Button
-            variant='ghost'
-            size='icon'
-            className='rounded-full opacity-100 bg-[#1A1A1ACC] hover:opacity-70 transition-all duration-200 size-8'
-            onClick={() => setShowGallery(!showGallery)}
-            title='Add more media'
-          >
-            <Plus className='size-4' />
-          </Button>
-        </div>
-
-        {showRatioSelector && (
-          <AspectRatioSelector
-            selectedRatio={selectedRatio}
-            onChange={handleAspectRatioChange}
-          />
-        )}
-
-        {showGallery && (
-          <Gallery
-            mediaFiles={mediaFiles}
-            setMediaFiles={setMediaFiles}
-            getRootProps={getRootProps}
-            getInputProps={getInputProps}
-            isDragActive={isDragActive}
-            onRemove={handleRemoveMedia}
-          />
-        )}
+        <Gallery
+          mediaFiles={mediaFiles}
+          setMediaFiles={setMediaFiles}
+          getRootProps={getRootProps}
+          getInputProps={getInputProps}
+          isDragActive={isDragActive}
+          onRemove={handleRemoveMedia}
+        />
       </div>
     </div>
   );

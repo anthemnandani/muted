@@ -1,4 +1,4 @@
-import type { ParentPostInfo, PostData, ReplyPostInfo } from '@/lib/types';
+import type { ParentPostInfo, PostData } from '@/lib/types';
 import { PostPrivacy } from '@prisma/client';
 import { create } from 'zustand';
 
@@ -17,6 +17,8 @@ interface ToggleState {
   setCurrentMediaIndex: (index: number) => void;
   showGallery: boolean;
   setShowGallery: (show: boolean) => void;
+  showRatioSelector: boolean;
+  setShowRatioSelector: (show: boolean) => void;
   resetPostState: () => void;
 }
 
@@ -39,12 +41,15 @@ const usePostDialog = create<ToggleState>((set) => ({
   setCurrentMediaIndex: (index) => set({ currentMediaIndex: index }),
   showGallery: false,
   setShowGallery: (show) => set({ showGallery: show }),
+  showRatioSelector: false,
+  setShowRatioSelector: (show) => set({ showRatioSelector: show }),
   resetPostState: () =>
     set({
       quoteInfo: null,
       editPostInfo: null,
       currentMediaIndex: 0,
       showGallery: false,
+      showRatioSelector: false,
       step: 'upload',
       postData: {
         privacy: PostPrivacy.ANYONE,

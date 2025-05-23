@@ -1,5 +1,12 @@
 'use client';
 
+import { Icons } from '@/components/icons';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { UPLOAD_CONSTRAINTS } from '@/lib/constants';
 import { GalleryProps } from '@/lib/types';
 import usePostDialog from '@/store/postDialog';
@@ -56,49 +63,71 @@ const Gallery = ({
     setMediaFiles(newItems);
   };
 
+  const { showGallery, setShowGallery, showRatioSelector } = usePostDialog();
+
   return (
-    <div className='absolute bottom-16 right-4 p-4 bg-neutral-800 shadow-2xl rounded-lg'>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext
-          items={mediaFiles.map((file) => file.id)}
-          strategy={rectSortingStrategy}
+    <DropdownMenu open={showGallery} onOpenChange={setShowGallery}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant='ghost'
+          size='icon'
+          className='rounded-full opacity-100 bg-[#1A1A1ACC] hover:opacity-70 transition-all duration-200 size-8'
+          title='Add more media'
+          disabled={showRatioSelector}
         >
-          <div className='grid grid-cols-3 gap-2 max-w-[240px]'>
-            {mediaFiles.map((file, index) => (
-              <SortableMedia
-                key={file.id}
-                file={file}
-                index={index}
-                isActive={currentMediaIndex === index}
-                onClick={() => setCurrentMediaIndex(index)}
-                onRemove={onRemove}
-              />
-            ))}
-            {mediaFiles.length < UPLOAD_CONSTRAINTS.MAX_ITEMS && (
-              <div className='aspect-square w-[72px] h-[72px] rounded-md'>
-                <div {...getRootProps()} className='h-full w-full'>
-                  <input {...getInputProps()} />
-                  <div className='h-full w-full rounded-md border border-neutral-600 bg-zinc-800 hover:bg-zinc-800/75 transition-all flex-center cursor-pointer'>
-                    {isDragActive ? (
-                      <div className='absolute inset-0 bg-primary-blue/10 rounded-md border-2 border-primary-blue border-dashed' />
-                    ) : (
-                      <Plus className='size-6 text-neutral-400' />
-                    )}
+          <Icons.mediaGallery className='size-4' />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        side='top'
+        align='end'
+        sideOffset={8}
+        className='z-[9999] w-auto p-0 bg-transparent border-none shadow-none'
+      >
+        <div className='p-4 bg-neutral-800 shadow-2xl rounded-lg'>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={mediaFiles.map((file) => file.id)}
+              strategy={rectSortingStrategy}
+            >
+              <div className='grid grid-cols-3 gap-2 max-w-[240px]'>
+                {mediaFiles.map((file, index) => (
+                  <SortableMedia
+                    key={file.id}
+                    file={file}
+                    index={index}
+                    isActive={currentMediaIndex === index}
+                    onClick={() => setCurrentMediaIndex(index)}
+                    onRemove={onRemove}
+                  />
+                ))}
+                {mediaFiles.length < UPLOAD_CONSTRAINTS.MAX_ITEMS && (
+                  <div className='aspect-square w-[72px] h-[72px] rounded-md'>
+                    <div {...getRootProps()} className='h-full w-full'>
+                      <input {...getInputProps()} />
+                      <div className='h-full w-full rounded-md border border-neutral-600 bg-zinc-800 hover:bg-zinc-800/75 transition-all flex-center cursor-pointer'>
+                        {isDragActive ? (
+                          <div className='absolute inset-0 bg-primary-blue/10 rounded-md border-2 border-primary-blue border-dashed' />
+                        ) : (
+                          <Plus className='size-6 text-neutral-400' />
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
-            )}
+            </SortableContext>
+          </DndContext>
+          <div className='mt-2 text-xs text-center text-neutral-400'>
+            Click and drag to reorder
           </div>
-        </SortableContext>
-      </DndContext>
-      <div className='mt-2 text-xs text-center text-neutral-400'>
-        Click and drag to reorder
-      </div>
-    </div>
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 

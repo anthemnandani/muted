@@ -320,16 +320,20 @@ export type Collection = {
   isDefault: boolean;
 };
 
+export type AspectRatio = 'original' | '1:1' | '4:5' | '16:9' | '9:16';
+
 export type MediaFile = {
   file: File;
   preview: string;
   id: string;
   type: 'image' | 'video';
-  aspectRatio?: 'original' | '1:1' | '4:5' | '16:9';
+  aspectRatio?: AspectRatio;
   originalDimensions?: {
     width: number;
     height: number;
   };
+  originalWidth?: number;
+  originalHeight?: number;
 };
 
 export interface PreviewStepProps {
@@ -830,6 +834,6 @@ export type UserSuggestion = {
 };
 
 export interface AspectRatioSelectorProps {
-  selectedRatio: string;
-  onChange: (ratio: string) => void;
+  selectedRatio: AspectRatio;
+  onChange: (ratio: AspectRatio) => void;
 }

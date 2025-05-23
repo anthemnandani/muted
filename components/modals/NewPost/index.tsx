@@ -50,7 +50,6 @@ const NewPost = () => {
     setOpenDialog(open);
 
     if (!open) {
-      console.log('Resetting post');
       setMediaFiles([]);
       resetPostState();
     }
@@ -74,16 +73,17 @@ const NewPost = () => {
           <PostDialogTitle
             hasError={!!error}
             discardPost={() => {
+              setMediaFiles([]);
               resetPostState();
             }}
           />
         </DialogHeader>
 
-        <Card className='relative rounded-2xl border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6 size-[500px]'>
+        <Card className='relative rounded-lg border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6 size-[500px]'>
           {isValidating && (
             <Progress
               value={progress}
-              className='rounded-2xl absolute top-0 left-2 right-2 h-1 w-full animate-progress bg-primary-blue'
+              className='rounded-lg absolute top-0 left-2 right-2 h-1 w-full animate-progress bg-primary-blue'
             />
           )}
           {error ? (
