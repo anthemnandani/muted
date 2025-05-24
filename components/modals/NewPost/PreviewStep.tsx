@@ -1,6 +1,7 @@
 'use client';
 
 import { type AspectRatio, PreviewStepProps } from '@/lib/types';
+import { cn } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
 import usePostDialog from '@/store/postDialog';
 import AspectRatioSelector from './AspectRatioSelector';
@@ -13,7 +14,8 @@ const PreviewStep = ({
   isDragActive,
 }: PreviewStepProps) => {
   const { mediaFiles, setMediaFiles, updateMediaFile } = useFileStore();
-  const { setStep, currentMediaIndex, setCurrentMediaIndex } = usePostDialog();
+  const { setStep, currentMediaIndex, setCurrentMediaIndex, step } =
+    usePostDialog();
 
   const currentFile = mediaFiles[currentMediaIndex];
 
@@ -34,26 +36,33 @@ const PreviewStep = ({
   };
 
   return (
-    <div className='relative bg-[#121212] rounded-lg overflow-hidden'>
+    <div
+      className={cn(
+        'relative w-full bg-[#121212] overflow-hidden rounded-lg',
+        step === 'post' && 'rounded-r-none'
+      )}
+    >
       <div className='relative h-full'>
         <MainPreview mediaFiles={mediaFiles} />
       </div>
 
-      <div className='absolute bottom-5 left-4 right-4 flex-between'>
-        <AspectRatioSelector
-          selectedRatio={selectedRatio}
-          onChange={handleAspectRatioChange}
-        />
+      {step !== 'post' && (
+        <div className='absolute bottom-5 left-4 right-4 flex-between'>
+          <AspectRatioSelector
+            selectedRatio={selectedRatio}
+            onChange={handleAspectRatioChange}
+          />
 
-        <Gallery
-          mediaFiles={mediaFiles}
-          setMediaFiles={setMediaFiles}
-          getRootProps={getRootProps}
-          getInputProps={getInputProps}
-          isDragActive={isDragActive}
-          onRemove={handleRemoveMedia}
-        />
-      </div>
+          <Gallery
+            mediaFiles={mediaFiles}
+            setMediaFiles={setMediaFiles}
+            getRootProps={getRootProps}
+            getInputProps={getInputProps}
+            isDragActive={isDragActive}
+            onRemove={handleRemoveMedia}
+          />
+        </div>
+      )}
     </div>
   );
 };

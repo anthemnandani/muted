@@ -12,6 +12,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import useDevice from '@/hooks/useDevice';
 import { useFileUpload } from '@/hooks/useFileUpload';
+import { cn } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
 import usePostDialog from '@/store/postDialog';
 import React from 'react';
@@ -68,8 +69,18 @@ const NewPost = () => {
           </React.Fragment>
         )}
       </DialogTrigger>
-      <DialogContent className='relativew-full border-none bg-transparent shadow-none outline-none'>
-        <DialogHeader>
+      <DialogContent
+        className={cn(
+          'w-full border-none bg-transparent shadow-none outline-none'
+        )}
+      >
+        <DialogHeader
+          className={cn(
+            'w-[500px]',
+            step === 'post' &&
+              '-translate-x-[150px] w-full transition-all duration-500 ease-in-out'
+          )}
+        >
           <PostDialogTitle
             hasError={!!error}
             discardPost={() => {
@@ -78,36 +89,55 @@ const NewPost = () => {
             }}
           />
         </DialogHeader>
+        <div className='flex'>
+          <Card
+            className={cn(
+              'relative border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6 size-[500px] transition-all duration-500 ease-in-out',
+              step === 'post'
+                ? 'rounded-l-lg rounded-r-none -translate-x-[150px]'
+                : 'rounded-lg'
+            )}
+          >
+            {isValidating && (
+              <Progress
+                value={progress}
+                className='rounded-lg absolute top-0 left-2 right-2 h-1 w-full animate-progress bg-primary-blue'
+              />
+            )}
+            {error && (
+              <UploadError
+                title={error.title}
+                message={error.message}
+                onRetry={() => setError(null)}
+              />
+            )}
+            {step === 'upload' && (
+              <UploadStep
+                getRootProps={getRootProps}
+                getInputProps={getInputProps}
+                isDragActive={isDragActive}
+              />
+            )}
+            {(step === 'preview' || step === 'post') && (
+              <PreviewStep
+                getRootProps={getRootProps}
+                getInputProps={getInputProps}
+                isDragActive={isDragActive}
+              />
+            )}
+          </Card>
 
-        <Card className='relative rounded-lg border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6 size-[500px]'>
-          {isValidating && (
-            <Progress
-              value={progress}
-              className='rounded-lg absolute top-0 left-2 right-2 h-1 w-full animate-progress bg-primary-blue'
-            />
-          )}
-          {error ? (
-            <UploadError
-              title={error.title}
-              message={error.message}
-              onRetry={() => setError(null)}
-            />
-          ) : step === 'upload' ? (
-            <UploadStep
-              getRootProps={getRootProps}
-              getInputProps={getInputProps}
-              isDragActive={isDragActive}
-            />
-          ) : step === 'preview' ? (
-            <PreviewStep
-              getRootProps={getRootProps}
-              getInputProps={getInputProps}
-              isDragActive={isDragActive}
-            />
-          ) : (
+          <div
+            className={cn(
+              'relative -z-10 border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6 w-[340px] rounded-r-lg transition-all duration-500 ease-in-out',
+              step === 'post'
+                ? '-translate-x-[150px] opacity-1'
+                : '-translate-x-[300px] opacity-0'
+            )}
+          >
             <CreatePost />
-          )}
-        </Card>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

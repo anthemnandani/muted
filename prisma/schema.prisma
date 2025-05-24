@@ -70,6 +70,7 @@ model Post {
   repliesCount   Int            @default(0)
   path           String?
   hideLikes      Boolean        @default(false)
+  hideComments   Boolean        @default(false)
   hiddenBy       HiddenPost[]
   lastEditedAt   DateTime?
   linkPreviewUrl String?

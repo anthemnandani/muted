@@ -45,6 +45,16 @@ const PostDialogTitle = ({ hasError, discardPost }: PostDialogTitleProps) => {
           Next
         </span>
       )}
+      {step === 'post' && !hasError && (
+        <span
+          className='text-primary-blue hover:text-white transition-colors duration-150 text-base font-normal cursor-pointer'
+          onClick={() => {
+            setStep('post');
+          }}
+        >
+          Share
+        </span>
+      )}
     </Title>
   );
 };

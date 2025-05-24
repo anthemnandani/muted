@@ -73,13 +73,7 @@ const CreatePost = () => {
   };
 
   return (
-    <div className='max-h-[calc(100vh-100px)] overflow-y-auto'>
-      {/* {isCheckingPermissions ? (
-        <div className='flex-center py-3.5 px-4'>
-          <Icons.loading className='size-8' />
-        </div>
-      ) : ( */}
-
+    <div className='overflow-y-auto'>
       <div
         className={cn(
           'p-6',

@@ -25,7 +25,6 @@ const MainPreview = ({ mediaFiles }: { mediaFiles: MediaFile[] }) => {
       videoRef.current.currentTime = 0;
       videoRef.current.play().catch(console.error);
 
-      // Get video dimensions when metadata loads
       const handleLoadedMetadata = () => {
         if (videoRef.current) {
           setVideoDimensions({
@@ -62,7 +61,6 @@ const MainPreview = ({ mediaFiles }: { mediaFiles: MediaFile[] }) => {
     const maxWidth = 500;
     const maxHeight = 500;
 
-    // Get original dimensions based on media type
     const originalDimensions =
       currentFile?.type === 'video' ? videoDimensions : imageDimensions;
 
@@ -96,17 +94,14 @@ const MainPreview = ({ mediaFiles }: { mediaFiles: MediaFile[] }) => {
         targetRatio = 1;
     }
 
-    // Special handling for videos with mismatched orientations
     if (currentFile?.type === 'video' && originalDimensions) {
       const originalRatio =
         originalDimensions.width / originalDimensions.height;
 
-      // Landscape video with 9:16 ratio - take full width
       if (originalRatio > 1 && aspectRatio === '9:16') {
         return { width: maxWidth, height: maxWidth / targetRatio };
       }
 
-      // Portrait video with 16:9 ratio - take full height
       if (originalRatio < 1 && aspectRatio === '16:9') {
         return { width: maxHeight * targetRatio, height: maxHeight };
       }
@@ -128,11 +123,9 @@ const MainPreview = ({ mediaFiles }: { mediaFiles: MediaFile[] }) => {
   const aspectRatio = currentFile?.aspectRatio || '1:1';
   const dimensions = getPreviewDimensions(aspectRatio);
 
-  // Determine object-fit for videos based on original aspect ratio
   const getVideoObjectFit = () => {
     if (currentFile?.type !== 'video') return 'object-cover';
 
-    // Get original video aspect ratio
     const originalRatio = videoDimensions
       ? videoDimensions.width / videoDimensions.height
       : null;
@@ -140,15 +133,12 @@ const MainPreview = ({ mediaFiles }: { mediaFiles: MediaFile[] }) => {
     if (originalRatio === null) return 'object-cover';
 
     if (originalRatio < 1) {
-      // Portrait video: object-contain for 'original' and '9:16'
       return aspectRatio === 'original' || aspectRatio === '9:16'
         ? 'object-contain'
         : 'object-cover';
     } else if (originalRatio > 1) {
-      // Landscape video: object-contain for all options
       return 'object-contain';
     } else {
-      // Square video (ratio = 1): use object-cover
       return 'object-cover';
     }
   };
