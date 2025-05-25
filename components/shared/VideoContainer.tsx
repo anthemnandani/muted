@@ -15,7 +15,6 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
   createdAt,
   id,
   text,
-  hideLikes,
   reposts,
   pinned,
   setInView,
@@ -58,7 +57,6 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
         postId={id}
         createdAt={createdAt}
         text={text}
-        hideLikes={hideLikes}
         showControls={showControls}
         pinned={pinned}
         VolumeControls={

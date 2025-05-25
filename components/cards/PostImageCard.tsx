@@ -1,5 +1,6 @@
 import useMediaControls from '@/hooks/useMediaControls';
 import { PostImageCardProps } from '@/lib/types';
+import { getImageObjectFit } from '@/lib/utils';
 import Image from 'next/image';
 import React from 'react';
 import PostFooter from '../posts/PostFooter';
@@ -8,11 +9,11 @@ import MediaControls from '../shared/MediaControls';
 const PostImageCard: React.FC<PostImageCardProps> = ({
   image,
   originalDimensions,
+  aspectRatio,
   author,
   createdAt,
   id,
   text,
-  hideLikes,
   reposts,
   pinned,
   repostedBy,
@@ -24,9 +25,7 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
     showControlsTemporarily,
   } = useMediaControls();
 
-  const isVerticalImage = originalDimensions
-    ? originalDimensions.width / originalDimensions.height < 1
-    : false;
+  const objectFit = getImageObjectFit(aspectRatio!, originalDimensions);
 
   return (
     <div
@@ -48,7 +47,10 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
           fill
           loading='lazy'
           src={image}
-          className='object-contain'
+          className={objectFit}
+          style={{
+            objectPosition: 'center',
+          }}
         />
       </div>
       <MediaControls
@@ -56,13 +58,10 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
         postId={id}
         createdAt={createdAt}
         text={text}
-        hideLikes={hideLikes}
         showControls={showControls}
         pinned={pinned}
       />
-      {isVerticalImage && (
-        <div className='absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none' />
-      )}
+      <div className='absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none' />
       <PostFooter
         author={author}
         createdAt={createdAt}

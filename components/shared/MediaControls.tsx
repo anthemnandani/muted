@@ -9,7 +9,6 @@ const MediaControls: React.FC<MediaControlsProps> = ({
   postId,
   createdAt,
   text,
-  hideLikes,
   showControls,
   pinned,
   VolumeControls,
@@ -24,7 +23,6 @@ const MediaControls: React.FC<MediaControlsProps> = ({
           postId={postId}
           createdAt={createdAt}
           currentText={text ?? ''}
-          hideLikes={hideLikes}
           showControls={showControls}
           pinned={pinned}
         />

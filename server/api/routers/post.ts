@@ -16,7 +16,7 @@ import {
   getPostRepliesCount,
 } from '@/server/constants';
 import { createId } from '@paralleldrive/cuid2';
-import { NotificationType, PostPrivacy, ReportStatus } from '@prisma/client';
+import { NotificationType, PostPrivacy } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
 import { z } from 'zod';
@@ -61,6 +61,8 @@ export const postRouter = createTRPCRouter({
             image: z.string().nullable().optional(),
           })
           .optional(),
+        hideLikes: z.boolean().optional(),
+        turnOffComments: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -102,16 +104,23 @@ export const postRouter = createTRPCRouter({
         const postId = createId();
         const path = `/${postId}/`;
 
+        const mediaWithAspectRatio = input.media?.map((item) => ({
+          ...item,
+          aspectRatio: item.aspectRatio || '1:1',
+        }));
+
         const newpost = await prisma.post.create({
           data: {
             id: postId,
             text: filteredText,
             authorId: userId,
-            media: input.media,
+            media: mediaWithAspectRatio,
             privacy: input.privacy,
             quoteId: input.quoteId,
             path,
             linkPreviewUrl: linkPreview?.url,
+            hideLikes: input.hideLikes,
+            turnOffComments: input.turnOffComments,
             hashtags: {
               connectOrCreate: hashtags.map((tag) => {
                 const tagName = tag.slice(1);
@@ -261,6 +270,7 @@ export const postRouter = createTRPCRouter({
             quoteId: true,
             path: true,
             hideLikes: true,
+            turnOffComments: true,
             pinned: true,
             privacy: true,
             repliesCount: true,
@@ -799,7 +809,6 @@ export const postRouter = createTRPCRouter({
           parentPostId: true,
           quoteId: true,
           path: true,
-          hideLikes: true,
           pinned: true,
           privacy: true,
           reposts: {
@@ -892,7 +901,6 @@ export const postRouter = createTRPCRouter({
           parentPostId: true,
           quoteId: true,
           path: true,
-          hideLikes: true,
           pinned: true,
           privacy: true,
           reposts: {
@@ -1256,6 +1264,7 @@ export const postRouter = createTRPCRouter({
                   quoteId: true,
                   path: true,
                   hideLikes: true,
+                  turnOffComments: true,
                   pinned: true,
                   privacy: true,
                   replies: true,
@@ -1374,6 +1383,7 @@ export const postRouter = createTRPCRouter({
               quoteId: true,
               path: true,
               hideLikes: true,
+              turnOffComments: true,
               pinned: true,
               privacy: true,
               replies: true,
@@ -1504,6 +1514,7 @@ export const postRouter = createTRPCRouter({
           quoteId: true,
           path: true,
           hideLikes: true,
+          turnOffComments: true,
           pinned: true,
           privacy: true,
           author: {
@@ -1637,6 +1648,7 @@ export const postRouter = createTRPCRouter({
           quoteId: true,
           path: true,
           hideLikes: true,
+          turnOffComments: true,
           pinned: true,
           privacy: true,
           author: {

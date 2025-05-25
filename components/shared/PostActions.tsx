@@ -14,6 +14,7 @@ const PostActions: React.FC<PostActionsProps> = ({
   author,
   repliesCount,
   hideLikes,
+  turnOffComments,
   reposts,
   repostsCount,
   bookmarks,
@@ -30,11 +31,14 @@ const PostActions: React.FC<PostActionsProps> = ({
           likes: likes!,
         }}
         hideLikes={hideLikes}
+        authorId={author?.id}
       />
+
       <ReplyButton
         repliesCount={repliesCount}
         canInteract
         onCommentsToggle={onCommentsToggle}
+        turnOffComments={turnOffComments}
       />
 
       <BookmarkButton

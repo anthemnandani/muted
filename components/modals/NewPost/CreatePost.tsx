@@ -1,129 +1,108 @@
 'use client';
 
-import LinkPreviewCard from '@/components/cards/LinkPreviewCard';
-import { Icons } from '@/components/icons';
-import CreatePostInput from '@/components/inputs/CreatePostInput';
-import PostPrivacyMenu from '@/components/menus/PostPrivacyMenu';
-import { Button } from '@/components/ui/button';
-import useCreatePost from '@/hooks/useCreatePost';
-import useLinkPreview from '@/hooks/useLinkPreview';
-import { cn } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Switch } from '@/components/ui/switch';
+import useDevice from '@/hooks/useDevice';
 import usePostDialog from '@/store/postDialog';
-import { Check } from 'lucide-react';
-import Link from 'next/link';
-import React from 'react';
-import { toast } from 'sonner';
+import { useUser } from '@clerk/nextjs';
+import { useRef } from 'react';
+import { EmojiPicker } from '../EmojiPicker';
 
 const CreatePost = () => {
-  const { openDialog, setOpenDialog, quoteInfo, editPostInfo } =
-    usePostDialog();
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+  const { user } = useUser();
+  const maxLength = 2200;
 
-  // const { isLoading: isCheckingPermissions } = usePostInteraction({
-  //   authorId: replyPostInfo?.author?.id!,
-  //   privacy: replyPostInfo?.privacy!,
-  //   mentions: replyPostInfo?.mentions!,
-  // });
+  const { postData, setPostData } = usePostDialog();
 
-  const { postData, setPostData, isLoading, isEditing, handleMutation } =
-    useCreatePost();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { isMobile } = useDevice();
 
-  const { isLinkPreviewLoading } = useLinkPreview(postData?.text, setPostData);
-
-  const handleSubmit = (isEdit: boolean) => {
-    setOpenDialog(false);
-    const promise = handleMutation();
-
-    toast.promise(promise, {
-      loading: (
-        <div className='flex w-[270px] items-center justify-start gap-1.5 p-0'>
-          <div>
-            <Icons.loading className='size-8' />
-          </div>
-          {isEdit ? 'Editing...' : 'Posting...'}
-        </div>
-      ),
-      success: (data) => {
-        const postInfo = data?.isEdited ? data?.updatedPost : data?.createPost;
-        return (
-          <div className='flex-between w-[270px] p-0 '>
-            <div className='flex-center gap-1.5'>
-              <Check className='size-5' />
-              {data?.isEdited ? 'Edited' : 'Posted'}
-            </div>
-            <Link
-              href={`/${postInfo.author.username}/post/${postInfo.id}`}
-              className='hover:text-blue-900'
-            >
-              View
-            </Link>
-          </div>
-        );
-      },
-      error: 'Error',
-      richColors: true,
-    });
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setPostData({ ...postData, text: e.target.value });
   };
 
-  const handleFieldChange = (textValue: string) => {
+  const handleEmojiSelect = (emoji: string) => {
+    const cursorPosition = textareaRef.current?.selectionStart || 0;
+    const newText =
+      postData.text.slice(0, cursorPosition) +
+      emoji +
+      postData.text.slice(cursorPosition);
+
+    handleTextareaChange({
+      target: { value: newText },
+    } as React.ChangeEvent<HTMLTextAreaElement>);
+
+    if (!isMobile) {
+      setTimeout(() => {
+        if (textareaRef.current) {
+          const newPosition = cursorPosition + emoji.length;
+          textareaRef.current.selectionStart = newPosition;
+          textareaRef.current.selectionEnd = newPosition;
+          textareaRef.current.focus();
+        }
+      }, 0);
+    }
+  };
+
+  const handleSwitchChange = (key: 'hideLikes' | 'turnOffComments') => {
     setPostData({
       ...postData,
-      text: textValue,
+      [key]: !postData[key],
     });
   };
 
   return (
-    <div className='overflow-y-auto'>
-      <div
-        className={cn(
-          'p-6',
-          (postData.linkPreview || isLinkPreviewLoading) && '!pb-4'
-        )}
-      >
-        <CreatePostInput
-          isOpen={openDialog}
-          onTextareaChange={handleFieldChange}
-          quoteInfo={quoteInfo}
-          placeholder='Write a caption...'
-          textareaRef={textareaRef}
+    <div className='p-4'>
+      <div className='flex items-center space-x-3 mb-4'>
+        <Avatar className='size-7 rounded-full object-cover flex-center'>
+          <AvatarImage
+            src={user?.imageUrl ?? ''}
+            alt={user?.fullName ?? ''}
+            className='rounded-full w-full h-full object-cover'
+          />
+          <AvatarFallback className='flex-center'>
+            {user?.username?.slice(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <span className='font-medium text-white/90 text-sm truncate'>
+          {user?.username}
+        </span>
+      </div>
+      <div className='mb-4'>
+        <textarea
           value={postData.text}
-          setPostData={setPostData}
+          onChange={handleTextareaChange}
+          className='w-full h-48 bg-transparent text-white/90 placeholder-gray-400 resize-none focus:outline-none text-sm leading-relaxed overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent'
+          maxLength={maxLength}
+          ref={textareaRef}
+          autoFocus
         />
       </div>
 
-      {(postData.linkPreview || isLinkPreviewLoading) && (
-        <div className='mx-6'>
-          <LinkPreviewCard
-            url={postData?.linkPreview?.url!}
-            title={postData?.linkPreview?.title || ''}
-            description={postData?.linkPreview?.description || ''}
-            image={postData?.linkPreview?.image || ''}
-            isLoading={isLinkPreviewLoading}
-            onClose={() =>
-              setPostData((prev) => ({
-                ...prev,
-                linkPreview: null,
-              }))
-            }
+      <div className='flex-between mb-6 relative'>
+        <EmojiPicker onChange={handleEmojiSelect} />
+        <span className='text-xs text-gray-400'>
+          {postData.text.length}/{maxLength}
+        </span>
+      </div>
+      <div className='space-y-4'>
+        <div className='flex-between'>
+          <span className='text-sm text-white/90'>
+            Hide like count on this post
+          </span>
+          <Switch
+            checked={postData.hideLikes}
+            onCheckedChange={() => handleSwitchChange('hideLikes')}
           />
         </div>
-      )}
-      <div className='w-full flex-between p-6'>
-        <PostPrivacyMenu />
-        <Button
-          onClick={() => handleSubmit(!!editPostInfo)}
-          variant='ghost'
-          className='bg-transparent border border-border-dark dark:border-border-light rounded-lg text-[14px] leading-none flex-center hover:bg-transparent dark:hover:bg-transparent disabled:cursor-not-allowed disabled:pointer-events-auto'
-          disabled={postData?.text === '' || isLoading || isEditing}
-        >
-          {(isLoading || isEditing) && (
-            <Icons.spinner
-              className='mr-2 size-4 animate-spin'
-              aria-hidden='true'
-            />
-          )}
-          {editPostInfo ? 'Edit' : 'Post'}
-        </Button>
+
+        <div className='flex-between'>
+          <span className='text-sm text-white/90'>Turn off commenting</span>
+          <Switch
+            checked={postData.turnOffComments}
+            onCheckedChange={() => handleSwitchChange('turnOffComments')}
+          />
+        </div>
       </div>
     </div>
   );

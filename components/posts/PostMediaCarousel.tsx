@@ -1,9 +1,9 @@
 'use client';
 
-import { PostMediaCarouselProps } from '@/lib/types';
+import { AspectRatio, PostMediaCarouselProps } from '@/lib/types';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React from 'react';
-import type { Swiper as SwiperType } from 'swiper';
+import { type Swiper as SwiperType } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import PostImageCard from '../cards/PostImageCard';
 import PostVideoCard from '../cards/PostVideoCard';
@@ -17,7 +17,6 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
   createdAt,
   postId,
   text,
-  hideLikes,
   pinned,
   reposts,
   repostedBy,
@@ -50,7 +49,6 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                 createdAt={createdAt}
                 text={text}
                 reposts={reposts}
-                hideLikes={hideLikes}
                 pinned={pinned}
                 repostedBy={repostedBy}
               />
@@ -58,12 +56,12 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
               <PostImageCard
                 image={item.fileUrl}
                 originalDimensions={item.originalDimensions}
+                aspectRatio={item.aspectRatio as AspectRatio}
                 author={author}
                 createdAt={createdAt}
                 id={postId}
                 text={text}
                 reposts={reposts}
-                hideLikes={hideLikes}
                 pinned={pinned}
                 repostedBy={repostedBy}
               />

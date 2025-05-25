@@ -49,33 +49,33 @@ enum Privacy {
 }
 
 model Post {
-  id             String         @id @default(cuid())
-  createdAt      DateTime       @default(now())
-  author         User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId       String
-  text           String?
-  media          Json?
-  likes          Like[]
-  parentPostId   String?
-  parentPost     Post?          @relation("rootPost", fields: [parentPostId], references: [id], onDelete: Cascade)
-  replies        Post[]         @relation("rootPost")
-  notification   Notification[]
-  reposts        Repost[]
-  quoteId        String?
-  privacy        PostPrivacy    @default(ANYONE)
-  reports        Report[]
-  bookmarks      Bookmark[]
-  mentions       Mention[]
-  hashtags       Hashtag[]      @relation("PostHashtags")
-  repliesCount   Int            @default(0)
-  path           String?
-  hideLikes      Boolean        @default(false)
-  hideComments   Boolean        @default(false)
-  hiddenBy       HiddenPost[]
-  lastEditedAt   DateTime?
-  linkPreviewUrl String?
-  linkPreview    LinkPreview?   @relation(fields: [linkPreviewUrl], references: [url])
-  pinned         Boolean        @default(false)
+  id              String         @id @default(cuid())
+  createdAt       DateTime       @default(now())
+  author          User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId        String
+  text            String?
+  media           Json?
+  likes           Like[]
+  parentPostId    String?
+  parentPost      Post?          @relation("rootPost", fields: [parentPostId], references: [id], onDelete: Cascade)
+  replies         Post[]         @relation("rootPost")
+  notification    Notification[]
+  reposts         Repost[]
+  quoteId         String?
+  privacy         PostPrivacy    @default(ANYONE)
+  reports         Report[]
+  bookmarks       Bookmark[]
+  mentions        Mention[]
+  hashtags        Hashtag[]      @relation("PostHashtags")
+  repliesCount    Int            @default(0)
+  path            String?
+  hideLikes       Boolean        @default(false)
+  turnOffComments Boolean        @default(false)
+  hiddenBy        HiddenPost[]
+  lastEditedAt    DateTime?
+  linkPreviewUrl  String?
+  linkPreview     LinkPreview?   @relation(fields: [linkPreviewUrl], references: [url])
+  pinned          Boolean        @default(false)
 
   @@unique([createdAt, id])
   @@index([linkPreviewUrl])

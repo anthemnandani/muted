@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { MediaFile } from '@/lib/types';
+import { getVideoObjectFit } from '@/lib/utils';
 import usePostDialog from '@/store/postDialog';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
@@ -10,14 +11,20 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 const MainPreview = ({ mediaFiles }: { mediaFiles: MediaFile[] }) => {
   const { currentMediaIndex, setCurrentMediaIndex } = usePostDialog();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [imageDimensions, setImageDimensions] = useState<{
-    width: number;
-    height: number;
-  } | null>(null);
-  const [videoDimensions, setVideoDimensions] = useState<{
-    width: number;
-    height: number;
-  } | null>(null);
+  const [imageDimensions, setImageDimensions] = useState<
+    | {
+        width: number;
+        height: number;
+      }
+    | undefined
+  >(undefined);
+  const [videoDimensions, setVideoDimensions] = useState<
+    | {
+        width: number;
+        height: number;
+      }
+    | undefined
+  >(undefined);
   const currentFile = mediaFiles[currentMediaIndex];
 
   useEffect(() => {
@@ -45,7 +52,7 @@ const MainPreview = ({ mediaFiles }: { mediaFiles: MediaFile[] }) => {
         }
       };
     }
-  }, [currentMediaIndex, currentFile?.type]);
+  }, [currentFile]);
 
   useEffect(() => {
     if (currentFile?.type === 'image' && currentFile.preview) {
@@ -55,7 +62,7 @@ const MainPreview = ({ mediaFiles }: { mediaFiles: MediaFile[] }) => {
       };
       img.src = currentFile.preview;
     }
-  }, [currentFile?.preview, currentFile?.type]);
+  }, [currentFile]);
 
   const getPreviewDimensions = (aspectRatio: string) => {
     const maxWidth = 500;
@@ -123,28 +130,10 @@ const MainPreview = ({ mediaFiles }: { mediaFiles: MediaFile[] }) => {
   const aspectRatio = currentFile?.aspectRatio || '1:1';
   const dimensions = getPreviewDimensions(aspectRatio);
 
-  const getVideoObjectFit = () => {
-    if (currentFile?.type !== 'video') return 'object-cover';
-
-    const originalRatio = videoDimensions
-      ? videoDimensions.width / videoDimensions.height
-      : null;
-
-    if (originalRatio === null) return 'object-cover';
-
-    if (originalRatio < 1) {
-      return aspectRatio === 'original' || aspectRatio === '9:16'
-        ? 'object-contain'
-        : 'object-cover';
-    } else if (originalRatio > 1) {
-      return 'object-contain';
-    } else {
-      return 'object-cover';
-    }
-  };
+  const objectFit = getVideoObjectFit(aspectRatio, videoDimensions);
 
   return (
-    <div className='relative flex-center size-[500px] bg-[#121212]'>
+    <div className='relative flex-center size-[500px]'>
       {currentFile && (
         <Fragment>
           {currentFile.type === 'image' ? (
@@ -168,7 +157,7 @@ const MainPreview = ({ mediaFiles }: { mediaFiles: MediaFile[] }) => {
             <video
               ref={videoRef}
               src={currentFile.preview}
-              className={`rounded-lg ${getVideoObjectFit()}`}
+              className={`rounded-lg ${objectFit}`}
               style={{
                 width: dimensions.width,
                 height: dimensions.height,

@@ -1,21 +1,23 @@
 'use client';
 
 import useLike from '@/hooks/useLike';
-import { PostProps } from '@/lib/types';
+import { LikeButtonProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { useUser } from '@clerk/nextjs';
 import React from 'react';
 import { Icons } from '../icons';
 
-interface LikeButtonProps {
-  likeInfo: Pick<PostProps, 'id' | 'likes' | 'likesCount'>;
-  hideLikes?: boolean;
-}
-
-const LikeButton: React.FC<LikeButtonProps> = ({ likeInfo, hideLikes }) => {
+const LikeButton: React.FC<LikeButtonProps> = ({
+  likeInfo,
+  authorId,
+  hideLikes,
+}) => {
   const { isLikedByMe, likesCount, isLoading, toggleLike } = useLike({
     initialLikesCount: likeInfo.likesCount,
     likes: likeInfo.likes,
   });
+
+  const { user } = useUser();
 
   return (
     <div className='flex flex-col items-center'>
@@ -33,11 +35,12 @@ const LikeButton: React.FC<LikeButtonProps> = ({ likeInfo, hideLikes }) => {
           })}
         />
       </button>
-      {/* {likesCount > 0 && !hideLikes && ( */}
-      <strong className={cn('text-[13px] leading-4 text-center text-gray-2')}>
-        {likesCount}
-      </strong>
-      {/* )} */}
+
+      {(!hideLikes || user?.id === authorId) && (
+        <strong className={cn('text-[13px] leading-4 text-center text-gray-2')}>
+          {likesCount}
+        </strong>
+      )}
     </div>
   );
 };

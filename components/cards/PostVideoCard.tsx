@@ -14,7 +14,6 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   author,
   createdAt,
   text,
-  hideLikes,
   reposts,
   pinned,
   repostedBy,
@@ -154,7 +153,6 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
       setInView={setInView}
       id={postId}
       text={text}
-      hideLikes={hideLikes}
       pinned={pinned}
       reposts={reposts}
       repostedBy={repostedBy}

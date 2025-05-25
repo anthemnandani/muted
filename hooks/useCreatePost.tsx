@@ -1,44 +1,26 @@
-import type { PostData, PostMedia } from '@/lib/types';
-import {
-  getImageDimensions,
-  getMediaAspectRatio,
-  getVideoDimensions,
-} from '@/lib/utils';
+import { type PostMedia } from '@/lib/types';
+import { getImageDimensions, getVideoDimensions } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
-import usePost from '@/store/post';
 import usePostDialog from '@/store/postDialog';
 import { api } from '@/trpc/react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { useBunnyUpload } from './useBunnyUpload';
 
 const useCreatePost = () => {
-  const { postPrivacy } = usePost();
   const { mediaFiles, setMediaFiles } = useFileStore();
   const { uploadToStorage, uploadToStream } = useBunnyUpload();
-  const { quoteInfo, editPostInfo, resetPostState } = usePostDialog();
-
-  const [postData, setPostData] = useState<PostData>({
-    privacy: postPrivacy,
-    text: '',
-    linkPreview: null,
-  });
+  const { quoteInfo, editPostInfo, resetPostState, setPostData, postData } =
+    usePostDialog();
 
   const trpcUtils = api.useUtils();
 
   useEffect(() => {
-    setPostData((prev) => ({
-      ...prev,
-      privacy: postPrivacy,
-    }));
-  }, [postPrivacy]);
-
-  useEffect(() => {
     if (editPostInfo) {
-      setPostData((prev) => ({
-        ...prev,
+      setPostData({
+        ...postData,
         text: editPostInfo.text,
-      }));
+      });
     }
   }, [editPostInfo]);
 
@@ -97,28 +79,25 @@ const useCreatePost = () => {
 
           const file = mediaFile.file;
 
-          // Handle Videos
           if (file.type.startsWith('video/')) {
             const dimensions = await getVideoDimensions(file);
-            const aspectRatio = getMediaAspectRatio(dimensions);
             const { fileUrl, thumbnailUrl } = await uploadToStream(file);
 
             return {
               fileType: 'video',
               fileUrl,
               thumbnailUrl,
-              aspectRatio,
+              aspectRatio: mediaFile.aspectRatio,
               originalDimensions: dimensions,
             };
           } else {
             const dimensions = await getImageDimensions(file);
-            const aspectRatio = getMediaAspectRatio(dimensions);
             const fileUrl = await uploadToStorage(file);
 
             return {
               fileType: 'image',
               fileUrl,
-              aspectRatio,
+              aspectRatio: mediaFile.aspectRatio,
               originalDimensions: dimensions,
             };
           }
@@ -154,6 +133,8 @@ const useCreatePost = () => {
           quoteId: quoteInfo?.id,
           postAuthor: quoteInfo?.author.id,
           linkPreview: postData.linkPreview ?? undefined,
+          hideLikes: postData.hideLikes,
+          turnOffComments: postData.turnOffComments,
         });
 
     return promise as any;

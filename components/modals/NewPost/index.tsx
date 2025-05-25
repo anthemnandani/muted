@@ -92,7 +92,7 @@ const NewPost = () => {
         <div className='flex'>
           <Card
             className={cn(
-              'relative border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6 size-[500px] transition-all duration-500 ease-in-out',
+              'relative border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6 size-[500px] transition-all duration-500 ease-in-out z-10',
               step === 'post'
                 ? 'rounded-l-lg rounded-r-none -translate-x-[150px]'
                 : 'rounded-lg'
@@ -129,7 +129,7 @@ const NewPost = () => {
 
           <div
             className={cn(
-              'relative -z-10 border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6 w-[340px] rounded-r-lg transition-all duration-500 ease-in-out',
+              'relative border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6 w-[340px] rounded-r-lg transition-all duration-500 ease-in-out',
               step === 'post'
                 ? '-translate-x-[150px] opacity-1'
                 : '-translate-x-[300px] opacity-0'

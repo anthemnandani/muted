@@ -1,7 +1,6 @@
 'use client';
 
 import useCopyLink from '@/hooks/useCopyLink';
-import useHideLikes from '@/hooks/useHideLikes';
 import useTimeLeft from '@/hooks/useTimeLeft';
 import useToggleHidePost from '@/hooks/useToggleHidePost';
 import useToggleMuteUser from '@/hooks/useToggleMuteUser';
@@ -30,7 +29,6 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
   postId,
   createdAt,
   currentText,
-  hideLikes,
   pinned,
   showControls,
 }) => {
@@ -40,11 +38,6 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
   const { isMutedUser } = useMutedUsers();
   const [menuOpen, setMenuOpen] = useState(false);
   const { openPostReport } = useReportStore();
-
-  const { handleToggleHideLikes, isLoading } = useHideLikes({
-    postId,
-    hideLikes,
-  });
 
   const { handleTogglePinPost, isLoading: isLoadingPinPost } = useTogglePinPost(
     {
@@ -152,14 +145,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
               disabled={isLoadingPinPost}
             />
             <Separator />
-            <MenuItem
-              icon={Icons.hide}
-              label={hideLikes ? 'Unhide like counts' : 'Hide like counts'}
-              onClick={handleToggleHideLikes}
-              disabled={isLoading}
-            />
 
-            <Separator />
             <DeletePost postId={postId} />
           </Fragment>
         )}

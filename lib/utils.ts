@@ -1,5 +1,5 @@
-import type { User } from '@clerk/nextjs/server';
-import type { UserResource } from '@clerk/types';
+import { type User } from '@clerk/nextjs/server';
+import { type UserResource } from '@clerk/types';
 import { type ClassValue, clsx } from 'clsx';
 import {
   differenceInDays,
@@ -9,7 +9,7 @@ import {
   differenceInWeeks,
 } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
-import { ParentPostProps } from './types';
+import { type AspectRatio, ParentPostProps } from './types';
 import useVideoPlayer from '@/store/videoPlayer';
 import useCommentPanelStore from '@/store/commentPanel';
 
@@ -229,6 +229,47 @@ export const getMediaAspectRatio = (dimensions: {
   }
 
   return undefined;
+};
+
+export const getVideoObjectFit = (
+  aspectRatio: AspectRatio | string,
+  originalDimensions?: { width: number; height: number }
+): 'object-cover' | 'object-contain' => {
+  if (!originalDimensions) return 'object-cover';
+
+  const originalRatio = originalDimensions.width / originalDimensions.height;
+
+  if (originalRatio < 1) {
+    return aspectRatio === 'original' || aspectRatio === '9:16'
+      ? 'object-contain'
+      : 'object-cover';
+  } else if (originalRatio > 1) {
+    return aspectRatio === 'original' || aspectRatio === '16:9'
+      ? 'object-contain'
+      : 'object-cover';
+  } else {
+    return 'object-cover';
+  }
+};
+
+export const getImageObjectFit = (
+  aspectRatio: AspectRatio,
+  originalDimensions?: { width: number; height: number }
+): 'object-cover' | 'object-contain' => {
+  if (!originalDimensions) return 'object-cover';
+  const originalRatio = originalDimensions.width / originalDimensions.height;
+
+  if (originalRatio < 1) {
+    return aspectRatio === 'original' || aspectRatio === '4:5'
+      ? 'object-contain'
+      : 'object-cover';
+  } else if (originalRatio > 1) {
+    return aspectRatio === 'original' || aspectRatio === '16:9'
+      ? 'object-contain'
+      : 'object-cover';
+  } else {
+    return 'object-cover';
+  }
 };
 
 export function highlightHashtagsAndUrls(text: string) {

@@ -29,6 +29,7 @@ const PostCard: React.FC<PostCardProps> = ({
   privacy,
   mentions,
   hideLikes,
+  turnOffComments,
   likesCount,
   pinned,
 }) => {
@@ -93,7 +94,6 @@ const PostCard: React.FC<PostCardProps> = ({
             createdAt={createdAt}
             postId={id!}
             text={text}
-            hideLikes={hideLikes}
             pinned={pinned}
             reposts={reposts}
             repostedBy={repostedBy}
@@ -107,7 +107,8 @@ const PostCard: React.FC<PostCardProps> = ({
             repostsCount={repostsCount ?? 0}
             reposts={reposts}
             mentions={mentions}
-            hideLikes={hideLikes}
+            hideLikes={hideLikes!}
+            turnOffComments={turnOffComments!}
             bookmarksCount={bookmarksCount ?? 0}
             bookmarks={bookmarks}
             privacy={privacy}

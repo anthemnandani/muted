@@ -7,6 +7,7 @@ const ReplyButton: React.FC<ReplyButtonProps> = ({
   repliesCount,
   canInteract,
   onCommentsToggle,
+  turnOffComments,
 }) => {
   const handleReplyClick = () => {
     if (!canInteract) return toast.error('You cannot reply to this post');
@@ -28,13 +29,16 @@ const ReplyButton: React.FC<ReplyButtonProps> = ({
         className='btn-action mt-2 mb-1.5'
         onClick={handleReplyClick}
         onKeyDown={handleKeyDown}
+        disabled={turnOffComments}
       >
         <Icons.comment className='size-5' fill='#fff' />
       </button>
 
-      <strong className='text-[13px] leading-4 text-center'>
-        {repliesCount}
-      </strong>
+      {!turnOffComments && (
+        <strong className='text-[13px] leading-4 text-center'>
+          {repliesCount}
+        </strong>
+      )}
     </div>
   );
 };

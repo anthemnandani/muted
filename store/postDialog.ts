@@ -29,8 +29,16 @@ const usePostDialog = create<ToggleState>((set) => ({
     privacy: PostPrivacy.ANYONE,
     text: '',
     linkPreview: null,
+    hideLikes: false,
+    turnOffComments: false,
   },
-  setPostData: (post) => set({ postData: post }),
+  setPostData: (post) =>
+    set((state) => ({
+      postData: {
+        ...state.postData,
+        ...post,
+      },
+    })),
   quoteInfo: null,
   setQuoteInfo: (quote) => set({ quoteInfo: quote }),
   editPostInfo: null,
@@ -55,6 +63,8 @@ const usePostDialog = create<ToggleState>((set) => ({
         privacy: PostPrivacy.ANYONE,
         text: '',
         linkPreview: null,
+        hideLikes: false,
+        turnOffComments: false,
       },
     }),
 }));

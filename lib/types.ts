@@ -182,7 +182,8 @@ export type ParentPostProps = {
   repostsCount?: number;
   repostedAt?: Date;
   pinned?: boolean;
-  hideLikes: boolean;
+  hideLikes?: boolean;
+  turnOffComments?: boolean;
   isHidden?: boolean;
   isMuted?: boolean;
   privacy: PostPrivacy;
@@ -250,6 +251,7 @@ export interface PostActionsProps {
     index: number;
   }>;
   hideLikes: boolean;
+  turnOffComments: boolean;
   onCommentsToggle: () => void;
 }
 
@@ -261,6 +263,12 @@ export interface RepostIndicatorProps {
   };
   isRepostedByMe?: Repost;
   reposts: Repost[];
+}
+
+export interface LikeButtonProps {
+  likeInfo: Pick<PostProps, 'id' | 'likes' | 'likesCount'>;
+  authorId: string;
+  hideLikes?: boolean;
 }
 
 export interface RepostersDialogProps {
@@ -291,6 +299,8 @@ export type PostData = {
   privacy: PostPrivacy;
   text: string;
   linkPreview: LinkPreview | null;
+  hideLikes: boolean;
+  turnOffComments: boolean;
 };
 
 export interface RepostButtonProps {
@@ -392,7 +402,6 @@ export interface VideoContainerProps {
   createdAt: Date;
   id: string;
   text: string | null;
-  hideLikes: boolean;
   pinned?: boolean;
   setInView: (inView: boolean) => void;
   reposts: Repost[];
@@ -404,7 +413,6 @@ export interface MediaControlsProps {
   postId: string;
   createdAt: Date;
   text: string | null;
-  hideLikes: boolean;
   pinned?: boolean;
   showControls: boolean;
   VolumeControls?: React.ReactNode;
@@ -413,11 +421,11 @@ export interface MediaControlsProps {
 export interface PostImageCardProps {
   image: string;
   originalDimensions?: { width: number; height: number };
+  aspectRatio?: AspectRatio;
   createdAt: Date;
   author: AuthorInfoProps;
   id: string;
   text: string | null;
-  hideLikes: boolean;
   pinned?: boolean;
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
@@ -430,7 +438,6 @@ export interface PostVideoCardProps {
   author: AuthorInfoProps;
   createdAt: Date;
   text: string | null;
-  hideLikes: boolean;
   pinned?: boolean;
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
@@ -441,7 +448,6 @@ export interface PostActionMenuProps {
   postId: string;
   createdAt: Date;
   currentText: string;
-  hideLikes: boolean;
   showControls: boolean;
   pinned?: boolean;
 }
@@ -452,7 +458,6 @@ export interface PostMediaCarouselProps {
   createdAt: Date;
   postId: string;
   text: string | null;
-  hideLikes: boolean;
   pinned?: boolean;
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
@@ -736,6 +741,7 @@ export interface ReplyButtonProps {
   repliesCount: number;
   canInteract: boolean;
   onCommentsToggle: () => void;
+  turnOffComments: boolean;
 }
 
 export interface MutedPostProps {

@@ -478,7 +478,6 @@ export const collectionRouter = createTRPCRouter({
                   quoteId: true,
                   path: true,
                   repliesCount: true,
-                  hideLikes: true,
                   privacy: true,
                   author: {
                     select: {
@@ -619,6 +618,7 @@ export const collectionRouter = createTRPCRouter({
                   path: true,
                   repliesCount: true,
                   hideLikes: true,
+                  turnOffComments: true,
                   privacy: true,
                   author: {
                     select: {
