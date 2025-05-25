@@ -60,7 +60,7 @@ const PostDialogTitle = ({ hasError, discardPost }: PostDialogTitleProps) => {
   return (
     <Title className='flex-between px-4'>
       {step === 'preview' && !hasError ? (
-        <DiscardPost discardPost={discardPost} />
+        <DiscardPost discardPost={discardPost} showTrigger={true} />
       ) : step === 'post' ? (
         <button
           type='button'

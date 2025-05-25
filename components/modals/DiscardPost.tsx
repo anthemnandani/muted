@@ -1,5 +1,6 @@
 'use client';
 
+import { DiscardPostProps } from '@/lib/types';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { useState } from 'react';
@@ -13,16 +14,39 @@ import {
   DialogTrigger,
 } from '../ui/dialog';
 
-const DiscardPost = ({ discardPost }: { discardPost: () => void }) => {
-  const [isOpen, setIsOpen] = useState(false);
+const DiscardPost = ({
+  discardPost,
+  isOpen: externalIsOpen,
+  onOpenChange: externalOnOpenChange,
+  showTrigger = false,
+}: DiscardPostProps) => {
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  const setIsOpen = externalOnOpenChange || setInternalIsOpen;
+
+  const handleDiscard = () => {
+    setIsOpen(false);
+    discardPost();
+  };
+
+  const handleCancel = () => {
+    setIsOpen(false);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <button aria-label='Discard Post' type='button' className='font-normal'>
-          <Icons.cancel className='size-5 text-white' />
-        </button>
-      </DialogTrigger>
+      {showTrigger && (
+        <DialogTrigger asChild>
+          <button
+            aria-label='Discard Post'
+            type='button'
+            className='font-normal'
+          >
+            <Icons.cancel className='size-5 text-white' />
+          </button>
+        </DialogTrigger>
+      )}
       <DialogContent
         isSecondDialog
         className='w-full !max-w-[350px] select-none border-none bg-transparent shadow-none outline-none z-[1001] box-content'
@@ -43,17 +67,14 @@ const DiscardPost = ({ discardPost }: { discardPost: () => void }) => {
             <Button
               variant='ghost'
               className='flex-1 font-normal text-base rounded-none rounded-l-2xl h-[54px] border-r-[0.8px] border-r-gray-7 ring-0 hover:bg-transparent'
-              onClick={() => setIsOpen(false)}
+              onClick={handleCancel}
             >
               Cancel
             </Button>
             <Button
               variant='ghost'
               className='flex-1 text-base font-normal text-primary-red hover:text-primary-red/80 transition-colors rounded-none rounded-r-2xl h-[54px] ring-0 hover:bg-transparent'
-              onClick={() => {
-                setIsOpen(false);
-                discardPost();
-              }}
+              onClick={handleDiscard}
             >
               Discard
             </Button>

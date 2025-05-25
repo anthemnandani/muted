@@ -843,3 +843,10 @@ export interface AspectRatioSelectorProps {
   selectedRatio: AspectRatio;
   onChange: (ratio: AspectRatio) => void;
 }
+
+export interface DiscardPostProps {
+  discardPost: () => void;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  showTrigger?: boolean;
+}

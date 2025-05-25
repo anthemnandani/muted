@@ -32,13 +32,7 @@ const usePostDialog = create<ToggleState>((set) => ({
     hideLikes: false,
     turnOffComments: false,
   },
-  setPostData: (post) =>
-    set((state) => ({
-      postData: {
-        ...state.postData,
-        ...post,
-      },
-    })),
+  setPostData: (post) => set({ postData: post }),
   quoteInfo: null,
   setQuoteInfo: (quote) => set({ quoteInfo: quote }),
   editPostInfo: null,

@@ -52,7 +52,7 @@ const MainPreview = ({ mediaFiles }: { mediaFiles: MediaFile[] }) => {
         }
       };
     }
-  }, [currentFile]);
+  }, [currentFile?.type]);
 
   useEffect(() => {
     if (currentFile?.type === 'image' && currentFile.preview) {
@@ -62,7 +62,7 @@ const MainPreview = ({ mediaFiles }: { mediaFiles: MediaFile[] }) => {
       };
       img.src = currentFile.preview;
     }
-  }, [currentFile]);
+  }, [currentFile?.type]);
 
   const getPreviewDimensions = (aspectRatio: string) => {
     const maxWidth = 500;

@@ -15,7 +15,8 @@ import { useFileUpload } from '@/hooks/useFileUpload';
 import { cn } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
 import usePostDialog from '@/store/postDialog';
-import React from 'react';
+import { Fragment, useEffect, useState } from 'react';
+import DiscardPost from '../DiscardPost';
 import CreatePost from './CreatePost';
 import PostDialogTitle from './PostDialogTitle';
 import PreviewStep from './PreviewStep';
@@ -27,6 +28,7 @@ const NewPost = () => {
     usePostDialog();
 
   const { setMediaFiles } = useFileStore();
+  const [showDiscardModal, setShowDiscardModal] = useState(false);
 
   const { isMobile } = useDevice();
 
@@ -43,11 +45,23 @@ const NewPost = () => {
     onSuccess: () => setStep('preview'),
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     return cleanup;
   }, []);
 
+  const handleDiscardPost = () => {
+    setMediaFiles([]);
+    resetPostState();
+    setOpenDialog(false);
+    setShowDiscardModal(false);
+  };
+
   const handleOpenChange = (open: boolean) => {
+    if (!open && (step === 'preview' || step === 'post')) {
+      setShowDiscardModal(true);
+      return;
+    }
+
     setOpenDialog(open);
 
     if (!open) {
@@ -57,89 +71,92 @@ const NewPost = () => {
   };
 
   return (
-    <Dialog open={openDialog} onOpenChange={handleOpenChange}>
-      <DialogTrigger>
-        {isMobile ? (
-          <CreateThreadMobile />
-        ) : (
-          <React.Fragment>
+    <Fragment>
+      <Dialog open={openDialog} onOpenChange={handleOpenChange}>
+        <DialogTrigger>
+          {isMobile ? (
+            <CreateThreadMobile />
+          ) : (
             <div className='hidden md:flex relative size-12 flex-center rounded-xl hover:bg-primary transition-colors duration-150 border-none text-secondary hover:text-foreground'>
               <Icons.plus className='size-6' />
             </div>
-          </React.Fragment>
-        )}
-      </DialogTrigger>
-      <DialogContent
-        className={cn(
-          'w-full border-none bg-transparent shadow-none outline-none'
-        )}
-      >
-        <DialogHeader
+          )}
+        </DialogTrigger>
+        <DialogContent
           className={cn(
-            'w-[500px]',
-            step === 'post' &&
-              '-translate-x-[150px] w-full transition-all duration-500 ease-in-out'
+            'w-full border-none bg-transparent shadow-none outline-none'
           )}
         >
-          <PostDialogTitle
-            hasError={!!error}
-            discardPost={() => {
-              setMediaFiles([]);
-              resetPostState();
-            }}
-          />
-        </DialogHeader>
-        <div className='flex'>
-          <Card
+          <DialogHeader
             className={cn(
-              'relative border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6 size-[500px] transition-all duration-500 ease-in-out z-10',
-              step === 'post'
-                ? 'rounded-l-lg rounded-r-none -translate-x-[150px]'
-                : 'rounded-lg'
+              'w-[500px]',
+              step === 'post' &&
+                '-translate-x-[150px] w-full transition-all duration-500 ease-in-out'
             )}
           >
-            {isValidating && (
-              <Progress
-                value={progress}
-                className='rounded-lg absolute top-0 left-2 right-2 h-1 w-full animate-progress bg-primary-blue'
-              />
-            )}
-            {error && (
-              <UploadError
-                title={error.title}
-                message={error.message}
-                onRetry={() => setError(null)}
-              />
-            )}
-            {step === 'upload' && (
-              <UploadStep
-                getRootProps={getRootProps}
-                getInputProps={getInputProps}
-                isDragActive={isDragActive}
-              />
-            )}
-            {(step === 'preview' || step === 'post') && (
-              <PreviewStep
-                getRootProps={getRootProps}
-                getInputProps={getInputProps}
-                isDragActive={isDragActive}
-              />
-            )}
-          </Card>
+            <PostDialogTitle
+              hasError={!!error}
+              discardPost={handleDiscardPost}
+            />
+          </DialogHeader>
+          <div className='flex'>
+            <Card
+              className={cn(
+                'relative border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6 size-[500px] transition-all duration-500 ease-in-out z-10',
+                step === 'post'
+                  ? 'rounded-l-lg rounded-r-none -translate-x-[150px]'
+                  : 'rounded-lg'
+              )}
+            >
+              {isValidating && (
+                <Progress
+                  value={progress}
+                  className='rounded-lg absolute top-0 left-2 right-2 h-1 w-full animate-progress bg-primary-blue'
+                />
+              )}
+              {error && (
+                <UploadError
+                  title={error.title}
+                  message={error.message}
+                  onRetry={() => setError(null)}
+                />
+              )}
+              {step === 'upload' && (
+                <UploadStep
+                  getRootProps={getRootProps}
+                  getInputProps={getInputProps}
+                  isDragActive={isDragActive}
+                />
+              )}
+              {(step === 'preview' || step === 'post') && (
+                <PreviewStep
+                  getRootProps={getRootProps}
+                  getInputProps={getInputProps}
+                  isDragActive={isDragActive}
+                />
+              )}
+            </Card>
 
-          <div
-            className={cn(
-              'relative border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6 w-[340px] rounded-r-lg transition-all duration-500 ease-in-out',
-              step === 'post'
-                ? '-translate-x-[150px] opacity-1'
-                : '-translate-x-[300px] opacity-0'
-            )}
-          >
-            <CreatePost />
+            <div
+              className={cn(
+                'relative border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6 w-[340px] rounded-r-lg transition-all duration-500 ease-in-out',
+                step === 'post'
+                  ? '-translate-x-[150px] opacity-100'
+                  : '-translate-x-[340px] opacity-0'
+              )}
+            >
+              <CreatePost />
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+
+      <DiscardPost
+        isOpen={showDiscardModal}
+        onOpenChange={setShowDiscardModal}
+        discardPost={handleDiscardPost}
+      />
+    </Fragment>
   );
 };
 
