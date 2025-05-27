@@ -1,7 +1,6 @@
 import useMediaControls from '@/hooks/useMediaControls';
 import { PostImageCardProps } from '@/lib/types';
-import { getImageObjectFit } from '@/lib/utils';
-import Image from 'next/image';
+import { getTargetRatio } from '@/lib/utils';
 import React from 'react';
 import PostFooter from '../posts/PostFooter';
 import MediaControls from '../shared/MediaControls';
@@ -25,8 +24,6 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
     showControlsTemporarily,
   } = useMediaControls();
 
-  const objectFit = getImageObjectFit(aspectRatio!, originalDimensions);
-
   return (
     <div
       className='relative w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(0px-2rem+100vh)] overflow-hidden flex-grow bg-black rounded-2xl flex-center'
@@ -41,15 +38,15 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
         }
       }}
     >
-      <div className='relative w-full h-full'>
-        <Image
+      <div className='relative w-full h-full flex-center'>
+        <img
           alt='Post'
-          fill
           loading='lazy'
           src={image}
-          className={objectFit}
+          className='object-cover'
           style={{
             objectPosition: 'center',
+            aspectRatio: getTargetRatio(aspectRatio!, originalDimensions),
           }}
         />
       </div>

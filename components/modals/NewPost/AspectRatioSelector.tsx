@@ -44,9 +44,9 @@ const AspectRatioSelector = ({
       icon: <Icons.portrait className='size-6' />,
     },
     {
-      value: '16:9',
-      label: '16:9',
-      icon: <Icons.landscape className='size-6' />,
+      value: '9:16',
+      label: '9:16',
+      icon: <Icons.portrait className='size-6' />,
     },
   ];
 

@@ -1,8 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { MediaFile } from '@/lib/types';
-import { getVideoObjectFit } from '@/lib/utils';
+import type { AspectRatio, MediaFile } from '@/lib/types';
+import { getTargetRatio, getVideoObjectFit } from '@/lib/utils';
 import usePostDialog from '@/store/postDialog';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
@@ -64,7 +64,7 @@ const MainPreview = ({ mediaFiles }: { mediaFiles: MediaFile[] }) => {
     }
   }, [currentFile?.type]);
 
-  const getPreviewDimensions = (aspectRatio: string) => {
+  const getPreviewDimensions = (aspectRatio: AspectRatio) => {
     const maxWidth = 500;
     const maxHeight = 500;
 
@@ -75,31 +75,7 @@ const MainPreview = ({ mediaFiles }: { mediaFiles: MediaFile[] }) => {
       return { width: maxWidth, height: maxHeight };
     }
 
-    let targetRatio: number;
-
-    switch (aspectRatio) {
-      case 'original':
-        if (originalDimensions) {
-          targetRatio = originalDimensions.width / originalDimensions.height;
-        } else {
-          targetRatio = 1;
-        }
-        break;
-      case '1:1':
-        targetRatio = 1;
-        break;
-      case '4:5':
-        targetRatio = 4 / 5;
-        break;
-      case '9:16':
-        targetRatio = 9 / 16;
-        break;
-      case '16:9':
-        targetRatio = 16 / 9;
-        break;
-      default:
-        targetRatio = 1;
-    }
+    const targetRatio = getTargetRatio(aspectRatio, originalDimensions);
 
     if (currentFile?.type === 'video' && originalDimensions) {
       const originalRatio =

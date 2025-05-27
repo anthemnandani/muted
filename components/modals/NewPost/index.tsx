@@ -139,7 +139,7 @@ const NewPost = () => {
 
             <div
               className={cn(
-                'relative border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6 w-[340px] rounded-r-lg transition-all duration-500 ease-in-out',
+                'relative border-none shadow-2xl ring-1 ring-r-[#393939] bg-gray-6 w-[340px] rounded-r-lg transition-all duration-500 ease-in-out',
                 step === 'post'
                   ? '-translate-x-[150px] opacity-100'
                   : '-translate-x-[340px] opacity-0'

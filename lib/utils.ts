@@ -1,3 +1,5 @@
+import useCommentPanelStore from '@/store/commentPanel';
+import useVideoPlayer from '@/store/videoPlayer';
 import { type User } from '@clerk/nextjs/server';
 import { type UserResource } from '@clerk/types';
 import { type ClassValue, clsx } from 'clsx';
@@ -10,8 +12,6 @@ import {
 } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
 import { type AspectRatio, ParentPostProps } from './types';
-import useVideoPlayer from '@/store/videoPlayer';
-import useCommentPanelStore from '@/store/commentPanel';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -270,6 +270,39 @@ export const getImageObjectFit = (
   } else {
     return 'object-cover';
   }
+};
+
+export const getTargetRatio = (
+  aspectRatio: AspectRatio,
+  originalDimensions?: { width: number; height: number }
+) => {
+  let targetRatio: number;
+
+  switch (aspectRatio) {
+    case 'original':
+      if (originalDimensions) {
+        targetRatio = originalDimensions.width / originalDimensions.height;
+      } else {
+        targetRatio = 1;
+      }
+      break;
+    case '1:1':
+      targetRatio = 1;
+      break;
+    case '4:5':
+      targetRatio = 4 / 5;
+      break;
+    case '9:16':
+      targetRatio = 9 / 16;
+      break;
+    case '16:9':
+      targetRatio = 16 / 9;
+      break;
+    default:
+      targetRatio = 1;
+  }
+
+  return targetRatio;
 };
 
 export function highlightHashtagsAndUrls(text: string) {

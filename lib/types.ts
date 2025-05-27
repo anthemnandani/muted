@@ -19,7 +19,7 @@ export type PostProps = ArrayElement<
 export type PostMedia = {
   fileType: string;
   fileUrl: string;
-  aspectRatio?: string;
+  aspectRatio?: AspectRatio;
   thumbnailUrl?: string;
   originalDimensions: {
     width: number;
