@@ -709,6 +709,13 @@ export type Tab = 'posts' | 'reposts' | 'liked' | 'collections';
 
 export type SearchTab = 'top' | 'users' | 'videos';
 
+export type NotificationTab =
+  | 'all'
+  | 'likes'
+  | 'comments'
+  | 'mentions'
+  | 'followers';
+
 export interface UsernameProps {
   author: AuthorInfoProps;
   isReposted?: boolean;
@@ -849,4 +856,11 @@ export interface DiscardPostProps {
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   showTrigger?: boolean;
+}
+
+export interface SidebarWrapperProps {
+  children: React.ReactNode;
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+  title: string;
 }

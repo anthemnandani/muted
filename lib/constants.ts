@@ -1,4 +1,8 @@
-import type { ProfileFilter, ReportCategories } from './types';
+import {
+  type NotificationTab,
+  type ProfileFilter,
+  ReportCategories,
+} from './types';
 
 export const UPLOAD_CONSTRAINTS = {
   MAX_ITEMS: 10,
@@ -770,3 +774,29 @@ export const REPORT_USER_CATEGORIES: ReportCategories = {
     ],
   },
 };
+
+export const NOTIFICATION_FILTERS: Array<{
+  id: NotificationTab;
+  label: string;
+}> = [
+  {
+    id: 'all',
+    label: 'All activity',
+  },
+  {
+    id: 'likes',
+    label: 'Likes',
+  },
+  {
+    id: 'comments',
+    label: 'Comments',
+  },
+  {
+    id: 'mentions',
+    label: 'Mentions and tags',
+  },
+  {
+    id: 'followers',
+    label: 'Followers',
+  },
+];

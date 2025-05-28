@@ -1,6 +1,6 @@
 import Report from '@/components/modals/Report';
 import BottomBar from '@/components/shared/BottomBar';
-import LeftSideBar from '@/components/shared/LeftSideBar';
+import LeftSideBar from '@/components/sidebars/LeftSideBar';
 import TopBar from '@/components/shared/TopBar';
 import { PostNavigatorProvider } from '@/contexts/PostNavigatorContext';
 import { getUserEmail } from '@/lib/utils';

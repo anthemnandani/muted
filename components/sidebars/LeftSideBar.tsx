@@ -6,8 +6,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Fragment } from 'react';
 import UserMenu from '../menus/UserMenu';
-import SearchSidebar from '../search/SearchSidebar';
-import Navigation from './Navigation';
+import Navigation from '../shared/Navigation';
+import NotificationSidebar from './NotificationSidebar';
+import SearchSidebar from './SearchSidebar';
 
 const LeftSideBar = () => {
   const { isMobile } = useDevice();
@@ -16,7 +17,7 @@ const LeftSideBar = () => {
   return (
     !isMobile && (
       <Fragment>
-        <section className='hidden fixed left-0 top-0 z-20 w-[76px] h-screen md:flex-col-between'>
+        <section className='hidden fixed left-0 top-0 z-[1000] w-[76px] h-screen md:flex-col-between'>
           <Link href='/' className='logo' onClick={handleHomeClick}>
             <Image
               src={`/assets/muted-logo-white.svg`}
@@ -32,6 +33,7 @@ const LeftSideBar = () => {
           </div>
         </section>
         <SearchSidebar />
+        <NotificationSidebar />
       </Fragment>
     )
   );

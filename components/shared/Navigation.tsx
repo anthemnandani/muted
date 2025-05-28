@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { useNotificationStore } from '@/store/notificationStore';
 import { useSearchStore } from '@/store/searchStore';
 import { useUser } from '@clerk/nextjs';
 import { usePathname } from 'next/navigation';
@@ -10,6 +11,7 @@ import MenuLink from './MenuLink';
 
 const Navigation = () => {
   const { isSearchOpen, setIsSearchOpen } = useSearchStore();
+  const { isNotificationOpen, setIsNotificationOpen } = useNotificationStore();
   const pathname = usePathname();
   const { user } = useUser();
 
@@ -48,12 +50,22 @@ const Navigation = () => {
         icon={Icons.friends}
         isActive={pathname === '/friends' && !isSearchOpen}
       />
-      <MenuLink
-        route='/activity'
-        icon={Icons.activity}
-        isActive={pathname === '/activity' && !isSearchOpen}
-        addFill
-      />
+      <button
+        onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+        className={cn(
+          'flex-center size-12 transition-all duration-150',
+          isNotificationOpen
+            ? 'bg-[#1f1f1f] rounded-full'
+            : 'hover:bg-primary rounded-xl'
+        )}
+      >
+        <Icons.activity
+          className={cn(
+            'size-6 transition-colors duration-150',
+            isNotificationOpen ? 'text-foreground' : 'text-secondary'
+          )}
+        />
+      </button>
       <MenuLink
         route={`/@${user?.username}`}
         icon={Icons.profile}
