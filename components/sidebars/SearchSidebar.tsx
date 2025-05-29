@@ -156,7 +156,7 @@ const SearchSidebar = () => {
                 <button
                   key={index}
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className='w-full flex items-center gap-3 hover:bg-white/10 p-2 rounded-md transition-colors text-left'
+                  className='w-full flex items-center gap-3 hover:bg-[#121212] p-2 rounded-md transition-colors text-left'
                 >
                   <div className='size-8 flex-center bg-white/10 rounded-full flex-shrink-0'>
                     <Search size={14} className='text-white/90' />

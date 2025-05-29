@@ -1,14 +1,43 @@
 import { EmptyStateProps } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
-const EmptyState = ({ icon, title, description }: EmptyStateProps) => {
+const EmptyState = ({
+  icon,
+  title,
+  description,
+  isNotification = false,
+}: EmptyStateProps) => {
   return (
-    <div className='flex-col-center w-full h-full min-h-[490px] text-center mx-auto'>
-      <div className='size-[92px] rounded-full flex-center bg-zinc-800'>
+    <div
+      className={cn(
+        'flex-col-center w-full h-full text-center mx-auto',
+        isNotification ? 'pt-[88px] px-8' : 'min-h-[490px]'
+      )}
+    >
+      <div
+        className={cn(
+          isNotification
+            ? 'size-[70px]'
+            : 'size-[92px] rounded-full bg-zinc-800'
+        )}
+      >
         {icon}
       </div>
-      <p className='text-2xl font-bold text-white/90 mt-6'>{title}</p>
+      <p
+        className={cn(
+          'font-bold text-white/90',
+          isNotification ? 'text-base mt-4' : 'text-2xl mt-6'
+        )}
+      >
+        {title}
+      </p>
       {description && (
-        <p className='text-base font-normal text-white/75 mt-2'>
+        <p
+          className={cn(
+            'font-normal text-white/75 mt-2',
+            isNotification ? 'text-sm' : 'text-base'
+          )}
+        >
           {description}
         </p>
       )}

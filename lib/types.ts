@@ -1,5 +1,5 @@
 import type { AppRouter } from '@/server/api/root';
-import type { CollectionPrivacy, User } from '@prisma/client';
+import type { CollectionPrivacy, NotificationType, User } from '@prisma/client';
 import { PostPrivacy, Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
 import { LucideIcon } from 'lucide-react';
@@ -775,6 +775,7 @@ export interface EmptyStateProps {
   icon?: React.ReactNode;
   title: string;
   description?: string;
+  isNotification?: boolean;
 }
 
 export interface UserProfileMenuProps {
@@ -863,4 +864,28 @@ export interface SidebarWrapperProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   title: string;
+}
+
+export type Notification = {
+  id: string;
+  senderUser: AuthorInfoProps;
+  message: string;
+  createdAt: Date;
+  media: PostMedia[];
+  postId: string;
+  type: NotificationType;
+};
+
+export interface NotificationCardProps {
+  sender: AuthorInfoProps;
+  message: string;
+  createdAt: Date;
+  media: PostMedia;
+  postId: string;
+}
+
+export interface NotificationsListProps {
+  notifications: Notification[];
+  hasNextPage?: boolean;
+  fetchNextPage: () => void;
 }

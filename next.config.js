@@ -42,6 +42,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: process.env.NEXT_PUBLIC_BUNNY_STREAM_CDN_HOSTNAME,
       },
+      {
+        protocol: 'https',
+        hostname: 'p16-sign-useast2a.tiktokcdn.com',
+      },
     ],
   },
 };

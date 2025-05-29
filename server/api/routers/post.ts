@@ -145,17 +145,17 @@ export const postRouter = createTRPCRouter({
           },
         });
 
-        if (input.postAuthor && userId !== input.postAuthor) {
-          await prisma.notification.create({
-            data: {
-              type: 'QUOTE',
-              senderUserId: userId,
-              receiverUserId: input.postAuthor,
-              postId: newpost.id,
-              message: filteredText,
-            },
-          });
-        }
+        // if (input.postAuthor && userId !== input.postAuthor) {
+        //   await prisma.notification.create({
+        //     data: {
+        //       type: 'QUOTE',
+        //       senderUserId: userId,
+        //       receiverUserId: input.postAuthor,
+        //       postId: newpost.id,
+        //       message: filteredText,
+        //     },
+        //   });
+        // }
 
         // if (input.mentions?.length) {
         //   await Promise.all(
@@ -487,17 +487,17 @@ export const postRouter = createTRPCRouter({
             }
           }
 
-          if (userId !== input.postAuthor) {
-            await prisma.notification.create({
-              data: {
-                type: 'REPLY',
-                senderUserId: userId,
-                receiverUserId: input.postAuthor,
-                postId: input.postId,
-                message: input.text,
-              },
-            });
-          }
+          // if (userId !== input.postAuthor) {
+          //   await prisma.notification.create({
+          //     data: {
+          //       type: 'REPLY',
+          //       senderUserId: userId,
+          //       receiverUserId: input.postAuthor,
+          //       postId: input.postId,
+          //       message: input.text,
+          //     },
+          //   });
+          // }
 
           return { repliedPost };
         });
@@ -671,17 +671,17 @@ export const postRouter = createTRPCRouter({
             }
           }
 
-          if (userId !== parentComment.authorId) {
-            await prisma.notification.create({
-              data: {
-                type: 'REPLY',
-                senderUserId: userId,
-                receiverUserId: parentComment.authorId,
-                postId: reply.id,
-                message: filteredText,
-              },
-            });
-          }
+          // if (userId !== parentComment.authorId) {
+          //   await prisma.notification.create({
+          //     data: {
+          //       type: 'REPLY',
+          //       senderUserId: userId,
+          //       receiverUserId: parentComment.authorId,
+          //       postId: reply.id,
+          //       message: filteredText,
+          //     },
+          //   });
+          // }
 
           return { reply };
         });
@@ -978,19 +978,19 @@ export const postRouter = createTRPCRouter({
             },
           });
 
-          const createNotification = await prisma.notification.create({
-            data: {
-              type: 'REPOST',
-              postId: data.postId,
-              message: createdRepost.post.text || '',
-              senderUserId: userId,
-              receiverUserId: createdRepost.post.authorId,
-            },
-          });
+          // const createNotification = await prisma.notification.create({
+          //   data: {
+          //     type: 'REPOST',
+          //     postId: data.postId,
+          //     message: createdRepost.post.text || '',
+          //     senderUserId: userId,
+          //     receiverUserId: createdRepost.post.authorId,
+          //   },
+          // });
 
           return {
             createdRepost,
-            createNotification,
+            // createNotification,
           };
         });
 
@@ -1007,24 +1007,24 @@ export const postRouter = createTRPCRouter({
             },
           });
 
-          const notification = await prisma.notification.findFirst({
-            where: {
-              senderUserId: userId,
-              postId: data.postId,
-              type: 'REPOST',
-            },
-            select: {
-              id: true,
-            },
-          });
+          // const notification = await prisma.notification.findFirst({
+          //   where: {
+          //     senderUserId: userId,
+          //     postId: data.postId,
+          //     type: 'REPOST',
+          //   },
+          //   select: {
+          //     id: true,
+          //   },
+          // });
 
-          if (notification) {
-            await prisma.notification.delete({
-              where: {
-                id: notification.id,
-              },
-            });
-          }
+          // if (notification) {
+          //   await prisma.notification.delete({
+          //     where: {
+          //       id: notification.id,
+          //     },
+          //   });
+          // }
 
           return {
             removeRepost,

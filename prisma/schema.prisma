@@ -156,13 +156,19 @@ model Collection {
   @@index([userId])
 }
 
+enum NotificationType {
+  LIKE
+  COMMENT
+  FOLLOWER
+  MENTION
+}
+
 model Notification {
   id        String           @id @default(cuid())
   createdAt DateTime         @default(now())
   read      Boolean          @default(false)
   type      NotificationType
   message   String
-  isPublic  Boolean          @default(false)
 
   senderUserId   String
   receiverUserId String?
@@ -172,18 +178,10 @@ model Notification {
   postId String?
   post   Post?   @relation(fields: [postId], references: [id])
 
+  @@unique([senderUserId, postId, type])
   @@index([receiverUserId])
-}
-
-enum NotificationType {
-  ADMIN
-  LIKE
-  REPLY
-  FOLLOW
-  REPOST
-  QUOTE
-  MENTION
-  BOOKMARK
+  @@index([senderUserId])
+  @@index([type])
 }
 
 enum PostPrivacy {

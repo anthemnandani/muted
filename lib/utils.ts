@@ -11,7 +11,7 @@ import {
   differenceInWeeks,
 } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
-import { type AspectRatio, ParentPostProps } from './types';
+import { type AspectRatio, ParentPostProps, type PostMedia } from './types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -51,13 +51,13 @@ export function formatTimeAgo(timestamp: Date): string {
   if (secondsDiff < 60) {
     return 'Just now';
   } else if (minutesDiff < 60) {
-    return minutesDiff === 1 ? '1m ago' : `${minutesDiff}m ago`;
+    return minutesDiff === 1 ? '1m' : `${minutesDiff}m`;
   } else if (hoursDiff < 24) {
-    return hoursDiff === 1 ? '1h ago' : `${hoursDiff}h ago`;
+    return hoursDiff === 1 ? '1h' : `${hoursDiff}h`;
   } else if (daysDiff < 7) {
-    return daysDiff === 1 ? '1d ago' : `${daysDiff}d ago`;
+    return daysDiff === 1 ? '1d' : `${daysDiff}d`;
   } else if (weeksDiff < 52) {
-    return weeksDiff === 1 ? '1w ago' : `${weeksDiff}w ago`;
+    return weeksDiff === 1 ? '1w' : `${weeksDiff}w`;
   } else {
     const options: Intl.DateTimeFormatOptions = {
       month: 'short',
@@ -564,4 +564,11 @@ export const extractSuggestions = (
       return a.length - b.length;
     })
     .slice(0, limit);
+};
+
+export const getImageUrl = (media: PostMedia) => {
+  if (media.fileType === 'image') {
+    return media.fileUrl;
+  }
+  return media.thumbnailUrl;
 };

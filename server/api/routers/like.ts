@@ -1,4 +1,5 @@
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
+import { NotificationType } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
@@ -34,13 +35,33 @@ export const likeRouter = createTRPCRouter({
             },
           });
 
-          const createdNotification = await prisma.notification.create({
-            data: {
-              type: 'LIKE',
+          if (createdLike.post.author.id === userId) {
+            return {
+              createdLike,
+            };
+          }
+
+          const createdNotification = await prisma.notification.upsert({
+            where: {
+              senderUserId_postId_type: {
+                senderUserId: userId,
+                postId: data.postId,
+                type: NotificationType.LIKE,
+              },
+            },
+            update: {
+              type: NotificationType.LIKE,
               senderUserId: userId,
               receiverUserId: createdLike.post.author.id,
               postId: data.postId,
-              message: createdLike.post.text ?? '',
+              message: 'liked your post',
+            },
+            create: {
+              type: NotificationType.LIKE,
+              senderUserId: userId,
+              receiverUserId: createdLike.post.author.id,
+              postId: data.postId,
+              message: 'liked your post',
             },
           });
 
@@ -61,26 +82,38 @@ export const likeRouter = createTRPCRouter({
             where: {
               postId_userId: data,
             },
-          });
-
-          const notification = await prisma.notification.findFirst({
-            where: {
-              senderUserId: userId,
-              postId: data.postId,
-              type: 'LIKE',
-            },
             select: {
-              id: true,
+              post: {
+                select: {
+                  author: true,
+                },
+              },
             },
           });
 
-          if (notification) {
-            await prisma.notification.delete({
+          if (removeLike.post.author.id !== userId) {
+            const notification = await prisma.notification.findUnique({
               where: {
-                id: notification.id,
+                senderUserId_postId_type: {
+                  senderUserId: userId,
+                  postId: data.postId,
+                  type: NotificationType.LIKE,
+                },
+              },
+              select: {
+                id: true,
               },
             });
+
+            if (notification) {
+              await prisma.notification.delete({
+                where: {
+                  id: notification.id,
+                },
+              });
+            }
           }
+
           return {
             removeLike,
           };

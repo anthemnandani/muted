@@ -1311,21 +1311,21 @@ export const userRouter = createTRPCRouter({
             },
           });
 
-          const createdNotification = await prisma.notification.create({
-            data: {
-              type: 'FOLLOW',
-              senderUserId: userId,
-              receiverUserId: input.id,
-              message: `"Followed you"`,
-            },
-            select: {
-              id: true,
-            },
-          });
+          // const createdNotification = await prisma.notification.create({
+          //   data: {
+          //     type: 'FOLLOW',
+          //     senderUserId: userId,
+          //     receiverUserId: input.id,
+          //     message: `"Followed you"`,
+          //   },
+          //   select: {
+          //     id: true,
+          //   },
+          // });
 
           return {
             followUser,
-            createdNotification,
+            // createdNotification,
           };
         });
 
@@ -1347,24 +1347,24 @@ export const userRouter = createTRPCRouter({
             },
           });
 
-          const notification = await prisma.notification.findFirst({
-            where: {
-              senderUserId: userId,
-              receiverUserId: input.id,
-              type: 'FOLLOW',
-            },
-            select: {
-              id: true,
-            },
-          });
+          // const notification = await prisma.notification.findFirst({
+          //   where: {
+          //     senderUserId: userId,
+          //     receiverUserId: input.id,
+          //     type: 'FOLLOW',
+          //   },
+          //   select: {
+          //     id: true,
+          //   },
+          // });
 
-          if (notification) {
-            await prisma.notification.delete({
-              where: {
-                id: notification.id,
-              },
-            });
-          }
+          // if (notification) {
+          //   await prisma.notification.delete({
+          //     where: {
+          //       id: notification.id,
+          //     },
+          //   });
+          // }
 
           return {
             unfollowUser,
