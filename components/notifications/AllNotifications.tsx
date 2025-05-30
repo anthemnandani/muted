@@ -30,7 +30,7 @@ const AllNotifications = () => {
   }
 
   return (
-    <div className='flex-1 overflow-auto mt-2'>
+    <div className='flex-1 overflow-auto mt-3'>
       {allNotifications?.length === 0 || isError ? (
         <EmptyState
           icon={<Icons.allActivity />}

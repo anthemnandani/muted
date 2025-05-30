@@ -11,6 +11,7 @@ import {
   getPostRepliesCount,
 } from '@/server/constants';
 import { clerkClient } from '@clerk/nextjs/server';
+import { NotificationType } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '../trpc';
@@ -1311,21 +1312,25 @@ export const userRouter = createTRPCRouter({
             },
           });
 
-          // const createdNotification = await prisma.notification.create({
-          //   data: {
-          //     type: 'FOLLOW',
-          //     senderUserId: userId,
-          //     receiverUserId: input.id,
-          //     message: `"Followed you"`,
-          //   },
-          //   select: {
-          //     id: true,
-          //   },
-          // });
+          await prisma.notification.upsert({
+            where: {
+              senderUserId_receiverUserId_type: {
+                senderUserId: userId,
+                receiverUserId: input.id,
+                type: NotificationType.FOLLOWER,
+              },
+            },
+            update: {},
+            create: {
+              senderUserId: userId,
+              receiverUserId: input.id,
+              type: NotificationType.FOLLOWER,
+              message: 'started following you',
+            },
+          });
 
           return {
             followUser,
-            // createdNotification,
           };
         });
 

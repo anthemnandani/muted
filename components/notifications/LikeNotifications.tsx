@@ -30,7 +30,7 @@ const LikeNotifications = () => {
   }
 
   return (
-    <div className='flex-1 overflow-auto mt-2'>
+    <div className='flex-1 overflow-auto mt-3'>
       {likeNotifications?.length === 0 || isError ? (
         <EmptyState
           icon={<Icons.likes />}

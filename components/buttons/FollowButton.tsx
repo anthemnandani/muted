@@ -9,6 +9,7 @@ interface FollowButtonProps extends React.HTMLAttributes<HTMLDivElement> {
   variant: 'default' | 'outline' | 'destructive';
   author: AuthorInfoProps;
   size: 'default' | 'sm' | 'lg' | 'icon';
+  isNotification?: boolean;
 }
 
 const FollowButton: React.FC<FollowButtonProps> = ({
@@ -16,11 +17,19 @@ const FollowButton: React.FC<FollowButtonProps> = ({
   author,
   className,
   size,
+  isNotification,
 }) => {
   const { handleToggleFollow, isLoading, isSameUser, isFollowedByMe } =
     useFollowUser({
       author,
     });
+
+  const getButtonText = () => {
+    if (isNotification) {
+      return isFollowedByMe ? 'Friends' : 'Follow back';
+    }
+    return isFollowedByMe ? 'Following' : 'Follow';
+  };
 
   return (
     <Follow
@@ -30,7 +39,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
       variant={!isFollowedByMe ? variant : 'outline'}
       className={className}
     >
-      {isFollowedByMe ? 'Following' : 'Follow'}
+      {getButtonText()}
     </Follow>
   );
 };

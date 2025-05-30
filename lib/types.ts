@@ -871,8 +871,8 @@ export type Notification = {
   senderUser: AuthorInfoProps;
   message: string;
   createdAt: Date;
-  media: PostMedia[];
-  postId: string;
+  media?: PostMedia[];
+  postId?: string;
   type: NotificationType;
 };
 
@@ -880,8 +880,9 @@ export interface NotificationCardProps {
   sender: AuthorInfoProps;
   message: string;
   createdAt: Date;
-  media: PostMedia;
-  postId: string;
+  media?: PostMedia;
+  postId?: string;
+  type?: NotificationType;
 }
 
 export interface NotificationsListProps {

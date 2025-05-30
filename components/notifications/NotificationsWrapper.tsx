@@ -27,8 +27,9 @@ const NotificationsList = ({
             sender={notification.senderUser}
             message={notification.message}
             createdAt={notification.createdAt}
-            media={notification.media[0]}
+            media={notification.media?.[0]}
             postId={notification.postId}
+            type={notification.type}
           />
         ))}
       </InfiniteScroll>

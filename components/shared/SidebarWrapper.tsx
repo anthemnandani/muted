@@ -16,8 +16,8 @@ const SidebarWrapper = ({
         opacity: isOpen ? 1 : 0,
       }}
     >
-      <div className='p-2 w-full'>
-        <div className='h-[4.4rem] pt-4 pl-2'>
+      <div className='w-full'>
+        <div className='h-[4.4rem] p-4'>
           <div className='flex items-center'>
             <h2 className='text-xl font-bold text-white/90'>{title}</h2>
             <button

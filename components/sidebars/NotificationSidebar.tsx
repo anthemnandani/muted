@@ -21,7 +21,7 @@ const NotificationSidebar = () => {
       title='Notifications'
     >
       <div className='flex flex-col h-full'>
-        <div className='flex flex-wrap items-center w-full gap-2 sm:gap-3 mt-2 px-2'>
+        <div className='flex flex-wrap items-center w-full gap-2 sm:gap-3 px-4 py-2'>
           {NOTIFICATION_FILTERS.map((filter) => (
             <NotificationButton
               key={filter.id}

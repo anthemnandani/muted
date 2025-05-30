@@ -4,6 +4,7 @@ import { api } from '@/trpc/react';
 import { Icons } from '../icons';
 import EmptyState from '../shared/EmptyState';
 import Loader from '../shared/Loader';
+import NotificationsList from './NotificationsWrapper';
 
 const FollowerNotifications = () => {
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
@@ -31,7 +32,7 @@ const FollowerNotifications = () => {
   }
 
   return (
-    <div className='flex-1 overflow-auto'>
+    <div className='flex-1 overflow-auto mt-3'>
       {followerNotifications?.length === 0 || isError ? (
         <EmptyState
           icon={<Icons.followers />}
@@ -40,7 +41,11 @@ const FollowerNotifications = () => {
           isNotification
         />
       ) : (
-        <div></div>
+        <NotificationsList
+          notifications={followerNotifications!}
+          hasNextPage={hasNextPage}
+          fetchNextPage={fetchNextPage}
+        />
       )}
     </div>
   );
