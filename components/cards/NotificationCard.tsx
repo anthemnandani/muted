@@ -17,6 +17,7 @@ const NotificationCard = ({
   postId,
   createdAt,
   type,
+  isLast,
 }: NotificationCardProps) => {
   const router = useRouter();
   const { openPanel } = useCommentPanelStore();
@@ -44,7 +45,10 @@ const NotificationCard = ({
 
   return (
     <div
-      className='hover:bg-[#1a1a1a] transition-colors cursor-pointer'
+      className={cn(
+        'hover:bg-[#1a1a1a] transition-colors cursor-pointer',
+        isLast && 'mb-20'
+      )}
       onClick={handleClick}
     >
       <div className='flex items-start py-2.5 px-2'>

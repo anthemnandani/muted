@@ -9,19 +9,18 @@ import { useEffect } from 'react';
 import { Icons } from '../icons';
 import NewPost from '../modals/NewPost';
 import MenuLink from './MenuLink';
+import useNotification from '@/hooks/useNotification';
 
 const Navigation = () => {
   const { isSearchOpen, setIsSearchOpen } = useSearchStore();
-  const { isNotificationOpen, setIsNotificationOpen } = useNotificationStore();
+  const { unreadCount, isNotificationOpen, toggleNotificationSidebar } =
+    useNotification();
   const pathname = usePathname();
   const { user } = useUser();
 
   useEffect(() => {
     if (isSearchOpen) {
       setIsSearchOpen(false);
-    }
-    if (isNotificationOpen) {
-      setIsNotificationOpen(false);
     }
   }, [pathname]);
 
@@ -61,9 +60,9 @@ const Navigation = () => {
         isActive={pathname === '/friends' && !isSearchOpen}
       />
       <button
-        onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+        onClick={toggleNotificationSidebar}
         className={cn(
-          'flex-center size-12 transition-all duration-150',
+          'relative flex-center size-12 transition-all duration-150',
           isNotificationOpen
             ? 'bg-[#1f1f1f] rounded-full'
             : 'hover:bg-primary rounded-xl'
@@ -75,6 +74,11 @@ const Navigation = () => {
             isNotificationOpen ? 'text-foreground' : 'text-secondary'
           )}
         />
+        {unreadCount > 0 && (
+          <span className='absolute top-1 right-1 bg-red-500 text-white/90 text-xs font-bold rounded-full min-w-[18px] h-[18px] flex-center px-1'>
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
+        )}
       </button>
       <MenuLink
         route={`/@${user?.username}`}

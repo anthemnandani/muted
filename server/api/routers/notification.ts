@@ -78,6 +78,49 @@ export const notificationRouter = createTRPCRouter({
       };
     }),
 
+  getUnreadCount: privateProcedure.query(async ({ ctx }) => {
+    const { userId } = ctx;
+
+    if (!userId) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: 'You must be logged in to get unread count',
+      });
+    }
+
+    const unreadCount = await ctx.db.notification.count({
+      where: {
+        receiverUserId: userId,
+        read: false,
+      },
+    });
+
+    return { unreadCount };
+  }),
+
+  markAllAsRead: privateProcedure.mutation(async ({ ctx }) => {
+    const { userId } = ctx;
+
+    if (!userId) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: 'You must be logged in to mark notifications as read',
+      });
+    }
+
+    await ctx.db.notification.updateMany({
+      where: {
+        receiverUserId: userId,
+        read: false,
+      },
+      data: {
+        read: true,
+      },
+    });
+
+    return { success: true };
+  }),
+
   getLikeNotifications: privateProcedure
     .input(
       z.object({

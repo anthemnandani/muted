@@ -883,6 +883,7 @@ export interface NotificationCardProps {
   media?: PostMedia;
   postId?: string;
   type?: NotificationType;
+  isLast: boolean;
 }
 
 export interface NotificationsListProps {
