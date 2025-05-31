@@ -1312,22 +1312,30 @@ export const userRouter = createTRPCRouter({
             },
           });
 
-          await prisma.notification.upsert({
+          const existingNotification = await prisma.notification.findFirst({
             where: {
-              senderUserId_receiverUserId_type: {
-                senderUserId: userId,
-                receiverUserId: input.id,
-                type: NotificationType.FOLLOWER,
-              },
-            },
-            update: {},
-            create: {
               senderUserId: userId,
               receiverUserId: input.id,
               type: NotificationType.FOLLOWER,
-              message: 'started following you',
             },
+            select: { id: true },
           });
+
+          if (existingNotification) {
+            await prisma.notification.update({
+              where: { id: existingNotification.id },
+              data: { createdAt: new Date() },
+            });
+          } else {
+            await prisma.notification.create({
+              data: {
+                type: NotificationType.FOLLOWER,
+                senderUserId: userId,
+                receiverUserId: input.id,
+                message: 'started following you',
+              },
+            });
+          }
 
           return {
             followUser,

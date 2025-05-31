@@ -3,8 +3,8 @@
 import { api } from '@/trpc/react';
 import { Icons } from '../icons';
 import EmptyState from '../shared/EmptyState';
-import Loader from '../shared/Loader';
-import NotificationsList from './NotificationsWrapper';
+import NotificationLoader from './NotificationLoader';
+import NotificationsList from './NotificationsList';
 
 const LikeNotifications = () => {
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
@@ -22,30 +22,22 @@ const LikeNotifications = () => {
   const likeNotifications = data?.pages.flatMap((page) => page.notifications);
 
   if (isLoading) {
-    return (
-      <div className='flex-1 overflow-auto'>
-        <Loader />
-      </div>
-    );
+    return <NotificationLoader />;
   }
 
-  return (
-    <div className='flex-1 overflow-auto mt-3'>
-      {likeNotifications?.length === 0 || isError ? (
-        <EmptyState
-          icon={<Icons.likes />}
-          title='Likes on your posts'
-          description='When someone likes one of your posts, you’ll see it here'
-          isNotification
-        />
-      ) : (
-        <NotificationsList
-          notifications={likeNotifications!}
-          hasNextPage={hasNextPage}
-          fetchNextPage={fetchNextPage}
-        />
-      )}
-    </div>
+  return likeNotifications?.length === 0 || isError ? (
+    <EmptyState
+      icon={<Icons.likes />}
+      title='Likes on your posts'
+      description='When someone likes one of your posts, you’ll see it here'
+      isNotification
+    />
+  ) : (
+    <NotificationsList
+      notifications={likeNotifications!}
+      hasNextPage={hasNextPage}
+      fetchNextPage={fetchNextPage}
+    />
   );
 };
 

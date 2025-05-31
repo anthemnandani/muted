@@ -3,7 +3,8 @@
 import { api } from '@/trpc/react';
 import { Icons } from '../icons';
 import EmptyState from '../shared/EmptyState';
-import Loader from '../shared/Loader';
+import NotificationLoader from './NotificationLoader';
+import NotificationsList from './NotificationsList';
 
 const MentionNotifications = () => {
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
@@ -23,26 +24,22 @@ const MentionNotifications = () => {
   );
 
   if (isLoading) {
-    return (
-      <div className='flex-1 overflow-auto'>
-        <Loader />
-      </div>
-    );
+    return <NotificationLoader />;
   }
 
-  return (
-    <div className='flex-1 overflow-auto'>
-      {mentionNotifications?.length === 0 || isError ? (
-        <EmptyState
-          icon={<Icons.mentions />}
-          title='Mentions of You'
-          description='When someone mentions you, you’ll see it here'
-          isNotification
-        />
-      ) : (
-        <div></div>
-      )}
-    </div>
+  return mentionNotifications?.length === 0 || isError ? (
+    <EmptyState
+      icon={<Icons.mentions />}
+      title='Mentions of You'
+      description='When someone mentions you, you’ll see it here'
+      isNotification
+    />
+  ) : (
+    <NotificationsList
+      notifications={mentionNotifications!}
+      hasNextPage={hasNextPage}
+      fetchNextPage={fetchNextPage}
+    />
   );
 };
 

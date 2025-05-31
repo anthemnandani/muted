@@ -3,8 +3,8 @@
 import { api } from '@/trpc/react';
 import { Icons } from '../icons';
 import EmptyState from '../shared/EmptyState';
-import Loader from '../shared/Loader';
-import NotificationsList from './NotificationsWrapper';
+import NotificationLoader from './NotificationLoader';
+import NotificationsList from './NotificationsList';
 
 const FollowerNotifications = () => {
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
@@ -24,30 +24,22 @@ const FollowerNotifications = () => {
   );
 
   if (isLoading) {
-    return (
-      <div className='flex-1 overflow-auto'>
-        <Loader />
-      </div>
-    );
+    return <NotificationLoader />;
   }
 
-  return (
-    <div className='flex-1 overflow-auto mt-3'>
-      {followerNotifications?.length === 0 || isError ? (
-        <EmptyState
-          icon={<Icons.followers />}
-          title='New followers'
-          description='When someone new follows you, you’ll see it here'
-          isNotification
-        />
-      ) : (
-        <NotificationsList
-          notifications={followerNotifications!}
-          hasNextPage={hasNextPage}
-          fetchNextPage={fetchNextPage}
-        />
-      )}
-    </div>
+  return followerNotifications?.length === 0 || isError ? (
+    <EmptyState
+      icon={<Icons.followers />}
+      title='New followers'
+      description='When someone new follows you, you’ll see it here'
+      isNotification
+    />
+  ) : (
+    <NotificationsList
+      notifications={followerNotifications!}
+      hasNextPage={hasNextPage}
+      fetchNextPage={fetchNextPage}
+    />
   );
 };
 

@@ -1,18 +1,21 @@
 'use client';
 
+import { useNotificationStore } from '@/store/notificationStore';
 import { api } from '@/trpc/react';
 import { Icons } from '../icons';
 import EmptyState from '../shared/EmptyState';
-import Loader from '../shared/Loader';
-import NotificationsList from './NotificationsWrapper';
+import NotificationLoader from './NotificationLoader';
+import NotificationsList from './NotificationsList';
 
 const AllNotifications = () => {
+  const { isNotificationOpen } = useNotificationStore();
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
     api.notification.getNotifications.useInfiniteQuery(
       {},
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         trpc: { abortOnUnmount: true },
+        enabled: isNotificationOpen,
         staleTime: 0,
         cacheTime: 0,
         refetchOnWindowFocus: false,
@@ -22,30 +25,22 @@ const AllNotifications = () => {
   const allNotifications = data?.pages.flatMap((page) => page.notifications);
 
   if (isLoading) {
-    return (
-      <div className='flex-1 overflow-auto'>
-        <Loader />
-      </div>
-    );
+    return <NotificationLoader />;
   }
 
-  return (
-    <div className='flex-1 overflow-auto mt-3'>
-      {allNotifications?.length === 0 || isError ? (
-        <EmptyState
-          icon={<Icons.allActivity />}
-          title='All activity'
-          description='Notifications about your account will appear here.'
-          isNotification
-        />
-      ) : (
-        <NotificationsList
-          notifications={allNotifications!}
-          hasNextPage={hasNextPage}
-          fetchNextPage={fetchNextPage}
-        />
-      )}
-    </div>
+  return allNotifications?.length === 0 || isError ? (
+    <EmptyState
+      icon={<Icons.allActivity />}
+      title='All activity'
+      description='Notifications about your account will appear here.'
+      isNotification
+    />
+  ) : (
+    <NotificationsList
+      notifications={allNotifications!}
+      hasNextPage={hasNextPage}
+      fetchNextPage={fetchNextPage}
+    />
   );
 };
 

@@ -41,33 +41,36 @@ export const likeRouter = createTRPCRouter({
             };
           }
 
-          const createdNotification = await prisma.notification.upsert({
+          const existingNotification = await prisma.notification.findFirst({
             where: {
-              senderUserId_postId_type: {
-                senderUserId: userId,
-                postId: data.postId,
-                type: NotificationType.LIKE,
-              },
-            },
-            update: {
-              type: NotificationType.LIKE,
               senderUserId: userId,
-              receiverUserId: createdLike.post.author.id,
               postId: data.postId,
-              message: 'liked your post',
-            },
-            create: {
               type: NotificationType.LIKE,
-              senderUserId: userId,
-              receiverUserId: createdLike.post.author.id,
-              postId: data.postId,
-              message: 'liked your post',
             },
+            select: { id: true },
           });
+
+          if (existingNotification) {
+            await prisma.notification.update({
+              where: { id: existingNotification.id },
+              data: {
+                createdAt: new Date(),
+              },
+            });
+          } else {
+            await prisma.notification.create({
+              data: {
+                type: NotificationType.LIKE,
+                senderUserId: userId,
+                receiverUserId: createdLike.post.author.id,
+                postId: data.postId,
+                message: 'liked your post',
+              },
+            });
+          }
 
           return {
             createdLike,
-            createdNotification,
           };
         });
 
@@ -91,28 +94,28 @@ export const likeRouter = createTRPCRouter({
             },
           });
 
-          if (removeLike.post.author.id !== userId) {
-            const notification = await prisma.notification.findUnique({
-              where: {
-                senderUserId_postId_type: {
-                  senderUserId: userId,
-                  postId: data.postId,
-                  type: NotificationType.LIKE,
-                },
-              },
-              select: {
-                id: true,
-              },
-            });
+          // if (removeLike.post.author.id !== userId) {
+          //   const notification = await prisma.notification.findUnique({
+          //     where: {
+          //       unique_like_notification: {
+          //         senderUserId: userId,
+          //         postId: data.postId,
+          //         type: NotificationType.LIKE,
+          //       },
+          //     },
+          //     select: {
+          //       id: true,
+          //     },
+          //   });
 
-            if (notification) {
-              await prisma.notification.delete({
-                where: {
-                  id: notification.id,
-                },
-              });
-            }
-          }
+          //   if (notification) {
+          //     await prisma.notification.delete({
+          //       where: {
+          //         id: notification.id,
+          //       },
+          //     });
+          //   }
+          // }
 
           return {
             removeLike,

@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import useCommentPanelStore from '@/store/commentPanel';
 import { useHiddenPosts } from '@/store/hiddenPosts';
 import { useMutedUsers } from '@/store/mutedUsers';
+import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import CommentsPanel from '../comments/CommentsPanel';
@@ -40,12 +41,17 @@ const PostCard: React.FC<PostCardProps> = ({
     currentPostId,
     updateCurrentPost,
     isShowingPost,
+    shouldShowPanel,
   } = useCommentPanelStore();
   const { isTemporarilyHidden } = useHiddenPosts();
   const { isMutedUser } = useMutedUsers();
+  const pathname = usePathname();
 
   const isHidden = isTemporarilyHidden(id);
   const isMuted = isMutedUser(author.id);
+
+  const isCommentPanelOpen =
+    isPanelOpen && currentPostId === id && shouldShowPanel(pathname);
 
   const { ref: postRef, inView } = useInView({
     threshold: 0.5,
@@ -85,7 +91,7 @@ const PostCard: React.FC<PostCardProps> = ({
             'flex justify-center items-end gap-4',
             'transform transition-transform duration-300 ease-in-out',
             'relative z-10',
-            isPanelOpen ? 'translate-x-[-200px]' : 'translate-x-0'
+            isCommentPanelOpen ? 'translate-x-[-200px]' : 'translate-x-0'
           )}
         >
           <PostMediaCarousel
@@ -117,7 +123,7 @@ const PostCard: React.FC<PostCardProps> = ({
         </div>
       )}
 
-      {isPanelOpen && currentPostId === id && (
+      {isCommentPanelOpen && (
         <div
           className={cn(
             'fixed top-1/2 right-20 w-[480px] h-[calc(100vh-2rem)] z-50',

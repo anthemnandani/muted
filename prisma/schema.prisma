@@ -178,8 +178,6 @@ model Notification {
   postId String?
   post   Post?   @relation(fields: [postId], references: [id])
 
-  @@unique([senderUserId, postId, type])
-  @@unique([senderUserId, receiverUserId, type])
   @@index([receiverUserId])
   @@index([senderUserId])
   @@index([type])

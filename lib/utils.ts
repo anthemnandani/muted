@@ -12,6 +12,8 @@ import {
 } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
 import { type AspectRatio, ParentPostProps, type PostMedia } from './types';
+import { useNotificationStore } from '@/store/notificationStore';
+import { useSearchStore } from '@/store/searchStore';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -51,13 +53,13 @@ export function formatTimeAgo(timestamp: Date): string {
   if (secondsDiff < 60) {
     return 'Just now';
   } else if (minutesDiff < 60) {
-    return minutesDiff === 1 ? '1m' : `${minutesDiff}m`;
+    return minutesDiff === 1 ? '1m ago' : `${minutesDiff}m ago`;
   } else if (hoursDiff < 24) {
-    return hoursDiff === 1 ? '1h' : `${hoursDiff}h`;
+    return hoursDiff === 1 ? '1h ago' : `${hoursDiff}h ago`;
   } else if (daysDiff < 7) {
-    return daysDiff === 1 ? '1d' : `${daysDiff}d`;
+    return daysDiff === 1 ? '1d ago' : `${daysDiff}d ago`;
   } else if (weeksDiff < 52) {
-    return weeksDiff === 1 ? '1w' : `${weeksDiff}w`;
+    return weeksDiff === 1 ? '1w ago' : `${weeksDiff}w ago`;
   } else {
     const options: Intl.DateTimeFormatOptions = {
       month: 'short',
@@ -449,6 +451,12 @@ export const triggerHardRefresh = (resetToFirstPost = true) => {
 
   const commentPanelStore = useCommentPanelStore.getState();
   commentPanelStore.resetState();
+
+  const notificationSidebarStore = useNotificationStore.getState();
+  notificationSidebarStore.setIsNotificationOpen(false);
+
+  const searchSidebarStore = useSearchStore.getState();
+  searchSidebarStore.setIsSearchOpen(false);
 
   document.body.style.overflow = '';
 

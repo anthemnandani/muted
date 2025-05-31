@@ -157,12 +157,18 @@ const useGetPostsByType = ({
       isError: videoPostsQuery.isError,
       isBlocked,
     };
-  } else {
+  } else if (postType === 'post') {
     return {
       data: regularPostsQuery.data || [],
       isLoading: regularPostsQuery.isLoading,
       isError: regularPostsQuery.isError,
       isBlocked,
+    };
+  } else {
+    return {
+      data: [],
+      isLoading: false,
+      isError: false,
     };
   }
 };

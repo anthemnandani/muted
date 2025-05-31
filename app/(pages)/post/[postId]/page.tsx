@@ -26,7 +26,7 @@ export async function generateMetadata({
   const image = postData.mediaUrl;
 
   const title = postData.text
-    ? `${postData.author.username}: ${postData.text.substring(0, 50)}${
+    ? `${postData.text.substring(0, 50)}${
         postData.text.length > 50 ? '...' : ''
       }`
     : `${postData.author.username}'s post`;

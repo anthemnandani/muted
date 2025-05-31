@@ -475,8 +475,8 @@ export const postRouter = createTRPCRouter({
                   type: NotificationType.MENTION,
                   senderUserId: userId,
                   receiverUserId: user.id,
-                  postId: repliedPost.id,
-                  message: filteredText,
+                  postId: input.postId,
+                  message: `mentioned you in a comment: ${filteredText}`,
                 }));
 
               if (mentionNotifications.length > 0) {
@@ -487,17 +487,17 @@ export const postRouter = createTRPCRouter({
             }
           }
 
-          // if (userId !== input.postAuthor) {
-          //   await prisma.notification.create({
-          //     data: {
-          //       type: 'REPLY',
-          //       senderUserId: userId,
-          //       receiverUserId: input.postAuthor,
-          //       postId: input.postId,
-          //       message: input.text,
-          //     },
-          //   });
-          // }
+          if (userId !== input.postAuthor) {
+            await prisma.notification.create({
+              data: {
+                type: NotificationType.COMMENT,
+                senderUserId: userId,
+                receiverUserId: input.postAuthor,
+                postId: input.postId,
+                message: `commented: ${filteredText}`,
+              },
+            });
+          }
 
           return { repliedPost };
         });
@@ -659,8 +659,8 @@ export const postRouter = createTRPCRouter({
                   type: NotificationType.MENTION,
                   senderUserId: userId,
                   receiverUserId: user.id,
-                  postId: reply.id,
-                  message: filteredText,
+                  postId: input.originalPostId,
+                  message: `mentioned you in a comment: ${filteredText}`,
                 }));
 
               if (mentionNotifications.length > 0) {
@@ -671,17 +671,17 @@ export const postRouter = createTRPCRouter({
             }
           }
 
-          // if (userId !== parentComment.authorId) {
-          //   await prisma.notification.create({
-          //     data: {
-          //       type: 'REPLY',
-          //       senderUserId: userId,
-          //       receiverUserId: parentComment.authorId,
-          //       postId: reply.id,
-          //       message: filteredText,
-          //     },
-          //   });
-          // }
+          if (userId !== parentComment.authorId) {
+            await prisma.notification.create({
+              data: {
+                type: NotificationType.COMMENT,
+                senderUserId: userId,
+                receiverUserId: parentComment.authorId,
+                postId: reply.id,
+                message: `replied to your comment: ${filteredText}`,
+              },
+            });
+          }
 
           return { reply };
         });
@@ -709,61 +709,102 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
-  // getPostDetails: publicProcedure
-  //   .input(z.object({ id: z.string() }))
-  //   .query(async ({ input, ctx }) => {
-  //     const { id } = input;
+  getPostDetails: privateProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const { id } = input;
 
-  //     const post = await ctx.db.post.findUnique({
-  //       where: { id },
-  //       select: {
-  //         id: true,
-  //         createdAt: true,
-  //         text: true,
-  //         media: true,
-  //         parentPostId: true,
-  //         quoteId: true,
-  //         path: true,
-  //         repliesCount: true,
-  //         hideLikes: true,
-  //         pinned: true,
-  //         privacy: true,
-  //         author: {
-  //           select: {
-  //             ...GET_USER,
-  //           },
-  //         },
-  //         ...getLikesWithBlockFilter(ctx.userId),
-  //         ...GET_BOOKMARKS,
-  //         ...GET_COUNT,
-  //         reposts: {
-  //           ...GET_REPOSTS,
-  //           orderBy: {
-  //             createdAt: 'desc',
-  //           },
-  //         },
-  //         ...GET_MENTIONS,
-  //         ...GET_LINK_PREVIEW,
-  //       },
-  //     });
+      const post = await ctx.db.post.findUnique({
+        where: {
+          id,
+          hiddenBy: {
+            none: {
+              userId: ctx.userId,
+            },
+          },
+          author: {
+            mutedByUsers: {
+              none: {
+                mutedByUserId: ctx.userId,
+              },
+            },
+            blockedByUsers: {
+              none: {
+                blockingUserId: ctx.userId,
+              },
+            },
+            blockedUsers: {
+              none: {
+                blockedUserId: ctx.userId,
+              },
+            },
+          },
+        },
+        select: {
+          id: true,
+          createdAt: true,
+          text: true,
+          media: true,
+          parentPostId: true,
+          quoteId: true,
+          path: true,
+          hideLikes: true,
+          turnOffComments: true,
+          pinned: true,
+          privacy: true,
+          repliesCount: true,
+          author: {
+            select: {
+              ...GET_USER,
+            },
+          },
+          ...getLikesWithBlockFilter(ctx.userId),
+          ...getBookmarksWithBlockFilter(ctx.userId),
+          ...getPostRepliesCount(ctx.userId),
+          ...GET_MENTIONS,
+          ...GET_LINK_PREVIEW,
+          reposts: {
+            ...GET_REPOSTS,
+            where: {
+              user: {
+                blockedByUsers: {
+                  none: {
+                    blockingUserId: {
+                      equals: ctx.userId,
+                    },
+                  },
+                },
+                blockedUsers: {
+                  none: {
+                    blockedUserId: {
+                      equals: ctx.userId,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
 
-  //     if (!post) {
-  //       throw new TRPCError({ code: 'NOT_FOUND', message: 'Post not found' });
-  //     }
+      if (!post) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Post not found' });
+      }
 
-  //     return {
-  //       post: {
-  //         ...post,
-  //         media: post.media as PostMedia[],
-  //         likesCount: post._count.likes,
-  //         repostsCount: post._count.reposts,
-  //         bookmarksCount: new Set(
-  //           post.bookmarks.map((bookmark) => bookmark.userId)
-  //         ).size,
-  //         type: 'post' as const,
-  //       },
-  //     };
-  //   }),
+      return {
+        post: {
+          ...post,
+          media: post.media as PostMedia[],
+          likesCount: post.likes.length,
+          repostsCount: post.reposts.length,
+          repliesCount: getTotalRepliesCount(post) as number,
+          bookmarksCount: new Set(
+            post.bookmarks.map((bookmark) => bookmark.userId)
+          ).size,
+          type: 'post' as const,
+        },
+      };
+    }),
 
   getComments: publicProcedure
     .input(

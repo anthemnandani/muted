@@ -30,11 +30,13 @@ const NotificationSidebar = () => {
             />
           ))}
         </div>
-        {activeTab === 'all' && <AllNotifications />}
-        {activeTab === 'likes' && <LikeNotifications />}
-        {activeTab === 'comments' && <CommentNotifications />}
-        {activeTab === 'mentions' && <MentionNotifications />}
-        {activeTab === 'followers' && <FollowerNotifications />}
+        <div className='flex-1 overflow-auto mt-3'>
+          {activeTab === 'all' && <AllNotifications />}
+          {activeTab === 'likes' && <LikeNotifications />}
+          {activeTab === 'comments' && <CommentNotifications />}
+          {activeTab === 'mentions' && <MentionNotifications />}
+          {activeTab === 'followers' && <FollowerNotifications />}
+        </div>
       </div>
     </SidebarWrapper>
   );

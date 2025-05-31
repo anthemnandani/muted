@@ -6,16 +6,17 @@ import EmptyState from '@/components/shared/EmptyState';
 import PostCardSkeleton from '@/components/skeletons/PostCardSkeleton';
 import useGetPostsByType from '@/hooks/useGetPostsByType';
 import usePostStore from '@/store/postStore';
+import { api } from '@/trpc/react';
 import { Video } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 
 const PostDetailsClient = ({ postId }: { postId: string }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('q')?.trim();
-
   const searchQueryRef = useRef<string | undefined>(searchQuery);
+  const pathname = usePathname();
 
   const {
     currentIndex,
@@ -34,6 +35,21 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
   const activeIndexRef = useRef(currentIndex);
   const hasScrolledRef = useRef(false);
 
+  const shouldFetchSinglePost = !profileUsername;
+
+  const {
+    data: singlePostData,
+    isLoading: isLoadingSinglePost,
+    isError: isSinglePostError,
+  } = api.post.getPostDetails.useQuery(
+    { id: postId },
+    {
+      enabled: shouldFetchSinglePost,
+      staleTime: 10 * 60 * 1000,
+      retry: false,
+    }
+  );
+
   const {
     data: userPosts,
     isLoading: isLoadingPosts,
@@ -46,6 +62,18 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
     query: searchQuery,
     collectionId,
   });
+
+  const posts = shouldFetchSinglePost
+    ? singlePostData?.post
+      ? [singlePostData.post]
+      : []
+    : userPosts;
+
+  const isLoading = shouldFetchSinglePost
+    ? isLoadingSinglePost
+    : isLoadingPosts;
+
+  const hasError = shouldFetchSinglePost ? isSinglePostError : isError;
 
   useEffect(() => {
     if (currentPostId !== postId && postId) {
@@ -60,18 +88,25 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
       userPosts &&
       userPosts.length > 0
     ) {
-      const index = userPosts.findIndex((post) => post.id === postId);
-
-      if (index !== -1) {
-        setCurrentIndex(index);
-        activeIndexRef.current = index;
-
-        containerRef.current.scrollTop = index * window.innerHeight;
-
+      if (shouldFetchSinglePost) {
+        setCurrentIndex(0);
+        activeIndexRef.current = 0;
         hasScrolledRef.current = true;
         setInitialized(true);
       } else {
-        console.log('Post not found in user posts:', postId);
+        const index = userPosts.findIndex((post) => post.id === postId);
+
+        if (index !== -1) {
+          setCurrentIndex(index);
+          activeIndexRef.current = index;
+
+          containerRef.current.scrollTop = index * window.innerHeight;
+
+          hasScrolledRef.current = true;
+          setInitialized(true);
+        } else {
+          console.log('Post not found in user posts:', postId);
+        }
       }
     }
   }, [userPosts, postId, setInitialized, setCurrentIndex]);
@@ -138,13 +173,13 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
     );
   }
 
-  if (isError) return <NotFound />;
+  if (hasError) return <NotFound />;
 
-  if (isLoadingPosts) {
+  if (isLoading) {
     return <PostCardSkeleton />;
   }
 
-  if (!userPosts || userPosts.length === 0) {
+  if (!posts || posts.length === 0) {
     return (
       <div className='flex-center w-full h-screen'>
         <p className='text-gray-3'>No post found</p>
@@ -157,17 +192,17 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
       ref={containerRef}
       className='hide-scrollbar'
       style={{
-        scrollSnapType: 'y mandatory',
+        scrollSnapType: shouldFetchSinglePost ? 'none' : 'y mandatory',
         overflowY: 'auto',
         height: '100vh',
       }}
     >
-      {userPosts.map((post) => (
+      {posts.map((post) => (
         <div
           key={post.id}
           style={{
-            scrollSnapAlign: 'start',
-            scrollSnapStop: 'always',
+            scrollSnapAlign: shouldFetchSinglePost ? 'none' : 'start',
+            scrollSnapStop: shouldFetchSinglePost ? 'normal' : 'always',
           }}
         >
           <PostCard {...post} />

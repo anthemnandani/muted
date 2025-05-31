@@ -5,6 +5,7 @@ import { useNotificationStore } from '@/store/notificationStore';
 import { useSearchStore } from '@/store/searchStore';
 import { useUser } from '@clerk/nextjs';
 import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 import { Icons } from '../icons';
 import NewPost from '../modals/NewPost';
 import MenuLink from './MenuLink';
@@ -14,6 +15,15 @@ const Navigation = () => {
   const { isNotificationOpen, setIsNotificationOpen } = useNotificationStore();
   const pathname = usePathname();
   const { user } = useUser();
+
+  useEffect(() => {
+    if (isSearchOpen) {
+      setIsSearchOpen(false);
+    }
+    if (isNotificationOpen) {
+      setIsNotificationOpen(false);
+    }
+  }, [pathname]);
 
   return (
     <ul className='flex flex-col items-center gap-4 w-full'>

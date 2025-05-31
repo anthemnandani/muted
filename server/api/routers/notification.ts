@@ -12,9 +12,8 @@ export const notificationRouter = createTRPCRouter({
         limit: z.number().optional(),
         cursor: z
           .object({
-            postId: z.string(),
-            senderUserId: z.string(),
-            type: z.nativeEnum(NotificationType),
+            id: z.string(),
+            createdAt: z.date(),
           })
           .optional(),
       })
@@ -34,7 +33,9 @@ export const notificationRouter = createTRPCRouter({
           receiverUserId: userId,
         },
         take: limit + 1,
-        cursor: cursor ? { senderUserId_postId_type: cursor } : undefined,
+        cursor: cursor
+          ? { id: cursor.id, createdAt: cursor.createdAt }
+          : undefined,
         orderBy: {
           createdAt: 'desc',
         },
@@ -61,9 +62,8 @@ export const notificationRouter = createTRPCRouter({
       if (notifications.length > limit) {
         const nextItem = notifications[limit];
         nextCursor = {
-          postId: nextItem.post?.id!,
-          senderUserId: nextItem.senderUser.id,
-          type: nextItem.type,
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
         };
         notifications.length = limit;
       }
@@ -84,9 +84,8 @@ export const notificationRouter = createTRPCRouter({
         limit: z.number().optional(),
         cursor: z
           .object({
-            postId: z.string(),
-            senderUserId: z.string(),
-            type: z.nativeEnum(NotificationType),
+            id: z.string(),
+            createdAt: z.date(),
           })
           .optional(),
       })
@@ -107,7 +106,9 @@ export const notificationRouter = createTRPCRouter({
           type: NotificationType.LIKE,
         },
         take: limit + 1,
-        cursor: cursor ? { senderUserId_postId_type: cursor } : undefined,
+        cursor: cursor
+          ? { id: cursor.id, createdAt: cursor.createdAt }
+          : undefined,
         orderBy: {
           createdAt: 'desc',
         },
@@ -135,9 +136,8 @@ export const notificationRouter = createTRPCRouter({
       if (notifications.length > limit) {
         const nextItem = notifications[limit];
         nextCursor = {
-          postId: nextItem.post?.id!,
-          senderUserId: nextItem.senderUser.id,
-          type: nextItem.type,
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
         };
         notifications.length = limit;
       }
@@ -158,9 +158,8 @@ export const notificationRouter = createTRPCRouter({
         limit: z.number().optional(),
         cursor: z
           .object({
-            postId: z.string(),
-            senderUserId: z.string(),
-            type: z.nativeEnum(NotificationType),
+            id: z.string(),
+            createdAt: z.date(),
           })
           .optional(),
       })
@@ -181,7 +180,9 @@ export const notificationRouter = createTRPCRouter({
           type: NotificationType.COMMENT,
         },
         take: limit + 1,
-        cursor: cursor ? { senderUserId_postId_type: cursor } : undefined,
+        cursor: cursor
+          ? { id: cursor.id, createdAt: cursor.createdAt }
+          : undefined,
         orderBy: {
           createdAt: 'desc',
         },
@@ -209,9 +210,8 @@ export const notificationRouter = createTRPCRouter({
       if (notifications.length > limit) {
         const nextItem = notifications[limit];
         nextCursor = {
-          postId: nextItem.post?.id!,
-          senderUserId: nextItem.senderUser.id,
-          type: nextItem.type,
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
         };
         notifications.length = limit;
       }
@@ -232,9 +232,8 @@ export const notificationRouter = createTRPCRouter({
         limit: z.number().optional(),
         cursor: z
           .object({
-            postId: z.string(),
-            senderUserId: z.string(),
-            type: z.nativeEnum(NotificationType),
+            id: z.string(),
+            createdAt: z.date(),
           })
           .optional(),
       })
@@ -255,7 +254,9 @@ export const notificationRouter = createTRPCRouter({
           type: NotificationType.MENTION,
         },
         take: limit + 1,
-        cursor: cursor ? { senderUserId_postId_type: cursor } : undefined,
+        cursor: cursor
+          ? { id: cursor.id, createdAt: cursor.createdAt }
+          : undefined,
         orderBy: {
           createdAt: 'desc',
         },
@@ -283,9 +284,8 @@ export const notificationRouter = createTRPCRouter({
       if (notifications.length > limit) {
         const nextItem = notifications[limit];
         nextCursor = {
-          postId: nextItem.post?.id!,
-          senderUserId: nextItem.senderUser.id,
-          type: nextItem.type,
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
         };
         notifications.length = limit;
       }
@@ -304,7 +304,12 @@ export const notificationRouter = createTRPCRouter({
     .input(
       z.object({
         limit: z.number().optional(),
-        cursor: z.string().optional(),
+        cursor: z
+          .object({
+            id: z.string(),
+            createdAt: z.date(),
+          })
+          .optional(),
       })
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
@@ -323,7 +328,9 @@ export const notificationRouter = createTRPCRouter({
           type: NotificationType.FOLLOWER,
         },
         take: limit + 1,
-        cursor: cursor ? { id: cursor } : undefined,
+        cursor: cursor
+          ? { id: cursor.id, createdAt: cursor.createdAt }
+          : undefined,
         orderBy: {
           createdAt: 'desc',
         },
@@ -341,10 +348,13 @@ export const notificationRouter = createTRPCRouter({
         },
       });
 
-      let nextCursor: string | undefined;
+      let nextCursor: typeof cursor | undefined;
       if (notifications.length > limit) {
         const nextItem = notifications[limit];
-        nextCursor = nextItem.id;
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
+        };
         notifications.length = limit;
       }
 

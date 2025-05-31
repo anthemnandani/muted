@@ -793,7 +793,7 @@ export const NOTIFICATION_FILTERS: Array<{
   },
   {
     id: 'mentions',
-    label: 'Mentions and tags',
+    label: 'Mentions',
   },
   {
     id: 'followers',
