@@ -3,6 +3,7 @@
 import { NotificationCardProps } from '@/lib/types';
 import { cn, formatTimeAgo, getImageUrl } from '@/lib/utils';
 import useCommentPanelStore from '@/store/commentPanel';
+import { useNotificationStore } from '@/store/notificationStore';
 import { NotificationType } from '@prisma/client';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -20,7 +21,8 @@ const NotificationCard = ({
   isLast,
 }: NotificationCardProps) => {
   const router = useRouter();
-  const { openPanel } = useCommentPanelStore();
+  const { setStoredPathname } = useCommentPanelStore();
+  const { setIsNotificationOpen } = useNotificationStore();
 
   const handleClick = () => {
     switch (type) {
@@ -32,11 +34,9 @@ const NotificationCard = ({
         break;
       case NotificationType.COMMENT:
       case NotificationType.MENTION:
+        setStoredPathname(`/post/${postId}`);
+        setIsNotificationOpen(false);
         router.push(`/post/${postId}`);
-        setTimeout(() => {
-          openPanel(postId!, `/post/${postId}`);
-          document.body.style.overflow = 'hidden';
-        }, 100);
         break;
       default:
         break;
@@ -81,7 +81,8 @@ const NotificationCard = ({
             {message}
             {(type === NotificationType.LIKE ||
               type === NotificationType.FOLLOWER) &&
-              '. '}
+              '.'}
+            &nbsp;
             <span className='text-white/50'>{formatTimeAgo(createdAt)}</span>
           </p>
         </div>

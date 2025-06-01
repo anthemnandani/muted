@@ -5,6 +5,7 @@ import PostCard from '@/components/cards/PostCard';
 import EmptyState from '@/components/shared/EmptyState';
 import PostCardSkeleton from '@/components/skeletons/PostCardSkeleton';
 import useGetPostsByType from '@/hooks/useGetPostsByType';
+import useCommentPanelStore from '@/store/commentPanel';
 import usePostStore from '@/store/postStore';
 import { api } from '@/trpc/react';
 import { Video } from 'lucide-react';
@@ -17,6 +18,7 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
   const searchQuery = searchParams.get('q')?.trim();
   const searchQueryRef = useRef<string | undefined>(searchQuery);
   const pathname = usePathname();
+  const { resetState, storedPathname, openPanel } = useCommentPanelStore();
 
   const {
     currentIndex,
@@ -74,6 +76,18 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
     : isLoadingPosts;
 
   const hasError = shouldFetchSinglePost ? isSinglePostError : isError;
+
+  useEffect(() => {
+    if (storedPathname === pathname) {
+      openPanel(postId);
+    }
+  }, [storedPathname, pathname, postId]);
+
+  useEffect(() => {
+    return () => {
+      resetState();
+    };
+  }, [resetState]);
 
   useEffect(() => {
     if (currentPostId !== postId && postId) {

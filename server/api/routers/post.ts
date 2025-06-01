@@ -677,7 +677,7 @@ export const postRouter = createTRPCRouter({
                 type: NotificationType.COMMENT,
                 senderUserId: userId,
                 receiverUserId: parentComment.authorId,
-                postId: reply.id,
+                postId: input.originalPostId,
                 message: `replied to your comment: ${filteredText}`,
               },
             });

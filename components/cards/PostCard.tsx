@@ -41,7 +41,6 @@ const PostCard: React.FC<PostCardProps> = ({
     currentPostId,
     updateCurrentPost,
     isShowingPost,
-    shouldShowPanel,
   } = useCommentPanelStore();
   const { isTemporarilyHidden } = useHiddenPosts();
   const { isMutedUser } = useMutedUsers();
@@ -49,9 +48,6 @@ const PostCard: React.FC<PostCardProps> = ({
 
   const isHidden = isTemporarilyHidden(id);
   const isMuted = isMutedUser(author.id);
-
-  const isCommentPanelOpen =
-    isPanelOpen && currentPostId === id && shouldShowPanel(pathname);
 
   const { ref: postRef, inView } = useInView({
     threshold: 0.5,
@@ -79,6 +75,8 @@ const PostCard: React.FC<PostCardProps> = ({
     };
   }, []);
 
+  const isCommentPanelOpen = isPanelOpen && currentPostId === id;
+
   return (
     <div className='h-screen flex-center relative' ref={postRef}>
       {isHidden ? (
@@ -91,7 +89,7 @@ const PostCard: React.FC<PostCardProps> = ({
             'flex justify-center items-end gap-4',
             'transform transition-transform duration-300 ease-in-out',
             'relative z-10',
-            isCommentPanelOpen ? 'translate-x-[-200px]' : 'translate-x-0'
+            isPanelOpen ? 'translate-x-[-200px]' : 'translate-x-0'
           )}
         >
           <PostMediaCarousel
