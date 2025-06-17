@@ -1,5 +1,7 @@
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { Toaster } from '@/components/ui/toaster';
+import { ChatProvider } from '@/contexts/ChatContext';
+import { SocketProvider } from '@/contexts/SocketContext';
 import { TRPCReactProvider } from '@/trpc/react';
 import { ClerkProvider } from '@clerk/nextjs';
 import { dark } from '@clerk/themes';
@@ -152,8 +154,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 baseTheme: dark,
               }}
             >
-              {children}
-              <Toaster />
+              <SocketProvider>
+                <ChatProvider>
+                  {children}
+                  <Toaster />
+                </ChatProvider>
+              </SocketProvider>
             </ClerkProvider>
           </ThemeProvider>
         </TRPCReactProvider>

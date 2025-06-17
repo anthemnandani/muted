@@ -31,7 +31,7 @@ export default async function PagesLayout({
       <TopBar />
       <LeftSideBar />
       <PostNavigatorProvider>{children}</PostNavigatorProvider>
-      <BottomBar />
+      {/* <BottomBar /> */}
       <Report />
     </React.Fragment>
   );

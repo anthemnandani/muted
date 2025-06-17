@@ -1,4 +1,5 @@
 import { authRouter } from './routers/auth';
+import { chatRouter } from './routers/chat';
 import { collectionRouter } from './routers/collection';
 import { likeRouter } from './routers/like';
 import { notificationRouter } from './routers/notification';
@@ -17,6 +18,7 @@ export const appRouter = createTRPCRouter({
   report: reportRouter,
   search: searchRouter,
   notification: notificationRouter,
+  chat: chatRouter,
 });
 
 export type AppRouter = typeof appRouter;

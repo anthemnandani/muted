@@ -1,4 +1,6 @@
 import useCommentPanelStore from '@/store/commentPanel';
+import { useNotificationStore } from '@/store/notificationStore';
+import { useSearchStore } from '@/store/searchStore';
 import useVideoPlayer from '@/store/videoPlayer';
 import { type User } from '@clerk/nextjs/server';
 import { type UserResource } from '@clerk/types';
@@ -9,11 +11,12 @@ import {
   differenceInMinutes,
   differenceInSeconds,
   differenceInWeeks,
+  format,
+  isToday,
+  isYesterday,
 } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
 import { type AspectRatio, ParentPostProps, type PostMedia } from './types';
-import { useNotificationStore } from '@/store/notificationStore';
-import { useSearchStore } from '@/store/searchStore';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -69,6 +72,61 @@ export function formatTimeAgo(timestamp: Date): string {
     return timestamp.toLocaleDateString(undefined, options);
   }
 }
+
+export const formatMsgTime = (date: Date | string): string => {
+  const messageDate = new Date(date);
+  const now = new Date();
+
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const msgDate = new Date(
+    messageDate.getFullYear(),
+    messageDate.getMonth(),
+    messageDate.getDate()
+  );
+
+  const diffInMs = today.getTime() - msgDate.getTime();
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+  if (diffInDays === 0) {
+    return messageDate.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  } else if (diffInDays === 1) {
+    return 'Yesterday';
+  } else if (diffInDays < 7) {
+    return messageDate.toLocaleDateString('en-US', {
+      weekday: 'long',
+    });
+  } else if (messageDate.getFullYear() === now.getFullYear()) {
+    return messageDate.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    });
+  } else {
+    return messageDate.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  }
+};
+
+export const formatMessageTime = (date: string | Date): string => {
+  return format(new Date(date), 'HH:mm');
+};
+
+export const formatDateSeparator = (date: string | Date): string => {
+  const dateObj = new Date(date);
+  if (isToday(dateObj)) {
+    return 'Today';
+  } else if (isYesterday(dateObj)) {
+    return 'Yesterday';
+  } else {
+    return format(dateObj, 'MMMM dd, yyyy');
+  }
+};
 
 export const getUserEmail = (user: UserResource | User | null) => {
   const email =

@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 import { Icons } from '../icons';
 import NewPost from '../modals/NewPost';
 import MenuLink from './MenuLink';
+import { useChat } from '@/contexts/ChatContext';
 
 const Navigation = () => {
   const { isSearchOpen, setIsSearchOpen } = useSearchStore();
@@ -16,6 +17,12 @@ const Navigation = () => {
     useNotification();
   const pathname = usePathname();
   const { user } = useUser();
+  const { chats } = useChat();
+
+  const totalUnreadMessages = chats.reduce(
+    (total, chat) => total + chat.unreadCount,
+    0
+  );
 
   useEffect(() => {
     if (isSearchOpen) {
@@ -85,10 +92,23 @@ const Navigation = () => {
           />
         )}
       </button>
+      <div className='relative'>
+        <MenuLink
+          route='/messages'
+          icon={Icons.messages}
+          isActive={pathname === '/messages' && !isSearchOpen}
+          addFill
+        />
+        {totalUnreadMessages > 0 && (
+          <span className='absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] h-[18px] flex-center font-medium'>
+            {totalUnreadMessages > 99 ? '99+' : totalUnreadMessages}
+          </span>
+        )}
+      </div>
       <MenuLink
         route={`/@${user?.username}`}
         icon={Icons.profile}
-        isActive={!!pathname.match(/^\/@\w+$/) && !isSearchOpen}
+        isActive={!!pathname?.match(/^\/@\w+$/) && !isSearchOpen}
         addFill
       />
     </ul>

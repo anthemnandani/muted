@@ -26,9 +26,12 @@ export default function FollowersAndFollowingLayout({
   const { resetSortBy } = useSortBy();
   const { isMobile } = useDevice();
   const params = useParams<{ username: string }>();
-  const username = decodeURIComponent(params.username).substring(1);
+  const username = decodeURIComponent(params!.username).substring(1);
   const path = usePathname();
-  const { basePath, lastSegment } = parseUsernamePath(path, params.username);
+  const { basePath, lastSegment } = parseUsernamePath(
+    path as string,
+    params!.username
+  );
 
   const { data, isLoading, isError } = api.user.userInfo.useQuery({ username });
 

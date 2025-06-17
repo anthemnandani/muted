@@ -15,7 +15,7 @@ import { useEffect, useRef } from 'react';
 const PostDetailsClient = ({ postId }: { postId: string }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
-  const searchQuery = searchParams.get('q')?.trim();
+  const searchQuery = searchParams?.get('q')?.trim();
   const searchQueryRef = useRef<string | undefined>(searchQuery);
   const pathname = usePathname();
   const { resetState, storedPathname, openPanel } = useCommentPanelStore();

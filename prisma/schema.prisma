@@ -39,6 +39,9 @@ model User {
   collections           Collection[]
   blockedUsers          BlockedUser[]  @relation("blocking")
   blockedByUsers        BlockedUser[]  @relation("blocked")
+  sentMessages          Message[]      @relation("SentMessages")
+  chatsAsUser1          Chat[]         @relation("ChatUser1")
+  chatsAsUser2          Chat[]         @relation("ChatUser2")
 
   @@unique([createdAt, id])
 }
@@ -292,4 +295,59 @@ model SearchQuery {
 
   @@index([query])
   @@index([count])
+}
+
+model Chat {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user1Id String
+  user2Id String
+  user1   User   @relation("ChatUser1", fields: [user1Id], references: [id], onDelete: Cascade)
+  user2   User   @relation("ChatUser2", fields: [user2Id], references: [id], onDelete: Cascade)
+
+  lastMessageAt DateTime?
+  isActive      Boolean   @default(true)
+
+  messages Message[]
+
+  @@unique([user1Id, user2Id])
+  @@index([user1Id])
+  @@index([user2Id])
+  @@index([lastMessageAt])
+}
+
+enum MessageType {
+  TEXT
+  MEDIA
+}
+
+enum MessageStatus {
+  SENT
+  SEEN
+  SENDING
+  FAILED 
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  content String
+  type    MessageType @default(TEXT)
+
+  chatId String
+  chat   Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  senderId String
+  sender   User   @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  readAt DateTime?
+  status MessageStatus @default(SENT)
+
+  @@index([chatId])
+  @@index([senderId])
+  @@index([createdAt])
 }

@@ -9,7 +9,7 @@ import SearchHeader from './components/SearchHeader';
 const SearchClient = () => {
   const params = useSearchParams();
   const { setCurrentlyPlaying } = useVideoPlayer();
-  const query = decodeURIComponent(params.get('q')?.trim() || '');
+  const query = decodeURIComponent(params?.get('q')?.trim() || '');
 
   if (!query) {
     return <NotFound />;

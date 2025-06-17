@@ -1,21 +1,22 @@
 'use client';
 
 import useCopyLink from '@/hooks/useCopyLink';
-import type { UserProfileInfoProps } from '@/lib/types';
-import { formatCount } from '@/lib/utils';
-import { useBlockedUsers } from '@/store/blockedUsers';
+import { UserProfileInfoProps } from '@/lib/types';
+import { cn, formatCount } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
 import { Privacy } from '@prisma/client';
 import { Lock, Settings } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
+import { Fragment } from 'react';
 import FollowButton from '../buttons/FollowButton';
 import { Icons } from '../icons';
 import UserProfileMenu from '../menus/UserProfileMenu';
 import BlockUser from '../modals/BlockUser';
 import EditProfile from '../modals/EditProfile';
 import { Button } from '../ui/button';
+import { useChat } from '@/contexts/ChatContext';
+import { useRouter } from 'next/navigation';
 
 const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
   const {
@@ -33,6 +34,28 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
   } = props;
   const { user } = useUser();
   const { handleCopyProfileLink } = useCopyLink({ username });
+
+  const { getOrCreateChat, getOrCreateChatLoading } = useChat();
+  const router = useRouter();
+
+  const currentUserFollowsTarget = user?.id
+    ? following.some((follower) => follower.id === user.id)
+    : false;
+  const targetFollowsCurrentUser = user?.id
+    ? followers.some((following) => following.id === user.id)
+    : false;
+  const canMessage = currentUserFollowsTarget && targetFollowsCurrentUser;
+
+  const handleMessageClick = async () => {
+    if (!canMessage || !user?.id || getOrCreateChatLoading) return;
+
+    try {
+      await getOrCreateChat(id);
+      router.push('/messages');
+    } catch (error) {
+      console.error('Error starting chat:', error);
+    }
+  };
 
   return (
     <div className='flex items-center relative min-h-[140px] mb-5 gap-7 flex-[0_0_auto]'>
@@ -57,7 +80,7 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
         </div>
         <div className='flex items-center gap-3'>
           {user?.id === id && (
-            <React.Fragment>
+            <Fragment>
               <EditProfile
                 userBio={bio || ''}
                 userImage={image || ''}
@@ -69,18 +92,39 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
               >
                 <Settings className='size-5 text-neutral-50' />
               </Button>
-            </React.Fragment>
+            </Fragment>
           )}
           {user?.id !== id && isBlocked && (
             <BlockUser username={username} userId={id} isProfile />
           )}
           {user?.id !== id && !isBlocked && (
-            <FollowButton
-              size='default'
-              variant='default'
-              className='bg-primary-blue !text-white/90 min-w-[120px] text-base font-medium overflow-hidden text-ellipsis whitespace-nowrap break-words'
-              author={props}
-            />
+            <Fragment>
+              <FollowButton
+                size='default'
+                variant='default'
+                className='bg-primary-blue !text-white/90 min-w-[120px] text-base font-medium overflow-hidden text-ellipsis whitespace-nowrap break-words'
+                author={props}
+              />
+              <Button
+                onClick={handleMessageClick}
+                disabled={!canMessage || getOrCreateChatLoading}
+                className={cn(
+                  'min-w-[120px] text-base font-medium rounded-md transition-colors duration-200',
+                  canMessage && !getOrCreateChatLoading
+                    ? 'bg-white-13 hover:bg-white/20 !text-white/90'
+                    : 'bg-white-13/50 hover:bg-white-13/50 !text-white/50 cursor-not-allowed'
+                )}
+                title={
+                  !canMessage
+                    ? 'Only friends can message each other'
+                    : getOrCreateChatLoading
+                    ? 'Starting chat...'
+                    : 'Send message'
+                }
+              >
+                {getOrCreateChatLoading ? 'Starting...' : 'Message'}
+              </Button>
+            </Fragment>
           )}
           {user?.id !== id && (
             <UserProfileMenu
