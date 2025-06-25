@@ -33,11 +33,11 @@ const ChatContainer = () => {
     messagesLoaded,
     refreshChats,
   } = useChat();
-  const { socket } = useSocket();
+  const { socket, isConnected } = useSocket();
   const { user } = useUser();
 
   const sendMessage = async () => {
-    if (!message.trim() || !currentChat?.id || !socket) return;
+    if (!message.trim() || !currentChat?.id || !socket || !isConnected) return;
 
     socket.emit(TYPING_EVENT, { chatId: currentChat.id, isTyping: false });
 
@@ -236,6 +236,7 @@ const ChatContainer = () => {
         onSubmit={sendMessage}
         loading={loading}
         placeholder='Type a message...'
+        disabled={!isConnected}
       />
     </div>
   );

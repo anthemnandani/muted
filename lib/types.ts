@@ -891,3 +891,14 @@ export interface NotificationsListProps {
   hasNextPage?: boolean;
   fetchNextPage: () => void;
 }
+
+export interface MessageInputProps {
+  value: string;
+  setIsMultiLine: (isMultiLine: boolean) => void;
+  isMultiLine: boolean;
+  onChange: (e: React.FormEvent<HTMLDivElement>) => void;
+  onSubmit: (e?: React.FormEvent) => void;
+  loading: boolean;
+  placeholder?: string;
+  disabled?: boolean;
+}

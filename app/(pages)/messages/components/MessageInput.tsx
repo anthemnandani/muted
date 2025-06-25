@@ -1,18 +1,9 @@
 'use client';
 
+import { MessageInputProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Image, Send, SmileIcon } from 'lucide-react';
 import { useEffect, useRef } from 'react';
-
-interface MessageInputProps {
-  value: string;
-  setIsMultiLine: (isMultiLine: boolean) => void;
-  isMultiLine: boolean;
-  onChange: (e: React.FormEvent<HTMLDivElement>) => void;
-  onSubmit: (e?: React.FormEvent) => void;
-  loading: boolean;
-  placeholder?: string;
-}
 
 const MessageInput: React.FC<MessageInputProps> = ({
   value,
@@ -22,12 +13,13 @@ const MessageInput: React.FC<MessageInputProps> = ({
   onSubmit,
   loading,
   placeholder = 'Type a message...',
+  disabled = false,
 }) => {
   const contentEditableRef = useRef<HTMLDivElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (value.trim() && !loading) {
+    if (value.trim() && !loading && !disabled) {
       onSubmit();
       if (contentEditableRef.current) {
         contentEditableRef.current.style.height = 'auto';
@@ -40,8 +32,12 @@ const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
-    e.preventDefault();
+    if (disabled) {
+      e.preventDefault();
+      return;
+    }
 
+    e.preventDefault();
     const text = e.clipboardData.getData('text/plain');
 
     const selection = window.getSelection();
@@ -65,18 +61,46 @@ const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (disabled) {
+      e.preventDefault();
+      return;
+    }
+
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
     }
   };
 
+  const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
+    if (disabled) {
+      e.preventDefault();
+      return;
+    }
+    onChange(e);
+  };
+
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (disabled) {
+      e.preventDefault();
+      return;
+    }
+  };
+
+  const handleFocus = (e: React.FocusEvent<HTMLDivElement>) => {
+    if (disabled) {
+      e.preventDefault();
+      e.currentTarget.blur();
+      return;
+    }
+  };
+
   useEffect(() => {
     const element = contentEditableRef.current;
-    if (element) {
+    if (element && !disabled) {
       element.focus();
     }
-  }, []);
+  }, [disabled]);
 
   useEffect(() => {
     const element = contentEditableRef.current;
@@ -89,24 +113,37 @@ const MessageInput: React.FC<MessageInputProps> = ({
     const element = contentEditableRef.current;
     if (element) {
       if (!value.trim()) {
-        element.setAttribute('data-placeholder', placeholder);
+        const placeholderText = disabled ? 'Chat is disabled...' : placeholder;
+        element.setAttribute('data-placeholder', placeholderText);
       } else {
         element.removeAttribute('data-placeholder');
       }
     }
-  }, [value, placeholder]);
+  }, [value, placeholder, disabled]);
 
   const characterCount = value.length;
   const isOverLimit = characterCount > 6000;
+  const isInputDisabled = disabled || loading;
 
   return (
     <div className='flex flex-col w-full px-4 py-3'>
+      {disabled && (
+        <div className='mb-2 px-3 py-1 bg-yellow-500/20 border border-yellow-500/30 rounded-md'>
+          <p className='text-yellow-200 text-xs text-center'>
+            Reconnecting to chat server...
+          </p>
+        </div>
+      )}
+
       <div className='flex items-end w-full'>
         <div
           className={cn(
             'relative flex flex-1 items-end w-full',
-            'bg-white/10 border border-transparent rounded-lg',
-            'min-h-11'
+            'border border-transparent rounded-lg',
+            'min-h-11 transition-all duration-200',
+            isInputDisabled
+              ? 'bg-white/5 border-white/5'
+              : 'bg-white/10 border-transparent hover:bg-white/15'
           )}
         >
           <div
@@ -117,42 +154,79 @@ const MessageInput: React.FC<MessageInputProps> = ({
           >
             <div
               ref={contentEditableRef}
-              contentEditable
+              contentEditable={!isInputDisabled}
+              suppressContentEditableWarning={true}
               role='textbox'
-              aria-label={placeholder}
+              aria-label={disabled ? 'Chat disabled' : placeholder}
+              aria-disabled={isInputDisabled}
+              tabIndex={isInputDisabled ? -1 : 0}
               className={cn(
                 'outline-none select-text whitespace-pre-wrap break-words',
-                'text-white/90 text-[15px] leading-[18px]',
+                'text-[15px] leading-[18px]',
                 'min-h-[18px] max-h-[108px] overflow-y-auto',
-                'before:content-[attr(data-placeholder)] before:text-white/50',
-                'before:absolute before:pointer-events-none',
-                '[&:not([data-placeholder])]:before:content-none'
+                'before:content-[attr(data-placeholder)] before:pointer-events-none',
+                'before:absolute',
+                '[&:not([data-placeholder])]:before:content-none',
+                'transition-all duration-200',
+                isInputDisabled
+                  ? 'text-white/40 cursor-not-allowed before:text-white/30'
+                  : 'text-white/90 cursor-text before:text-white/50'
               )}
-              onInput={onChange}
+              onInput={handleInput}
               onPaste={handlePaste}
               onKeyDown={handleKeyDown}
+              onClick={handleClick}
+              onFocus={handleFocus}
             />
           </div>
 
-          {isMultiLine && (
+          {isMultiLine && !disabled && (
             <div className='absolute left-4 bottom-1 text-white/50 text-[14px] leading-[18px]'>
               {characterCount}/6000
             </div>
           )}
 
           <div className='absolute right-3 bottom-2 flex items-center gap-2'>
-            <Image className='size-6 text-white/70 hover:text-white/90 cursor-pointer transition-colors' />
-            <SmileIcon className='size-6 text-white/70 hover:text-white/90 cursor-pointer transition-colors' />
+            <Image
+              className={cn(
+                'size-6 transition-colors cursor-pointer',
+                isInputDisabled
+                  ? 'text-white/30 cursor-not-allowed'
+                  : 'text-white/70 hover:text-white/90'
+              )}
+              onClick={
+                isInputDisabled
+                  ? undefined
+                  : () => {
+                      /* Handle image upload */
+                    }
+              }
+            />
+            <SmileIcon
+              className={cn(
+                'size-6 transition-colors cursor-pointer',
+                isInputDisabled
+                  ? 'text-white/30 cursor-not-allowed'
+                  : 'text-white/70 hover:text-white/90'
+              )}
+              onClick={
+                isInputDisabled
+                  ? undefined
+                  : () => {
+                      /* Handle emoji picker */
+                    }
+              }
+            />
           </div>
         </div>
 
         <button
           onClick={handleSubmit}
-          disabled={!value.trim() || loading || isOverLimit}
+          disabled={!value.trim() || isInputDisabled || isOverLimit}
           className={cn(
             'ml-3 mb-1 p-2 rounded-full transition-all duration-200',
             'disabled:opacity-50 disabled:cursor-not-allowed',
-            !value.trim() || loading || isOverLimit
+            !value.trim() || isInputDisabled || isOverLimit
               ? 'text-white/40'
               : 'text-primary-blue hover:bg-white/5'
           )}

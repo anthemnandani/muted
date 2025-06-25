@@ -35,9 +35,15 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     if (!user?.id) return;
 
-    const socketInstance = ClientIO({
-      path: '/api/socket/io',
-    });
+    const socketInstance = ClientIO(
+      process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:8000',
+      {
+        transports: ['websocket', 'polling'],
+        withCredentials: true,
+        forceNew: true,
+        timeout: 10000,
+      }
+    );
 
     socketInstance.on('connect', () => {
       socketInstance.emit('REGISTER', { userId: user.id });
