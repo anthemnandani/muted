@@ -18,7 +18,12 @@ const CommentsPanelHeader = ({
       </div>
       <div className='flex items-center gap-3'>
         <SortComments />
-        <button className='text-gray-400' onClick={onClose}>
+        <button
+          type='button'
+          title='Close'
+          className='text-gray-400'
+          onClick={onClose}
+        >
           <X className='size-5' />
         </button>
       </div>

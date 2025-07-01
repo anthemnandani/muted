@@ -1,8 +1,9 @@
 'use client';
 
+import { EmojiPicker } from '@/components/modals/EmojiPicker';
 import { MessageInputProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { Image, Send, SmileIcon } from 'lucide-react';
+import { Image, Send } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
 const MessageInput: React.FC<MessageInputProps> = ({
@@ -72,12 +73,48 @@ const MessageInput: React.FC<MessageInputProps> = ({
     }
   };
 
+  const handleEmojiSelect = (emoji: string) => {
+    if (disabled || !contentEditableRef.current) return;
+
+    const element = contentEditableRef.current;
+    const selection = window.getSelection();
+
+    element.focus();
+
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+
+      const emojiNode = document.createTextNode(emoji);
+      range.insertNode(emojiNode);
+
+      range.setStartAfter(emojiNode);
+      range.setEndAfter(emojiNode);
+      range.collapse(false);
+
+      selection.removeAllRanges();
+      selection.addRange(range);
+    } else {
+      element.innerText += emoji;
+
+      const range = document.createRange();
+      const sel = window.getSelection();
+      range.selectNodeContents(element);
+      range.collapse(false);
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+    }
+
+    const inputEvent = new Event('input', { bubbles: true });
+    element.dispatchEvent(inputEvent);
+  };
+
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
     if (disabled) {
       e.preventDefault();
       return;
     }
-    onChange(e);
+    onChange(e.currentTarget.innerText, e.currentTarget);
   };
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -158,7 +195,6 @@ const MessageInput: React.FC<MessageInputProps> = ({
               suppressContentEditableWarning={true}
               role='textbox'
               aria-label={disabled ? 'Chat disabled' : placeholder}
-              aria-disabled={isInputDisabled}
               tabIndex={isInputDisabled ? -1 : 0}
               className={cn(
                 'outline-none select-text whitespace-pre-wrap break-words',
@@ -187,40 +223,14 @@ const MessageInput: React.FC<MessageInputProps> = ({
           )}
 
           <div className='absolute right-3 bottom-2 flex items-center gap-2'>
-            <Image
-              className={cn(
-                'size-6 transition-colors cursor-pointer',
-                isInputDisabled
-                  ? 'text-white/30 cursor-not-allowed'
-                  : 'text-white/70 hover:text-white/90'
-              )}
-              onClick={
-                isInputDisabled
-                  ? undefined
-                  : () => {
-                      /* Handle image upload */
-                    }
-              }
-            />
-            <SmileIcon
-              className={cn(
-                'size-6 transition-colors cursor-pointer',
-                isInputDisabled
-                  ? 'text-white/30 cursor-not-allowed'
-                  : 'text-white/70 hover:text-white/90'
-              )}
-              onClick={
-                isInputDisabled
-                  ? undefined
-                  : () => {
-                      /* Handle emoji picker */
-                    }
-              }
-            />
+            <Image className='size-6 transition-colors cursor-pointer text-white/70 hover:text-white/90' />
+            <EmojiPicker isComment onChange={handleEmojiSelect} />
           </div>
         </div>
 
         <button
+          type='button'
+          title='Send'
           onClick={handleSubmit}
           disabled={!value.trim() || isInputDisabled || isOverLimit}
           className={cn(

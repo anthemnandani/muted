@@ -93,7 +93,11 @@ const UserSearchInput = ({ isUserReport }: { isUserReport: boolean }) => {
 
             {searchText && (
               <div className='absolute inset-y-0 right-3 flex items-center'>
-                <button onClick={handleClearSearch} type='button'>
+                <button
+                  title='Clear Search'
+                  onClick={handleClearSearch}
+                  type='button'
+                >
                   <X className='size-5 text-white/50' />
                 </button>
               </div>

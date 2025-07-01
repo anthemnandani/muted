@@ -11,6 +11,8 @@ const NavigationButtons = ({
   return (
     <div className='fixed right-4 top-1/2 -translate-y-1/2 flex flex-col justify-center gap-4 w-fit'>
       <button
+        type='button'
+        title='Up'
         className={cn(
           'navigator-btn',
           (isFirstPost || isLoading) && 'cursor-not-allowed opacity-40'
@@ -21,6 +23,8 @@ const NavigationButtons = ({
         <Icons.chevronUp className='size-6 text-white/90 font-medium' />
       </button>
       <button
+        type='button'
+        title='Down'
         className={cn(
           'navigator-btn',
           (isLastPost || isLoading) && 'cursor-not-allowed opacity-40'

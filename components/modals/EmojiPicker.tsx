@@ -39,9 +39,9 @@ export function EmojiPicker({ onChange, isComment = false }: EmojiPickerProps) {
         onClick={() => {
           setOpen(!open);
         }}
-        className='text-gray-400 flex gap-1 select-none items-center text-[15px] cursor-pointer'
+        className='text-white/70 hover:text-white/90 flex gap-1 select-none items-center text-[15px] cursor-pointer'
       >
-        <Smile className='size-5 select-none transform active:scale-75 transition-transform' />
+        <Smile className='size-6 select-none transform active:scale-75 transition-transform' />
       </div>
 
       {open && (

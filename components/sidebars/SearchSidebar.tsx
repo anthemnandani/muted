@@ -140,6 +140,7 @@ const SearchSidebar = () => {
         ) : searchQuery.length > 0 ? (
           <button
             type='button'
+            title='Clear Search'
             onClick={clearSearch}
             className='flex-center size-4 mr-1 rounded-full bg-white/35'
           >

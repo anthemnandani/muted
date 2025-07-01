@@ -140,7 +140,7 @@ const ChatMessages: React.FC<{ messages: Message[]; chatLoading: boolean }> = ({
               <div
                 className={`px-4 py-2 rounded-2xl break-words relative group ${
                   isOwn
-                    ? 'bg-red-500 text-white rounded-br-md'
+                    ? 'bg-[#00A2C9] text-white rounded-br-md'
                     : 'bg-white/10 text-white rounded-bl-md border border-white/10'
                 }`}
               >

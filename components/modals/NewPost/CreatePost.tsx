@@ -76,6 +76,7 @@ const CreatePost = () => {
           maxLength={maxLength}
           ref={textareaRef}
           autoFocus
+          title='Create Post'
         />
       </div>
 

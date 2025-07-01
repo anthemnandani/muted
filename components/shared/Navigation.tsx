@@ -17,12 +17,14 @@ const Navigation = () => {
     useNotification();
   const pathname = usePathname();
   const { user } = useUser();
-  const { chats } = useChat();
+  const { chats, messageRequestsCount } = useChat();
 
   const totalUnreadMessages = chats.reduce(
     (total, chat) => total + chat.unreadCount,
     0
   );
+
+  const totalUnreadMsgsAndRequests = totalUnreadMessages + messageRequestsCount;
 
   useEffect(() => {
     if (isSearchOpen) {
@@ -39,6 +41,8 @@ const Navigation = () => {
         addFill
       />
       <button
+        type='button'
+        title='Search'
         onClick={() => setIsSearchOpen(!isSearchOpen)}
         className={cn(
           'flex-center size-12 transition-all duration-150',
@@ -99,9 +103,11 @@ const Navigation = () => {
           isActive={pathname === '/messages' && !isSearchOpen}
           addFill
         />
-        {totalUnreadMessages > 0 && (
-          <span className='absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] h-[18px] flex-center font-medium'>
-            {totalUnreadMessages > 99 ? '99+' : totalUnreadMessages}
+        {totalUnreadMsgsAndRequests > 0 && (
+          <span className='absolute -top-1 -right-1 bg-red-500 text-white/90 text-xs rounded-full px-1.5 py-0.5 min-w-[18px] h-[18px] flex-center font-medium'>
+            {totalUnreadMsgsAndRequests > 99
+              ? '99+'
+              : totalUnreadMsgsAndRequests}
           </span>
         )}
       </div>

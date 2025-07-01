@@ -16,7 +16,11 @@ const SortComments = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className='text-gray-400 flex gap-1 select-none items-center text-[15px] cursor-pointer'>
+        <button
+          type='button'
+          title='Sort Comments'
+          className='text-gray-400 flex gap-1 select-none items-center text-[15px] cursor-pointer'
+        >
           <Icons.filter className='size-6 select-none transform active:scale-75 transition-transform' />
         </button>
       </DropdownMenuTrigger>

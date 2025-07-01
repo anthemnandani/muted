@@ -4,7 +4,7 @@ const EmptyMessageState = () => {
   return (
     <div className='flex-center h-full'>
       <div className='text-center'>
-        <div className='size-16 bg-white/5 rounded-full flex-center mx-auto mb-4'>
+        <div className='size-16 rounded-full flex-center mx-auto mb-4'>
           <Icons.comments />
         </div>
         <p className='text-white/50 text-lg font-medium mb-2'>

@@ -40,8 +40,9 @@ model User {
   blockedUsers          BlockedUser[]  @relation("blocking")
   blockedByUsers        BlockedUser[]  @relation("blocked")
   sentMessages          Message[]      @relation("SentMessages")
-  chatsAsUser1          Chat[]         @relation("ChatUser1")
-  chatsAsUser2          Chat[]         @relation("ChatUser2")
+  sender                Chat[]         @relation("Sender")
+  receiver              Chat[]         @relation("Receiver")
+  chatDeletions         ChatDeletion[]
 
   @@unique([createdAt, id])
 }
@@ -297,25 +298,53 @@ model SearchQuery {
   @@index([count])
 }
 
+model ChatDeletion {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  chatId    String
+  userId    String
+  deletedAt DateTime @default(now())
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, userId])
+  @@index([chatId])
+  @@index([userId])
+}
+
+enum MessageRequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
 model Chat {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user1Id String
-  user2Id String
-  user1   User   @relation("ChatUser1", fields: [user1Id], references: [id], onDelete: Cascade)
-  user2   User   @relation("ChatUser2", fields: [user2Id], references: [id], onDelete: Cascade)
+  senderId   String
+  receiverId String
+  sender     User   @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver   User   @relation("Receiver", fields: [receiverId], references: [id], onDelete: Cascade)
 
   lastMessageAt DateTime?
   isActive      Boolean   @default(true)
 
-  messages Message[]
+  messageRequest       Boolean               @default(false)
+  messageRequestStatus MessageRequestStatus?
+  requestedById        String?
 
-  @@unique([user1Id, user2Id])
-  @@index([user1Id])
-  @@index([user2Id])
+  messages      Message[]
+  chatDeletions ChatDeletion[]
+
+  @@unique([senderId, receiverId])
+  @@index([senderId])
+  @@index([receiverId])
   @@index([lastMessageAt])
+  @@index([messageRequest])
+  @@index([messageRequestStatus])
 }
 
 enum MessageType {
@@ -327,7 +356,7 @@ enum MessageStatus {
   SENT
   SEEN
   SENDING
-  FAILED 
+  FAILED
 }
 
 model Message {

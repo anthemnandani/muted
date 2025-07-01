@@ -10,18 +10,28 @@ import ChatHeader from './ChatHeader';
 import ChatMessages from './ChatMessages';
 import MessageInput from './MessageInput';
 
-import { RECEIVE_MSG_EVENT, TYPING_EVENT } from '@/lib/socket-events';
+import { TYPING_EVENT } from '@/lib/socket-events';
+import type { ViewMode } from '@/lib/types';
+import { api } from '@/trpc/react';
 import { MessageStatus } from '@prisma/client';
+import { toast } from 'sonner';
 import EmptyMessageState from './EmptyMessageState';
+import MessageRequestActions from './MessageRequestActions';
+import MessageRequestAlert from './MessageRequestAlert';
 
 const TYPING_TIMER_LENGTH = 800;
 let typingTimer: NodeJS.Timeout;
 
-const ChatContainer = () => {
+const ChatContainer = ({
+  setViewMode,
+}: {
+  setViewMode: (mode: ViewMode) => void;
+}) => {
   const [message, setMessage] = useState('');
   const [isMultiLine, setIsMultiLine] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [showRequestLimitAlert, setShowRequestLimitAlert] = useState(false);
 
   const {
     currentChat,
@@ -32,16 +42,97 @@ const ChatContainer = () => {
     chatLoading,
     messagesLoaded,
     refreshChats,
+    resetChatUnreadCount,
+    updateCurrentChat,
+    closeChat,
   } = useChat();
   const { socket, isConnected } = useSocket();
   const { user } = useUser();
 
+  const acceptMessageRequestMutation =
+    api.chat.acceptMessageRequest.useMutation({
+      onSuccess: (data) => {
+        const acceptedChat = data.chat;
+        resetChatUnreadCount(acceptedChat.id);
+
+        if (currentChat?.id === acceptedChat.id) {
+          updateCurrentChat(acceptedChat);
+        }
+
+        if (socket && acceptedChat.requestedById) {
+          socket.emit('MESSAGE_REQUEST_ACCEPTED', {
+            senderId: acceptedChat.requestedById,
+            chatId: acceptedChat.id,
+            acceptedChat: acceptedChat,
+          });
+        }
+
+        refreshChats();
+        setViewMode('chats');
+        toast.success('Message request accepted');
+      },
+      onError: () => {
+        toast.error('Failed to accept message request');
+      },
+    });
+
+  const declineMessageRequestMutation =
+    api.chat.declineMessageRequest.useMutation({
+      onSuccess: () => {
+        if (currentChat?.id) {
+          closeChat();
+        }
+
+        refreshChats();
+        setViewMode('chats');
+      },
+      onError: () => {
+        toast.error('Failed to decline message request');
+      },
+    });
+
+  const isMessageRequest =
+    currentChat?.messageRequest &&
+    currentChat?.messageRequestStatus === 'PENDING';
+
+  const isReceiver = currentChat?.requestedById !== user?.id;
+  const isSender = currentChat?.requestedById === user?.id;
+
+  const showMessageInput = !isMessageRequest || (isMessageRequest && isSender);
+
+  const userMessageCount = useMemo(() => {
+    if (!isMessageRequest || !isSender) return 0;
+    return messages.filter((msg) => msg.senderId === user?.id).length;
+  }, [messages, isMessageRequest, isSender, user?.id]);
+
+  const markAllMessagesAsSeen = () => {
+    if (!socket || !currentChat?.id || !user?.id) return;
+
+    const hasUnreadMessages = messages.some(
+      (msg) => msg.senderId !== user.id && msg.status !== MessageStatus.SEEN
+    );
+
+    if (!hasUnreadMessages) return;
+
+    socket.emit('MARK_ALL_MESSAGES_SEEN', {
+      chatId: currentChat.id,
+    });
+
+    messages.forEach((msg) => {
+      if (msg.senderId !== user.id && msg.status !== MessageStatus.SEEN) {
+        const updatedMessage = {
+          ...msg,
+          status: MessageStatus.SEEN,
+          readAt: new Date(),
+        };
+        updateSeen(updatedMessage);
+      }
+    });
+  };
+
   const sendMessage = async () => {
     if (!message.trim() || !currentChat?.id || !socket || !isConnected) return;
 
-    socket.emit(TYPING_EVENT, { chatId: currentChat.id, isTyping: false });
-
-    setLoading(true);
     const tempMessage = message;
     setMessage('');
 
@@ -49,7 +140,8 @@ const ChatContainer = () => {
       id: uuidv4(),
       content: tempMessage,
       type: 'TEXT',
-      status: MessageStatus.SENDING,
+      status:
+        userMessageCount >= 1 ? MessageStatus.FAILED : MessageStatus.SENDING,
       createdAt: new Date().toISOString(),
       senderId: user!.id,
       chatId: currentChat.id,
@@ -63,6 +155,15 @@ const ChatContainer = () => {
 
     addMessage(optimisticMessage);
 
+    if (isMessageRequest && isSender && userMessageCount >= 1) {
+      setShowRequestLimitAlert(true);
+      return;
+    }
+
+    setLoading(true);
+
+    socket.emit(TYPING_EVENT, { chatId: currentChat.id, isTyping: false });
+
     try {
       const sentMsg: Message = await new Promise((resolve, reject) => {
         socket.timeout(30000).emit(
@@ -73,43 +174,44 @@ const ChatContainer = () => {
             type: 'TEXT',
           },
           (err: any, sentMsg: Message) => {
-            if (err) reject(err);
-            else resolve(sentMsg);
+            if (err) {
+              if (err.type === 'MESSAGE_LIMIT') {
+                setShowRequestLimitAlert(true);
+              }
+              reject(err);
+            } else {
+              resolve(sentMsg);
+            }
           }
         );
       });
 
       updateMessage(optimisticMessage.id, sentMsg);
-
-      refreshChats();
-
-      const otherUser = currentChat.participants.find((p) => p.id !== user?.id);
-      if (otherUser) {
-        socket.emit('chat-list-update', { userId: otherUser.id });
-      }
-    } catch (error) {
-      const failedMessage: Message = {
+    } catch (error: any) {
+      updateMessage(optimisticMessage.id, {
         ...optimisticMessage,
         status: MessageStatus.FAILED,
-      };
-      updateMessage(optimisticMessage.id, failedMessage);
-      setMessage(tempMessage);
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e: React.FormEvent<HTMLDivElement>) => {
-    setMessage(e.currentTarget.innerText);
+  const handleChange = (
+    text: string,
+    element: EventTarget & HTMLDivElement
+  ) => {
+    setMessage(text);
 
     if (!socket || !currentChat?.id) return;
+
+    if (isMessageRequest) return;
 
     if (!isTyping) {
       setIsTyping(true);
       socket.emit(TYPING_EVENT, { chatId: currentChat.id, isTyping: true });
     }
 
-    const element = e.currentTarget;
     const lineHeight = parseInt(window.getComputedStyle(element).lineHeight);
     const height = element.scrollHeight;
     const lines = Math.round(height / lineHeight);
@@ -122,122 +224,74 @@ const ChatContainer = () => {
     }, TYPING_TIMER_LENGTH);
   };
 
+  const handleAcceptRequest = async () => {
+    if (!currentChat?.id) return;
+
+    await acceptMessageRequestMutation.mutateAsync({ chatId: currentChat.id });
+  };
+
+  const handleDeclineRequest = async () => {
+    if (!currentChat?.id) return;
+    await declineMessageRequestMutation.mutateAsync({ chatId: currentChat.id });
+  };
+
   const memoizedMessages = useMemo(() => {
     return messages;
   }, [messages]);
 
+  // Mark messages as seen when chat opens or messages load
   useEffect(() => {
-    if (!messagesLoaded || !currentChat?.id || !user?.id) {
-      return;
+    if (messagesLoaded && currentChat?.id && !isMessageRequest) {
+      setTimeout(markAllMessagesAsSeen, 100);
     }
+  }, [messagesLoaded, currentChat?.id, isMessageRequest]);
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-            const messageId = entry.target.getAttribute('data-message-id');
-            const isSender =
-              entry.target.getAttribute('data-is-sender') === 'true';
-
-            if (!isSender && messageId && socket && currentChat?.id) {
-              const messageToUpdate = messages.find(
-                (msg) => msg.id === messageId
-              );
-
-              if (
-                messageToUpdate &&
-                messageToUpdate.status !== MessageStatus.SEEN
-              ) {
-                socket.emit('SEEN_MESSAGE', {
-                  messageId,
-                  chatId: currentChat.id,
-                });
-
-                const updatedMessage = {
-                  ...messageToUpdate,
-                  status: MessageStatus.SEEN,
-                  readAt: new Date(),
-                };
-
-                updateSeen(updatedMessage);
-              }
-            }
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-
-    memoizedMessages.forEach((msg) => {
-      if (msg.senderId !== user?.id && msg.status !== MessageStatus.SEEN) {
-        const messageElement = document.querySelector(
-          `[data-message-id="${msg.id}"]`
-        );
-        if (messageElement) {
-          messageElement.setAttribute('data-is-sender', 'false');
-          observer.observe(messageElement);
-        }
-      }
-    });
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [
-    memoizedMessages,
-    socket,
-    currentChat?.id,
-    user?.id,
-    updateSeen,
-    messagesLoaded,
-  ]);
-
+  // Also mark as seen when new messages arrive (if chat is active)
   useEffect(() => {
-    if (!socket) return;
-
-    const handleReceiveMessage = (msg: Message) => {
-      if (msg.chatId === currentChat?.id) {
-        addMessage(msg);
-      }
-    };
-
-    const handleSeenMessageUpdate = ({
-      updatedMsg,
-    }: {
-      updatedMsg: Message;
-    }) => {
-      if (updatedMsg && currentChat?.id) {
-        updateSeen(updatedMsg);
-      }
-    };
-
-    socket.on(RECEIVE_MSG_EVENT, handleReceiveMessage);
-    socket.on('SEEN_MESSAGE_UPDATE', handleSeenMessageUpdate);
-
-    return () => {
-      socket.off(RECEIVE_MSG_EVENT, handleReceiveMessage);
-      socket.off('SEEN_MESSAGE_UPDATE', handleSeenMessageUpdate);
-    };
-  }, [socket, currentChat?.id, addMessage, updateSeen]);
+    if (messages.length > 0 && currentChat?.id && !isMessageRequest) {
+      markAllMessagesAsSeen();
+    }
+  }, [messages.length]);
 
   if (!currentChat) {
     return <EmptyMessageState />;
   }
 
+  const otherUser = currentChat.participants.find((p) => p.id !== user?.id);
+
   return (
     <div className='w-full h-full flex flex-col'>
       <ChatHeader selectedChat={currentChat} />
+      {showRequestLimitAlert && (
+        <MessageRequestAlert
+          setShowRequestLimitAlert={setShowRequestLimitAlert}
+        />
+      )}
+
       <ChatMessages messages={memoizedMessages} chatLoading={chatLoading} />
-      <MessageInput
-        value={message}
-        isMultiLine={isMultiLine}
-        setIsMultiLine={setIsMultiLine}
-        onChange={handleChange}
-        onSubmit={sendMessage}
-        loading={loading}
-        placeholder='Type a message...'
-        disabled={!isConnected}
-      />
+
+      {isMessageRequest && isReceiver && (
+        <MessageRequestActions
+          senderName={otherUser?.fullName || otherUser?.username || 'Unknown'}
+          onAccept={handleAcceptRequest}
+          onDecline={handleDeclineRequest}
+          isAccepting={acceptMessageRequestMutation.isLoading}
+          isDeclining={declineMessageRequestMutation.isLoading}
+        />
+      )}
+
+      {showMessageInput && (
+        <MessageInput
+          value={message}
+          isMultiLine={isMultiLine}
+          setIsMultiLine={setIsMultiLine}
+          onChange={handleChange}
+          onSubmit={sendMessage}
+          loading={loading}
+          placeholder='Type a message...'
+          disabled={!isConnected}
+        />
+      )}
     </div>
   );
 };

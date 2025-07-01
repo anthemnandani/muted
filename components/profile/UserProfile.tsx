@@ -1,5 +1,6 @@
 'use client';
 
+import { useChat } from '@/contexts/ChatContext';
 import useCopyLink from '@/hooks/useCopyLink';
 import { UserProfileInfoProps } from '@/lib/types';
 import { cn, formatCount } from '@/lib/utils';
@@ -8,6 +9,7 @@ import { Privacy } from '@prisma/client';
 import { Lock, Settings } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Fragment } from 'react';
 import FollowButton from '../buttons/FollowButton';
 import { Icons } from '../icons';
@@ -15,8 +17,6 @@ import UserProfileMenu from '../menus/UserProfileMenu';
 import BlockUser from '../modals/BlockUser';
 import EditProfile from '../modals/EditProfile';
 import { Button } from '../ui/button';
-import { useChat } from '@/contexts/ChatContext';
-import { useRouter } from 'next/navigation';
 
 const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
   const {
@@ -38,16 +38,8 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
   const { getOrCreateChat, getOrCreateChatLoading } = useChat();
   const router = useRouter();
 
-  const currentUserFollowsTarget = user?.id
-    ? following.some((follower) => follower.id === user.id)
-    : false;
-  const targetFollowsCurrentUser = user?.id
-    ? followers.some((following) => following.id === user.id)
-    : false;
-  const canMessage = currentUserFollowsTarget && targetFollowsCurrentUser;
-
   const handleMessageClick = async () => {
-    if (!canMessage || !user?.id || getOrCreateChatLoading) return;
+    if (!user?.id || getOrCreateChatLoading) return;
 
     try {
       await getOrCreateChat(id);
@@ -107,20 +99,11 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
               />
               <Button
                 onClick={handleMessageClick}
-                disabled={!canMessage || getOrCreateChatLoading}
+                disabled={getOrCreateChatLoading}
                 className={cn(
                   'min-w-[120px] text-base font-medium rounded-md transition-colors duration-200',
-                  canMessage && !getOrCreateChatLoading
-                    ? 'bg-white-13 hover:bg-white/20 !text-white/90'
-                    : 'bg-white-13/50 hover:bg-white-13/50 !text-white/50 cursor-not-allowed'
+                  'bg-white-13 hover:bg-white/20 !text-white/90 disabled:cursor-not-allowed'
                 )}
-                title={
-                  !canMessage
-                    ? 'Only friends can message each other'
-                    : getOrCreateChatLoading
-                    ? 'Starting chat...'
-                    : 'Send message'
-                }
               >
                 {getOrCreateChatLoading ? 'Starting...' : 'Message'}
               </Button>

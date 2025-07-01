@@ -1,4 +1,14 @@
 export const SEND_MSG_EVENT = 'send-message';
 export const RECEIVE_MSG_EVENT = 'receive-message';
-
 export const TYPING_EVENT = 'typing';
+export const SEEN_MESSAGE_UPDATE = 'seen-message-update';
+export const CHAT_LIST_UPDATE = 'chat-list-update';
+export const MESSAGE_REQUEST_RECEIVED = 'message-request-received';
+export const MESSAGE_REQUEST_ACCEPTED = 'message-request-accepted';
+export const CONNECT = 'connect';
+export const DISCONNECT = 'disconnect';
+export const ACTIVE_USERS = 'active-users';
+export const ACTIVE_USERS_REMOVE = 'active-users-remove';
+export const REGISTER = 'register';
+export const MARK_ALL_MESSAGES_SEEN = 'mark-all-messages-seen';
+export const JOIN = 'join';

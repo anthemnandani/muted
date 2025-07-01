@@ -4,6 +4,7 @@ import { PostPrivacy, Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
 import { LucideIcon } from 'lucide-react';
 import Player from 'video.js/dist/types/player';
+import { ReactNode } from 'react';
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
 type RouterOutput = inferRouterOutputs<AppRouter>;
@@ -896,9 +897,32 @@ export interface MessageInputProps {
   value: string;
   setIsMultiLine: (isMultiLine: boolean) => void;
   isMultiLine: boolean;
-  onChange: (e: React.FormEvent<HTMLDivElement>) => void;
+  onChange: (text: string, element: EventTarget & HTMLDivElement) => void;
   onSubmit: (e?: React.FormEvent) => void;
   loading: boolean;
   placeholder?: string;
   disabled?: boolean;
+}
+
+export type ViewMode = 'chats' | 'requests';
+
+export interface MessageRequestActionsProps {
+  senderName: string;
+  onAccept: () => void;
+  onDecline: () => Promise<void>;
+  isAccepting?: boolean;
+  isDeclining?: boolean;
+}
+
+export interface DeleteDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onDelete: () => Promise<void> | void;
+  trigger?: ReactNode;
+  type: 'MESSAGE_REQUEST' | 'CHAT' | 'MESSAGES';
+  targetName?: string;
+  customTitle?: string;
+  customDescription?: string;
+  deleteButtonText?: string;
+  closeDropdown?: () => void;
 }
