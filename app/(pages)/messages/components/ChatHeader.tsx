@@ -33,7 +33,7 @@ const ChatHeader: React.FC<{ selectedChat: Chat }> = ({ selectedChat }) => {
     <div className='border-b border-white/10 p-4 backdrop-blur-sm'>
       <div className='flex-between'>
         <Link
-          href={`/@${otherUser!.username}`}
+          href={`/@${otherUser?.username}`}
           className='flex items-center space-x-3'
         >
           <div className='relative'>
