@@ -39,8 +39,8 @@ const ChatHeader: React.FC<{ selectedChat: Chat }> = ({ selectedChat }) => {
           <div className='relative'>
             <Avatar className='size-10 rounded-full overflow-hidden'>
               <AvatarImage
-                src={otherUser!.image!}
-                alt={otherUser!.fullName || 'User'}
+                src={otherUser?.image ?? ''}
+                alt={otherUser?.fullName || 'User'}
                 width={48}
                 height={48}
                 className='object-cover w-full h-full'
@@ -61,7 +61,7 @@ const ChatHeader: React.FC<{ selectedChat: Chat }> = ({ selectedChat }) => {
 
           <div>
             <h3 className='font-semibold text-white/90'>
-              {otherUser!.fullName}
+              {otherUser?.fullName}
             </h3>
             {isOnline && (
               <p className='text-sm text-white/50'>
