@@ -9,7 +9,7 @@ import { cn, formatDateSeparator, formatMessageTime } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
 import { MessageStatus } from '@prisma/client';
 import { isSameDay } from 'date-fns';
-import { AlertCircle, CheckCheck, Loader } from 'lucide-react';
+import { AlertCircle, Check, CheckCheck } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import EmptyMessageState from './EmptyMessageState';
@@ -21,10 +21,8 @@ const ChatMessages: React.FC<{ messages: Message[]; chatLoading: boolean }> = ({
   const { socket } = useSocket();
   const { user } = useUser();
   const [otherPersonTyping, setOtherPersonTyping] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const prevMessagesLength = useRef(0);
 
   const scrollToBottom = (behavior: 'auto' | 'smooth' = 'smooth') => {
     messagesEndRef.current?.scrollIntoView({ behavior });
@@ -32,21 +30,9 @@ const ChatMessages: React.FC<{ messages: Message[]; chatLoading: boolean }> = ({
 
   useEffect(() => {
     if (messages.length > 0) {
-      if (isInitialLoad) {
-        scrollToBottom('auto');
-        setIsInitialLoad(false);
-      } else if (messages.length > prevMessagesLength.current) {
-        scrollToBottom('smooth');
-      }
-      prevMessagesLength.current = messages.length;
+      scrollToBottom('smooth');
     }
-  }, [messages, isInitialLoad]);
-
-  useEffect(() => {
-    if (chatLoading) {
-      setIsInitialLoad(true);
-    }
-  }, [chatLoading]);
+  }, [messages]);
 
   useEffect(() => {
     if (socket) {
@@ -59,6 +45,10 @@ const ChatMessages: React.FC<{ messages: Message[]; chatLoading: boolean }> = ({
       socket?.off(TYPING_EVENT);
     };
   }, [socket]);
+
+  if (chatLoading) {
+    return <ChatSkeleton />;
+  }
 
   const shouldShowDateSeparator = (
     currentMessage: Message,
@@ -75,7 +65,7 @@ const ChatMessages: React.FC<{ messages: Message[]; chatLoading: boolean }> = ({
   const getMessageStatusIcon = (status: MessageStatus) => {
     switch (status) {
       case MessageStatus.SENDING:
-        return <Loader className='size-3 animate-spin' />;
+        return <Check className='size-3' />;
       case MessageStatus.FAILED:
         return <AlertCircle className='size-3 text-red-500' />;
       case MessageStatus.SENT:
@@ -178,10 +168,6 @@ const ChatMessages: React.FC<{ messages: Message[]; chatLoading: boolean }> = ({
     );
   };
 
-  if (chatLoading) {
-    return <ChatSkeleton />;
-  }
-
   return (
     <div ref={messagesContainerRef} className='flex-1 overflow-y-auto p-4'>
       {messages.length === 0 ? (
@@ -193,18 +179,15 @@ const ChatMessages: React.FC<{ messages: Message[]; chatLoading: boolean }> = ({
           {otherPersonTyping && (
             <div className='flex justify-start mb-4'>
               <div className='flex items-center space-x-2 px-4 py-3 bg-white/10 border border-white/10 rounded-2xl rounded-bl-md'>
-                <div className='flex space-x-1'>
-                  <div className='size-2 bg-white/60 rounded-full animate-bounce'></div>
-                  <div
-                    className='size-2 bg-white/60 rounded-full animate-bounce'
-                    style={{ animationDelay: '0.1s' }}
-                  ></div>
-                  <div
-                    className='size-2 bg-white/60 rounded-full animate-bounce'
-                    style={{ animationDelay: '0.2s' }}
-                  ></div>
-                </div>
-                <span className='text-xs text-white/40 ml-2'>typing...</span>
+                <div className='size-2 bg-white/60 rounded-full animate-bounce'></div>
+                <div
+                  className='size-2 bg-white/60 rounded-full animate-bounce'
+                  style={{ animationDelay: '0.1s' }}
+                ></div>
+                <div
+                  className='size-2 bg-white/60 rounded-full animate-bounce'
+                  style={{ animationDelay: '0.2s' }}
+                ></div>
               </div>
             </div>
           )}

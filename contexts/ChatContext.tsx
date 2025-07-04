@@ -1,20 +1,20 @@
 'use client';
 
+import { RECEIVE_MSG_EVENT } from '@/lib/socket-events';
+import { api } from '@/trpc/react';
+import { useUser } from '@clerk/nextjs';
+import { MessageRequestStatus, MessageStatus } from '@prisma/client';
 import {
   createContext,
+  FC,
+  ReactNode,
   useCallback,
   useContext,
   useEffect,
-  useReducer,
-  ReactNode,
-  FC,
+  useState,
 } from 'react';
-import { useSocket } from './SocketContext';
-import { useUser } from '@clerk/nextjs';
-import { api } from '@/trpc/react';
-import { MessageRequestStatus, MessageStatus } from '@prisma/client';
 import { toast } from 'sonner';
-import { RECEIVE_MSG_EVENT } from '@/lib/socket-events';
+import { useSocket } from './SocketContext';
 
 interface User {
   id: string;
@@ -46,7 +46,7 @@ interface Chat {
   requestedById?: string | null;
 }
 
-interface ChatState {
+interface ChatContextType {
   currentChat: Chat | null;
   messages: Message[];
   chats: Chat[];
@@ -55,13 +55,9 @@ interface ChatState {
   chatLoading: boolean;
   chatsLoading: boolean;
   messagesLoaded: boolean;
-}
-
-interface ChatContextType extends ChatState {
   handleSetCurrChat: (chat: Chat) => void;
   updateCurrentChat: (chat: Chat) => void;
   refreshChats: () => Promise<void>;
-  setMessages: (messages: Message[]) => void;
   addMessage: (message: Message) => void;
   updateSeen: (message: Message) => void;
   updateMessage: (tempId: string, newMessage: Message) => void;
@@ -78,200 +74,19 @@ interface ChatContextType extends ChatState {
   resetChatUnreadCount: (chatId: string) => void;
 }
 
-type ChatAction =
-  | { type: 'SET_CURRENT_CHAT'; payload: Chat | null }
-  | { type: 'UPDATE_CURRENT_CHAT'; payload: Chat }
-  | { type: 'SET_MESSAGES'; payload: Message[] }
-  | {
-      type: 'SET_CHATS_DATA';
-      payload: {
-        chats: Chat[];
-        messageRequests: Chat[];
-        messageRequestsCount: number;
-      };
-    }
-  | { type: 'SET_CHATS'; payload: Chat[] }
-  | { type: 'REMOVE_CHAT'; payload: { chatId: string } }
-  | { type: 'UPDATE_SEEN'; payload: Message }
-  | { type: 'ADD_MESSAGE'; payload: Message }
-  | { type: 'UPDATE_MESSAGE'; payload: { tempId: string; newMessage: Message } }
-  | { type: 'RESET_CHAT_UNREAD_COUNT'; payload: { chatId: string } }
-  | { type: 'SET_MESSAGES_LOADED'; payload: boolean }
-  | {
-      type: 'UPDATE_CHAT_LAST_MESSAGE';
-      payload: { chatId: string; message: Message };
-    }
-  | { type: 'UPDATE_CHAT_IN_LIST'; payload: Chat };
-
-const initialState: ChatState = {
-  currentChat: null,
-  messages: [],
-  chats: [],
-  messageRequests: [],
-  messageRequestsCount: 0,
-  chatLoading: false,
-  chatsLoading: false,
-  messagesLoaded: false,
-};
-
-const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
-  switch (action.type) {
-    case 'SET_CURRENT_CHAT':
-      return {
-        ...state,
-        currentChat: action.payload,
-        messagesLoaded: false,
-        messages: [],
-      };
-
-    case 'UPDATE_CURRENT_CHAT':
-      return {
-        ...state,
-        currentChat: action.payload,
-      };
-
-    case 'SET_MESSAGES':
-      const messages = Array.isArray(action.payload) ? action.payload : [];
-      return {
-        ...state,
-        messages,
-        messagesLoaded: true,
-      };
-
-    case 'SET_CHATS_DATA':
-      return {
-        ...state,
-        chats: action.payload.chats,
-        messageRequests: action.payload.messageRequests,
-        messageRequestsCount: action.payload.messageRequestsCount,
-      };
-
-    case 'SET_CHATS':
-      const chats = Array.isArray(action.payload) ? action.payload : [];
-      return { ...state, chats };
-
-    case 'REMOVE_CHAT':
-      return {
-        ...state,
-        chats: state.chats.filter((chat) => chat.id !== action.payload.chatId),
-        messageRequests: state.messageRequests.filter(
-          (chat) => chat.id !== action.payload.chatId
-        ),
-        currentChat:
-          state.currentChat?.id === action.payload.chatId
-            ? null
-            : state.currentChat,
-      };
-
-    case 'UPDATE_SEEN':
-      if (!Array.isArray(state.messages)) {
-        console.error('Messages is not an array:', state.messages);
-        return state;
-      }
-      return {
-        ...state,
-        messages: state.messages.map((msg) =>
-          msg.id === action.payload.id ? { ...msg, ...action.payload } : msg
-        ),
-      };
-
-    case 'ADD_MESSAGE':
-      if (!Array.isArray(state.messages)) {
-        console.error(
-          'Messages is not an array when adding message:',
-          state.messages
-        );
-        return { ...state, messages: [action.payload] };
-      }
-      return {
-        ...state,
-        messages: [...state.messages, action.payload],
-      };
-
-    case 'UPDATE_MESSAGE':
-      if (!Array.isArray(state.messages)) {
-        console.error(
-          'Messages is not an array when updating message:',
-          state.messages
-        );
-        return state;
-      }
-      return {
-        ...state,
-        messages: state.messages.map((msg) =>
-          msg.id === action.payload.tempId ? action.payload.newMessage : msg
-        ),
-      };
-
-    case 'RESET_CHAT_UNREAD_COUNT':
-      return {
-        ...state,
-        chats: state.chats.map((chat) =>
-          chat.id === action.payload.chatId ? { ...chat, unreadCount: 0 } : chat
-        ),
-      };
-
-    case 'SET_MESSAGES_LOADED':
-      return {
-        ...state,
-        messagesLoaded: action.payload,
-      };
-
-    case 'UPDATE_CHAT_IN_LIST':
-      return {
-        ...state,
-        chats: state.chats.map((chat) =>
-          chat.id === action.payload.id ? action.payload : chat
-        ),
-        currentChat:
-          state.currentChat?.id === action.payload.id
-            ? action.payload
-            : state.currentChat,
-      };
-
-    case 'UPDATE_CHAT_LAST_MESSAGE':
-      const updatedChats = state.chats.map((chat) => {
-        if (chat.id === action.payload.chatId) {
-          return {
-            ...chat,
-            lastMessage: action.payload.message,
-            lastMessageAt: new Date(action.payload.message.createdAt),
-          };
-        }
-        return chat;
-      });
-
-      const sortedChats = [...updatedChats].sort((a, b) => {
-        const aTime = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
-        const bTime = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
-        return bTime - aTime;
-      });
-
-      return {
-        ...state,
-        chats: sortedChats,
-        currentChat:
-          state.currentChat?.id === action.payload.chatId
-            ? {
-                ...state.currentChat,
-                lastMessage: action.payload.message,
-                lastMessageAt: new Date(action.payload.message.createdAt),
-              }
-            : state.currentChat,
-      };
-
-    default:
-      return state;
-  }
-};
-
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const { socket } = useSocket();
   const { user } = useUser();
-  const [state, dispatch] = useReducer(chatReducer, initialState);
   const trpcUtils = api.useUtils();
+
+  const [currentChat, setCurrentChat] = useState<Chat | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [messageRequests, setMessageRequests] = useState<Chat[]>([]);
+  const [messageRequestsCount, setMessageRequestsCount] = useState(0);
+  const [messagesLoaded, setMessagesLoaded] = useState(false);
 
   const {
     data: chatsData,
@@ -281,13 +96,30 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
     enabled: !!user?.id,
   });
 
-  const { data: messagesData, isLoading: chatLoading } =
-    api.chat.getMessages.useQuery(
-      { chatId: state.currentChat?.id ?? '' },
-      {
-        enabled: !!state.currentChat?.id,
+  const {
+    data: messagesData,
+    isLoading: chatLoading,
+    isFetching,
+  } = api.chat.getMessages.useQuery(
+    { chatId: currentChat?.id ?? '' },
+    {
+      enabled: !!currentChat?.id,
+      refetchOnWindowFocus: false,
+      staleTime: 0,
+      cacheTime: 0,
+    }
+  );
+
+  useEffect(() => {
+    if (messagesData?.messages) {
+      setMessages(messagesData.messages);
+      setMessagesLoaded(true);
+
+      if (currentChat?.id && currentChat.unreadCount > 0) {
+        resetChatUnreadCount(currentChat.id);
       }
-    );
+    }
+  }, [messagesData?.messages, currentChat?.id]);
 
   const getOrCreateChatMutation = api.chat.getOrCreateChat.useMutation({
     onSuccess: (data: any) => {
@@ -295,12 +127,12 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
       handleSetCurrChat(chat);
 
-      const existingChatIndex = state.chats.findIndex((c) => c.id === chat.id);
+      const existingChatIndex = chats.findIndex((c) => c.id === chat.id);
       if (existingChatIndex === -1) {
-        const newChats = [chat, ...state.chats];
-        dispatch({ type: 'SET_CHATS', payload: newChats });
+        const newChats = [chat, ...chats];
+        setChats(newChats);
       } else {
-        dispatch({ type: 'UPDATE_CHAT_IN_LIST', payload: chat });
+        setChats((prev) => prev.map((c) => (c.id === chat.id ? chat : c)));
       }
     },
     onError: (error: any) => {
@@ -313,8 +145,7 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   const deleteMessagesMutation = api.chat.deleteMessages.useMutation({
     onSuccess: () => {
-      if (state.currentChat) {
-        dispatch({ type: 'SET_MESSAGES', payload: [] });
+      if (currentChat) {
         toast.success('Messages cleared');
       }
     },
@@ -322,14 +153,21 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
       await trpcUtils.chat.getChats.invalidate();
     },
     onError: (error: any) => {
-      console.error('Error deleting messages:', error);
       toast.error('Failed to clear messages');
     },
   });
 
   const deleteChatMutation = api.chat.deleteChat.useMutation({
     onSuccess: (_, variables) => {
-      dispatch({ type: 'REMOVE_CHAT', payload: { chatId: variables.chatId } });
+      setChats((prev) => prev.filter((chat) => chat.id !== variables.chatId));
+      setMessageRequests((prev) =>
+        prev.filter((chat) => chat.id !== variables.chatId)
+      );
+
+      if (currentChat?.id === variables.chatId) {
+        setCurrentChat(null);
+      }
+
       toast.success('Chat deleted');
     },
     onError: (error: any) => {
@@ -348,52 +186,78 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
     },
   });
 
-  const setChats = (newChats: Chat[]) => {
-    dispatch({ type: 'SET_CHATS', payload: newChats });
-  };
-
   const updateMessage = (tempId: string, newMessage: Message) => {
-    dispatch({ type: 'UPDATE_MESSAGE', payload: { tempId, newMessage } });
+    setMessages((prev) =>
+      prev.map((msg) => (msg.id === tempId ? newMessage : msg))
+    );
 
     if (newMessage.status === MessageStatus.SENT) {
       updateChatLastMessage(newMessage.chatId, newMessage);
     }
   };
 
-  const setMessages = (newMessages: Message[]) => {
-    dispatch({ type: 'SET_MESSAGES', payload: newMessages });
-  };
-
   const addMessage = (message: Message) => {
-    dispatch({ type: 'ADD_MESSAGE', payload: message });
+    setMessages((prev) => [...prev, message]);
     updateChatLastMessage(message.chatId, message);
   };
 
   const closeChat = () => {
-    dispatch({ type: 'SET_CURRENT_CHAT', payload: null });
-    dispatch({ type: 'SET_MESSAGES_LOADED', payload: false });
+    setCurrentChat(null);
+    setMessages([]);
+    setMessagesLoaded(false);
   };
 
   const resetChatUnreadCount = (chatId: string) => {
-    dispatch({ type: 'RESET_CHAT_UNREAD_COUNT', payload: { chatId } });
+    setChats((prev) =>
+      prev.map((chat) =>
+        chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
+      )
+    );
   };
 
   const updateCurrentChat = (chatData: Chat) => {
-    dispatch({ type: 'UPDATE_CURRENT_CHAT', payload: chatData });
+    setCurrentChat(chatData);
   };
 
   const updateChatLastMessage = (chatId: string, message: Message) => {
-    dispatch({
-      type: 'UPDATE_CHAT_LAST_MESSAGE',
-      payload: { chatId, message },
+    const updatedChats = chats.map((chat) => {
+      if (chat.id === chatId) {
+        return {
+          ...chat,
+          lastMessage: message,
+          lastMessageAt: new Date(message.createdAt),
+        };
+      }
+      return chat;
     });
+
+    const sortedChats = [...updatedChats].sort((a, b) => {
+      const aTime = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+      const bTime = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+      return bTime - aTime;
+    });
+
+    setChats(sortedChats);
+
+    if (currentChat?.id === chatId) {
+      setCurrentChat((prev) =>
+        prev
+          ? {
+              ...prev,
+              lastMessage: message,
+              lastMessageAt: new Date(message.createdAt),
+            }
+          : null
+      );
+    }
   };
 
   const handleSetCurrChat = (chatData: Chat) => {
+    setCurrentChat(chatData);
+    setMessagesLoaded(false);
     if (socket) {
       socket.emit('JOIN', { chatId: chatData.id });
     }
-    dispatch({ type: 'SET_CURRENT_CHAT', payload: chatData });
   };
 
   const getOrCreateChat = async (otherUserId: string) => {
@@ -437,37 +301,26 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
   }, [refetchChats]);
 
   const updateSeen = (updatedMessage: Message) => {
-    dispatch({ type: 'UPDATE_SEEN', payload: updatedMessage });
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === updatedMessage.id ? { ...msg, ...updatedMessage } : msg
+      )
+    );
   };
 
   useEffect(() => {
     if (chatsData) {
-      dispatch({
-        type: 'SET_CHATS_DATA',
-        payload: {
-          chats: chatsData.chats || [],
-          messageRequests: chatsData.messageRequests || [],
-          messageRequestsCount: chatsData.messageRequestsCount || 0,
-        },
-      });
+      setChats(chatsData.chats || []);
+      setMessageRequests(chatsData.messageRequests || []);
+      setMessageRequestsCount(chatsData.messageRequestsCount || 0);
     }
   }, [chatsData]);
-
-  useEffect(() => {
-    if (messagesData?.messages) {
-      dispatch({ type: 'SET_MESSAGES', payload: messagesData.messages });
-
-      if (state.currentChat?.id && state.currentChat.unreadCount > 0) {
-        resetChatUnreadCount(state.currentChat.id);
-      }
-    }
-  }, [messagesData, state.currentChat?.id]);
 
   useEffect(() => {
     if (!socket) return;
 
     const handleReceiveMessage = (msg: Message) => {
-      if (msg.chatId === state.currentChat?.id) {
+      if (msg.chatId === currentChat?.id) {
         addMessage(msg);
       }
     };
@@ -477,7 +330,7 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
     }: {
       updatedMsg: Message;
     }) => {
-      if (updatedMsg && state.currentChat?.id) {
+      if (updatedMsg && currentChat?.id) {
         updateSeen(updatedMsg);
       }
     };
@@ -497,7 +350,7 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
       chatId: string;
       acceptedChat: Chat;
     }) => {
-      if (state.currentChat?.id === chatId) {
+      if (currentChat?.id === chatId) {
         updateCurrentChat(acceptedChat);
       }
       refreshChats();
@@ -518,7 +371,7 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
     };
   }, [
     socket,
-    state.currentChat?.id,
+    currentChat?.id,
     addMessage,
     updateSeen,
     refreshChats,
@@ -526,18 +379,17 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
   ]);
 
   const contextValue: ChatContextType = {
-    currentChat: state.currentChat,
-    messages: state.messages,
-    chatLoading,
+    currentChat,
+    messages,
+    chatLoading: chatLoading || isFetching,
     chatsLoading,
-    chats: state.chats,
-    messageRequests: state.messageRequests,
-    messageRequestsCount: state.messageRequestsCount,
-    messagesLoaded: state.messagesLoaded,
+    chats,
+    messageRequests,
+    messageRequestsCount,
+    messagesLoaded,
     handleSetCurrChat,
     updateCurrentChat,
     refreshChats,
-    setMessages,
     addMessage,
     updateSeen,
     updateMessage,
@@ -568,4 +420,4 @@ const useChat = (): ChatContextType => {
 };
 
 export { ChatProvider, useChat };
-export type { User, Message, Chat, ChatContextType };
+export type { Chat, ChatContextType, Message, User };

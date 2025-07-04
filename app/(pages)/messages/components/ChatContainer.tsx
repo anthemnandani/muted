@@ -40,7 +40,6 @@ const ChatContainer = ({
     addMessage,
     updateMessage,
     chatLoading,
-    messagesLoaded,
     refreshChats,
     resetChatUnreadCount,
     updateCurrentChat,
@@ -235,18 +234,6 @@ const ChatContainer = ({
     await declineMessageRequestMutation.mutateAsync({ chatId: currentChat.id });
   };
 
-  const memoizedMessages = useMemo(() => {
-    return messages;
-  }, [messages]);
-
-  // Mark messages as seen when chat opens or messages load
-  useEffect(() => {
-    if (messagesLoaded && currentChat?.id && !isMessageRequest) {
-      setTimeout(markAllMessagesAsSeen, 100);
-    }
-  }, [messagesLoaded, currentChat?.id, isMessageRequest]);
-
-  // Also mark as seen when new messages arrive (if chat is active)
   useEffect(() => {
     if (messages.length > 0 && currentChat?.id && !isMessageRequest) {
       markAllMessagesAsSeen();
@@ -268,7 +255,7 @@ const ChatContainer = ({
         />
       )}
 
-      <ChatMessages messages={memoizedMessages} chatLoading={chatLoading} />
+      <ChatMessages messages={messages} chatLoading={chatLoading} />
 
       {isMessageRequest && isReceiver && (
         <MessageRequestActions
