@@ -46,7 +46,7 @@ const ChatHeader: React.FC<{ selectedChat: Chat }> = ({ selectedChat }) => {
                 className='object-cover w-full h-full'
               />
               <AvatarFallback className='flex-center'>
-                {otherUser!.username?.slice(0, 2).toUpperCase()}
+                {otherUser?.username?.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             {isOnline && (
