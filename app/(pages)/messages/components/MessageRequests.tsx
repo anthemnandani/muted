@@ -1,15 +1,17 @@
 'use client';
 
 import ChatListSkeleton from '@/components/skeletons/ChatListSkeleton';
-import { useChat } from '@/contexts/ChatContext';
+import { useChatContext } from '@/contexts/ChatContext';
 import { useUser } from '@clerk/nextjs';
 import { useState } from 'react';
 import ChatListItem from './ChatListItem';
 import ChatSearchInput from './ChatSearchInput';
+import useChatStore from '@/store/chatStore';
 
 const MessageRequests = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const { currentChat, messageRequests, chatsLoading } = useChat();
+  const { chatsLoading } = useChatContext();
+  const { currentChat, messageRequests } = useChatStore();
   const { user } = useUser();
 
   const filteredRequests = messageRequests.filter((request) => {

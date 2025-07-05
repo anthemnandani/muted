@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useChat } from '@/contexts/ChatContext';
+import { useChatContext } from '@/contexts/ChatContext';
 import { cn } from '@/lib/utils';
 import { Dispatch, SetStateAction } from 'react';
 
@@ -27,7 +27,7 @@ const DeleteChat = ({
   deleteAction,
   onConfirm,
 }: DeleteChatParams) => {
-  const { deleteChatLoading, deleteMessagesLoading } = useChat();
+  const { deleteChatLoading, deleteMessagesLoading } = useChatContext();
 
   return (
     <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

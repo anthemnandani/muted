@@ -1,5 +1,11 @@
 import type { AppRouter } from '@/server/api/root';
-import type { CollectionPrivacy, NotificationType, User } from '@prisma/client';
+import type {
+  CollectionPrivacy,
+  MessageRequestStatus,
+  MessageStatus,
+  NotificationType,
+  User,
+} from '@prisma/client';
 import { PostPrivacy, Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
 import { LucideIcon } from 'lucide-react';
@@ -906,14 +912,6 @@ export interface MessageInputProps {
 
 export type ViewMode = 'chats' | 'requests';
 
-export interface MessageRequestActionsProps {
-  senderName: string;
-  onAccept: () => void;
-  onDecline: () => Promise<void>;
-  isAccepting?: boolean;
-  isDeclining?: boolean;
-}
-
 export interface DeleteDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -925,4 +923,34 @@ export interface DeleteDialogProps {
   customDescription?: string;
   deleteButtonText?: string;
   closeDropdown?: () => void;
+}
+
+export interface ChatUser {
+  id: string;
+  username: string;
+  fullName?: string | null;
+  image?: string | null;
+}
+
+export interface Message {
+  id: string;
+  content: string;
+  type: 'TEXT' | 'MEDIA';
+  status?: MessageStatus;
+  createdAt: string | Date;
+  readAt?: Date | null;
+  senderId: string;
+  chatId: string;
+  sender: ChatUser;
+}
+
+export interface Chat {
+  id: string;
+  participants: ChatUser[];
+  lastMessage?: Message;
+  lastMessageAt?: Date | null;
+  unreadCount: number;
+  messageRequest?: boolean;
+  messageRequestStatus?: MessageRequestStatus | null;
+  requestedById?: string | null;
 }

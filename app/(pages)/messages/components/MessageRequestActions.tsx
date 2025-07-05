@@ -2,27 +2,28 @@
 
 import DeleteDialog from '@/components/modals/DeleteDialog';
 import { Button } from '@/components/ui/button';
-import { MessageRequestActionsProps } from '@/lib/types';
+import useChat from '@/hooks/useChat';
 import { cn } from '@/lib/utils';
 import { AlertTriangle } from 'lucide-react';
 import { FC, Fragment, useState } from 'react';
 
-const MessageRequestActions: FC<MessageRequestActionsProps> = ({
-  senderName,
-  onAccept,
-  onDecline,
-  isAccepting = false,
-  isDeclining = false,
-}) => {
+const MessageRequestActions: FC<{ senderName: string }> = ({ senderName }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const {
+    handleAcceptRequest,
+    handleDeclineRequest,
+    isAcceptingRequest,
+    isDecliningRequest,
+  } = useChat();
 
   const handleDeleteClick = () => {
     setShowDeleteDialog(true);
   };
 
   const handleConfirmDelete = async () => {
-    await onDecline();
+    await handleDeclineRequest();
   };
+
   return (
     <Fragment>
       <div className='border-t border-white/10 p-4 bg-black/20'>
@@ -44,21 +45,21 @@ const MessageRequestActions: FC<MessageRequestActionsProps> = ({
         <div className='flex gap-3'>
           <Button
             onClick={handleDeleteClick}
-            disabled={isAccepting || isDeclining}
+            disabled={isAcceptingRequest || isDecliningRequest}
             variant='outline'
             className={cn(
               'flex-1 bg-transparent border-white/20 text-white/80 hover:bg-white/10',
               'hover:text-white disabled:opacity-50'
             )}
           >
-            {isDeclining ? 'Deleting...' : 'Delete'}
+            {isDecliningRequest ? 'Deleting...' : 'Delete'}
           </Button>
           <Button
-            onClick={onAccept}
-            disabled={isAccepting || isDeclining}
+            onClick={handleAcceptRequest}
+            disabled={isAcceptingRequest || isDecliningRequest}
             className='flex-1 bg-primary-blue hover:bg-primary-blue/80 text-white disabled:opacity-50'
           >
-            {isAccepting ? 'Accepting...' : 'Accept'}
+            {isAcceptingRequest ? 'Accepting...' : 'Accept'}
           </Button>
         </div>
       </div>

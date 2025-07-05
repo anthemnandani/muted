@@ -1,8 +1,9 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useChat, type Chat, type User } from '@/contexts/ChatContext';
+import { useChatContext } from '@/contexts/ChatContext';
 import { useSocket } from '@/contexts/SocketContext';
+import { Chat, ChatUser } from '@/lib/types';
 import { cn, formatMsgTime } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
 import { Fragment, useCallback } from 'react';
@@ -10,14 +11,14 @@ import { Fragment, useCallback } from 'react';
 interface ChatListItemParams {
   chat: Chat;
   isSelected: boolean;
-  otherUser: User;
+  otherUser: ChatUser;
 }
 
 const ChatListItem = ({ chat, isSelected, otherUser }: ChatListItemParams) => {
   const { user } = useUser();
   const hasUnread = chat.unreadCount > 0;
   const lastMessage = chat.lastMessage;
-  const { handleSetCurrChat } = useChat();
+  const { handleSetCurrChat } = useChatContext();
 
   const { activeUsers } = useSocket();
   // const [showDeleteDialog, setShowDeleteDialog] = useState(false);

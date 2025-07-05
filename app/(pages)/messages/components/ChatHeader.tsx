@@ -7,17 +7,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useChat } from '@/contexts/ChatContext';
+import { useChatContext } from '@/contexts/ChatContext';
 import { useSocket } from '@/contexts/SocketContext';
 import { useUser } from '@clerk/nextjs';
 import { MoreVertical, Trash, X } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { Chat } from '@/contexts/ChatContext';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { Chat } from '@/lib/types';
 
 const ChatHeader: React.FC<{ selectedChat: Chat }> = ({ selectedChat }) => {
-  const { closeChat } = useChat();
+  const { closeChat } = useChatContext();
   const { user } = useUser();
   const { activeUsers } = useSocket();
 

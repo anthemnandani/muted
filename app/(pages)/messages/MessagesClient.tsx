@@ -1,15 +1,14 @@
 'use client';
 
-import type { ViewMode } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import useChatStore from '@/store/chatStore';
 import { ArrowLeft } from 'lucide-react';
-import { useState } from 'react';
+import ChatContainer from './components/ChatContainer';
 import ChatList from './components/ChatList';
 import MessageRequests from './components/MessageRequests';
-import ChatContainer from './components/ChatContainer';
 
 const MessagesClient = () => {
-  const [viewMode, setViewMode] = useState<ViewMode>('chats');
+  const { setViewMode, viewMode } = useChatStore();
 
   const handleMessageRequestsClick = () => {
     setViewMode('requests');
@@ -55,7 +54,7 @@ const MessagesClient = () => {
       </div>
 
       <div className='fixed left-[396px] top-0 right-0 h-screen w-[calc(100vw_-_396px)]'>
-        <ChatContainer setViewMode={setViewMode} />
+        <ChatContainer />
       </div>
     </div>
   );

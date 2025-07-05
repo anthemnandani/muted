@@ -1,9 +1,10 @@
 'use client';
 
 import ChatListSkeleton from '@/components/skeletons/ChatListSkeleton';
-import type { Chat, User } from '@/contexts/ChatContext';
-import { useChat } from '@/contexts/ChatContext';
+import { useChatContext } from '@/contexts/ChatContext';
+import { Chat, ChatUser } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import useChatStore from '@/store/chatStore';
 import { useUser } from '@clerk/nextjs';
 import { MessageCircle, Search } from 'lucide-react';
 import { useCallback, useState } from 'react';
@@ -15,12 +16,13 @@ const ChatList = ({
 }: {
   onMessageRequestsClick?: () => void;
 }) => {
-  const { currentChat, chats, messageRequestsCount, chatsLoading } = useChat();
+  const { chatsLoading } = useChatContext();
+  const { currentChat, chats, messageRequestsCount } = useChatStore();
   const { user } = useUser();
   const [searchQuery, setSearchQuery] = useState('');
 
   const getOtherUser = useCallback(
-    (chat: Chat): User | null => {
+    (chat: Chat): ChatUser | null => {
       if (!chat.participants || !user?.id) return null;
       return chat.participants.find((p) => p.id !== user.id) || null;
     },

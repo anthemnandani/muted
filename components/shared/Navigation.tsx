@@ -2,6 +2,7 @@
 
 import useNotification from '@/hooks/useNotification';
 import { cn } from '@/lib/utils';
+import useChatStore from '@/store/chatStore';
 import { useSearchStore } from '@/store/searchStore';
 import { useUser } from '@clerk/nextjs';
 import { usePathname } from 'next/navigation';
@@ -9,7 +10,6 @@ import { useEffect } from 'react';
 import { Icons } from '../icons';
 import NewPost from '../modals/NewPost';
 import MenuLink from './MenuLink';
-import { useChat } from '@/contexts/ChatContext';
 
 const Navigation = () => {
   const { isSearchOpen, setIsSearchOpen } = useSearchStore();
@@ -17,7 +17,7 @@ const Navigation = () => {
     useNotification();
   const pathname = usePathname();
   const { user } = useUser();
-  const { chats, messageRequestsCount } = useChat();
+  const { chats, messageRequestsCount } = useChatStore();
 
   const totalUnreadMessages = chats.reduce(
     (total, chat) => total + chat.unreadCount,

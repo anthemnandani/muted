@@ -1,6 +1,6 @@
 'use client';
 
-import { useChat } from '@/contexts/ChatContext';
+import { useChatContext } from '@/contexts/ChatContext';
 import useCopyLink from '@/hooks/useCopyLink';
 import { UserProfileInfoProps } from '@/lib/types';
 import { cn, formatCount } from '@/lib/utils';
@@ -35,7 +35,7 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
   const { user } = useUser();
   const { handleCopyProfileLink } = useCopyLink({ username });
 
-  const { getOrCreateChat, getOrCreateChatLoading } = useChat();
+  const { getOrCreateChat, getOrCreateChatLoading } = useChatContext();
   const router = useRouter();
 
   const handleMessageClick = async () => {
