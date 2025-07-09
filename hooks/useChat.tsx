@@ -21,7 +21,6 @@ const useChat = () => {
     updateCurrentChat,
     refreshChats,
     closeChat,
-    updateSeen,
     updateMessage,
     addMessage,
   } = useChatContext();
@@ -84,31 +83,6 @@ const useChat = () => {
         toast.error('Failed to decline message request');
       },
     });
-
-  const markAllMessagesAsSeen = () => {
-    if (!socket || !currentChat?.id || !user?.id) return;
-
-    const hasUnreadMessages = messages.some(
-      (msg) => msg.senderId !== user.id && msg.status !== MessageStatus.SEEN
-    );
-
-    if (!hasUnreadMessages) return;
-
-    socket.emit('MARK_ALL_MESSAGES_SEEN', {
-      chatId: currentChat.id,
-    });
-
-    messages.forEach((msg) => {
-      if (msg.senderId !== user.id && msg.status !== MessageStatus.SEEN) {
-        const updatedMessage = {
-          ...msg,
-          status: MessageStatus.SEEN,
-          readAt: new Date(),
-        };
-        updateSeen(updatedMessage);
-      }
-    });
-  };
 
   const sendMessage = async () => {
     if (!message.trim() || !currentChat?.id || !socket || !isConnected) return;
@@ -188,11 +162,17 @@ const useChat = () => {
     await declineMessageRequest({ chatId: currentChat.id });
   };
 
+  const resetUnreadCountRealTime = () => {
+    if (!currentChat?.id || !socket) return;
+
+    resetChatUnreadCount(currentChat.id);
+  };
+
   return {
     handleAcceptRequest,
     handleDeclineRequest,
-    markAllMessagesAsSeen,
     sendMessage,
+    resetUnreadCountRealTime,
     setMessage,
     setShowRequestLimitAlert,
     isMessageRequest,

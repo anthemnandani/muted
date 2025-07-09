@@ -222,8 +222,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             </div>
           )}
 
-          <div className='absolute right-3 bottom-2 flex items-center gap-2'>
-            <Image className='size-6 transition-colors cursor-pointer text-white/70 hover:text-white/90' />
+          <div className='absolute right-3 bottom-2 flex'>
             <EmojiPicker isComment onChange={handleEmojiSelect} />
           </div>
         </div>

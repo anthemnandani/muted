@@ -942,6 +942,18 @@ export interface Message {
   senderId: string;
   chatId: string;
   sender: ChatUser;
+  reactions: Array<{
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    emoji: string;
+    messageId: string;
+    userId: string;
+    user: {
+      id: string;
+      username: string;
+    };
+  }>;
 }
 
 export interface Chat {

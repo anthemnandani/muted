@@ -12,11 +12,17 @@ import {
   differenceInSeconds,
   differenceInWeeks,
   format,
+  isSameDay,
   isToday,
   isYesterday,
 } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
-import { type AspectRatio, ParentPostProps, type PostMedia } from './types';
+import {
+  type AspectRatio,
+  Message,
+  ParentPostProps,
+  type PostMedia,
+} from './types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -637,4 +643,31 @@ export const getImageUrl = (media: PostMedia) => {
     return media.fileUrl;
   }
   return media.thumbnailUrl;
+};
+
+export const shouldShowDateSeparator = (
+  currentMessage: Message,
+  previousMessage: Message | null
+): boolean => {
+  if (!previousMessage) return true;
+
+  const currentDate = new Date(currentMessage.createdAt);
+  const previousDate = new Date(previousMessage.createdAt);
+
+  if (!isSameDay(currentDate, previousDate)) {
+    return true;
+  }
+
+  const currentTimeFormatted = format(currentDate, 'h:mm a');
+  const previousTimeFormatted = format(previousDate, 'h:mm a');
+
+  return currentTimeFormatted !== previousTimeFormatted;
+};
+
+export const formatMessageDateSeparator = (date: Date) => {
+  if (isToday(date)) {
+    return format(date, 'h:mm a');
+  } else {
+    return format(date, 'MMM d, yyyy • h:mm a');
+  }
 };

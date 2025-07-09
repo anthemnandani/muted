@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
 import { TRPCError } from '@trpc/server';
-import { MessageRequestStatus } from '@prisma/client';
+import { MessageRequestStatus, MessageStatus } from '@prisma/client';
 
 export const chatRouter = createTRPCRouter({
   getChats: privateProcedure.query(async ({ ctx }) => {
@@ -217,6 +217,16 @@ export const chatRouter = createTRPCRouter({
                 username: true,
                 fullName: true,
                 image: true,
+              },
+            },
+            reactions: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    username: true,
+                  },
+                },
               },
             },
           },
@@ -487,6 +497,55 @@ export const chatRouter = createTRPCRouter({
       }
     }),
 
+  resetUnreadCount: privateProcedure
+    .input(z.object({ chatId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const chat = await ctx.db.chat.findUnique({
+          where: { id: input.chatId },
+        });
+
+        if (!chat) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Chat not found',
+          });
+        }
+
+        if (chat.senderId !== ctx.userId && chat.receiverId !== ctx.userId) {
+          throw new TRPCError({
+            code: 'FORBIDDEN',
+            message: 'Unauthorized access to chat',
+          });
+        }
+
+        const updatedResult = await ctx.db.message.updateMany({
+          where: {
+            chatId: input.chatId,
+            senderId: { not: ctx.userId },
+            status: { not: MessageStatus.SEEN },
+          },
+          data: {
+            status: MessageStatus.SEEN,
+            readAt: new Date(),
+          },
+        });
+
+        return {
+          success: true,
+          updatedCount: updatedResult.count,
+        };
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to reset unread count',
+        });
+      }
+    }),
+
   acceptMessageRequest: privateProcedure
     .input(z.object({ chatId: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -623,6 +682,60 @@ export const chatRouter = createTRPCRouter({
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to decline message request',
+        });
+      }
+    }),
+
+  addReaction: privateProcedure
+    .input(z.object({ messageId: z.string(), emoji: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const message = await ctx.db.message.findUnique({
+          where: { id: input.messageId },
+        });
+
+        if (!message) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Chat not found' });
+        }
+        const reaction = await ctx.db.messageReaction.create({
+          data: {
+            messageId: input.messageId,
+            userId: ctx.userId,
+            emoji: input.emoji,
+          },
+        });
+        return { success: true, reaction };
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to add reaction',
+        });
+      }
+    }),
+
+  removeReaction: privateProcedure
+    .input(z.object({ messageId: z.string(), emoji: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const message = await ctx.db.message.findUnique({
+          where: { id: input.messageId },
+        });
+
+        if (!message) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Chat not found' });
+        }
+        await ctx.db.messageReaction.deleteMany({
+          where: {
+            messageId: input.messageId,
+            userId: ctx.userId,
+            emoji: input.emoji,
+          },
+        });
+        return { success: true };
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to remove reaction',
         });
       }
     }),

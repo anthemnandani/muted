@@ -14,6 +14,7 @@ import useChatStore from '@/store/chatStore';
 import EmptyMessageState from './EmptyMessageState';
 import MessageRequestActions from './MessageRequestActions';
 import MessageRequestAlert from './MessageRequestAlert';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const TYPING_TIMER_LENGTH = 800;
 let typingTimer: NodeJS.Timeout;
@@ -29,8 +30,8 @@ const ChatContainer = () => {
 
   const {
     isMessageRequest,
-    markAllMessagesAsSeen,
     setMessage,
+    resetUnreadCountRealTime,
     showRequestLimitAlert,
     setShowRequestLimitAlert,
     isReceiver,
@@ -68,10 +69,10 @@ const ChatContainer = () => {
   };
 
   useEffect(() => {
-    if (messages.length > 0 && currentChat?.id && !isMessageRequest) {
-      markAllMessagesAsSeen();
+    if (currentChat?.id && currentChat.unreadCount > 0) {
+      resetUnreadCountRealTime();
     }
-  }, [messages.length]);
+  }, [currentChat?.id]);
 
   if (!currentChat) {
     return <EmptyMessageState />;

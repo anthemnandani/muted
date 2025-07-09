@@ -1,6 +1,7 @@
 'use client';
 
 import ChatSkeleton from '@/components/skeletons/ChatSkeleton';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSocket } from '@/contexts/SocketContext';
 import useChatMessages from '@/hooks/useChatMessages';
 import { TYPING_EVENT } from '@/lib/socket-events';
@@ -46,7 +47,10 @@ const ChatMessages: React.FC<{ messages: Message[]; chatLoading: boolean }> = ({
   const { renderMessage } = useChatMessages(messages);
 
   return (
-    <div ref={messagesContainerRef} className='flex-1 overflow-y-auto p-4'>
+    <ScrollArea
+      ref={messagesContainerRef}
+      className='flex-1 flex flex-col px-4'
+    >
       {messages.length === 0 ? (
         <EmptyMessageState />
       ) : (
@@ -72,7 +76,7 @@ const ChatMessages: React.FC<{ messages: Message[]; chatLoading: boolean }> = ({
           <div ref={messagesEndRef} />
         </div>
       )}
-    </div>
+    </ScrollArea>
   );
 };
 
