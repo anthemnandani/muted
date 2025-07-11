@@ -122,10 +122,9 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
         <motion.div
           layout
           className={cn(
-            'absolute -bottom-7 flex items-center gap-0.5',
+            'absolute -bottom-5 flex items-center gap-0.5 z-10',
             'p-1 rounded-full',
-            'bg-white/10 backdrop-blur-sm',
-            'shadow-lg',
+            'bg-white/10 backdrop-blur-sm shadow-lg',
             isOwn ? 'right-1' : 'left-1'
           )}
         >
@@ -133,11 +132,11 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
             <motion.span
               layout
               key={reaction.id}
-              className='text-sm leading-none cursor-pointer p-1'
+              className='text-sm leading-none cursor-pointer p-0.5'
               title={`${
                 reaction.user.id === user?.id ? 'You' : reaction.user.username
               } reacted with ${reaction.emoji}`}
-              whileHover={{ scale: 1.4, rotate: [0, -10, 10, 0] }}
+              whileHover={{ scale: 1.2, rotate: [0, -10, 10, 0] }}
             >
               {reaction.emoji}
             </motion.span>
@@ -241,7 +240,7 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
       <div
         className={cn(
           'flex justify-end gap-2 group relative',
-          isLastMessage ? 'mb-7' : 'mb-3'
+          isLastMessage ? 'mb-7' : 'mb-4'
         )}
       >
         <div className='flex items-center gap-2'>
@@ -258,7 +257,7 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
     <div
       className={cn(
         'flex items-end gap-2 group relative',
-        isLastMessage ? 'mb-7' : 'mb-3'
+        isLastMessage ? 'mb-7' : 'mb-5'
       )}
     >
       <div className='flex-shrink-0'>{renderAvatar()}</div>
