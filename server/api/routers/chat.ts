@@ -1,7 +1,7 @@
-import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
-import { TRPCError } from '@trpc/server';
 import { MessageRequestStatus, MessageStatus } from '@prisma/client';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
 
 export const chatRouter = createTRPCRouter({
   getChats: privateProcedure.query(async ({ ctx }) => {
@@ -682,60 +682,6 @@ export const chatRouter = createTRPCRouter({
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to decline message request',
-        });
-      }
-    }),
-
-  addReaction: privateProcedure
-    .input(z.object({ messageId: z.string(), emoji: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      try {
-        const message = await ctx.db.message.findUnique({
-          where: { id: input.messageId },
-        });
-
-        if (!message) {
-          throw new TRPCError({ code: 'NOT_FOUND', message: 'Chat not found' });
-        }
-        const reaction = await ctx.db.messageReaction.create({
-          data: {
-            messageId: input.messageId,
-            userId: ctx.userId,
-            emoji: input.emoji,
-          },
-        });
-        return { success: true, reaction };
-      } catch (error) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to add reaction',
-        });
-      }
-    }),
-
-  removeReaction: privateProcedure
-    .input(z.object({ messageId: z.string(), emoji: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      try {
-        const message = await ctx.db.message.findUnique({
-          where: { id: input.messageId },
-        });
-
-        if (!message) {
-          throw new TRPCError({ code: 'NOT_FOUND', message: 'Chat not found' });
-        }
-        await ctx.db.messageReaction.deleteMany({
-          where: {
-            messageId: input.messageId,
-            userId: ctx.userId,
-            emoji: input.emoji,
-          },
-        });
-        return { success: true };
-      } catch (error) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to remove reaction',
         });
       }
     }),

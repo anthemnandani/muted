@@ -1,7 +1,7 @@
 'use client';
 
 import { RECEIVE_MSG_EVENT } from '@/lib/socket-events';
-import { Chat, Message } from '@/lib/types';
+import { Chat, Message, MessageReaction } from '@/lib/types';
 import useChatStore from '@/store/chatStore';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
@@ -340,16 +340,54 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
       refreshChats();
     };
 
+    const handleReactionUpdated = (data: {
+      messageId: string;
+      userId: string;
+      emoji: string;
+      action: 'added' | 'updated' | 'removed';
+      reaction: MessageReaction | null;
+    }) => {
+      const currentMessages = useChatStore.getState().messages;
+
+      const updatedMessages = currentMessages.map((msg) => {
+        if (msg.id === data.messageId) {
+          let updatedReactions = [...(msg.reactions || [])];
+
+          if (data.action === 'removed') {
+            updatedReactions = updatedReactions.filter(
+              (r) => r.userId !== data.userId
+            );
+          } else if (data.reaction) {
+            const existingIndex = updatedReactions.findIndex(
+              (r) => r.userId === data.userId
+            );
+            if (existingIndex > -1) {
+              updatedReactions[existingIndex] = data.reaction;
+            } else {
+              updatedReactions.push(data.reaction);
+            }
+          }
+
+          return { ...msg, reactions: updatedReactions };
+        }
+        return msg;
+      });
+
+      setMessages(updatedMessages);
+    };
+
     socket.on(RECEIVE_MSG_EVENT, handleReceiveMessage);
     socket.on('CHAT_LIST_UPDATE', handleChatListUpdate);
     socket.on('MESSAGE_REQUEST_RECEIVED', handleMessageRequestReceived);
     socket.on('MESSAGE_REQUEST_ACCEPTED', handleMessageRequestAccepted);
+    socket.on('REACTION_UPDATED', handleReactionUpdated);
 
     return () => {
       socket.off(RECEIVE_MSG_EVENT, handleReceiveMessage);
       socket.off('CHAT_LIST_UPDATE', handleChatListUpdate);
       socket.off('MESSAGE_REQUEST_RECEIVED', handleMessageRequestReceived);
       socket.off('MESSAGE_REQUEST_ACCEPTED', handleMessageRequestAccepted);
+      socket.off('REACTION_UPDATED', handleReactionUpdated);
     };
   }, [socket, addMessage, refreshChats, updateCurrentChat]);
 

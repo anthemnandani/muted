@@ -800,3 +800,18 @@ export const NOTIFICATION_FILTERS: Array<{
     label: 'Followers',
   },
 ];
+
+export const EMOJIS = [
+  '❤️',
+  '😂',
+  '😡',
+  '😭',
+  '👍',
+  '🤔',
+  '🎉',
+  '🤗',
+  '😳',
+  '😱',
+  '🤪',
+  '🙈',
+];

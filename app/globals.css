@@ -304,6 +304,14 @@
     @apply grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-[1fr];
   }
 
+  .msg-container {
+    @apply px-4 py-2 rounded-2xl break-words relative text-white/90 overflow-hidden w-fit max-w-sm whitespace-pre-line;
+  }
+
+  .chat-menu {
+    @apply bg-[#3A3A3A] border border-[#696969] shadow-lg rounded-xl transition-opacity duration-200;
+  }
+
   @media (max-width: 768px) {
     em-emoji-picker {
       @apply max-h-[350px] !important;

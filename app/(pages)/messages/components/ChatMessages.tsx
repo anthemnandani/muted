@@ -18,6 +18,8 @@ const ChatMessages: React.FC<{ messages: Message[]; chatLoading: boolean }> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
+  const { renderMessage } = useChatMessages({ messages });
+
   const scrollToBottom = (behavior: 'auto' | 'smooth' = 'smooth') => {
     messagesEndRef.current?.scrollIntoView({ behavior });
   };
@@ -26,7 +28,7 @@ const ChatMessages: React.FC<{ messages: Message[]; chatLoading: boolean }> = ({
     if (messages.length > 0) {
       scrollToBottom('smooth');
     }
-  }, [messages]);
+  }, []);
 
   useEffect(() => {
     if (socket) {
@@ -43,8 +45,6 @@ const ChatMessages: React.FC<{ messages: Message[]; chatLoading: boolean }> = ({
   if (chatLoading) {
     return <ChatSkeleton />;
   }
-
-  const { renderMessage } = useChatMessages(messages);
 
   return (
     <ScrollArea

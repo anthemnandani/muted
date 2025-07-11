@@ -647,7 +647,7 @@ export const getImageUrl = (media: PostMedia) => {
 
 export const shouldShowDateSeparator = (
   currentMessage: Message,
-  previousMessage: Message | null
+  previousMessage?: Message | null
 ): boolean => {
   if (!previousMessage) return true;
 

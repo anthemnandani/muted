@@ -932,6 +932,19 @@ export interface ChatUser {
   image?: string | null;
 }
 
+export type MessageReaction = {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  emoji: string;
+  messageId: string;
+  userId: string;
+  user: {
+    id: string;
+    username: string;
+  };
+};
+
 export interface Message {
   id: string;
   content: string;
@@ -942,18 +955,7 @@ export interface Message {
   senderId: string;
   chatId: string;
   sender: ChatUser;
-  reactions: Array<{
-    id: string;
-    createdAt: Date;
-    updatedAt: Date;
-    emoji: string;
-    messageId: string;
-    userId: string;
-    user: {
-      id: string;
-      username: string;
-    };
-  }>;
+  reactions?: MessageReaction[];
 }
 
 export interface Chat {
@@ -965,4 +967,10 @@ export interface Chat {
   messageRequest?: boolean;
   messageRequestStatus?: MessageRequestStatus | null;
   requestedById?: string | null;
+}
+
+export interface ChatMessageItemProps {
+  message: Message;
+  isOwn: boolean;
+  isLastMessage: boolean;
 }

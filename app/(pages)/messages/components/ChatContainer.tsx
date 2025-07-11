@@ -81,7 +81,7 @@ const ChatContainer = () => {
   const otherUser = currentChat.participants.find((p) => p.id !== user?.id);
 
   return (
-    <div className='w-full h-full flex flex-col'>
+    <div className='w-full h-full flex flex-col relative'>
       <ChatHeader selectedChat={currentChat} />
       {showRequestLimitAlert && (
         <MessageRequestAlert
