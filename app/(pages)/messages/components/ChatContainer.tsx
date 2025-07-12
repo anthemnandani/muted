@@ -14,7 +14,6 @@ import useChatStore from '@/store/chatStore';
 import EmptyMessageState from './EmptyMessageState';
 import MessageRequestActions from './MessageRequestActions';
 import MessageRequestAlert from './MessageRequestAlert';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 const TYPING_TIMER_LENGTH = 800;
 let typingTimer: NodeJS.Timeout;

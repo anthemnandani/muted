@@ -44,6 +44,7 @@ model User {
   receiver              Chat[]            @relation("Receiver")
   chatDeletions         ChatDeletion[]
   reactions             MessageReaction[]
+  messageDeletions      MessageDeletion[]
 
   @@unique([createdAt, id])
 }
@@ -377,6 +378,7 @@ model Message {
   readAt    DateTime?
   status    MessageStatus     @default(SENT)
   reactions MessageReaction[]
+  deletions MessageDeletion[]
 
   @@index([chatId])
   @@index([senderId])
@@ -395,6 +397,23 @@ model MessageReaction {
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
+}
+
+model MessageDeletion {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  messageId String
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  deletedAt DateTime @default(now())
 
   @@unique([messageId, userId])
   @@index([messageId])

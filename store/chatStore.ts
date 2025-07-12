@@ -14,6 +14,8 @@ interface ChatState {
   setMessageRequestsCount: (value: number) => void;
   viewMode: ViewMode;
   setViewMode: (viewMode: ViewMode) => void;
+  removeMessageOptimistically: (messageId: string) => void;
+  addMessageBack: (message: Message) => void;
 }
 
 const useChatStore = create<ChatState>((set) => ({
@@ -29,6 +31,19 @@ const useChatStore = create<ChatState>((set) => ({
   setMessageRequestsCount: (count) => set({ messageRequestsCount: count }),
   viewMode: 'chats',
   setViewMode: (viewMode) => set({ viewMode }),
+  removeMessageOptimistically: (messageId) =>
+    set((state) => ({
+      messages: state.messages.filter((msg) => msg.id !== messageId),
+    })),
+
+  addMessageBack: (message) =>
+    set((state) => {
+      const newMessages = [...state.messages, message].sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      );
+      return { messages: newMessages };
+    }),
 }));
 
 export default useChatStore;

@@ -229,11 +229,20 @@ export const chatRouter = createTRPCRouter({
                 },
               },
             },
+            deletions: {
+              where: {
+                userId: ctx.userId,
+              },
+            },
           },
           orderBy: { createdAt: 'asc' },
         });
 
-        return { messages };
+        const visibleMessages = messages.filter(
+          (message) => message.deletions.length === 0
+        );
+
+        return { messages: visibleMessages };
       } catch (error) {
         if (error instanceof TRPCError) {
           throw error;
@@ -682,6 +691,76 @@ export const chatRouter = createTRPCRouter({
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to decline message request',
+        });
+      }
+    }),
+
+  deleteMessage: privateProcedure
+    .input(
+      z.object({
+        messageId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const result = await ctx.db.$transaction(async (prisma) => {
+          const message = await prisma.message.findUnique({
+            where: { id: input.messageId },
+            include: {
+              chat: true,
+            },
+          });
+
+          if (!message) {
+            throw new TRPCError({
+              code: 'NOT_FOUND',
+              message: 'Message not found',
+            });
+          }
+          if (
+            message.chat.senderId !== ctx.userId &&
+            message.chat.receiverId !== ctx.userId
+          ) {
+            throw new TRPCError({
+              code: 'FORBIDDEN',
+              message: 'Unauthorized access to message',
+            });
+          }
+
+          const existingDeletion = await prisma.messageDeletion.findUnique({
+            where: {
+              messageId_userId: {
+                messageId: input.messageId,
+                userId: ctx.userId,
+              },
+            },
+          });
+
+          if (existingDeletion) {
+            throw new TRPCError({
+              code: 'BAD_REQUEST',
+              message: 'Message already deleted',
+            });
+          }
+
+          await prisma.messageDeletion.create({
+            data: {
+              messageId: input.messageId,
+              userId: ctx.userId,
+            },
+          });
+
+          return { success: true };
+        });
+
+        return result;
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to delete message',
         });
       }
     }),

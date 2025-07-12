@@ -24,6 +24,7 @@ const ChatMessages: React.FC<{ messages: Message[]; chatLoading: boolean }> = ({
     messagesEndRef.current?.scrollIntoView({ behavior });
   };
 
+  // Todo: Must scroll to bottom
   useEffect(() => {
     if (messages.length > 0) {
       scrollToBottom('smooth');
