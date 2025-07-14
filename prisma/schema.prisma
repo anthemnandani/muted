@@ -307,6 +307,9 @@ model ChatDeletion {
   userId    String
   deletedAt DateTime @default(now())
 
+  lastMessageId String?
+  isActive      Boolean @default(true)
+
   chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

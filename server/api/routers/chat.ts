@@ -6,7 +6,7 @@ import { z } from 'zod';
 export const chatRouter = createTRPCRouter({
   getChats: privateProcedure.query(async ({ ctx }) => {
     try {
-      const chats = await ctx.db.chat.findMany({
+      const rawChats = await ctx.db.chat.findMany({
         where: {
           OR: [
             { senderId: ctx.userId },
@@ -16,13 +16,6 @@ export const chatRouter = createTRPCRouter({
             },
           ],
           isActive: true,
-          NOT: {
-            chatDeletions: {
-              some: {
-                userId: ctx.userId,
-              },
-            },
-          },
         },
         include: {
           sender: {
@@ -68,6 +61,7 @@ export const chatRouter = createTRPCRouter({
           chatDeletions: {
             where: {
               userId: ctx.userId,
+              isActive: true,
             },
           },
         },
@@ -117,13 +111,19 @@ export const chatRouter = createTRPCRouter({
           chatDeletions: {
             where: {
               userId: ctx.userId,
+              isActive: true,
             },
           },
         },
         orderBy: { createdAt: 'desc' },
       });
 
-      const transformedChats = chats.map((chat) => {
+      const visibleChats = rawChats.filter((chat) => {
+        const activeDeletion = chat.chatDeletions[0];
+        return !activeDeletion;
+      });
+
+      const transformedChats = visibleChats.map((chat) => {
         const userDeletion = chat.chatDeletions[0];
 
         let lastMessage: any = chat.messages[0] || null;
@@ -199,13 +199,23 @@ export const chatRouter = createTRPCRouter({
           });
         }
 
-        const userDeletion = chat.chatDeletions[0];
+        const chatDeletion = chat.chatDeletions[0];
 
-        const whereClause: any = { chatId: input.chatId };
-        if (userDeletion) {
-          whereClause.createdAt = {
-            gt: userDeletion.deletedAt,
-          };
+        let whereClause: any = {
+          chatId: input.chatId,
+        };
+
+        if (chatDeletion && chatDeletion.lastMessageId) {
+          const lastMessageBeforeDeletion = await ctx.db.message.findUnique({
+            where: { id: chatDeletion.lastMessageId },
+            select: { createdAt: true },
+          });
+
+          if (lastMessageBeforeDeletion) {
+            whereClause.createdAt = {
+              gt: lastMessageBeforeDeletion.createdAt,
+            };
+          }
         }
 
         const messages = await ctx.db.message.findMany({
@@ -258,42 +268,32 @@ export const chatRouter = createTRPCRouter({
     .input(z.object({ chatId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       try {
-        const chat = await ctx.db.chat.findUnique({
-          where: {
-            id: input.chatId,
-          },
+        const lastMessage = await ctx.db.message.findFirst({
+          where: { chatId: input.chatId },
+          orderBy: { createdAt: 'desc' },
+          select: { id: true },
         });
 
-        if (!chat) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'Chat not found',
-          });
-        }
-
-        const existingDeletion = await ctx.db.chatDeletion.findUnique({
+        await ctx.db.chatDeletion.upsert({
           where: {
             chatId_userId: {
               chatId: input.chatId,
               userId: ctx.userId,
             },
           },
-        });
-
-        if (existingDeletion) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'Chat already deleted',
-          });
-        }
-
-        await ctx.db.chatDeletion.create({
-          data: {
+          update: {
+            deletedAt: new Date(),
+            lastMessageId: lastMessage?.id,
+            isActive: true,
+          },
+          create: {
             chatId: input.chatId,
             userId: ctx.userId,
+            deletedAt: new Date(),
+            lastMessageId: lastMessage?.id,
+            isActive: true,
           },
         });
-
         return { success: true };
       } catch (error) {
         if (error instanceof TRPCError) {

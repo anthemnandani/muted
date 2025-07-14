@@ -1,23 +1,14 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useChatContext } from '@/contexts/ChatContext';
-import { useSocket } from '@/contexts/SocketContext';
-import { useUser } from '@clerk/nextjs';
-import { MoreVertical, Trash, X } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
-import Link from 'next/link';
+import { useSocket } from '@/contexts/SocketContext';
 import { Chat } from '@/lib/types';
+import { cn } from '@/lib/utils';
+import { useUser } from '@clerk/nextjs';
+import Link from 'next/link';
+import ChatMenu from './ChatMenu';
 
 const ChatHeader: React.FC<{ selectedChat: Chat }> = ({ selectedChat }) => {
-  const { closeChat } = useChatContext();
   const { user } = useUser();
   const { activeUsers } = useSocket();
 
@@ -71,40 +62,7 @@ const ChatHeader: React.FC<{ selectedChat: Chat }> = ({ selectedChat }) => {
           </div>
         </Link>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant='ghost'
-              size='sm'
-              className='text-white/60 hover:text-white/90 hover:bg-white/10'
-            >
-              <MoreVertical className='size-4' />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align='end'
-            className='bg-gray-900 border-white/20 text-white'
-          >
-            <DropdownMenuItem
-              // onClick={clearChat}
-              // disabled={loading}
-              className={cn(
-                'text-red-400 hover:bg-red-500/20 cursor-pointer',
-                'focus:bg-red-500/20 focus:text-red-400'
-              )}
-            >
-              <Trash className='size-4 mr-2' />
-              Clear Chat
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={closeChat}
-              className='cursor-pointer hover:bg-white/10 focus:bg-white/10'
-            >
-              <X className='size-4 mr-2' />
-              Close Chat
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ChatMenu chatId={selectedChat.id} />
       </div>
     </div>
   );

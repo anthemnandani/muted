@@ -30,11 +30,9 @@ interface ChatContextType {
   getOrCreateChat: (otherUserId: string) => Promise<void>;
   deleteMessages: (chatId: string) => Promise<void>;
   deleteChat: (chatId: string) => Promise<void>;
-  restoreChat: (chatId: string) => Promise<void>;
   getOrCreateChatLoading: boolean;
   deleteMessagesLoading: boolean;
   deleteChatLoading: boolean;
-  restoreChatLoading: boolean;
   resetChatUnreadCount: (chatId: string) => void;
 }
 
@@ -164,16 +162,6 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
     },
   });
 
-  const restoreChatMutation = api.chat.restoreChat.useMutation({
-    onSuccess: () => {
-      refreshChats();
-      toast.success('Chat restored');
-    },
-    onError: (error: any) => {
-      toast.error('Failed to restore chat');
-    },
-  });
-
   const updateMessage = useCallback(
     (tempId: string, newMessage: Message) => {
       setMessages(
@@ -280,14 +268,6 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
       await deleteChatMutation.mutateAsync({ chatId });
     } catch (error) {
       console.error('Error deleting chat:', error);
-    }
-  };
-
-  const restoreChat = async (chatId: string) => {
-    try {
-      await restoreChatMutation.mutateAsync({ chatId });
-    } catch (error) {
-      console.error('Error restoring chat:', error);
     }
   };
 
@@ -404,12 +384,10 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
     getOrCreateChat,
     deleteMessages,
     deleteChat,
-    restoreChat,
     resetChatUnreadCount,
     getOrCreateChatLoading: getOrCreateChatMutation.isLoading,
     deleteMessagesLoading: deleteMessagesMutation.isLoading,
     deleteChatLoading: deleteChatMutation.isLoading,
-    restoreChatLoading: restoreChatMutation.isLoading,
   };
 
   return (
