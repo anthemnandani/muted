@@ -99,22 +99,11 @@ export const formatMsgTime = (date: Date | string): string => {
       minute: '2-digit',
       hour12: true,
     });
-  } else if (diffInDays === 1) {
-    return 'Yesterday';
-  } else if (diffInDays < 7) {
-    return messageDate.toLocaleDateString('en-US', {
-      weekday: 'long',
-    });
-  } else if (messageDate.getFullYear() === now.getFullYear()) {
-    return messageDate.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-    });
   } else {
     return messageDate.toLocaleDateString('en-US', {
-      month: 'short',
+      month: 'numeric',
       day: 'numeric',
-      year: 'numeric',
+      year: '2-digit',
     });
   }
 };

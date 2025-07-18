@@ -53,12 +53,18 @@ export const chatRouter = createTRPCRouter({
               messages: {
                 where: {
                   senderId: { not: ctx.userId },
-                  status: 'SENT',
+                  status: { not: MessageStatus.SEEN },
                 },
               },
             },
           },
           chatDeletions: {
+            where: {
+              userId: ctx.userId,
+              isActive: true,
+            },
+          },
+          mutedBy: {
             where: {
               userId: ctx.userId,
               isActive: true,
@@ -125,6 +131,7 @@ export const chatRouter = createTRPCRouter({
 
       const transformedChats = visibleChats.map((chat) => {
         const userDeletion = chat.chatDeletions[0];
+        const isMuted = chat.mutedBy.length > 0;
 
         let lastMessage: any = chat.messages[0] || null;
         if (userDeletion && lastMessage) {
@@ -140,10 +147,11 @@ export const chatRouter = createTRPCRouter({
           lastMessageAt: chat.lastMessageAt,
           participants: [chat.sender, chat.receiver],
           lastMessage,
-          unreadCount: chat._count.messages,
+          unreadCount: isMuted ? 0 : chat._count.messages,
           messageRequest: chat.messageRequest,
           messageRequestStatus: chat.messageRequestStatus,
           requestedById: chat.requestedById,
+          isMuted,
         };
       });
 
@@ -762,6 +770,62 @@ export const chatRouter = createTRPCRouter({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to delete message',
         });
+      }
+    }),
+
+  toggleMute: privateProcedure
+    .input(
+      z.object({
+        chatId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const chat = await ctx.db.chat.findUnique({
+        where: { id: input.chatId },
+      });
+
+      if (!chat) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Chat not found',
+        });
+      }
+
+      if (chat.senderId !== ctx.userId && chat.receiverId !== ctx.userId) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Unauthorized access to chat',
+        });
+      }
+
+      const existingMute = await ctx.db.mutedChat.findUnique({
+        where: {
+          chatId_userId: {
+            chatId: input.chatId,
+            userId: ctx.userId,
+          },
+        },
+      });
+
+      if (existingMute == null) {
+        await ctx.db.mutedChat.create({
+          data: {
+            chatId: input.chatId,
+            userId: ctx.userId,
+            isActive: true,
+          },
+        });
+        return { muted: true };
+      } else {
+        await ctx.db.mutedChat.delete({
+          where: {
+            chatId_userId: {
+              chatId: input.chatId,
+              userId: ctx.userId,
+            },
+          },
+        });
+        return { muted: false };
       }
     }),
 });

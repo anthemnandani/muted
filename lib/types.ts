@@ -967,10 +967,26 @@ export interface Chat {
   messageRequest?: boolean;
   messageRequestStatus?: MessageRequestStatus | null;
   requestedById?: string | null;
+  isMuted?: boolean;
 }
 
 export interface ChatMessageItemProps {
   message: Message;
   isOwn: boolean;
   isLastMessage: boolean;
+}
+
+export interface MutedChat {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  chatId: string;
+  userId: string;
+  isActive: boolean;
+}
+
+export interface ChatListItemParams {
+  chat: Chat;
+  isSelected: boolean;
+  otherUser: ChatUser;
 }

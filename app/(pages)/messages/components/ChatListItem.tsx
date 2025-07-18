@@ -3,35 +3,25 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useChatContext } from '@/contexts/ChatContext';
 import { useSocket } from '@/contexts/SocketContext';
-import { Chat, ChatUser } from '@/lib/types';
+import { ChatListItemParams } from '@/lib/types';
 import { cn, formatMsgTime } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
-import { Fragment, useCallback } from 'react';
+import { BellOff } from 'lucide-react';
+import { FC, Fragment, useCallback } from 'react';
+import ChatMenu from './ChatMenu';
+import useChatStore from '@/store/chatStore';
 
-interface ChatListItemParams {
-  chat: Chat;
-  isSelected: boolean;
-  otherUser: ChatUser;
-}
-
-const ChatListItem = ({ chat, isSelected, otherUser }: ChatListItemParams) => {
+const ChatListItem: FC<ChatListItemParams> = ({
+  chat,
+  isSelected,
+  otherUser,
+}) => {
   const { user } = useUser();
   const hasUnread = chat.unreadCount > 0;
   const lastMessage = chat.lastMessage;
   const { handleSetCurrChat } = useChatContext();
-
   const { activeUsers } = useSocket();
-  // const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  // const [deleteAction, setDeleteAction] = useState<'chat' | 'messages' | null>(
-  //   null
-  // );
-  // const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
-
-  // const handleDeleteClick = (chatId: string, action: 'chat' | 'messages') => {
-  //   setSelectedChatId(chatId);
-  //   setDeleteAction(action);
-  //   setShowDeleteDialog(true);
-  // };
+  const { currentChat } = useChatStore();
 
   const isActive = useCallback(
     (userId: string): boolean => {
@@ -42,35 +32,20 @@ const ChatListItem = ({ chat, isSelected, otherUser }: ChatListItemParams) => {
 
   const isOnline = isActive(otherUser.id);
 
-  // const handleConfirmDelete = async () => {
-  //   if (!selectedChatId || !deleteAction) return;
-
-  //   try {
-  //     if (deleteAction === 'chat') {
-  //       await deleteChat(selectedChatId);
-  //     } else {
-  //       await deleteMessages(selectedChatId);
-  //     }
-  //   } catch (error) {
-  //     console.error('Delete operation failed:', error);
-  //   } finally {
-  //     setShowDeleteDialog(false);
-  //     setSelectedChatId(null);
-  //     setDeleteAction(null);
-  //   }
-  // };
+  const isMuted =
+    chat.isMuted || (chat.id === currentChat?.id && currentChat?.isMuted);
 
   return (
     <div
       key={chat.id}
       className={cn(
-        'flex items-center p-4 cursor-pointer transition-all duration-200 group',
+        'flex items-center justify-between p-4 transition-all duration-200 group',
         'hover:bg-white/5',
         isSelected && 'bg-white/10 border-l-4 border-l-primary-blue'
       )}
     >
       <div
-        className='flex items-center flex-1 min-w-0'
+        className='flex items-center flex-1 min-w-0 cursor-pointer'
         onClick={() => handleSetCurrChat(chat)}
       >
         <div className='relative mr-3 flex-shrink-0'>
@@ -97,96 +72,63 @@ const ChatListItem = ({ chat, isSelected, otherUser }: ChatListItemParams) => {
         </div>
 
         <div className='flex-1 min-w-0'>
-          <div className='flex-between mb-1'>
-            <h3
-              className={`font-medium truncate text-white/90 ${
-                hasUnread ? 'font-semibold' : ''
-              }`}
-            >
-              {otherUser.fullName || otherUser.username}
-            </h3>
-            {chat.lastMessageAt && (
-              <span className='text-xs text-white/40 flex-shrink-0'>
-                {formatMsgTime(chat.lastMessageAt)}
-              </span>
+          <h3
+            className={cn(
+              'font-medium truncate text-white/90 mb-1',
+              hasUnread && 'font-semibold'
             )}
-          </div>
+          >
+            {otherUser.fullName || otherUser.username}
+          </h3>
 
-          <div className='flex-between'>
+          <div className='flex items-end'>
             <p
-              className={`text-sm text-white/60 truncate ${
-                hasUnread ? 'font-medium text-white/80' : ''
-              }`}
+              className={cn(
+                'text-sm text-white/75 truncate min-w-0',
+                hasUnread && 'font-medium text-white/80'
+              )}
             >
               {lastMessage ? (
                 <Fragment>
                   {lastMessage.sender.id === user?.id && (
-                    <span className='text-white/40'>You: </span>
+                    <span className='text-white/75'>You: </span>
                   )}
                   {lastMessage.content}
                 </Fragment>
               ) : (
-                <span className='text-white/40'>No messages yet</span>
+                <span className='text-white/75'>No messages yet</span>
               )}
             </p>
-            {hasUnread && (
-              <span
-                className={cn(
-                  'bg-red-500 text-white/90 text-[14px]',
-                  'rounded-full ml-2 size-[22px] flex-center'
-                )}
-              >
-                {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
+
+            {chat.lastMessageAt && (
+              <span className='text-sm text-white/60 ml-2'>
+                {formatMsgTime(chat.lastMessageAt)}
               </span>
             )}
           </div>
         </div>
       </div>
 
-      {/* <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            type='button'
-            title='Options'
+      <div className='relative flex-shrink-0 size-8'>
+        {hasUnread && !chat.isMuted && (
+          <span
             className={cn(
-              'p-2 rounded-full opacity-0 group-hover:opacity-100',
-              'hover:bg-white/10 transition-all duration-200',
-              'focus:opacity-100 focus:outline-none'
+              'bg-red-500 text-white/90 text-[14px]',
+              'rounded-full size-5 absolute inset-2 flex-center transition-opacity group-hover:opacity-0'
             )}
-            onClick={(e) => e.stopPropagation()}
           >
-            <MoreVertical className='size-4 text-white/60' />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align='end'
-          className='w-48 bg-gray-800 border-gray-700'
-        >
-          <DropdownMenuItem
-            onClick={() => handleDeleteClick(chat.id, 'messages')}
-            className='text-white/80 hover:bg-white/10 focus:bg-white/10'
-            disabled={deleteMessagesLoading}
-          >
-            <MessageSquare className='mr-2 size-4' />
-            Clear messages
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => handleDeleteClick(chat.id, 'chat')}
-            className='text-red-400 hover:bg-red-500/20 focus:bg-red-500/20'
-            disabled={deleteChatLoading}
-          >
-            <Trash2 className='mr-2 size-4' />
-            Delete chat
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <DeleteChat
-        showDeleteDialog={showDeleteDialog}
-        setShowDeleteDialog={setShowDeleteDialog}
-        onConfirm={handleConfirmDelete}
-        deleteAction={deleteAction}
-      /> */}
+            {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
+          </span>
+        )}
+        {isMuted && (
+          <div className='absolute inset-0 flex-center transition-opacity group-hover:opacity-0'>
+            <BellOff className='size-4 text-white/60' />
+          </div>
+        )}
+        <div className='absolute inset-0 flex-center opacity-0 transition-opacity group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto'>
+          <ChatMenu chatId={chat.id} isMuted={chat.isMuted!} />
+        </div>
+      </div>
     </div>
   );
 };
