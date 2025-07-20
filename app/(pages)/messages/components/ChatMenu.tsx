@@ -11,7 +11,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import useChatStore from '@/store/chatStore';
 import { api } from '@/trpc/react';
-import { Ban, Bell, BellOff, MoreHorizontal } from 'lucide-react';
+import { Bell, BellOff, MoreHorizontal } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -105,24 +105,6 @@ const ChatMenu = ({
           label={isMuted ? 'Unmute' : 'Mute'}
           onClick={handleMuteToggle}
           disabled={toggleMuteLoading}
-        />
-
-        <Separator />
-
-        <MenuItem
-          icon={Icons.report}
-          label='Report'
-          //   onClick={() => {
-          //     openUserReport(userId);
-          //     setIsOpen(false);
-          //   }}
-        />
-        <Separator />
-
-        <MenuItem
-          icon={Ban}
-          label='Block'
-          //   onClick={handleCopyLink}
         />
 
         <Separator />

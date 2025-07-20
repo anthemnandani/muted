@@ -2,7 +2,7 @@ import { Icons } from '@/components/icons';
 
 const EmptyMessageState = () => {
   return (
-    <div className='flex-center h-full'>
+    <div className='absolute inset-0 flex items-center justify-center'>
       <div className='text-center'>
         <div className='size-16 rounded-full flex-center mx-auto mb-4'>
           <Icons.comments />

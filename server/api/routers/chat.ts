@@ -683,15 +683,36 @@ export const chatRouter = createTRPCRouter({
           });
         }
 
-        await ctx.db.chat.update({
-          where: { id: input.chatId },
-          data: {
-            messageRequestStatus: MessageRequestStatus.DECLINED,
-            isActive: false,
-          },
+        const result = await ctx.db.$transaction(async (prisma) => {
+          await prisma.chat.update({
+            where: { id: input.chatId },
+            data: {
+              messageRequestStatus: MessageRequestStatus.DECLINED,
+            },
+          });
+          await prisma.chatDeletion.upsert({
+            where: {
+              chatId_userId: {
+                chatId: input.chatId,
+                userId: ctx.userId,
+              },
+            },
+            update: {
+              deletedAt: new Date(),
+              isActive: true,
+            },
+            create: {
+              chatId: input.chatId,
+              userId: ctx.userId,
+              deletedAt: new Date(),
+              isActive: true,
+            },
+          });
+
+          return { success: true };
         });
 
-        return { success: true };
+        return result;
       } catch (error) {
         if (error instanceof TRPCError) {
           throw error;

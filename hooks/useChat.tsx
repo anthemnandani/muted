@@ -5,7 +5,7 @@ import { Message } from '@/lib/types';
 import useChatStore from '@/store/chatStore';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
-import { MessageStatus } from '@prisma/client';
+import { MessageRequestStatus, MessageStatus } from '@prisma/client';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -30,7 +30,8 @@ const useChat = () => {
 
   const isMessageRequest =
     currentChat?.messageRequest &&
-    currentChat?.messageRequestStatus === 'PENDING';
+    (currentChat?.messageRequestStatus === MessageRequestStatus.PENDING ||
+      currentChat?.messageRequestStatus === MessageRequestStatus.DECLINED);
 
   const isReceiver = currentChat?.requestedById !== user?.id;
   const isSender = currentChat?.requestedById === user?.id;
