@@ -1,5 +1,10 @@
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
-import { MessageRequestStatus, MessageStatus } from '@prisma/client';
+import {
+  MessageReportCategory,
+  MessageReportStatus,
+  MessageRequestStatus,
+  MessageStatus,
+} from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
@@ -847,6 +852,83 @@ export const chatRouter = createTRPCRouter({
           },
         });
         return { muted: false };
+      }
+    }),
+
+  reportMessage: privateProcedure
+    .input(
+      z.object({
+        messageId: z.string(),
+        category: z.nativeEnum(MessageReportCategory),
+        reason: z.string().min(1, 'Reason is required'),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const message = await ctx.db.message.findUnique({
+          where: { id: input.messageId },
+          include: {
+            sender: true,
+            chat: true,
+          },
+        });
+
+        if (!message) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Message not found',
+          });
+        }
+
+        if (
+          message.chat.senderId !== ctx.userId &&
+          message.chat.receiverId !== ctx.userId
+        ) {
+          throw new TRPCError({
+            code: 'FORBIDDEN',
+            message: 'You cannot report this message',
+          });
+        }
+
+        if (message.senderId === ctx.userId) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'You cannot report your own message',
+          });
+        }
+
+        await ctx.db.messageReport.upsert({
+          where: {
+            reporterId_messageId: {
+              reporterId: ctx.userId,
+              messageId: input.messageId,
+            },
+          },
+          create: {
+            messageId: input.messageId,
+            reporterId: ctx.userId,
+            targetUserId: message.senderId,
+            category: input.category,
+            reason: input.reason,
+          },
+          update: {
+            category: input.category,
+            reason: input.reason,
+            status: MessageReportStatus.PENDING,
+            reviewedAt: null,
+            updatedAt: new Date(),
+          },
+        });
+
+        return { success: true };
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to report message',
+        });
       }
     }),
 });

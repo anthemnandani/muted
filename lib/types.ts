@@ -1,6 +1,7 @@
 import type { AppRouter } from '@/server/api/root';
 import type {
   CollectionPrivacy,
+  MessageReportCategory,
   MessageRequestStatus,
   MessageStatus,
   NotificationType,
@@ -9,8 +10,8 @@ import type {
 import { PostPrivacy, Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
 import { LucideIcon } from 'lucide-react';
-import Player from 'video.js/dist/types/player';
 import { ReactNode } from 'react';
+import Player from 'video.js/dist/types/player';
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
 type RouterOutput = inferRouterOutputs<AppRouter>;
@@ -989,4 +990,12 @@ export interface ChatListItemParams {
   chat: Chat;
   isSelected: boolean;
   otherUser: ChatUser;
+}
+
+export type MessageReportCategoryType = MessageReportCategory;
+
+export interface MessageReportProps {
+  messageId: string;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
 }

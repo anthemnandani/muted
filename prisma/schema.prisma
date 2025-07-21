@@ -9,43 +9,45 @@ datasource db {
 }
 
 model User {
-  id                    String            @id
-  createdAt             DateTime          @default(now()) @map(name: "created_at")
-  updatedAt             DateTime          @default(now()) @map(name: "updated_at")
-  username              String            @unique
-  fullName              String?
-  image                 String?
-  bio                   String?
-  link                  String?
-  email                 String            @unique
-  verified              Boolean?          @default(false)
-  privacy               Privacy           @default(PUBLIC)
-  followers             User[]            @relation(name: "followers")
-  following             User[]            @relation(name: "followers")
-  posts                 Post[]
-  likedPosts            Like[]
-  isAdmin               Boolean?          @default(false) @map(name: "is_admin")
-  reposts               Repost[]
-  reports               Report[]
-  reportSubmissions     Report[]          @relation("ReportSubmissions")
-  reportTargets         Report[]          @relation("ReportTargets")
-  bookmarks             Bookmark[]
-  mentions              Mention[]
-  hiddenPosts           HiddenPost[]
-  mutedUsers            MutedUser[]       @relation("mutedBy")
-  mutedByUsers          MutedUser[]       @relation("muted")
-  senderNotifications   Notification[]    @relation("sender")
-  receiverNotifications Notification[]    @relation("receiver")
-  collections           Collection[]
-  blockedUsers          BlockedUser[]     @relation("blocking")
-  blockedByUsers        BlockedUser[]     @relation("blocked")
-  sentMessages          Message[]         @relation("SentMessages")
-  sender                Chat[]            @relation("Sender")
-  receiver              Chat[]            @relation("Receiver")
-  chatDeletions         ChatDeletion[]
-  reactions             MessageReaction[]
-  messageDeletions      MessageDeletion[]
-  mutedChats            MutedChat[]
+  id                       String            @id
+  createdAt                DateTime          @default(now()) @map(name: "created_at")
+  updatedAt                DateTime          @default(now()) @map(name: "updated_at")
+  username                 String            @unique
+  fullName                 String?
+  image                    String?
+  bio                      String?
+  link                     String?
+  email                    String            @unique
+  verified                 Boolean?          @default(false)
+  privacy                  Privacy           @default(PUBLIC)
+  followers                User[]            @relation(name: "followers")
+  following                User[]            @relation(name: "followers")
+  posts                    Post[]
+  likedPosts               Like[]
+  isAdmin                  Boolean?          @default(false) @map(name: "is_admin")
+  reposts                  Repost[]
+  reports                  Report[]
+  reportSubmissions        Report[]          @relation("ReportSubmissions")
+  reportTargets            Report[]          @relation("ReportTargets")
+  bookmarks                Bookmark[]
+  mentions                 Mention[]
+  hiddenPosts              HiddenPost[]
+  mutedUsers               MutedUser[]       @relation("mutedBy")
+  mutedByUsers             MutedUser[]       @relation("muted")
+  senderNotifications      Notification[]    @relation("sender")
+  receiverNotifications    Notification[]    @relation("receiver")
+  collections              Collection[]
+  blockedUsers             BlockedUser[]     @relation("blocking")
+  blockedByUsers           BlockedUser[]     @relation("blocked")
+  sentMessages             Message[]         @relation("SentMessages")
+  sender                   Chat[]            @relation("Sender")
+  receiver                 Chat[]            @relation("Receiver")
+  chatDeletions            ChatDeletion[]
+  reactions                MessageReaction[]
+  messageDeletions         MessageDeletion[]
+  mutedChats               MutedChat[]
+  messageReportSubmissions MessageReport[]   @relation("MessageReportSubmissions")
+  messageReportTargets     MessageReport[]   @relation("MessageReportTargets")
 
   @@unique([createdAt, id])
 }
@@ -403,6 +405,7 @@ model Message {
   status    MessageStatus     @default(SENT)
   reactions MessageReaction[]
   deletions MessageDeletion[]
+  reports   MessageReport[]
 
   @@index([chatId])
   @@index([senderId])
@@ -442,4 +445,61 @@ model MessageDeletion {
   @@unique([messageId, userId])
   @@index([messageId])
   @@index([userId])
+}
+
+enum MessageReportStatus {
+  PENDING
+  REVIEWED
+  ACTIONED
+  DISMISSED
+}
+
+enum MessageReportCategory {
+  NUDITY_SEXUAL
+  SEXTORTION_INTIMATE_ABUSE
+  REGULATED_GOODS
+  HATE_HARASSMENT
+  FRAUDS_SCAMS
+  MINOR_SAFETY
+  MISINFORMATION
+  VIOLENCE_CRIMINAL
+  SHOCKING_GRAPHIC
+  SUICIDE_SELF_HARM
+  EATING_DISORDER
+  DANGEROUS_ACTIVITIES
+  DECEPTIVE_SPAM
+  PERSONAL_INFO
+  DANGEROUS_GOODS
+  INTELLECTUAL_PROPERTY
+  ADVERTISEMENT_MISMATCH
+  OTHER
+}
+
+model MessageReport {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messageId String
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  reporterId String
+  reporter   User   @relation("MessageReportSubmissions", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  targetUserId String
+  targetUser   User   @relation("MessageReportTargets", fields: [targetUserId], references: [id], onDelete: Cascade)
+
+  category MessageReportCategory
+  reason   String
+
+  status     MessageReportStatus @default(PENDING)
+  reviewedAt DateTime?
+
+  @@unique([reporterId, messageId])
+  @@index([messageId])
+  @@index([reporterId])
+  @@index([targetUserId])
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
 }

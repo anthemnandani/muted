@@ -17,10 +17,10 @@ const ReportConfirmation = ({ onClose }: { onClose: () => void }) => {
         violation of our Community Guidelines.
       </p>
       <Button
-        className='bg-primary-red hover:bg-primary-red/90 text-white w-full rounded-full'
+        className='bg-primary-red hover:bg-primary-red/90 text-white w-full rounded-lg'
         onClick={onClose}
       >
-        Close
+        Done
       </Button>
     </div>
   );

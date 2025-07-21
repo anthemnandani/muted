@@ -111,7 +111,7 @@ const SearchSidebar = () => {
     >
       <form
         onSubmit={handleSearch}
-        className={`flex items-center py-2.5 pl-4 pr-1 bg-white/10 rounded-[92px] relative overflow-hidden transition-all duration-150 ${
+        className={`flex items-center py-2.5 pl-4 pr-1 mx-2 bg-white/10 rounded-[92px] relative overflow-hidden transition-all duration-150 ${
           isFocused ? 'ring-1 ring-white/25' : ''
         }`}
       >

@@ -9,7 +9,7 @@ const SidebarWrapper = ({
 }: SidebarWrapperProps) => {
   return (
     <div
-      className='fixed left-[76px] top-0 h-screen w-[20rem] bg-background shadow-[5px_0px_15px_rgba(0,0,0,0.25)] border-l border-white/5 overflow-hidden transition-transform duration-300 ease-in-out z-[100]'
+      className='fixed left-[76px] top-0 h-screen w-[20rem] bg-background shadow-[5px_0px_15px_rgba(0,0,0,0.25)] border-l border-white/5 overflow-hidden transition-transform duration-300 ease-in-out z-[9999]'
       style={{
         transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
         pointerEvents: isOpen ? 'auto' : 'none',

@@ -13,6 +13,7 @@ import { EMOJIS } from '@/lib/constants';
 import { ChatMessageItemProps, MessageReaction } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import useChatStore from '@/store/chatStore';
+import useReportMessageStore from '@/store/reportMessageStore';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
 import { MessageStatus } from '@prisma/client';
@@ -22,6 +23,7 @@ import Image from 'next/image';
 import { Fragment, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
+import MessageReport from './MessageReport';
 
 const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
   message,
@@ -31,6 +33,7 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
   const { user } = useUser();
   const { socket } = useSocket();
   const { removeMessageOptimistically, addMessageBack } = useChatStore();
+  const { setOpenReportMessageId, isReportOpen } = useReportMessageStore();
 
   const [reactions, setReactions] = useState<MessageReaction[]>(
     message.reactions || []
@@ -291,6 +294,7 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
                 icon={Icons.report}
                 label='Report'
                 className='text-primary-red focus:text-primary-red text-base'
+                onClick={() => setOpenReportMessageId(message.id)}
               />
             )}
           </HoverCardContent>
@@ -300,50 +304,61 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
   );
 
   return (
-    <AnimatePresence mode='wait'>
-      <motion.div
-        key={message.id}
-        layout
-        initial={{ opacity: 1, y: 0, height: 'auto' }}
-        animate={{
-          opacity: isDeleting ? 0.7 : 1,
-          y: 0,
-          height: 'auto',
-          scale: isDeleting ? 0.98 : 1,
-        }}
-        exit={{
-          opacity: 0,
-          y: -10,
-          height: 0,
-          scale: 0.95,
-          marginBottom: 0,
-        }}
-        transition={{
-          duration: 0.2,
-          ease: 'easeInOut',
-        }}
-        className={cn(
-          isOwn ? 'flex justify-end gap-2' : 'flex items-end gap-2',
-          'group relative',
-          isLastMessage ? 'mb-7' : isOwn ? 'mb-4' : 'mb-5'
-        )}
-      >
-        {isOwn ? (
-          <div className='flex items-center gap-2'>
-            {renderActionButtons()}
-            {getMessageStatusIcon(message.status!)}
-            {renderMessageContent()}
-            <div className='flex-shrink-0'>{renderAvatar()}</div>
-          </div>
-        ) : (
-          <Fragment>
-            <div className='flex-shrink-0'>{renderAvatar()}</div>
-            {renderMessageContent()}
-            {renderActionButtons()}
-          </Fragment>
-        )}
-      </motion.div>
-    </AnimatePresence>
+    <Fragment>
+      <AnimatePresence mode='wait'>
+        <motion.div
+          key={message.id}
+          layout
+          initial={{ opacity: 1, y: 0, height: 'auto' }}
+          animate={{
+            opacity: isDeleting ? 0.7 : 1,
+            y: 0,
+            height: 'auto',
+            scale: isDeleting ? 0.98 : 1,
+          }}
+          exit={{
+            opacity: 0,
+            y: -10,
+            height: 0,
+            scale: 0.95,
+            marginBottom: 0,
+          }}
+          transition={{
+            duration: 0.2,
+            ease: 'easeInOut',
+          }}
+          className={cn(
+            isOwn ? 'flex justify-end gap-2' : 'flex items-end gap-2',
+            'group relative',
+            isLastMessage ? 'mb-7' : isOwn ? 'mb-4' : 'mb-5'
+          )}
+        >
+          {isOwn ? (
+            <div className='flex items-center gap-2'>
+              {renderActionButtons()}
+              {getMessageStatusIcon(message.status!)}
+              {renderMessageContent()}
+              <div className='flex-shrink-0'>{renderAvatar()}</div>
+            </div>
+          ) : (
+            <Fragment>
+              <div className='flex-shrink-0'>{renderAvatar()}</div>
+              {renderMessageContent()}
+              {renderActionButtons()}
+            </Fragment>
+          )}
+        </motion.div>
+      </AnimatePresence>
+      {!isOwn && (
+        <MessageReport
+          messageId={message.id}
+          isOpen={isReportOpen(message.id)}
+          onOpenChange={(open) =>
+            setOpenReportMessageId(open ? message.id : null)
+          }
+        />
+      )}
+    </Fragment>
   );
 };
 

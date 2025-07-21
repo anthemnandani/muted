@@ -3,6 +3,7 @@ import {
   type ProfileFilter,
   ReportCategories,
 } from './types';
+import { MessageReportCategory } from '@prisma/client';
 
 export const UPLOAD_CONSTRAINTS = {
   MAX_ITEMS: 10,
@@ -815,3 +816,78 @@ export const EMOJIS = [
   '🤪',
   '🙈',
 ];
+
+export const MESSAGE_REPORT_CATEGORIES = [
+  {
+    id: MessageReportCategory.NUDITY_SEXUAL,
+    label: 'Nudity and sexual content',
+  },
+  {
+    id: MessageReportCategory.SEXTORTION_INTIMATE_ABUSE,
+    label: 'Sextortion and intimate image abuse',
+  },
+  {
+    id: MessageReportCategory.REGULATED_GOODS,
+    label: 'Regulated goods and activities',
+  },
+  {
+    id: MessageReportCategory.HATE_HARASSMENT,
+    label: 'Hate and harassment',
+  },
+  {
+    id: MessageReportCategory.FRAUDS_SCAMS,
+    label: 'Frauds and scams',
+  },
+  {
+    id: MessageReportCategory.MINOR_SAFETY,
+    label: 'Minor safety',
+  },
+  {
+    id: MessageReportCategory.MISINFORMATION,
+    label: 'Misinformation',
+  },
+  {
+    id: MessageReportCategory.VIOLENCE_CRIMINAL,
+    label: 'Violence, abuse, and criminal exploitation',
+  },
+  {
+    id: MessageReportCategory.SHOCKING_GRAPHIC,
+    label: 'Shocking and graphic content',
+  },
+  {
+    id: MessageReportCategory.SUICIDE_SELF_HARM,
+    label: 'Suicide and self-harm',
+  },
+  {
+    id: MessageReportCategory.EATING_DISORDER,
+    label: 'Disordered eating and unhealthy body image',
+  },
+  {
+    id: MessageReportCategory.DANGEROUS_ACTIVITIES,
+    label: 'Dangerous activities and challenges',
+  },
+  {
+    id: MessageReportCategory.DECEPTIVE_SPAM,
+    label: 'Deceptive behavior and spam',
+  },
+  {
+    id: MessageReportCategory.PERSONAL_INFO,
+    label: 'Sharing personal information',
+  },
+  {
+    id: MessageReportCategory.DANGEROUS_GOODS,
+    label: 'Dangerous goods or services',
+  },
+  {
+    id: MessageReportCategory.INTELLECTUAL_PROPERTY,
+    label: 'Intellectual property infringement',
+  },
+  {
+    id: MessageReportCategory.ADVERTISEMENT_MISMATCH,
+    label: 'Advertisement does not match the item',
+  },
+  {
+    id: MessageReportCategory.OTHER,
+    label: 'Other',
+  },
+] as const;
