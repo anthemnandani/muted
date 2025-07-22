@@ -6,7 +6,7 @@ import { Check } from 'lucide-react';
 const ReportConfirmation = ({ onClose }: { onClose: () => void }) => {
   return (
     <div className='px-4 py-8 text-center flex-col-center'>
-      <div className='flex-center bg-white/10 size-[72px] mb-4 rounded-full'>
+      <div className='flex-center bg-white/10 size-18 mb-4 rounded-full'>
         <Check className='size-8 text-green-500' />
       </div>
       <h3 className='text-xl font-bold text-white/90 mb-2'>

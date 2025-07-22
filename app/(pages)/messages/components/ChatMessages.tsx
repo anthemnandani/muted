@@ -20,16 +20,24 @@ const ChatMessages: React.FC<{ messages: Message[]; chatLoading: boolean }> = ({
 
   const { renderMessage } = useChatMessages({ messages });
 
+  const prevMessagesLengthRef = useRef(messages.length);
+
   const scrollToBottom = (behavior: 'auto' | 'smooth' = 'smooth') => {
     messagesEndRef.current?.scrollIntoView({ behavior });
   };
 
-  // Todo: Must scroll to bottom
   useEffect(() => {
-    if (messages.length > 0) {
-      scrollToBottom('smooth');
+    const isInitialLoad =
+      prevMessagesLengthRef.current === 0 && messages.length > 0;
+
+    const wasMessageAdded = messages.length > prevMessagesLengthRef.current;
+
+    if (wasMessageAdded) {
+      scrollToBottom(isInitialLoad ? 'auto' : 'smooth');
     }
-  }, []);
+
+    prevMessagesLengthRef.current = messages.length;
+  }, [messages.length]);
 
   useEffect(() => {
     if (socket) {
