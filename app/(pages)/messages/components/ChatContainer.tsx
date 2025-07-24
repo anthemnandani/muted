@@ -1,6 +1,5 @@
 'use client';
 
-import { useChatContext } from '@/contexts/ChatContext';
 import { useSocket } from '@/contexts/SocketContext';
 import { useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
@@ -22,8 +21,7 @@ const ChatContainer = () => {
   const [isMultiLine, setIsMultiLine] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
 
-  const { chatLoading } = useChatContext();
-  const { currentChat, messages } = useChatStore();
+  const { currentChat } = useChatStore();
   const { socket, isConnected } = useSocket();
   const { user } = useUser();
 
@@ -88,7 +86,7 @@ const ChatContainer = () => {
         />
       )}
 
-      <ChatMessages messages={messages} chatLoading={chatLoading} />
+      <ChatMessages />
 
       {isMessageRequest && isReceiver && (
         <MessageRequestActions

@@ -153,7 +153,6 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
       <AnimatePresence mode='wait'>
         <motion.div
           key={`reactions-${message.id}`}
-          layout
           initial={{ opacity: 1, scale: 1 }}
           animate={{ opacity: isDeleting ? 0 : 1, scale: isDeleting ? 0.8 : 1 }}
           exit={{ opacity: 0, scale: 0.8 }}

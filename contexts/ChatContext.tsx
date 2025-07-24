@@ -19,7 +19,10 @@ import { useSocket } from './SocketContext';
 
 interface ChatContextType {
   chatLoading: boolean;
+  fetchNextPage: () => void;
+  hasNextPage: boolean | undefined;
   chatsLoading: boolean;
+  isFetchingNextPage: boolean;
   handleSetCurrChat: (chat: Chat) => void;
   updateCurrentChat: (chat: Chat) => void;
   refreshChats: () => Promise<void>;
@@ -64,11 +67,15 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const {
     data: messagesData,
     isLoading: chatLoading,
+    fetchNextPage,
+    hasNextPage,
     isFetching,
-  } = api.chat.getMessages.useQuery(
-    { chatId: currentChat?.id ?? '' },
+    isFetchingNextPage,
+  } = api.chat.getMessages.useInfiniteQuery(
+    { chatId: currentChat?.id ?? '', limit: 60 },
     {
       enabled: !!currentChat?.id,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
       refetchOnWindowFocus: false,
       staleTime: 0,
       cacheTime: 0,
@@ -85,22 +92,29 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
   });
 
   useEffect(() => {
-    const handleMessagesData = async () => {
-      if (messagesData?.messages) {
-        setMessages(messagesData.messages);
+    if (!messagesData) return;
+    const fetchedMessages = messagesData?.pages
+      .slice()
+      .reverse()
+      .flatMap((page) => page.messages);
+    const currentMessages = useChatStore.getState().messages;
 
-        if (currentChat?.id && currentChat.unreadCount > 0) {
-          try {
-            await resetChatUnreadCount(currentChat.id);
-          } catch (error) {
-            console.error('Failed to reset unread count:', error);
-          }
-        }
-      }
-    };
+    const fetchedMessageIds = new Set(fetchedMessages.map((msg) => msg.id));
 
-    handleMessagesData();
-  }, [messagesData?.messages, currentChat?.id]);
+    const realTimeMessages = currentMessages.filter(
+      (msg) => !fetchedMessageIds.has(msg.id)
+    );
+
+    setMessages([...fetchedMessages, ...realTimeMessages]);
+
+    if (
+      messagesData?.pages.length === 1 &&
+      currentChat?.id &&
+      currentChat.unreadCount > 0
+    ) {
+      resetChatUnreadCount(currentChat.id);
+    }
+  }, [messagesData, currentChat?.id]);
 
   const getOrCreateChatMutation = api.chat.getOrCreateChat.useMutation({
     onSuccess: (data: any) => {
@@ -190,8 +204,8 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
     setMessages([]);
   };
 
-  const resetChatUnreadCount = async (chatId: string) => {
-    await resetUnreadCountMutation.mutateAsync({ chatId });
+  const resetChatUnreadCount = (chatId: string) => {
+    resetUnreadCountMutation.mutate({ chatId });
     const currentChats = useChatStore.getState().chats;
     setChats(
       currentChats.map((chat) =>
@@ -290,11 +304,11 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
   useEffect(() => {
     if (!socket) return;
 
-    const handleReceiveMessage = async (msg: Message) => {
+    const handleReceiveMessage = (msg: Message) => {
       const currentChatData = useChatStore.getState().currentChat;
       if (msg.chatId === currentChatData?.id) {
         addMessage(msg);
-        await resetChatUnreadCount(msg.chatId);
+        resetChatUnreadCount(msg.chatId);
       }
     };
 
@@ -373,6 +387,9 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   const contextValue: ChatContextType = {
     chatLoading: chatLoading || isFetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     chatsLoading,
     handleSetCurrChat,
     updateCurrentChat,

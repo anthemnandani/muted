@@ -4,6 +4,7 @@ import {
   MessageReportStatus,
   MessageRequestStatus,
   MessageStatus,
+  Prisma,
 } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
@@ -189,33 +190,35 @@ export const chatRouter = createTRPCRouter({
   }),
 
   getMessages: privateProcedure
-    .input(z.object({ chatId: z.string() }))
-    .query(async ({ ctx, input }) => {
+    .input(
+      z.object({
+        chatId: z.string(),
+        limit: z.number().optional(),
+        cursor: z.object({ id: z.string() }).optional(),
+      })
+    )
+    .query(async ({ ctx, input: { limit = 60, cursor, chatId } }) => {
       try {
         const chat = await ctx.db.chat.findUnique({
-          where: {
-            id: input.chatId,
-          },
+          where: { id: chatId },
           include: {
-            chatDeletions: {
-              where: {
-                userId: ctx.userId,
-              },
-            },
+            chatDeletions: { where: { userId: ctx.userId } },
           },
         });
 
         if (!chat) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'Chat not found',
-          });
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Chat not found' });
         }
 
         const chatDeletion = chat.chatDeletions[0];
 
-        let whereClause: any = {
-          chatId: input.chatId,
+        const whereClause: Prisma.MessageWhereInput = {
+          chatId,
+          deletions: {
+            none: {
+              userId: ctx.userId,
+            },
+          },
         };
 
         if (chatDeletion && chatDeletion.lastMessageId) {
@@ -233,6 +236,9 @@ export const chatRouter = createTRPCRouter({
 
         const messages = await ctx.db.message.findMany({
           where: whereClause,
+          take: limit + 1,
+          cursor: cursor ? { id: cursor.id } : undefined,
+          orderBy: { createdAt: 'desc' },
           include: {
             sender: {
               select: {
@@ -245,27 +251,22 @@ export const chatRouter = createTRPCRouter({
             reactions: {
               include: {
                 user: {
-                  select: {
-                    id: true,
-                    username: true,
-                  },
+                  select: { id: true, username: true },
                 },
               },
             },
-            deletions: {
-              where: {
-                userId: ctx.userId,
-              },
-            },
           },
-          orderBy: { createdAt: 'asc' },
         });
 
-        const visibleMessages = messages.filter(
-          (message) => message.deletions.length === 0
-        );
+        let nextCursor: typeof cursor | undefined;
+        if (messages.length > limit) {
+          const nextItem = messages.pop();
+          if (nextItem) {
+            nextCursor = { id: nextItem.id };
+          }
+        }
 
-        return { messages: visibleMessages };
+        return { messages: messages.reverse(), nextCursor };
       } catch (error) {
         if (error instanceof TRPCError) {
           throw error;

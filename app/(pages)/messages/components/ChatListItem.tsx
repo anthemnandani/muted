@@ -84,7 +84,7 @@ const ChatListItem: FC<ChatListItemParams> = ({
           <div className='flex items-end'>
             <p
               className={cn(
-                'text-sm text-white/75 truncate min-w-0',
+                'text-sm text-white/75 overflow-hidden max-w-[60%] text-ellipsis whitespace-nowrap',
                 hasUnread && 'font-medium text-white/80'
               )}
             >
@@ -101,7 +101,7 @@ const ChatListItem: FC<ChatListItemParams> = ({
             </p>
 
             {chat.lastMessageAt && (
-              <span className='text-sm text-white/60 ml-2'>
+              <span className='text-sm text-white/60 ml-1'>
                 {formatMsgTime(chat.lastMessageAt)}
               </span>
             )}
