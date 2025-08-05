@@ -1,9 +1,9 @@
 'use client';
 
-import { EmojiPicker } from '@/components/modals/EmojiPicker';
+import EmojiPicker from '@/components/modals/EmojiPicker';
 import { MessageInputProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { Image, Send } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
 const MessageInput: React.FC<MessageInputProps> = ({
@@ -223,7 +223,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
           )}
 
           <div className='absolute right-3 bottom-2 flex'>
-            <EmojiPicker isComment onChange={handleEmojiSelect} />
+            <EmojiPicker onChange={handleEmojiSelect} />
           </div>
         </div>
 

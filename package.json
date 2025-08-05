@@ -72,6 +72,7 @@
     "svix": "^1.14.0",
     "swiper": "^11.2.4",
     "tailwind-merge": "^2.5.2",
+    "tailwind-scrollbar": "^3.1.0",
     "tailwindcss-animate": "^1.0.7",
     "uploadthing": "^5.2.0",
     "uuid": "^11.1.0",

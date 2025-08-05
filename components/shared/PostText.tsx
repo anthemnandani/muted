@@ -1,171 +1,28 @@
-// import { AuthorInfoProps } from '@/lib/types';
-// import { cn, highlightHashtagsAndUrls } from '@/lib/utils';
-// import { useRouter } from 'next/navigation';
-// import React from 'react';
-// import Username from '../user/Username';
+'use client';
 
-// interface ThreadTextProps {
-//   text: string;
-//   mentions?: Array<{
-//     user: AuthorInfoProps;
-//     index: number;
-//   }>;
-//   variant?: 'default' | 'reply';
-//   className?: string;
-// }
+import { PostTextProps } from '@/lib/types';
+import { cn, highlightHashtagsAndUrls } from '@/lib/utils';
+import { useState } from 'react';
+import Username from '../user/Username';
 
-// const ThreadText: React.FC<ThreadTextProps> = ({
-//   text,
-//   mentions,
-//   variant = 'default',
-//   className,
-// }) => {
-//   const [isExpanded, setIsExpanded] = React.useState(false);
-//   const router = useRouter();
-//   const MAX_LENGTH = 40;
+const PostText: React.FC<PostTextProps> = ({
+  text,
+  className,
+  isThreadPost = false,
+  mentions,
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const MAX_LENGTH = isThreadPost ? 750 : 40;
+  const MAX_EXPANDED_LENGTH = isThreadPost ? 5000 : 190;
 
-//   const shouldTruncate = text.length > MAX_LENGTH;
+  if (!text) return null;
 
-//   const displayText =
-//     !isExpanded && shouldTruncate ? text.slice(0, MAX_LENGTH) + '...' : text;
-
-//   const handleShowMoreClick = (e: React.MouseEvent) => {
-//     e.preventDefault();
-//     e.stopPropagation();
-//     setIsExpanded(!isExpanded);
-//   };
-
-//   const handleClick = React.useCallback(
-//     (e: React.MouseEvent) => {
-//       const target = e.target as HTMLElement;
-//       if (target.tagName === 'A' && target.classList.contains('hashtag-link')) {
-//         e.preventDefault();
-//         const href = target.getAttribute('href');
-//         if (href) {
-//           router.push(href);
-//         }
-//       }
-//     },
-//     [router]
-//   );
-
-//   if (!mentions || mentions.length === 0) {
-//     return (
-//       <div
-//         className={cn(
-//           'text-accent-foreground text-[16px] font-normal leading-[1.4em] antialiased whitespace-pre-line px-2 md:px-4 my-3 break-words',
-//           variant === 'reply' && 'max-md:max-w-full'
-//         )}
-//       >
-//         <span
-//           dangerouslySetInnerHTML={{
-//             __html: highlightHashtagsAndUrls(displayText.replace(/\\n/g, '\n')),
-//           }}
-//           onClick={handleClick}
-//         />
-//         {shouldTruncate && !isExpanded && (
-//           <button
-//             onClick={handleShowMoreClick}
-//             className='font-semibold text-gray-3 hover:cursor-pointer hover:text-primary-blue ml-1'
-//           >
-//             more
-//           </button>
-//         )}
-//       </div>
-//     );
-//   }
-
-//   const parts: React.ReactNode[] = [];
-//   let lastIndex = 0;
-
-//   const sortedMentions = [...mentions].sort((a, b) => a.index - b.index);
-
-//   sortedMentions.forEach((mention, index) => {
-//     if (mention.index > lastIndex) {
-//       const textPart = displayText.slice(lastIndex, mention.index);
-//       parts.push(
-//         <span
-//           key={index}
-//           dangerouslySetInnerHTML={{
-//             __html: textPart.replace(/\\n/g, '\n'),
-//           }}
-//         />
-//       );
-//     }
-
-//     const mentionEnd =
-//       displayText.indexOf(' ', mention.index) === -1
-//         ? displayText.length
-//         : displayText.indexOf(' ', mention.index);
-
-//     parts.push(
-//       <span
-//         key={`mention-${mention.index}-start`}
-//         className='!text-primary-blue'
-//       >
-//         @
-//       </span>
-//     );
-
-//     parts.push(
-//       <Username
-//         key={`mention-${mention.index}`}
-//         author={mention.user}
-//         className='!text-primary-blue'
-//       />
-//     );
-
-//     lastIndex = mentionEnd;
-//   });
-
-//   if (lastIndex < displayText.length) {
-//     parts.push(
-//       <span
-//         key={`text-${lastIndex}`}
-//         dangerouslySetInnerHTML={{
-//           __html: displayText.slice(lastIndex).replace(/\\n/g, '\n'),
-//         }}
-//       />
-//     );
-//   }
-
-//   return (
-//     <div
-//       className={cn(
-//         'text-accent-foreground text-[16px] font-normal leading-[1.4em] antialiased whitespace-pre-line px-2 md:px-4 my-3 break-words',
-//         variant === 'reply' && 'max-md:max-w-full',
-//         className
-//       )}
-//     >
-//       {parts}
-//       {shouldTruncate && !isExpanded && (
-//         <button
-//           onClick={handleShowMoreClick}
-//           className='font-semibold text-gray-3 hover:cursor-pointer hover:text-primary-blue ml-1'
-//         >
-//           more
-//         </button>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default ThreadText;
-
-import { highlightHashtagsAndUrls } from '@/lib/utils';
-import React from 'react';
-
-const PostText = ({ text }: { text: string }) => {
-  const [isExpanded, setIsExpanded] = React.useState(false);
-  const MAX_LENGTH = 40;
-  const MAX_EXPANDED_LENGTH = 190;
-
-  const shouldTruncate = text && text.length > MAX_LENGTH;
+  const shouldTruncate = text.length > MAX_LENGTH;
 
   const displayText =
-    !isExpanded && text && shouldTruncate
-      ? text.slice(0, MAX_LENGTH) + '...'
-      : text && text.length > MAX_EXPANDED_LENGTH
+    !isExpanded && shouldTruncate
+      ? text.slice(0, MAX_LENGTH)
+      : text.length > MAX_EXPANDED_LENGTH
       ? text.slice(0, MAX_EXPANDED_LENGTH) + '...'
       : text;
 
@@ -174,19 +31,94 @@ const PostText = ({ text }: { text: string }) => {
     e.stopPropagation();
     setIsExpanded(!isExpanded);
   };
-  return (
-    <div className='relative text-accent-foreground text-[14px] font-normal leading-[18px] antialiased whitespace-pre-line break-words'>
+
+  if (!mentions || mentions.length === 0) {
+    return (
+      <div
+        className={cn(
+          'relative text-white/90 font-normal antialiased whitespace-pre-line break-words',
+          className
+        )}
+      >
+        <span
+          dangerouslySetInnerHTML={{
+            __html: highlightHashtagsAndUrls(displayText),
+          }}
+        />
+        {shouldTruncate && !isExpanded && (
+          <button
+            type='button'
+            aria-label='Show more'
+            onClick={handleShowMoreClick}
+            className='font-semibold text-primary-blue hover:cursor-pointer ml-1'
+          >
+            more
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+
+  const sortedMentions = [...mentions].sort((a, b) => a.index - b.index);
+
+  sortedMentions.forEach((mention, i) => {
+    const mentionString = `@${mention.user.username}`;
+    const mentionStartIndex = displayText.indexOf(mentionString, lastIndex);
+
+    if (mentionStartIndex === -1) return;
+
+    if (mentionStartIndex > lastIndex) {
+      const textPart = displayText.slice(lastIndex, mentionStartIndex);
+      parts.push(
+        <span
+          key={`text-${i}`}
+          dangerouslySetInnerHTML={{
+            __html: highlightHashtagsAndUrls(textPart),
+          }}
+        />
+      );
+    }
+
+    parts.push(
+      <Username
+        key={`mention-${i}`}
+        author={mention.user}
+        className='!text-primary-blue hover:underline'
+      />
+    );
+
+    lastIndex = mentionStartIndex + mentionString.length;
+  });
+
+  if (lastIndex < displayText.length) {
+    const remainingText = displayText.slice(lastIndex);
+    parts.push(
       <span
+        key='text-end'
         dangerouslySetInnerHTML={{
-          __html: highlightHashtagsAndUrls(displayText!.replace(/\\n/g, '\n')),
+          __html: highlightHashtagsAndUrls(remainingText),
         }}
       />
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        'relative text-white/90 font-normal antialiased whitespace-pre-line break-words',
+        className
+      )}
+    >
+      {parts}
       {shouldTruncate && !isExpanded && (
         <button
           type='button'
           aria-label='Show more'
           onClick={handleShowMoreClick}
-          className='font-semibold text-white hover:cursor-pointer ml-1'
+          className='font-semibold text-primary-blue hover:cursor-pointer ml-1'
         >
           more
         </button>

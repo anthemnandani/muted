@@ -1,9 +1,11 @@
-import { MediaFile } from '@/lib/types';
+import type { GiphyMedia, MediaFile } from '@/lib/types';
 import { create } from 'zustand';
 
 interface FileStoreState {
   mediaFiles: MediaFile[];
   setMediaFiles: (files: MediaFile[]) => void;
+  threadMedia: MediaFile | GiphyMedia | null;
+  setThreadMedia: (media: MediaFile | GiphyMedia | null) => void;
   updateMediaFile: (id: string, updates: Partial<MediaFile>) => void;
   profileFile: File | null;
   setProfileFile: (file: File | null) => void;
@@ -16,6 +18,20 @@ interface FileStoreState {
 const useFileStore = create<FileStoreState>((set, get) => ({
   mediaFiles: [],
   setMediaFiles: (files) => set({ mediaFiles: files }),
+  threadMedia: null,
+  setThreadMedia: (media) => {
+    set((state) => {
+      const oldMedia = state.threadMedia;
+      if (
+        oldMedia &&
+        'preview' in oldMedia &&
+        oldMedia.preview.startsWith('blob:')
+      ) {
+        URL.revokeObjectURL(oldMedia.preview);
+      }
+      return { threadMedia: media };
+    });
+  },
   updateMediaFile: (id, updates) => {
     const { mediaFiles } = get();
     const updatedFiles = mediaFiles.map((file) =>

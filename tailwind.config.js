@@ -7,7 +7,13 @@ module.exports = {
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
   ],
-  safelist: ['bg-slate-700', 'bg-cyan-400', 'bg-blue-500', 'bg-sky-500'],
+  safelist: [
+    'bg-slate-700',
+    'bg-cyan-400',
+    'bg-blue-500',
+    'bg-blue-600',
+    'bg-sky-500',
+  ],
   theme: {
     container: {
       center: true,
@@ -54,7 +60,7 @@ module.exports = {
         },
         'primary-500': '#877EFF',
         'secondary-500': '#FFB620',
-        blue: '#0095F6',
+        // blue: '#0095F6',
         'logout-btn': '#FF5A5A',
         'navbar-menu': 'rgba(16, 16, 18, 0.6)',
         'dark-1': '#000000',
@@ -130,5 +136,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [require('tailwindcss-animate'), require('tailwind-scrollbar')],
 };

@@ -174,6 +174,7 @@ export const collectionRouter = createTRPCRouter({
                   id: true,
                   media: true,
                   text: true,
+                  threadText: true,
                   author: {
                     select: {
                       ...GET_USER,
@@ -473,6 +474,7 @@ export const collectionRouter = createTRPCRouter({
                   id: true,
                   createdAt: true,
                   text: true,
+                  threadText: true,
                   media: true,
                   parentPostId: true,
                   quoteId: true,
@@ -612,6 +614,7 @@ export const collectionRouter = createTRPCRouter({
                   id: true,
                   createdAt: true,
                   text: true,
+                  threadText: true,
                   media: true,
                   parentPostId: true,
                   quoteId: true,

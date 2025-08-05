@@ -24,7 +24,7 @@ const PreviewStep = ({
   const handleRemoveMedia = (id: string) => {
     const newFiles = mediaFiles.filter((file) => file.id !== id);
     if (newFiles.length === 0) {
-      setStep('upload');
+      setStep('compose');
     } else if (currentMediaIndex >= newFiles.length) {
       setCurrentMediaIndex(Math.max(0, newFiles.length - 1));
     }

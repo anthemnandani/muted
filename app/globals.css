@@ -223,6 +223,10 @@
   .share-btn {
     @apply relative w-fit flex flex-col items-center gap-1.5 hover:before:content-[""] hover:before:absolute hover:before:inset-0 hover:before:rounded-lg hover:before:-z-10 hover:before:-mt-3 hover:before:-mb-2 hover:before:-mx-3 hover:before:bg-white-13 disabled:opacity-50 disabled:cursor-not-allowed;
   }
+
+  .create-post-tab {
+    @apply flex items-center gap-2 px-4 py-2.5 font-medium transition-all duration-200 rounded-lg text-white/50 data-[state=active]:bg-white/10 data-[state=active]:text-white/90 data-[state=active]:shadow-lg;
+  }
 }
 
 @layer utilities {
@@ -451,4 +455,8 @@ input[type='range']::-webkit-slider-thumb {
 
 .profile-video .vjs-poster img {
   object-fit: cover !important;
+}
+
+em-emoji-picker {
+  max-height: 400px;
 }

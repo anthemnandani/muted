@@ -1,7 +1,7 @@
 'use client';
 
 import { PostFooterProps } from '@/lib/types';
-import { formatTimeAgo } from '@/lib/utils';
+import { cn, formatTimeAgo } from '@/lib/utils';
 import Link from 'next/link';
 import PostText from '../shared/PostText';
 import RepostBanner from '../shared/RepostBanner';
@@ -14,9 +14,16 @@ const PostFooter: React.FC<PostFooterProps> = ({
   text,
   reposts,
   repostedBy,
+  mentions,
+  isThread,
 }) => {
   return (
-    <div className='absolute bottom-7 left-0 right-0 px-4 z-10'>
+    <div
+      className={cn(
+        'absolute left-0 right-0 px-4 z-10',
+        isThread ? 'bottom-3' : 'bottom-7'
+      )}
+    >
       <RepostBanner repostedBy={repostedBy} reposts={reposts} />
 
       <div className='flex items-center gap-2 mb-2'>
@@ -31,7 +38,7 @@ const PostFooter: React.FC<PostFooterProps> = ({
           {formatTimeAgo(createdAt)}
         </Link>
       </div>
-      {text && <PostText text={text} />}
+      {text && <PostText text={text} mentions={mentions} />}
     </div>
   );
 };

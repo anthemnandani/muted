@@ -4,7 +4,7 @@ import { UploadErrorProps } from '@/lib/types';
 
 const UploadError = ({ title, message, onRetry }: UploadErrorProps) => {
   return (
-    <div className='flex-col-center p-8 text-center'>
+    <div className='flex-col-center p-8 text-center h-full'>
       <div className='mb-4'>
         <Icons.alertCircle className='size-24 text-neutral-100' />
       </div>

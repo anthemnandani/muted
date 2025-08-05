@@ -1,13 +1,12 @@
 import { type MentionPosition, UseMentionsProps } from '@/lib/types';
 import { api } from '@/trpc/react';
 import { debounce } from 'lodash';
-import React from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 const useMentions = ({ textareaRef, setCommentText }: UseMentionsProps) => {
-  const [mentionSearch, setMentionSearch] = React.useState<string>('');
-  const [showMentionSuggestions, setShowMentionSuggestions] =
-    React.useState(false);
-  const [cursorPosition, setCursorPosition] = React.useState<MentionPosition>({
+  const [mentionSearch, setMentionSearch] = useState<string>('');
+  const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
+  const [cursorPosition, setCursorPosition] = useState<MentionPosition>({
     top: 0,
     left: 0,
   });
@@ -24,7 +23,7 @@ const useMentions = ({ textareaRef, setCommentText }: UseMentionsProps) => {
       }
     );
 
-  const calculateCursorPosition = React.useCallback(() => {
+  const calculateCursorPosition = useCallback(() => {
     const textarea = textareaRef?.current;
     if (!textarea) return;
 
@@ -82,7 +81,7 @@ const useMentions = ({ textareaRef, setCommentText }: UseMentionsProps) => {
     });
   }, [textareaRef]);
 
-  const handleMentionSearch = React.useCallback(
+  const handleMentionSearch = useCallback(
     debounce((text: string, cursorIndex: number) => {
       const textBeforeCursor = text.slice(0, cursorIndex);
       const matches = textBeforeCursor.match(/@(\w*)$/);
@@ -103,7 +102,7 @@ const useMentions = ({ textareaRef, setCommentText }: UseMentionsProps) => {
     [calculateCursorPosition]
   );
 
-  const insertMention = React.useCallback(
+  const insertMention = useCallback(
     (username: string) => {
       const textarea = textareaRef.current;
       if (!textarea) return;
@@ -139,7 +138,7 @@ const useMentions = ({ textareaRef, setCommentText }: UseMentionsProps) => {
     [textareaRef, setCommentText]
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       if (!target.closest('.mentions-menu') && target !== textareaRef.current) {
@@ -155,13 +154,13 @@ const useMentions = ({ textareaRef, setCommentText }: UseMentionsProps) => {
     };
   }, [textareaRef]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (mentionSearch === '') {
       setShowMentionSuggestions(false);
     }
   }, [mentionSearch]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       handleMentionSearch.cancel();
     };

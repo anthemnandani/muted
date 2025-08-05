@@ -1,44 +1,36 @@
 'use client';
 
-import { EmojiPicker } from '../modals/EmojiPicker';
-
-interface PostMediaToolsProps {
-  // onFileSelect: (files: File[]) => void;
-  // onGifSelect: (gif: IGif) => void;
-  onEmojiSelect: (emoji: string) => void;
-}
+import { PostMediaToolsProps } from '@/lib/types';
+import { Icons } from '../icons';
+import EmojiPicker from '../modals/EmojiPicker';
+import GifPicker from '../modals/GifPicker';
+import usePostDialog from '@/store/postDialog';
+import { Fragment } from 'react';
 
 const PostMediaTools = ({
-  // onFileSelect,
-  // onGifSelect,
+  onGifSelect,
   onEmojiSelect,
+  getRootProps,
+  getInputProps,
 }: PostMediaToolsProps) => {
-  // const maxSize = 512 * 1024 * 1024;
-  // const accept: Accept = {
-  //   'image/*': [],
-  //   'video/*': [],
-  //   'image/gif': [],
-  // };
-
-  // const { getRootProps, getInputProps } = useDropzone({
-  //   onDrop: onFileSelect,
-  //   accept,
-  //   maxSize,
-  // });
-
+  const { editPostId } = usePostDialog();
   return (
     <div className='flex items-center gap-2'>
-      {/* <div {...getRootProps()} className='space-y-2 mt-1 select-none w-fit'>
-        <div className='text-gray-3 flex gap-1 select-none items-center text-[15px]'>
-          <input {...getInputProps()} />
-          <Icons.image className='size-5 select-none transform active:scale-75 transition-transform cursor-pointer' />
-        </div>
-      </div>
-      <GifPicker
-        onGifSelect={(gif) => {
-          onGifSelect(gif);
-        }}
-      /> */}
+      {!editPostId && (
+        <Fragment>
+          <div {...getRootProps()} className='space-y-2 mt-1 select-none w-fit'>
+            <div className='text-gray-3 flex gap-1 select-none items-center text-[15px]'>
+              <input {...getInputProps()} />
+              <Icons.image className='size-5 select-none transform active:scale-75 transition-transform cursor-pointer' />
+            </div>
+          </div>
+          <GifPicker
+            onGifSelect={(gif) => {
+              onGifSelect(gif);
+            }}
+          />
+        </Fragment>
+      )}
       <EmojiPicker onChange={onEmojiSelect} />
     </div>
   );

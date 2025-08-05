@@ -10,27 +10,40 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import useCreatePost from '@/hooks/useCreatePost';
 import useDevice from '@/hooks/useDevice';
-import { useFileUpload } from '@/hooks/useFileUpload';
+import useFileUpload from '@/hooks/useFileUpload';
+import { type PostType } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
 import usePostDialog from '@/store/postDialog';
+import { ImageIcon } from 'lucide-react';
 import { Fragment, useEffect, useState } from 'react';
 import DiscardPost from '../DiscardPost';
 import CreatePost from './CreatePost';
+import CreateThread from './CreateThread';
 import PostDialogTitle from './PostDialogTitle';
 import PreviewStep from './PreviewStep';
 import UploadError from './UploadError';
 import UploadStep from './UploadStep';
 
 const NewPost = () => {
-  const { openDialog, setOpenDialog, step, setStep, resetPostState } =
-    usePostDialog();
-
-  const { setMediaFiles } = useFileStore();
+  const {
+    openDialog,
+    editPostId,
+    setOpenDialog,
+    step,
+    setStep,
+    resetPostState,
+    postType,
+    setPostType,
+  } = usePostDialog();
+  const { setMediaFiles, setThreadMedia } = useFileStore();
   const [showDiscardModal, setShowDiscardModal] = useState(false);
-
   const { isMobile } = useDevice();
+  const isThread = postType === 'thread';
+  const isEditing = !!editPostId;
 
   const {
     error,
@@ -42,7 +55,12 @@ const NewPost = () => {
     isDragActive,
     cleanup,
   } = useFileUpload({
-    onSuccess: () => setStep('preview'),
+    onSuccess: () => {
+      if (!isThread) {
+        setStep('preview');
+      }
+    },
+    isThread,
   });
 
   useEffect(() => {
@@ -50,14 +68,18 @@ const NewPost = () => {
   }, []);
 
   const handleDiscardPost = () => {
-    setMediaFiles([]);
-    resetPostState();
     setOpenDialog(false);
     setShowDiscardModal(false);
+
+    setTimeout(() => {
+      setMediaFiles([]);
+      setThreadMedia(null);
+      resetPostState();
+    }, 150);
   };
 
   const handleOpenChange = (open: boolean) => {
-    if (!open && (step === 'preview' || step === 'post')) {
+    if (!isEditing && !open && (step === 'preview' || step === 'post')) {
       setShowDiscardModal(true);
       return;
     }
@@ -65,14 +87,24 @@ const NewPost = () => {
     setOpenDialog(open);
 
     if (!open) {
-      setMediaFiles([]);
-      resetPostState();
+      setTimeout(() => {
+        setMediaFiles([]);
+        setThreadMedia(null);
+        resetPostState();
+      }, 150);
     }
+  };
+
+  const { isLoading, handleSubmit } = useCreatePost();
+
+  const handleTabChange = (value: string) => {
+    setPostType(value as PostType);
+    setError(null);
   };
 
   return (
     <Fragment>
-      <Dialog open={openDialog} onOpenChange={handleOpenChange}>
+      <Dialog open={openDialog} onOpenChange={handleOpenChange} modal={true}>
         <DialogTrigger>
           {isMobile ? (
             <CreateThreadMobile />
@@ -82,11 +114,7 @@ const NewPost = () => {
             </div>
           )}
         </DialogTrigger>
-        <DialogContent
-          className={cn(
-            'w-full border-none bg-transparent shadow-none outline-none'
-          )}
-        >
+        <DialogContent className='w-full border-none bg-transparent shadow-none outline-none'>
           <DialogHeader
             className={cn(
               'w-[500px]',
@@ -97,12 +125,16 @@ const NewPost = () => {
             <PostDialogTitle
               hasError={!!error}
               discardPost={handleDiscardPost}
+              isLoading={isLoading}
+              handleSubmit={handleSubmit}
             />
           </DialogHeader>
           <div className='flex'>
             <Card
               className={cn(
-                'relative border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6 size-[500px] transition-all duration-500 ease-in-out z-10',
+                'relative border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6 w-[500px]',
+                'h-full min-h-[500px] overflow-y-auto hide-scrollbar max-h-screen',
+                'transition-all duration-500 ease-in-out z-10',
                 step === 'post'
                   ? 'rounded-l-lg rounded-r-none -translate-x-[150px]'
                   : 'rounded-lg'
@@ -114,39 +146,86 @@ const NewPost = () => {
                   className='rounded-lg absolute top-0 left-2 right-2 h-1 w-full animate-progress bg-primary-blue'
                 />
               )}
-              {error && (
+              {error ? (
                 <UploadError
                   title={error.title}
                   message={error.message}
                   onRetry={() => setError(null)}
                 />
-              )}
-              {step === 'upload' && (
-                <UploadStep
-                  getRootProps={getRootProps}
-                  getInputProps={getInputProps}
-                  isDragActive={isDragActive}
-                />
-              )}
-              {(step === 'preview' || step === 'post') && (
-                <PreviewStep
-                  getRootProps={getRootProps}
-                  getInputProps={getInputProps}
-                  isDragActive={isDragActive}
-                />
+              ) : step === 'compose' ? (
+                <div className='p-6 h-full'>
+                  <Tabs
+                    value={postType}
+                    onValueChange={handleTabChange}
+                    className='h-full flex flex-col'
+                  >
+                    <TabsList
+                      className={cn(
+                        'grid w-full grid-cols-2 rounded-xl border border-gray-7/50',
+                        'p-1 bg-gray-8/30 overflow-hidden'
+                      )}
+                    >
+                      <TabsTrigger
+                        disabled={
+                          isLoading || (!!editPostId && postType === 'thread')
+                        }
+                        value='media'
+                        className='create-post-tab'
+                      >
+                        <ImageIcon className='size-4' />
+                        Media
+                      </TabsTrigger>
+                      <TabsTrigger
+                        disabled={isLoading}
+                        value='thread'
+                        className='create-post-tab'
+                      >
+                        <Icons.messageSquare className='size-4' />
+                        Thread
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value='media' className='flex-1'>
+                      <UploadStep
+                        getRootProps={getRootProps}
+                        getInputProps={getInputProps}
+                        isDragActive={isDragActive}
+                      />
+                    </TabsContent>
+
+                    <TabsContent value='thread' className='flex-1'>
+                      <CreateThread
+                        getRootProps={getRootProps}
+                        getInputProps={getInputProps}
+                        isLoading={isLoading}
+                        handleSubmit={handleSubmit}
+                      />
+                    </TabsContent>
+                  </Tabs>
+                </div>
+              ) : (
+                (step === 'preview' || step === 'post') && (
+                  <PreviewStep
+                    getRootProps={getRootProps}
+                    getInputProps={getInputProps}
+                    isDragActive={isDragActive}
+                  />
+                )
               )}
             </Card>
-
-            <div
-              className={cn(
-                'relative border-none shadow-2xl ring-1 ring-r-[#393939] bg-gray-6 w-[340px] rounded-r-lg transition-all duration-500 ease-in-out',
-                step === 'post'
-                  ? '-translate-x-[150px] opacity-100'
-                  : '-translate-x-[340px] opacity-0'
-              )}
-            >
-              <CreatePost />
-            </div>
+            {step === 'post' && (
+              <div
+                className={cn(
+                  'relative border-none shadow-2xl ring-1 ring-r-[#393939] bg-gray-6 w-[340px]',
+                  'rounded-r-lg transition-all duration-500 ease-in-out z-20',
+                  step === 'post'
+                    ? '-translate-x-[150px] opacity-100'
+                    : '-translate-x-[340px] opacity-0'
+                )}
+              >
+                <CreatePost />
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

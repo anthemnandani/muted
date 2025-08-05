@@ -1,34 +1,39 @@
+import { Icons } from '@/components/icons';
 import { type PostMedia } from '@/lib/types';
 import { getImageDimensions, getVideoDimensions } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
 import usePostDialog from '@/store/postDialog';
 import { api } from '@/trpc/react';
-import { useEffect } from 'react';
+import type { IGif } from '@giphy/js-types';
+import { Check } from 'lucide-react';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import { useBunnyUpload } from './useBunnyUpload';
 
 const useCreatePost = () => {
-  const { mediaFiles, setMediaFiles } = useFileStore();
+  const { mediaFiles, threadMedia, setMediaFiles, setThreadMedia } =
+    useFileStore();
   const { uploadToStorage, uploadToStream } = useBunnyUpload();
-  const { quoteInfo, editPostInfo, resetPostState, setPostData, postData } =
-    usePostDialog();
+  const {
+    quoteInfo,
+    editPostId,
+    resetPostState,
+    setPostData,
+    setOpenDialog,
+    postData,
+    postType,
+  } = usePostDialog();
 
   const trpcUtils = api.useUtils();
-
-  useEffect(() => {
-    if (editPostInfo) {
-      setPostData({
-        ...postData,
-        text: editPostInfo.text,
-      });
-    }
-  }, [editPostInfo]);
 
   const { isLoading, mutateAsync: createPost } =
     api.post.createPost.useMutation({
       onMutate: () => {
-        resetPostState();
-        setMediaFiles([]);
+        setTimeout(() => {
+          setMediaFiles([]);
+          setThreadMedia(null);
+          resetPostState();
+        }, 150);
       },
       onError: () => {
         toast.error('PostingError: Something went wrong!');
@@ -42,6 +47,11 @@ const useCreatePost = () => {
 
   const { isLoading: isEditing, mutateAsync: editPost } =
     api.post.editPost.useMutation({
+      onMutate: () => {
+        setTimeout(() => {
+          resetPostState();
+        }, 150);
+      },
       onError: (err) => {
         if (err.message === 'Edit window has expired') {
           toast.error('Edit time window has expired');
@@ -54,59 +64,102 @@ const useCreatePost = () => {
       },
     });
 
+  const handleGiphyGifUpload = async (gif: IGif): Promise<PostMedia> => {
+    try {
+      const response = await fetch(gif.images.original.url);
+      const blob = await response.blob();
+      const gifFile = new File([blob], `${gif.id}.gif`, {
+        type: 'image/gif',
+      });
+
+      const fileUrl = await uploadToStorage(gifFile);
+
+      const dimensions = {
+        width: gif.images.original.width,
+        height: gif.images.original.height,
+      };
+
+      return {
+        fileType: 'gif',
+        fileUrl,
+        originalDimensions: dimensions,
+      };
+    } catch (error) {
+      console.error('Error processing Giphy GIF:', error);
+      throw new Error('Failed to process Giphy GIF');
+    }
+  };
+
   const handleMediaUpload = async () => {
     try {
-      const mediaItems: PostMedia[] = await Promise.all(
-        mediaFiles.map(async (mediaFile) => {
-          // Handle GIFs from Giphy
-          // if (
-          //   typeof mediaFile.file === 'object' &&
-          //   'images' in mediaFile.file
-          // ) {
-          //   const gif = mediaFile.file as IGif;
-          //   const response = await fetch(gif.images.original.url);
-          //   const blob = await response.blob();
-          //   const gifFile = new File([blob], `${gif.id}.gif`, {
-          //     type: 'image/gif',
-          //   });
+      const allMediaItems: PostMedia[] = [];
+      if (postType === 'media' && mediaFiles.length > 0) {
+        const mediaItems = await Promise.all(
+          mediaFiles.map(async (mediaFile) => {
+            const file = mediaFile.file;
 
-          //   const { url: fileUrl } = await uploadToStorage(gifFile);
-          //   return {
-          //     fileType: 'gif' as MediaType,
-          //     fileUrl,
-          //   };
-          // }
+            if (file.type.startsWith('video/')) {
+              const dimensions = await getVideoDimensions(file);
+              const { fileUrl, thumbnailUrl } = await uploadToStream(file);
 
-          const file = mediaFile.file;
+              return {
+                fileType: 'video' as const,
+                fileUrl,
+                thumbnailUrl,
+                aspectRatio: mediaFile.aspectRatio,
+                originalDimensions: dimensions,
+              };
+            } else {
+              const dimensions = await getImageDimensions(file);
+              const fileUrl = await uploadToStorage(file);
+
+              return {
+                fileType: file.type === 'image/gif' ? 'gif' : 'image',
+                fileUrl,
+                aspectRatio: mediaFile.aspectRatio,
+                originalDimensions: dimensions,
+              };
+            }
+          })
+        );
+
+        allMediaItems.push(...mediaItems);
+      }
+      if (postType === 'thread' && threadMedia) {
+        if (threadMedia.type === 'gif' && 'gif' in threadMedia) {
+          const giphyMedia = await handleGiphyGifUpload(threadMedia.gif);
+          allMediaItems.push(giphyMedia);
+        } else if ('file' in threadMedia) {
+          const file = threadMedia.file;
 
           if (file.type.startsWith('video/')) {
             const dimensions = await getVideoDimensions(file);
             const { fileUrl, thumbnailUrl } = await uploadToStream(file);
 
-            return {
+            allMediaItems.push({
               fileType: 'video',
               fileUrl,
               thumbnailUrl,
-              aspectRatio: mediaFile.aspectRatio,
+              aspectRatio: threadMedia.aspectRatio,
               originalDimensions: dimensions,
-            };
+            });
           } else {
             const dimensions = await getImageDimensions(file);
             const fileUrl = await uploadToStorage(file);
 
-            return {
-              fileType: 'image',
+            allMediaItems.push({
+              fileType: file.type === 'image/gif' ? 'gif' : 'image',
               fileUrl,
-              aspectRatio: mediaFile.aspectRatio,
+              aspectRatio: threadMedia.aspectRatio,
               originalDimensions: dimensions,
-            };
+            });
           }
-        })
-      );
+        }
+      }
 
       return {
         success: true,
-        mediaItems,
+        mediaItems: allMediaItems,
       };
     } catch (error) {
       toast.error('Error processing media files');
@@ -116,35 +169,82 @@ const useCreatePost = () => {
 
   const handleMutation = async () => {
     const mediaUploadResult = await handleMediaUpload();
+    const {
+      caption,
+      threadText,
+      // linkPreview,
+      hideLikes,
+      turnOffComments,
+      privacy,
+    } = postData;
 
     if (!mediaUploadResult.success) {
       return Promise.reject(new Error('Media upload failed'));
     }
 
-    const promise = editPostInfo
+    const promise = editPostId
       ? editPost({
-          id: editPostInfo.id,
-          text: postData.text.trim(),
+          id: editPostId,
+          text: postType === 'media' ? caption?.trim() : undefined,
+          threadText: postType === 'thread' ? threadText?.trim() : undefined,
+          hideLikes,
+          turnOffComments,
         })
       : createPost({
-          text: postData.text.trim(),
+          text: postType === 'media' ? caption?.trim() : undefined,
+          threadText: postType === 'thread' ? threadText?.trim() : undefined,
           media: mediaUploadResult.mediaItems,
-          privacy: postData.privacy,
+          privacy,
           quoteId: quoteInfo?.id,
           postAuthor: quoteInfo?.author.id,
-          linkPreview: postData.linkPreview ?? undefined,
-          hideLikes: postData.hideLikes,
-          turnOffComments: postData.turnOffComments,
+          // linkPreview: linkPreview ?? undefined,
+          hideLikes,
+          turnOffComments,
         });
 
     return promise as any;
+  };
+
+  const handleSubmit = (isEdit = false) => {
+    setOpenDialog(false);
+    const promise = handleMutation();
+
+    toast.promise(promise, {
+      loading: (
+        <div className='flex w-[270px] items-center justify-start gap-1.5 p-0'>
+          <div>
+            <Icons.loading className='size-8' />
+          </div>
+          {isEdit ? 'Editing...' : 'Posting...'}
+        </div>
+      ),
+      success: (data) => {
+        const postInfo = data?.isEdited ? data?.updatedPost : data?.createPost;
+        return (
+          <div className='flex-between w-[270px] p-0 '>
+            <div className='flex-center gap-1.5'>
+              <Check className='size-5' />
+              {data?.isEdited ? 'Edited' : 'Posted'}
+            </div>
+            <Link
+              href={`/${postInfo.author.username}/post/${postInfo.id}`}
+              className='hover:text-blue-900'
+            >
+              View
+            </Link>
+          </div>
+        );
+      },
+      error: 'Error',
+      richColors: true,
+    });
   };
 
   return {
     postData,
     setPostData,
     isLoading,
-    handleMutation,
+    handleSubmit,
     isEditing,
   };
 };

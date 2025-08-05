@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils';
 import useCommentPanelStore from '@/store/commentPanel';
 import { useHiddenPosts } from '@/store/hiddenPosts';
 import { useMutedUsers } from '@/store/mutedUsers';
-import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import CommentsPanel from '../comments/CommentsPanel';
@@ -13,6 +12,7 @@ import PostMediaCarousel from '../posts/PostMediaCarousel';
 import PostActions from '../shared/PostActions';
 import HiddenPost from './HiddenPost';
 import MutedPost from './MutedPost';
+import ThreadPostContent from '../posts/ThreadPostContent';
 
 const PostCard: React.FC<PostCardProps> = ({
   media,
@@ -20,6 +20,7 @@ const PostCard: React.FC<PostCardProps> = ({
   author,
   likes,
   text,
+  threadText,
   createdAt,
   repliesCount,
   bookmarks,
@@ -44,10 +45,10 @@ const PostCard: React.FC<PostCardProps> = ({
   } = useCommentPanelStore();
   const { isTemporarilyHidden } = useHiddenPosts();
   const { isMutedUser } = useMutedUsers();
-  const pathname = usePathname();
 
   const isHidden = isTemporarilyHidden(id);
   const isMuted = isMutedUser(author.id);
+  const isThreadPost = !!threadText;
 
   const { ref: postRef, inView } = useInView({
     threshold: 0.5,
@@ -92,16 +93,35 @@ const PostCard: React.FC<PostCardProps> = ({
             isPanelOpen ? 'translate-x-[-200px]' : 'translate-x-0'
           )}
         >
-          <PostMediaCarousel
-            media={media}
-            author={author}
-            createdAt={createdAt}
-            postId={id!}
-            text={text}
-            pinned={pinned}
-            reposts={reposts}
-            repostedBy={repostedBy}
-          />
+          {isThreadPost ? (
+            <ThreadPostContent
+              media={media}
+              author={author}
+              mentions={mentions}
+              createdAt={createdAt}
+              postId={id!}
+              threadText={threadText}
+              pinned={pinned}
+              reposts={reposts}
+              repostedBy={repostedBy}
+              hideLikes={hideLikes}
+              turnOffComments={turnOffComments}
+            />
+          ) : (
+            <PostMediaCarousel
+              media={media}
+              author={author}
+              createdAt={createdAt}
+              mentions={mentions}
+              postId={id!}
+              text={text}
+              pinned={pinned}
+              reposts={reposts}
+              repostedBy={repostedBy}
+              hideLikes={hideLikes}
+              turnOffComments={turnOffComments}
+            />
+          )}
           <PostActions
             id={id}
             likesCount={likesCount ?? 0}

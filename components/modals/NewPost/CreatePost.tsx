@@ -5,28 +5,37 @@ import { Switch } from '@/components/ui/switch';
 import useDevice from '@/hooks/useDevice';
 import usePostDialog from '@/store/postDialog';
 import { useUser } from '@clerk/nextjs';
-import { useRef } from 'react';
-import { EmojiPicker } from '../EmojiPicker';
+import { useRef, useEffect } from 'react';
+import EmojiPicker from '../EmojiPicker';
 
 const CreatePost = () => {
   const { user } = useUser();
   const maxLength = 2200;
 
-  const { postData, setPostData } = usePostDialog();
+  const { postData, setPostData, editPostId } = usePostDialog();
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (editPostId && textareaRef.current) {
+      const textLength = textareaRef.current.value.length;
+      textareaRef.current.focus();
+      textareaRef.current.setSelectionRange(textLength, textLength);
+    }
+  }, [editPostId]);
+
   const { isMobile } = useDevice();
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setPostData({ ...postData, text: e.target.value });
+    setPostData({ ...postData, caption: e.target.value });
   };
 
   const handleEmojiSelect = (emoji: string) => {
     const cursorPosition = textareaRef.current?.selectionStart || 0;
     const newText =
-      postData.text.slice(0, cursorPosition) +
+      postData.caption.slice(0, cursorPosition) +
       emoji +
-      postData.text.slice(cursorPosition);
+      postData.caption.slice(cursorPosition);
 
     handleTextareaChange({
       target: { value: newText },
@@ -70,7 +79,7 @@ const CreatePost = () => {
       </div>
       <div className='mb-4'>
         <textarea
-          value={postData.text}
+          value={postData.caption}
           onChange={handleTextareaChange}
           className='w-full h-48 bg-transparent text-white/90 placeholder-gray-400 resize-none focus:outline-none text-sm leading-relaxed overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent'
           maxLength={maxLength}
@@ -83,7 +92,7 @@ const CreatePost = () => {
       <div className='flex-between mb-6 relative'>
         <EmojiPicker onChange={handleEmojiSelect} />
         <span className='text-xs text-gray-400'>
-          {postData.text.length}/{maxLength}
+          {postData.caption.length}/{maxLength}
         </span>
       </div>
       <div className='space-y-4'>

@@ -82,7 +82,7 @@ const Gallery = ({
         side='top'
         align='end'
         sideOffset={8}
-        className='z-[9999] w-auto p-0 bg-transparent border-none shadow-none'
+        className='z-[9998] w-auto p-0 bg-transparent border-none shadow-none'
       >
         <div className='p-4 bg-neutral-800 shadow-2xl rounded-lg'>
           <DndContext

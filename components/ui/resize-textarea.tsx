@@ -1,12 +1,20 @@
 import { cn } from '@/lib/utils';
-import * as React from 'react';
+import {
+  forwardRef,
+  RefObject,
+  TextareaHTMLAttributes,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useEffect,
+} from 'react';
 
 export interface TextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  forwardedRef?: React.RefObject<HTMLTextAreaElement>;
+  extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+  forwardedRef?: RefObject<HTMLTextAreaElement>;
 }
 
-const ResizeTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
+const ResizeTextarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, forwardedRef, ...props }, _) => {
     function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
       if (textArea == null) return;
@@ -14,8 +22,8 @@ const ResizeTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       textArea.style.height = `${textArea.scrollHeight}px`;
     }
 
-    const textAreaRef = React.useRef<HTMLTextAreaElement>();
-    const inputRef = React.useCallback(
+    const textAreaRef = useRef<HTMLTextAreaElement>();
+    const inputRef = useCallback(
       (textArea: HTMLTextAreaElement) => {
         updateTextAreaSize(textArea);
         textAreaRef.current = textArea;
@@ -27,9 +35,15 @@ const ResizeTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       [forwardedRef]
     );
 
-    React.useLayoutEffect(() => {
+    useLayoutEffect(() => {
       updateTextAreaSize(textAreaRef.current);
     }, [props.value]);
+
+    useEffect(() => {
+      if (props.autoFocus && textAreaRef.current) {
+        textAreaRef.current.focus();
+      }
+    }, [props.autoFocus]);
 
     return (
       <textarea

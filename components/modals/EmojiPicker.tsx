@@ -1,75 +1,50 @@
 'use client';
 
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { EmojiPickerProps } from '@/lib/types';
-import { cn } from '@/lib/utils';
 import data from '@emoji-mart/data/';
 import Picker from '@emoji-mart/react';
 import { Smile } from 'lucide-react';
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
-export function EmojiPicker({ onChange, isComment = false }: EmojiPickerProps) {
+const EmojiPicker = ({ onChange }: EmojiPickerProps) => {
   const [open, setOpen] = useState(false);
-  const triggerRef = useRef<HTMLDivElement>(null);
-  const pickerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        pickerRef.current &&
-        !pickerRef.current.contains(event.target as Node) &&
-        !triggerRef.current?.contains(event.target as Node)
-      ) {
-        setOpen(false);
-      }
-    };
-
-    if (open) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [open]);
 
   return (
-    <Fragment>
-      <div
-        ref={triggerRef}
-        onClick={() => {
-          setOpen(!open);
-        }}
-        className='text-white/70 hover:text-white/90 flex gap-1 select-none items-center text-[15px] cursor-pointer'
-      >
-        <Smile className='size-6 select-none transform active:scale-75 transition-transform' />
-      </div>
-
-      {open && (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger>
         <div
-          ref={pickerRef}
-          className={cn(
-            'absolute z-[9999] top-8 left-0',
-            isComment && '-top-[455px] -left-[250px]'
-          )}
-          onClick={(e) => {
-            e.stopPropagation();
+          role='button'
+          className='text-gray-3 flex cursor-pointer select-none items-center gap-1 text-[15px]'
+        >
+          <Smile className='size-5 select-none transform transition-transform active:scale-75' />
+        </div>
+      </PopoverTrigger>
+      <PopoverContent
+        side='top'
+        sideOffset={10}
+        className='z-[9999] w-auto border-none bg-transparent p-0 shadow-none'
+      >
+        <Picker
+          data={data}
+          onEmojiSelect={(emoji: any) => {
+            onChange?.(emoji.native);
             setOpen(false);
           }}
-        >
-          <Picker
-            data={data}
-            onEmojiSelect={(emoji: any) => {
-              onChange?.(emoji.native);
-            }}
-            theme='dark'
-            perLine={9}
-            maxFrequentRows={1}
-            skinTonePosition='none'
-            previewPosition='none'
-            navPosition='bottom'
-          />
-        </div>
-      )}
-    </Fragment>
+          theme='dark'
+          perLine={8}
+          maxFrequentRows={1}
+          skinTonePosition='none'
+          previewPosition='none'
+          navPosition='top'
+        />
+      </PopoverContent>
+    </Popover>
   );
-}
+};
+
+export default EmojiPicker;

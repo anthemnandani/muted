@@ -20,6 +20,9 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
   pinned,
   reposts,
   repostedBy,
+  mentions,
+  hideLikes,
+  turnOffComments,
 }) => {
   const [swiperRef, setSwiperRef] = React.useState<SwiperType>();
   const [currentIndex, setCurrentIndex] = React.useState(0);
@@ -47,10 +50,13 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                 postId={postId}
                 author={author}
                 createdAt={createdAt}
+                mentions={mentions}
                 text={text}
                 reposts={reposts}
                 pinned={pinned}
                 repostedBy={repostedBy}
+                hideLikes={hideLikes}
+                turnOffComments={turnOffComments}
               />
             ) : (
               <PostImageCard
@@ -59,11 +65,14 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                 aspectRatio={item.aspectRatio as AspectRatio}
                 author={author}
                 createdAt={createdAt}
+                mentions={mentions}
                 id={postId}
                 text={text}
                 reposts={reposts}
                 pinned={pinned}
                 repostedBy={repostedBy}
+                hideLikes={hideLikes}
+                turnOffComments={turnOffComments}
               />
             )}
           </SwiperSlide>

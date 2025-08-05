@@ -1,4 +1,5 @@
 import type { AppRouter } from '@/server/api/root';
+import type { GifID, IGif } from '@giphy/js-types';
 import type {
   CollectionPrivacy,
   MessageReportCategory,
@@ -11,6 +12,7 @@ import { PostPrivacy, Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
 import { LucideIcon } from 'lucide-react';
 import { ReactNode } from 'react';
+import { DropzoneInputProps, DropzoneRootProps } from 'react-dropzone';
 import Player from 'video.js/dist/types/player';
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
@@ -164,10 +166,16 @@ export type Repost = {
   createdAt: Date;
 };
 
+export type Mention = {
+  user: AuthorInfoProps;
+  index: number;
+};
+
 export type ParentPostProps = {
   id: string;
   createdAt: Date;
   text: string | null;
+  threadText: string | null;
   media: PostMedia[];
   likes: {
     userId: string;
@@ -177,10 +185,7 @@ export type ParentPostProps = {
   reposts: Repost[];
   parentPostId: string | null;
   parentPost?: any;
-  mentions: Array<{
-    user: AuthorInfoProps;
-    index: number;
-  }>;
+  mentions: Mention[];
   linkPreview: LinkPreview | null;
   author: AuthorInfoProps;
   repostedBy?: AuthorInfoProps;
@@ -213,16 +218,13 @@ export interface UserAvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   fullname: string | null | undefined;
 }
 
-export interface CreatePostInputProps {
-  isOpen: boolean;
-  replyPostInfo?: ReplyPostInfo | null;
+export interface CreatePostInputProps extends DropzoneProps {
   onTextareaChange: (textValue: string) => void;
-  quoteInfo?: ParentPostInfo | null;
   placeholder?: string;
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   value: string;
-  setPostData: React.Dispatch<React.SetStateAction<PostData>>;
-  isReply?: boolean;
+  setPostData: (postData: PostData) => void;
+  handleMentionSearch: (value: string, cursorPosition: number) => void;
 }
 
 export interface PostsListProps {
@@ -254,10 +256,7 @@ export interface PostActionsProps {
   repostsCount: number;
   bookmarks: { userId: string; collection: { isDefault: boolean } }[];
   bookmarksCount: number;
-  mentions: Array<{
-    user: AuthorInfoProps;
-    index: number;
-  }>;
+  mentions: Mention[];
   hideLikes: boolean;
   turnOffComments: boolean;
   onCommentsToggle: () => void;
@@ -304,9 +303,10 @@ export interface LinkPreview {
 }
 
 export type PostData = {
-  privacy: PostPrivacy;
-  text: string;
-  linkPreview: LinkPreview | null;
+  privacy?: PostPrivacy;
+  caption: string;
+  threadText: string;
+  // linkPreview: LinkPreview | null;
   hideLikes: boolean;
   turnOffComments: boolean;
 };
@@ -354,6 +354,12 @@ export type MediaFile = {
   originalHeight?: number;
 };
 
+export type GiphyMedia = {
+  id: GifID;
+  gif: IGif;
+  type: 'gif';
+};
+
 export interface PreviewStepProps {
   getRootProps: any;
   getInputProps: any;
@@ -377,6 +383,8 @@ export interface UploadStepProps {
 export interface PostDialogTitleProps {
   hasError: boolean;
   discardPost: () => void;
+  handleSubmit: (value: boolean) => void;
+  isLoading: boolean;
 }
 
 export interface UploadErrorProps {
@@ -398,9 +406,11 @@ export interface PostFooterProps {
   author: AuthorInfoProps;
   createdAt: Date;
   id: string;
-  text: string | null;
+  text?: string | null;
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
+  isThread?: boolean;
+  mentions?: Mention[];
 }
 
 export interface VideoContainerProps {
@@ -414,16 +424,22 @@ export interface VideoContainerProps {
   setInView: (inView: boolean) => void;
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
+  mentions?: Mention[];
+  hideLikes?: boolean;
+  turnOffComments?: boolean;
 }
 
 export interface MediaControlsProps {
   author: AuthorInfoProps;
   postId: string;
   createdAt: Date;
-  text: string | null;
+  caption?: string | null;
+  threadText?: string | null;
   pinned?: boolean;
   showControls: boolean;
   VolumeControls?: React.ReactNode;
+  hideLikes?: boolean;
+  turnOffComments?: boolean;
 }
 
 export interface PostImageCardProps {
@@ -437,6 +453,9 @@ export interface PostImageCardProps {
   pinned?: boolean;
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
+  mentions?: Mention[];
+  hideLikes?: boolean;
+  turnOffComments?: boolean;
 }
 
 export interface PostVideoCardProps {
@@ -445,19 +464,26 @@ export interface PostVideoCardProps {
   poster: string;
   author: AuthorInfoProps;
   createdAt: Date;
-  text: string | null;
+  text?: string | null;
   pinned?: boolean;
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
+  mentions?: Mention[];
+  hideLikes?: boolean;
+  turnOffComments?: boolean;
 }
 
 export interface PostActionMenuProps {
   author: AuthorInfoProps;
   postId: string;
   createdAt: Date;
-  currentText: string;
+  caption?: string | null;
+  threadText?: string | null;
+  turnOffComments: boolean;
+  hideLikes: boolean;
   showControls: boolean;
   pinned?: boolean;
+  isThread?: boolean;
 }
 
 export interface PostMediaCarouselProps {
@@ -469,6 +495,23 @@ export interface PostMediaCarouselProps {
   pinned?: boolean;
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
+  mentions?: Mention[];
+  hideLikes?: boolean;
+  turnOffComments?: boolean;
+}
+
+export interface ThreadPostContentProps {
+  media: PostMedia[];
+  author: AuthorInfoProps;
+  createdAt: Date;
+  postId: string;
+  threadText: string | null;
+  pinned?: boolean;
+  reposts: Repost[];
+  repostedBy?: AuthorInfoProps;
+  mentions?: Mention[];
+  hideLikes?: boolean;
+  turnOffComments?: boolean;
 }
 
 export interface ProfileVideoPlayerProps {
@@ -610,18 +653,12 @@ export type Comment = {
   createdAt: Date;
   repliesCount: number;
   likes: { userId: string }[];
-  mentions: Array<{
-    user: AuthorInfoProps;
-    index: number;
-  }>;
+  mentions: Mention[];
 };
 
 export interface CommentTextProps {
   text: string;
-  mentions?: Array<{
-    user: AuthorInfoProps;
-    index: number;
-  }>;
+  mentions?: Mention[];
   className?: string;
 }
 
@@ -737,6 +774,7 @@ export interface UsernameProps {
 export interface EmojiPickerProps {
   onChange?: (emoji: string) => void;
   isComment?: boolean;
+  direction?: 'top' | 'bottom';
 }
 
 export interface SharePostProps {
@@ -998,4 +1036,43 @@ export interface MessageReportProps {
   messageId: string;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+}
+
+export interface PostMediaPreviewProps {
+  type: 'image' | 'video' | 'gif';
+  url?: string | IGif;
+  text?: string;
+  onRemove?: () => void;
+}
+
+export interface PostMediaToolsProps extends DropzoneProps {
+  onGifSelect: (gif: IGif) => void;
+  onEmojiSelect: (emoji: string) => void;
+}
+
+export interface DropzoneProps {
+  getRootProps: <T extends DropzoneRootProps>(props?: T) => T;
+  getInputProps: <T extends DropzoneInputProps>(props?: T) => T;
+}
+
+export interface CreateThreadProps extends DropzoneProps {
+  isLoading: boolean;
+  handleSubmit: (value: boolean) => void;
+}
+
+export type PostType = 'media' | 'thread';
+
+export interface PostHeaderProps {
+  author: AuthorInfoProps;
+  createdAt: Date;
+  id: string;
+  currentText: string;
+  pinned?: boolean;
+}
+
+export interface PostTextProps {
+  text: string;
+  className?: string;
+  isThreadPost?: boolean;
+  mentions?: Mention[];
 }

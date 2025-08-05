@@ -17,6 +17,9 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   reposts,
   pinned,
   repostedBy,
+  mentions,
+  turnOffComments,
+  hideLikes,
 }) => {
   const [player, setPlayer] = useState<Player | null>(null);
   const [inView, setInView] = useState(false);
@@ -152,10 +155,13 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
       createdAt={createdAt}
       setInView={setInView}
       id={postId}
-      text={text}
+      text={text ?? ''}
       pinned={pinned}
       reposts={reposts}
       repostedBy={repostedBy}
+      mentions={mentions}
+      hideLikes={hideLikes}
+      turnOffComments={turnOffComments}
     >
       <VideoPlayer
         poster={poster}

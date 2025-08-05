@@ -16,7 +16,7 @@ import {
   getPostRepliesCount,
 } from '@/server/constants';
 import { createId } from '@paralleldrive/cuid2';
-import { NotificationType, PostPrivacy } from '@prisma/client';
+import { NotificationType, PostPrivacy, Prisma } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
 import { z } from 'zod';
@@ -27,6 +27,7 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         text: z.string().optional(),
+        threadText: z.string().optional(),
         media: z
           .array(
             z.object({
@@ -65,128 +66,150 @@ export const postRouter = createTRPCRouter({
         turnOffComments: z.boolean().optional(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      const { user, userId } = ctx;
-      const email = getUserEmail(user);
-      const dbUser = await ctx.db.user.findUnique({
-        where: {
-          email: email,
+    .mutation(
+      async ({
+        ctx,
+        input: {
+          text,
+          threadText,
+          media,
+          mentions,
+          privacy,
+          quoteId,
+          linkPreview,
+          hideLikes,
+          turnOffComments,
         },
-        select: {
-          verified: true,
-        },
-      });
-
-      if (!dbUser) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
-      }
-
-      const filter = new Filter();
-      const filteredText = filter.clean(input.text || '');
-      const hashtags = extractHashtags(filteredText);
-
-      const transactionResult = await ctx.db.$transaction(async (prisma) => {
-        let linkPreview;
-
-        if (input.linkPreview) {
-          linkPreview = await prisma.linkPreview.upsert({
-            where: { url: input.linkPreview.url },
-            update: {},
-            create: {
-              url: input.linkPreview.url,
-              title: input.linkPreview.title,
-              description: input.linkPreview.description,
-              image: input.linkPreview.image,
-            },
-          });
-        }
-
-        const postId = createId();
-        const path = `/${postId}/`;
-
-        const mediaWithAspectRatio = input.media?.map((item) => ({
-          ...item,
-          aspectRatio: item.aspectRatio || '1:1',
-        }));
-
-        const newpost = await prisma.post.create({
-          data: {
-            id: postId,
-            text: filteredText,
-            authorId: userId,
-            media: mediaWithAspectRatio,
-            privacy: input.privacy,
-            quoteId: input.quoteId,
-            path,
-            linkPreviewUrl: linkPreview?.url,
-            hideLikes: input.hideLikes,
-            turnOffComments: input.turnOffComments,
-            hashtags: {
-              connectOrCreate: hashtags.map((tag) => {
-                const tagName = tag.slice(1);
-                return {
-                  where: { name: tagName },
-                  create: { name: tagName },
-                };
-              }),
-            },
-            // mentions: input.mentions
-            //   ? {
-            //       create: input.mentions.map((mention) => ({
-            //         username: mention.username,
-            //         index: mention.index,
-            //       })),
-            //     }
-            //   : undefined,
+      }) => {
+        const { user, userId } = ctx;
+        const email = getUserEmail(user);
+        const dbUser = await ctx.db.user.findUnique({
+          where: {
+            email: email,
           },
           select: {
-            id: true,
-            author: true,
+            verified: true,
           },
         });
 
-        // if (input.postAuthor && userId !== input.postAuthor) {
-        //   await prisma.notification.create({
-        //     data: {
-        //       type: 'QUOTE',
-        //       senderUserId: userId,
-        //       receiverUserId: input.postAuthor,
-        //       postId: newpost.id,
-        //       message: filteredText,
-        //     },
-        //   });
-        // }
+        if (!dbUser) {
+          throw new TRPCError({ code: 'NOT_FOUND' });
+        }
 
-        // if (input.mentions?.length) {
-        //   await Promise.all(
-        //     input.mentions.map((mention) =>
-        //       prisma.notification.create({
-        //         data: {
-        //           type: 'MENTION',
-        //           senderUserId: userId,
-        //           receiverUserId: mention.userId,
-        //           postId: newpost.id,
-        //           message: filteredText,
-        //         },
-        //       })
-        //     )
-        //   );
-        // }
+        const filter = new Filter();
+        const textToPost = text || threadText || '';
+        const filteredText = filter.clean(textToPost);
+        const hashtags = extractHashtags(filteredText);
+
+        const transactionResult = await ctx.db.$transaction(async (prisma) => {
+          let lPreview;
+
+          if (linkPreview) {
+            lPreview = await prisma.linkPreview.upsert({
+              where: { url: linkPreview?.url },
+              update: {},
+              create: {
+                url: linkPreview?.url || '',
+                title: linkPreview?.title,
+                description: linkPreview?.description,
+                image: linkPreview?.image,
+              },
+            });
+          }
+
+          const postId = createId();
+          const path = `/${postId}/`;
+
+          const mediaWithAspectRatio = media?.map((item) => ({
+            ...item,
+            aspectRatio: item.aspectRatio || '1:1',
+          }));
+
+          const newpost = await prisma.post.create({
+            data: {
+              id: postId,
+              ...(text && { text: filteredText }),
+              ...(threadText && { threadText: filteredText }),
+              authorId: userId,
+              media: mediaWithAspectRatio,
+              privacy,
+              quoteId,
+              path,
+              linkPreviewUrl: linkPreview?.url,
+              hideLikes,
+              turnOffComments,
+              hashtags: {
+                connectOrCreate: hashtags.map((tag) => {
+                  const tagName = tag.slice(1);
+                  return {
+                    where: { name: tagName },
+                    create: { name: tagName },
+                  };
+                }),
+              },
+              mentions: mentions
+                ? {
+                    create: mentions.map((mention) => ({
+                      username: mention.username,
+                      index: mention.index,
+                      user: {
+                        connect: {
+                          id: userId,
+                        },
+                      },
+                    })),
+                  }
+                : undefined,
+            },
+            select: {
+              id: true,
+              author: true,
+            },
+          });
+
+          // if (input.postAuthor && userId !== input.postAuthor) {
+          //   await prisma.notification.create({
+          //     data: {
+          //       type: 'QUOTE',
+          //       senderUserId: userId,
+          //       receiverUserId: input.postAuthor,
+          //       postId: newpost.id,
+          //       message: filteredText,
+          //     },
+          //   });
+          // }
+
+          // if (mentions?.length) {
+          //   await Promise.all(
+          //     mentions.map((mention) =>
+          //       prisma.notification.create({
+          //         data: {
+          //           type: 'MENTION',
+          //           senderUserId: userId,
+          //           receiverUserId: mention.userId,
+          //           postId: newpost.id,
+          //           message: filteredText,
+          //         },
+          //       })
+          //     )
+          //   );
+          // }
+
+          return {
+            newpost,
+          };
+        });
+
+        if (!transactionResult) {
+          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+        }
 
         return {
-          newpost,
+          createPost: transactionResult.newpost,
+          success: true,
         };
-      });
-
-      if (!transactionResult) {
-        throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
       }
-
-      return {
-        createPost: transactionResult.newpost,
-        success: true,
-      };
-    }),
+    ),
 
   getInfinitePosts: privateProcedure
     .input(
@@ -265,6 +288,7 @@ export const postRouter = createTRPCRouter({
             id: true,
             createdAt: true,
             text: true,
+            threadText: true,
             media: true,
             parentPostId: true,
             quoteId: true,
@@ -744,6 +768,7 @@ export const postRouter = createTRPCRouter({
           id: true,
           createdAt: true,
           text: true,
+          threadText: true,
           media: true,
           parentPostId: true,
           quoteId: true,
@@ -846,6 +871,7 @@ export const postRouter = createTRPCRouter({
           id: true,
           createdAt: true,
           text: true,
+          threadText: true,
           media: true,
           parentPostId: true,
           quoteId: true,
@@ -938,6 +964,7 @@ export const postRouter = createTRPCRouter({
           id: true,
           createdAt: true,
           text: true,
+          threadText: true,
           media: true,
           parentPostId: true,
           quoteId: true,
@@ -1121,6 +1148,7 @@ export const postRouter = createTRPCRouter({
           id: true,
           createdAt: true,
           text: true,
+          threadText: true,
           media: true,
           path: true,
           repliesCount: true,
@@ -1289,6 +1317,7 @@ export const postRouter = createTRPCRouter({
                 select: {
                   id: true,
                   text: true,
+                  threadText: true,
                   createdAt: true,
                   media: true,
                   parentPostId: true,
@@ -1408,6 +1437,7 @@ export const postRouter = createTRPCRouter({
             select: {
               id: true,
               text: true,
+              threadText: true,
               createdAt: true,
               media: true,
               parentPostId: true,
@@ -1549,6 +1579,7 @@ export const postRouter = createTRPCRouter({
         select: {
           id: true,
           text: true,
+          threadText: true,
           createdAt: true,
           media: true,
           parentPostId: true,
@@ -1684,6 +1715,7 @@ export const postRouter = createTRPCRouter({
           id: true,
           createdAt: true,
           text: true,
+          threadText: true,
           media: true,
           parentPostId: true,
           quoteId: true,
@@ -1744,9 +1776,8 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-        text: z.string().min(1, {
-          message: 'Text must be at least 1 character',
-        }),
+        text: z.string().optional(),
+        threadText: z.string().optional(),
         mentions: z
           .array(
             z.object({
@@ -1755,179 +1786,195 @@ export const postRouter = createTRPCRouter({
             })
           )
           .optional(),
+        hideLikes: z.boolean().optional(),
+        turnOffComments: z.boolean().optional(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      const { userId } = ctx;
+    .mutation(
+      async ({
+        ctx,
+        input: { id, text, threadText, mentions, hideLikes, turnOffComments },
+      }) => {
+        const { userId } = ctx;
 
-      try {
-        const post = await ctx.db.post.findUnique({
-          where: { id: input.id },
-          select: {
-            authorId: true,
-            createdAt: true,
-            mentions: {
-              select: {
-                userId: true,
-              },
-            },
-            hashtags: {
-              select: {
-                name: true,
-              },
-            },
-            text: true,
-          },
-        });
-
-        if (!post) {
-          throw new TRPCError({ code: 'NOT_FOUND' });
-        }
-
-        if (post.authorId !== userId) {
-          throw new TRPCError({ code: 'FORBIDDEN' });
-        }
-
-        const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
-        if (post.createdAt < fifteenMinutesAgo) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'Edit window has expired',
-          });
-        }
-
-        const filter = new Filter();
-        const filteredText = filter.clean(input.text);
-
-        const hashtags = extractHashtags(filteredText);
-
-        const existingMentionUserIds = new Set(
-          post.mentions.map((mention) => mention.userId)
-        );
-
-        const transactionResult = await ctx.db.$transaction(async (prisma) => {
-          let newMentionUserIds = new Set<string>();
-
-          await prisma.mention.deleteMany({
-            where: {
-              postId: input.id,
-            },
-          });
-
-          await prisma.post.update({
-            where: { id: input.id },
-            data: {
-              hashtags: {
-                disconnect: post.hashtags.map((tag) => ({ name: tag.name })),
-              },
-            },
-          });
-
-          if (input.mentions && input.mentions.length > 0) {
-            const uniqueUsernames = Array.from(
-              new Set(input.mentions.map((m) => m.username))
-            );
-
-            const mentionedUsers = await prisma.user.findMany({
-              where: {
-                username: {
-                  in: uniqueUsernames,
+        try {
+          const post = await ctx.db.post.findUnique({
+            where: { id },
+            select: {
+              authorId: true,
+              createdAt: true,
+              mentions: {
+                select: {
+                  userId: true,
                 },
               },
-              select: {
-                id: true,
-                username: true,
-              },
-            });
-
-            const usernameToIdMap = new Map(
-              mentionedUsers.map((user) => [user.username, user.id])
-            );
-
-            const validMentions = input.mentions.filter((mention) =>
-              usernameToIdMap.has(mention.username)
-            );
-
-            if (validMentions.length > 0) {
-              await prisma.mention.createMany({
-                data: validMentions.map((mention) => ({
-                  postId: input.id,
-                  userId: usernameToIdMap.get(mention.username)!,
-                  index: mention.index,
-                })),
-                skipDuplicates: true,
-              });
-
-              newMentionUserIds = new Set(
-                mentionedUsers
-                  .map((user) => user.id)
-                  .filter(
-                    (id) => !existingMentionUserIds.has(id) && id !== userId
-                  )
-              );
-
-              if (newMentionUserIds.size > 0) {
-                await prisma.notification.createMany({
-                  data: Array.from(newMentionUserIds).map((id) => ({
-                    type: NotificationType.MENTION,
-                    message: filteredText,
-                    senderUserId: userId,
-                    receiverUserId: id,
-                    postId: input.id,
-                    isPublic: true,
-                  })),
-                });
-              }
-            }
-          }
-
-          const updatedPost = await prisma.post.update({
-            where: { id: input.id },
-            data: {
-              text: filteredText,
-              lastEditedAt: new Date(),
               hashtags: {
-                connectOrCreate: hashtags.map((tag) => {
-                  const tagName = tag.slice(1);
-                  return {
-                    where: { name: tagName },
-                    create: { name: tagName },
-                  };
-                }),
+                select: {
+                  name: true,
+                },
               },
-            },
-            select: {
-              id: true,
-              author: true,
+              text: true,
+              threadText: true,
             },
           });
 
+          if (!post) {
+            throw new TRPCError({ code: 'NOT_FOUND' });
+          }
+
+          if (post.authorId !== userId) {
+            throw new TRPCError({ code: 'FORBIDDEN' });
+          }
+
+          const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+          if (post.createdAt < fifteenMinutesAgo) {
+            throw new TRPCError({
+              code: 'BAD_REQUEST',
+              message: 'Edit window has expired',
+            });
+          }
+
+          const filter = new Filter();
+          const textToPost = text || threadText || '';
+          const filteredText = filter.clean(textToPost);
+
+          const hashtags = extractHashtags(filteredText);
+
+          const existingMentionUserIds = new Set(
+            post.mentions.map((mention) => mention.userId)
+          );
+
+          const transactionResult = await ctx.db.$transaction(
+            async (prisma) => {
+              let newMentionUserIds = new Set<string>();
+
+              await prisma.mention.deleteMany({
+                where: {
+                  postId: id,
+                },
+              });
+
+              await prisma.post.update({
+                where: { id },
+                data: {
+                  hashtags: {
+                    disconnect: post.hashtags.map((tag) => ({
+                      name: tag.name,
+                    })),
+                  },
+                },
+              });
+
+              if (mentions && mentions.length > 0) {
+                const uniqueUsernames = Array.from(
+                  new Set(mentions.map((m) => m.username))
+                );
+
+                const mentionedUsers = await prisma.user.findMany({
+                  where: {
+                    username: {
+                      in: uniqueUsernames,
+                    },
+                  },
+                  select: {
+                    id: true,
+                    username: true,
+                  },
+                });
+
+                const usernameToIdMap = new Map(
+                  mentionedUsers.map((user) => [user.username, user.id])
+                );
+
+                const validMentions = mentions.filter((mention) =>
+                  usernameToIdMap.has(mention.username)
+                );
+
+                if (validMentions.length > 0) {
+                  await prisma.mention.createMany({
+                    data: validMentions.map((mention) => ({
+                      postId: id,
+                      userId: usernameToIdMap.get(mention.username)!,
+                      index: mention.index,
+                    })),
+                    skipDuplicates: true,
+                  });
+
+                  newMentionUserIds = new Set(
+                    mentionedUsers
+                      .map((user) => user.id)
+                      .filter(
+                        (id) => !existingMentionUserIds.has(id) && id !== userId
+                      )
+                  );
+
+                  if (newMentionUserIds.size > 0) {
+                    await prisma.notification.createMany({
+                      data: Array.from(newMentionUserIds).map((id) => ({
+                        type: NotificationType.MENTION,
+                        message: filteredText,
+                        senderUserId: userId,
+                        receiverUserId: id,
+                        postId: id,
+                        isPublic: true,
+                      })),
+                    });
+                  }
+                }
+              }
+
+              const updatedPost = await prisma.post.update({
+                where: { id },
+                data: {
+                  ...(text && { text: filteredText }),
+                  ...(threadText && { threadText: filteredText }),
+                  lastEditedAt: new Date(),
+                  hideLikes: hideLikes,
+                  turnOffComments: turnOffComments,
+                  hashtags: {
+                    connectOrCreate: hashtags.map((tag) => {
+                      const tagName = tag.slice(1);
+                      return {
+                        where: { name: tagName },
+                        create: { name: tagName },
+                      };
+                    }),
+                  },
+                },
+                select: {
+                  id: true,
+                  author: true,
+                },
+              });
+
+              return {
+                updatedPost,
+                newMentionCount: newMentionUserIds.size,
+              };
+            }
+          );
+
+          if (!transactionResult) {
+            throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+          }
+
           return {
-            updatedPost,
-            newMentionCount: newMentionUserIds.size,
+            updatedPost: transactionResult.updatedPost,
+            success: true,
+            isEdited: true,
           };
-        });
-
-        if (!transactionResult) {
-          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+        } catch (error) {
+          console.error('Error in editPost:', error);
+          if (error instanceof TRPCError) {
+            throw error;
+          }
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to update post. Please try again.',
+          });
         }
-
-        return {
-          updatedPost: transactionResult.updatedPost,
-          success: true,
-          isEdited: true,
-        };
-      } catch (error) {
-        console.error('Error in editPost:', error);
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to update post. Please try again.',
-        });
       }
-    }),
+    ),
 
   toggleHidePost: privateProcedure
     .input(

@@ -8,10 +8,13 @@ const MediaControls: React.FC<MediaControlsProps> = ({
   author,
   postId,
   createdAt,
-  text,
+  threadText,
+  caption,
   showControls,
   pinned,
   VolumeControls,
+  turnOffComments,
+  hideLikes,
 }) => {
   return (
     <div className='absolute top-2 w-full z-50'>
@@ -22,8 +25,11 @@ const MediaControls: React.FC<MediaControlsProps> = ({
           author={author}
           postId={postId}
           createdAt={createdAt}
-          currentText={text ?? ''}
+          threadText={threadText}
+          caption={caption}
           showControls={showControls}
+          turnOffComments={turnOffComments ?? false}
+          hideLikes={hideLikes ?? false}
           pinned={pinned}
         />
       </div>

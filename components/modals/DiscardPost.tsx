@@ -25,15 +25,6 @@ const DiscardPost = ({
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
   const setIsOpen = externalOnOpenChange || setInternalIsOpen;
 
-  const handleDiscard = () => {
-    setIsOpen(false);
-    discardPost();
-  };
-
-  const handleCancel = () => {
-    setIsOpen(false);
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {showTrigger && (
@@ -67,14 +58,14 @@ const DiscardPost = ({
             <Button
               variant='ghost'
               className='flex-1 font-normal text-base rounded-none rounded-l-2xl h-[54px] border-r-[0.8px] border-r-gray-7 ring-0 hover:bg-transparent'
-              onClick={handleCancel}
+              onClick={() => setIsOpen(false)}
             >
               Cancel
             </Button>
             <Button
               variant='ghost'
               className='flex-1 text-base font-normal text-primary-red hover:text-primary-red/80 transition-colors rounded-none rounded-r-2xl h-[54px] ring-0 hover:bg-transparent'
-              onClick={handleDiscard}
+              onClick={discardPost}
             >
               Discard
             </Button>

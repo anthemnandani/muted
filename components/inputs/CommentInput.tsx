@@ -7,7 +7,7 @@ import { useUser } from '@clerk/nextjs';
 import { X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import UsersMenu from '../menus/UsersMenu';
-import { EmojiPicker } from '../modals/EmojiPicker';
+import EmojiPicker from '../modals/EmojiPicker';
 import { Avatar, AvatarImage } from '../ui/avatar';
 
 const CommentInput = ({
@@ -230,7 +230,7 @@ const CommentInput = ({
           />
 
           <div className='absolute bottom-2 right-3 flex items-center gap-2'>
-            <EmojiPicker onChange={handleEmojiSelect} isComment />
+            <EmojiPicker onChange={handleEmojiSelect} />
             {showCancelButton && (
               <button
                 onClick={onCancel}
