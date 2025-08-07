@@ -34,7 +34,7 @@ const ThreadPostContent: React.FC<ThreadPostContentProps> = ({
 
   return (
     <div
-      className='w-full max-w-[calc((100vh-2rem)*0.5625)] h-[calc(100vh-2rem)] bg-black relative snap-center snap-always'
+      className='post-container'
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => {
         setShowControls(false);
@@ -46,7 +46,7 @@ const ThreadPostContent: React.FC<ThreadPostContentProps> = ({
         }
       }}
     >
-      <div className='h-full w-full flex-center rounded-2xl overflow-hidden relative'>
+      <div className='post-container-fitted'>
         <div className='px-3 py-6 w-full flex flex-col bg-gray-6 max-h-[80vh] min-h-[15vh] gap-4'>
           <div
             className={cn(

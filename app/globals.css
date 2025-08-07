@@ -316,6 +316,14 @@
     @apply bg-[#3A3A3A] border border-[#696969] shadow-lg rounded-xl transition-opacity duration-200;
   }
 
+  .post-container {
+    @apply w-full max-w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(100vh-2rem)] relative snap-center snap-always;
+  }
+
+  .post-container-fitted {
+    @apply relative w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(0px-2rem+100vh)] overflow-hidden flex-grow bg-black rounded-2xl flex-center;
+  }
+
   @media (max-width: 768px) {
     em-emoji-picker {
       @apply max-h-[350px] !important;

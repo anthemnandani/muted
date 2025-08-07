@@ -31,7 +31,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
     setCurrentIndex(swiper.activeIndex);
   };
   return (
-    <div className='w-full max-w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(0px-2rem+100vh)] relative snap-center snap-always'>
+    <div className='post-container'>
       <Swiper
         pagination={{ clickable: true }}
         className='h-full w-full'
