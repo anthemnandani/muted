@@ -22,6 +22,7 @@ const useCreatePost = () => {
     setOpenDialog,
     postData,
     postType,
+    validMentions,
   } = usePostDialog();
 
   const trpcUtils = api.useUtils();
@@ -189,11 +190,19 @@ const useCreatePost = () => {
           threadText: postType === 'thread' ? threadText?.trim() : undefined,
           hideLikes,
           turnOffComments,
+          mentions: validMentions.map((m) => ({
+            username: m.username,
+            index: m.startIndex,
+          })),
         })
       : createPost({
           text: postType === 'media' ? caption?.trim() : undefined,
           threadText: postType === 'thread' ? threadText?.trim() : undefined,
           media: mediaUploadResult.mediaItems,
+          mentions: validMentions.map((m) => ({
+            mentionedUserId: m.mentionedUserId,
+            index: m.startIndex,
+          })),
           privacy,
           quoteId: quoteInfo?.id,
           postAuthor: quoteInfo?.author.id,

@@ -1,9 +1,11 @@
 'use client';
 
+import LinkPreviewCard from '@/components/cards/LinkPreviewCard';
 import CreatePostInput from '@/components/inputs/CreatePostInput';
 import UsersMenu from '@/components/menus/UsersMenu';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import useLinkPreview from '@/hooks/useLinkPreview';
 import useMentions from '@/hooks/useMentions';
 import { CreateThreadProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -16,7 +18,13 @@ const CreateThread = ({
   isLoading,
   handleSubmit,
 }: CreateThreadProps) => {
-  const { postData, setPostData, editPostId } = usePostDialog();
+  const {
+    postData,
+    setPostData,
+    editPostId,
+    addValidMention,
+    updateMentionIndices,
+  } = usePostDialog();
 
   const handleFieldChange = (textValue: string) => {
     setPostData({
@@ -53,7 +61,11 @@ const CreateThread = ({
     textareaRef,
     setCommentText: (value: string) =>
       setPostData({ ...postData, threadText: value }),
+    addValidMention,
+    updateMentionIndices,
   });
+
+  const { isLinkPreviewLoading } = useLinkPreview();
 
   return (
     <div className='flex flex-col h-full'>
@@ -78,23 +90,23 @@ const CreateThread = ({
           onSelect={insertMention}
         />
       )}
-      {/* {(threadData.linkPreview || isLinkPreviewLoading) && (
-          <div className='mx-6'>
-            <LinkPreviewCard
-              url={threadData?.linkPreview?.url!}
-              title={threadData?.linkPreview?.title || ''}
-              description={threadData?.linkPreview?.description || ''}
-              image={threadData?.linkPreview?.image || ''}
-              isLoading={isLinkPreviewLoading}
-              onClose={() =>
-                setThreadData((prev) => ({
-                  ...prev,
-                  linkPreview: null,
-                }))
-              }
-            />
-          </div>
-        )} */}
+      {(postData.linkPreview || isLinkPreviewLoading) && (
+        <div className='mx-6'>
+          <LinkPreviewCard
+            url={postData?.linkPreview?.url!}
+            title={postData?.linkPreview?.title || ''}
+            description={postData?.linkPreview?.description || ''}
+            image={postData?.linkPreview?.image || ''}
+            isLoading={isLinkPreviewLoading}
+            onClose={() =>
+              setPostData({
+                ...postData,
+                linkPreview: null,
+              })
+            }
+          />
+        </div>
+      )}
       <div className='flex flex-col gap-2'>
         <div className='flex items-center gap-2'>
           <span className='text-sm text-white/90'>

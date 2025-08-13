@@ -1,9 +1,14 @@
 import { type MentionPosition, UseMentionsProps } from '@/lib/types';
 import { api } from '@/trpc/react';
 import { debounce } from 'lodash';
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
-const useMentions = ({ textareaRef, setCommentText }: UseMentionsProps) => {
+const useMentions = ({
+  textareaRef,
+  setCommentText,
+  addValidMention,
+  updateMentionIndices,
+}: UseMentionsProps) => {
   const [mentionSearch, setMentionSearch] = useState<string>('');
   const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
   const [cursorPosition, setCursorPosition] = useState<MentionPosition>({
@@ -11,17 +16,17 @@ const useMentions = ({ textareaRef, setCommentText }: UseMentionsProps) => {
     left: 0,
   });
 
-  const { data: mentionSuggestions, isLoading } =
-    api.user.getMentionSuggestions.useQuery(
-      { searchQuery: mentionSearch },
-      {
-        enabled: mentionSearch.length > 0 && showMentionSuggestions,
-        refetchOnWindowFocus: false,
-        keepPreviousData: false,
-        cacheTime: 0,
-        staleTime: 0,
-      }
-    );
+  const {
+    data: mentionSuggestions,
+    isLoading,
+    isFetching,
+  } = api.user.getMentionSuggestions.useQuery(
+    { searchQuery: mentionSearch },
+    {
+      enabled: mentionSearch.length > 0 && showMentionSuggestions,
+      refetchOnWindowFocus: false,
+    }
+  );
 
   const calculateCursorPosition = useCallback(() => {
     const textarea = textareaRef?.current;
@@ -103,28 +108,37 @@ const useMentions = ({ textareaRef, setCommentText }: UseMentionsProps) => {
   );
 
   const insertMention = useCallback(
-    (username: string) => {
+    (username: string, userId: string) => {
       const textarea = textareaRef.current;
       if (!textarea) return;
 
       const text = textarea.value;
-
       const cursorPosition = textarea.selectionStart || 0;
       const textBeforeCursor = text.slice(0, cursorPosition);
-
       const lastAtIndex = textBeforeCursor.lastIndexOf('@');
-
       const currentWord = textBeforeCursor.slice(lastAtIndex).match(/@(\w*)/);
-
       const removeLength = currentWord ? currentWord[0].length : 0;
+
+      const mentionText = `@${username}`;
+      const startIndex = lastAtIndex;
+      const endIndex = lastAtIndex + mentionText.length;
 
       const newText =
         text.slice(0, lastAtIndex) +
-        `@${username} ` +
+        mentionText +
+        ' ' +
         text.slice(lastAtIndex + removeLength);
 
-      setCommentText(newText);
+      if (addValidMention) {
+        addValidMention({
+          username,
+          mentionedUserId: userId,
+          startIndex,
+          endIndex,
+        });
+      }
 
+      setCommentText(newText);
       setShowMentionSuggestions(false);
       setMentionSearch('');
 
@@ -133,9 +147,12 @@ const useMentions = ({ textareaRef, setCommentText }: UseMentionsProps) => {
       requestAnimationFrame(() => {
         textarea.setSelectionRange(newCursorPosition, newCursorPosition);
         textarea.focus();
+        if (updateMentionIndices) {
+          updateMentionIndices(newText);
+        }
       });
     },
-    [textareaRef, setCommentText]
+    [textareaRef, setCommentText, addValidMention, updateMentionIndices]
   );
 
   useEffect(() => {
@@ -171,7 +188,7 @@ const useMentions = ({ textareaRef, setCommentText }: UseMentionsProps) => {
     showMentionSuggestions,
     cursorPosition,
     handleMentionSearch,
-    isMentionsLoading: isLoading,
+    isMentionsLoading: isLoading || isFetching,
     insertMention,
   };
 };

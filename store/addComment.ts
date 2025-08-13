@@ -1,3 +1,4 @@
+import { ValidMention } from '@/lib/types';
 import { create } from 'zustand';
 
 interface AddCommentState {
@@ -13,6 +14,7 @@ interface AddCommentState {
   charCount: number;
   replyCharCount: number;
   replyToUsername: string | null;
+  validMentions: ValidMention[];
 
   setCommentText: (text: string) => void;
   setReplyText: (text: string) => void;
@@ -25,9 +27,11 @@ interface AddCommentState {
   reset: () => void;
   resetReply: () => void;
   cancelReply: () => void;
+  addValidMention: (mention: ValidMention) => void;
+  updateMentionIndices: (text: string) => void;
 }
 
-const useAddCommentStore = create<AddCommentState>()((set) => ({
+const useAddCommentStore = create<AddCommentState>()((set, get) => ({
   commentText: '',
   replyText: '',
   isEdit: false,
@@ -40,11 +44,47 @@ const useAddCommentStore = create<AddCommentState>()((set) => ({
   charCount: 0,
   replyCharCount: 0,
   replyToUsername: null,
+  validMentions: [],
 
   setCommentText: (text) => set({ commentText: text }),
   setReplyText: (text) => set({ replyText: text }),
   setCharCount: (count) => set({ charCount: count }),
   setReplyCharCount: (count) => set({ replyCharCount: count }),
+  addValidMention: (mention) =>
+    set((state) => ({
+      validMentions: [...state.validMentions, mention],
+    })),
+
+  updateMentionIndices: (text) => {
+    const currentMentions = get().validMentions;
+    const updatedMentions: ValidMention[] = [];
+
+    currentMentions.forEach((mention) => {
+      const mentionText = `@${mention.username}`;
+      const index = text.indexOf(mentionText);
+
+      if (index !== -1) {
+        const beforeChar = index > 0 ? text[index - 1] : ' ';
+        const afterChar =
+          index + mentionText.length < text.length
+            ? text[index + mentionText.length]
+            : ' ';
+
+        const isValidBoundary =
+          /\s|^/.test(beforeChar) && /\s|$/.test(afterChar);
+
+        if (isValidBoundary) {
+          updatedMentions.push({
+            ...mention,
+            startIndex: index,
+            endIndex: index + mentionText.length,
+          });
+        }
+      }
+    });
+
+    set({ validMentions: updatedMentions });
+  },
 
   startEditing: (commentId, text) =>
     set({
@@ -125,6 +165,7 @@ const useAddCommentStore = create<AddCommentState>()((set) => ({
           charCount: 0,
           replyCharCount: 0,
           replyToUsername: null,
+          validMentions: [],
         };
       }
       return { currentPostId: postId };
@@ -137,6 +178,7 @@ const useAddCommentStore = create<AddCommentState>()((set) => ({
       editCommentId: '',
       charCount: 0,
       replyToUsername: null,
+      validMentions: [],
     }),
 }));
 

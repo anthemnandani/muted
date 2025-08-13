@@ -13,10 +13,10 @@ const PostMediaTools = ({
   getRootProps,
   getInputProps,
 }: PostMediaToolsProps) => {
-  const { editPostId } = usePostDialog();
+  const { editPostId, postData } = usePostDialog();
   return (
     <div className='flex items-center gap-2'>
-      {!editPostId && (
+      {!editPostId && !postData.linkPreview && (
         <Fragment>
           <div {...getRootProps()} className='space-y-2 mt-1 select-none w-fit'>
             <div className='text-gray-3 flex gap-1 select-none items-center text-[15px]'>

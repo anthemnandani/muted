@@ -1,5 +1,4 @@
 import { Icons } from '@/components/icons';
-import { extractMentions } from '@/lib/utils';
 import useAddCommentStore from '@/store/addComment';
 import { api } from '@/trpc/react';
 import { Check } from 'lucide-react';
@@ -16,7 +15,7 @@ const useAddReply = ({
   const router = useRouter();
   const trpcUtils = api.useUtils();
 
-  const { resetReply } = useAddCommentStore();
+  const { resetReply, validMentions } = useAddCommentStore();
 
   const { isLoading: isReplying, mutateAsync: addReply } =
     api.post.replyToComment.useMutation({
@@ -39,13 +38,14 @@ const useAddReply = ({
     });
 
   const handleAddReply = (text: string) => {
-    const extractedMentions = extractMentions(text);
-
     const promise = addReply({
       parentCommentId: commentId,
       originalPostId: postId,
       text,
-      mentions: extractedMentions,
+      mentions: validMentions.map((mention) => ({
+        username: mention.username,
+        index: mention.startIndex,
+      })),
     });
 
     toast.promise(promise, {

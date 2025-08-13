@@ -478,26 +478,6 @@ export const calculateTotalVideoDuration = async (
   return durations.reduce((sum, duration) => sum + duration, 0);
 };
 
-export const extractMentions = (
-  text: string
-): Array<{ username: string; index: number }> => {
-  const mentionRegex = /@(\w+)/g;
-  let match;
-  const mentions: Array<{ username: string; index: number }> = [];
-
-  while ((match = mentionRegex.exec(text)) !== null) {
-    const username = match[1];
-    const index = match.index;
-
-    mentions.push({
-      username,
-      index,
-    });
-  }
-
-  return mentions;
-};
-
 export const triggerHardRefresh = (resetToFirstPost = true) => {
   const videoPlayerStore = useVideoPlayer.getState();
   videoPlayerStore.resetState();

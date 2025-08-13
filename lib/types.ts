@@ -222,8 +222,8 @@ export interface CreatePostInputProps extends DropzoneProps {
   onTextareaChange: (textValue: string) => void;
   placeholder?: string;
   textareaRef: React.RefObject<HTMLTextAreaElement>;
+  setPostData: (data: PostData) => void;
   value: string;
-  setPostData: (postData: PostData) => void;
   handleMentionSearch: (value: string, cursorPosition: number) => void;
 }
 
@@ -306,7 +306,7 @@ export type PostData = {
   privacy?: PostPrivacy;
   caption: string;
   threadText: string;
-  // linkPreview: LinkPreview | null;
+  linkPreview?: LinkPreview | null;
   hideLikes: boolean;
   turnOffComments: boolean;
 };
@@ -695,7 +695,7 @@ export interface UsersMenuProps {
     left: number;
   };
   isLoading: boolean;
-  onSelect: (username: string) => void;
+  onSelect: (username: string, userId: string) => void;
 }
 
 export type MentionPosition = {
@@ -706,6 +706,8 @@ export type MentionPosition = {
 export interface UseMentionsProps {
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   setCommentText: (commentText: string) => void;
+  addValidMention?: (mention: ValidMention) => void;
+  updateMentionIndices?: (text: string) => void;
 }
 
 export interface RepostBannerProps {
@@ -1075,4 +1077,20 @@ export interface PostTextProps {
   className?: string;
   isThreadPost?: boolean;
   mentions?: Mention[];
+}
+
+export type ValidMention = {
+  mentionedUserId: string;
+  username: string;
+  startIndex: number;
+  endIndex: number;
+};
+
+export interface LinkPreviewCardProps {
+  title: string | null;
+  description: string | null;
+  image: string | null;
+  isLoading?: boolean;
+  onClose?: () => void;
+  url: string;
 }

@@ -3,15 +3,7 @@ import { Link2, X } from 'lucide-react';
 import { Icons } from '../icons';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-
-interface LinkPreviewCardProps {
-  title: string | null;
-  description: string | null;
-  image: string | null;
-  isLoading?: boolean;
-  onClose?: () => void;
-  url: string;
-}
+import { LinkPreviewCardProps } from '@/lib/types';
 
 const LinkPreviewCard = ({
   title,
@@ -23,14 +15,14 @@ const LinkPreviewCard = ({
 }: LinkPreviewCardProps) => {
   if (isLoading) {
     return (
-      <Card className='h-20 mx-6 flex-center'>
+      <Card className='h-20 mx-6 flex-center mb-2'>
         <Icons.spinner className='size-8 animate-spin' />
       </Card>
     );
   }
   const domain = url ? new URL(url).hostname.replace('www.', '') : '';
   return (
-    <Card className='overflow-hidden transition-colors border-border-dark dark:border-border-light rounded-2xl'>
+    <Card className='overflow-hidden transition-colors border-border-light rounded-2xl mb-2'>
       <div className='flex flex-col relative'>
         {image && (
           <div className='relative aspect-[1.91/1] w-full overflow-hidden'>
@@ -49,11 +41,10 @@ const LinkPreviewCard = ({
             variant='ghost'
             className={cn(
               'absolute right-2 top-2 size-9 rounded-full',
-              'bg-background/80 backdrop-blur-sm hover:bg-background',
+              'bg-muted hover:bg-muted/80 backdrop-blur-sm',
               'border border-border shadow-sm',
-              'dark:bg-muted dark:hover:bg-muted/80',
               'transition-all duration-200',
-              'flex items-center justify-center'
+              'flex-center'
             )}
           >
             <X className='size-5' />

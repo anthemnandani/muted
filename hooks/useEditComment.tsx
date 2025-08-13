@@ -1,7 +1,6 @@
 'use client';
 
 import { Icons } from '@/components/icons';
-import { extractMentions } from '@/lib/utils';
 import useAddCommentStore from '@/store/addComment';
 import { api } from '@/trpc/react';
 import { Check } from 'lucide-react';
@@ -12,7 +11,7 @@ const useEditComment = () => {
   const router = useRouter();
   const trpcUtils = api.useUtils();
 
-  const { commentText, editCommentId, reset, resetReply } =
+  const { commentText, editCommentId, reset, resetReply, validMentions } =
     useAddCommentStore();
 
   const { isLoading: isEditing, mutateAsync: editComment } =
@@ -39,12 +38,13 @@ const useEditComment = () => {
 
     if (!postId || !content.trim()) return;
 
-    const extractedMentions = extractMentions(content);
-
     const promise = editComment({
       id: postId,
       text: content,
-      mentions: extractedMentions,
+      mentions: validMentions.map((mention) => ({
+        username: mention.username,
+        index: mention.startIndex,
+      })),
     });
 
     toast.promise(promise, {

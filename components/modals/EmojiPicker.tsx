@@ -36,7 +36,7 @@ const EmojiPicker = ({ onChange }: EmojiPickerProps) => {
             setOpen(false);
           }}
           theme='dark'
-          perLine={8}
+          perLine={9}
           maxFrequentRows={1}
           skinTonePosition='none'
           previewPosition='none'

@@ -1,9 +1,10 @@
 'use client';
 
 import useWindow from '@/hooks/useWindow';
-import type { UsersMenuProps } from '@/lib/types';
+import { UsersMenuProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { UserX } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Icons } from '../icons';
 import UserAvatar from '../shared/UserAvatar';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
@@ -17,12 +18,22 @@ const UsersMenu = ({
   onSelect,
 }: UsersMenuProps) => {
   const { isMobile } = useWindow();
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (showMentionSuggestions) {
+      const timer = setTimeout(() => setIsVisible(true), 0);
+      return () => clearTimeout(timer);
+    } else {
+      setIsVisible(false);
+    }
+  }, [showMentionSuggestions]);
 
   const menuOffset = 275;
   const adjustedTop = cursorPosition.top - menuOffset;
 
   return (
-    <Popover open={showMentionSuggestions} modal>
+    <Popover open={showMentionSuggestions}>
       <PopoverTrigger className='hidden'></PopoverTrigger>
       <PopoverContent
         className={cn(
@@ -32,6 +43,8 @@ const UsersMenu = ({
         style={{
           top: `${Math.max(10, adjustedTop)}px`,
           left: `${cursorPosition.left}px`,
+          opacity: isVisible ? 1 : 0,
+          transition: 'opacity 100ms ease-in-out',
         }}
         onOpenAutoFocus={(e) => e.preventDefault()}
         onCloseAutoFocus={(e) => e.preventDefault()}
@@ -64,7 +77,7 @@ const UsersMenu = ({
                 <div
                   className='overflow-hidden cursor-pointer w-full hover:bg-accent'
                   key={user.username}
-                  onClick={() => onSelect(user.username)}
+                  onClick={() => onSelect(user.username, user.id)}
                 >
                   <div className='flex items-center gap-3 p-3'>
                     <UserAvatar

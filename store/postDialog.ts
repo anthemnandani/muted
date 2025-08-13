@@ -1,4 +1,9 @@
-import type { ParentPostInfo, PostData, PostType } from '@/lib/types';
+import type {
+  ParentPostInfo,
+  PostData,
+  PostType,
+  ValidMention,
+} from '@/lib/types';
 import { PostPrivacy } from '@prisma/client';
 import { create } from 'zustand';
 
@@ -25,10 +30,13 @@ interface ToggleState {
   setShowGallery: (show: boolean) => void;
   showRatioSelector: boolean;
   setShowRatioSelector: (show: boolean) => void;
+  validMentions: ValidMention[];
+  addValidMention: (mention: ValidMention) => void;
+  updateMentionIndices: (text: string) => void;
   resetPostState: () => void;
 }
 
-const usePostDialog = create<ToggleState>((set) => ({
+const usePostDialog = create<ToggleState>((set, get) => ({
   openDialog: false,
   setOpenDialog: (open) => set({ openDialog: open }),
   postData: {
@@ -54,6 +62,7 @@ const usePostDialog = create<ToggleState>((set) => ({
       step: isThread ? 'compose' : 'post',
       postData: {
         caption: post.caption ?? '',
+        linkPreview: post.linkPreview ?? null,
         threadText: post.threadText ?? '',
         hideLikes: post.hideLikes ?? false,
         turnOffComments: post.turnOffComments ?? false,
@@ -68,6 +77,43 @@ const usePostDialog = create<ToggleState>((set) => ({
   setShowGallery: (show) => set({ showGallery: show }),
   showRatioSelector: false,
   setShowRatioSelector: (show) => set({ showRatioSelector: show }),
+  validMentions: [],
+  addValidMention: (mention) =>
+    set((state) => ({
+      validMentions: [...state.validMentions, mention],
+    })),
+
+  updateMentionIndices: (text) => {
+    const currentMentions = get().validMentions;
+    const updatedMentions: ValidMention[] = [];
+
+    currentMentions.forEach((mention) => {
+      const mentionText = `@${mention.username}`;
+      const index = text.indexOf(mentionText);
+
+      if (index !== -1) {
+        const beforeChar = index > 0 ? text[index - 1] : ' ';
+        const afterChar =
+          index + mentionText.length < text.length
+            ? text[index + mentionText.length]
+            : ' ';
+
+        const isValidBoundary =
+          /\s|^/.test(beforeChar) && /\s|$/.test(afterChar);
+
+        if (isValidBoundary) {
+          updatedMentions.push({
+            ...mention,
+            startIndex: index,
+            endIndex: index + mentionText.length,
+          });
+        }
+      }
+    });
+
+    set({ validMentions: updatedMentions });
+  },
+
   resetPostState: () =>
     set({
       quoteInfo: null,
@@ -77,10 +123,12 @@ const usePostDialog = create<ToggleState>((set) => ({
       editPostId: null,
       postType: 'media',
       step: 'compose',
+      validMentions: [],
       postData: {
         privacy: PostPrivacy.ANYONE,
         caption: '',
         threadText: '',
+        linkPreview: null,
         hideLikes: false,
         turnOffComments: false,
       },

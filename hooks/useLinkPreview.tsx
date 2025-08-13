@@ -1,22 +1,21 @@
-import type { LinkPreview, PostData } from '@/lib/types';
+import type { LinkPreview } from '@/lib/types';
+import usePostDialog from '@/store/postDialog';
 import { useEffect, useState } from 'react';
 
-export default function useLinkPreview(
-  text: string,
-  setPostData: React.Dispatch<React.SetStateAction<PostData>>
-) {
+const useLinkPreview = () => {
   const [isLinkPreviewLoading, setIsLinkPreviewLoading] = useState(false);
   const [lastFetchedUrl, setLastFetchedUrl] = useState<string | null>(null);
   const cache: Record<string, LinkPreview | null> = {};
+  const { postData, setPostData } = usePostDialog();
 
   useEffect(() => {
     const urlRegex =
       /((?:https?:\/\/)?(?:www\.)?[^\s]+\.[a-z]+(?:\/[^\s]*)?)\s/i;
-    const matches = text.match(urlRegex);
+    const matches = postData.threadText.match(urlRegex);
     const url = matches?.[1];
 
     if (!url) {
-      setPostData((prev) => ({ ...prev, linkPreview: null }));
+      setPostData({ ...postData, linkPreview: null });
       setLastFetchedUrl(null);
       return;
     }
@@ -31,10 +30,10 @@ export default function useLinkPreview(
       setIsLinkPreviewLoading(true);
       try {
         if (cache[fullUrl]) {
-          setPostData((prev) => ({
-            ...prev,
+          setPostData({
+            ...postData,
             linkPreview: cache[fullUrl],
-          }));
+          });
           return;
         }
 
@@ -44,22 +43,22 @@ export default function useLinkPreview(
         });
 
         if (!response.ok) {
-          setPostData((prev) => ({ ...prev, linkPreview: null }));
+          setPostData({ ...postData, linkPreview: null });
           return;
         }
 
         const data = await response.json();
 
         if (data && (data.title || data.description || data.image)) {
-          setPostData((prev) => ({ ...prev, linkPreview: data }));
+          setPostData({ ...postData, linkPreview: data });
           cache[fullUrl] = data;
           setLastFetchedUrl(fullUrl);
         } else {
-          setPostData((prev) => ({ ...prev, linkPreview: null }));
+          setPostData({ ...postData, linkPreview: null });
         }
       } catch (error) {
         console.error('Error fetching link preview:', error);
-        setPostData((prev) => ({ ...prev, linkPreview: null }));
+        setPostData({ ...postData, linkPreview: null });
       } finally {
         setIsLinkPreviewLoading(false);
       }
@@ -70,7 +69,9 @@ export default function useLinkPreview(
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [text, lastFetchedUrl]);
+  }, [postData.threadText, lastFetchedUrl]);
 
   return { isLinkPreviewLoading };
-}
+};
+
+export default useLinkPreview;

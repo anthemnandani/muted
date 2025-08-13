@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import UsersMenu from '../menus/UsersMenu';
 import EmojiPicker from '../modals/EmojiPicker';
 import { Avatar, AvatarImage } from '../ui/avatar';
+import useAddCommentStore from '@/store/addComment';
 
 const CommentInput = ({
   placeholder,
@@ -27,6 +28,7 @@ const CommentInput = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isAtLimit = charCount >= maxChars;
   const [hasPrefixedReply, setHasPrefixedReply] = useState(false);
+  const { addValidMention, updateMentionIndices } = useAddCommentStore();
 
   const {
     mentionSuggestions,
@@ -38,6 +40,8 @@ const CommentInput = ({
   } = useMentions({
     textareaRef,
     setCommentText: onTextChange,
+    addValidMention,
+    updateMentionIndices,
   });
 
   useEffect(() => {

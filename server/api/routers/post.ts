@@ -16,7 +16,7 @@ import {
   getPostRepliesCount,
 } from '@/server/constants';
 import { createId } from '@paralleldrive/cuid2';
-import { NotificationType, PostPrivacy, Prisma } from '@prisma/client';
+import { NotificationType, PostPrivacy } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
 import { z } from 'zod';
@@ -45,7 +45,7 @@ export const postRouter = createTRPCRouter({
         mentions: z
           .array(
             z.object({
-              username: z.string(),
+              mentionedUserId: z.string(),
               index: z.number(),
             })
           )
@@ -150,11 +150,10 @@ export const postRouter = createTRPCRouter({
               mentions: mentions
                 ? {
                     create: mentions.map((mention) => ({
-                      username: mention.username,
                       index: mention.index,
                       user: {
                         connect: {
-                          id: userId,
+                          id: mention.mentionedUserId,
                         },
                       },
                     })),
@@ -1910,14 +1909,15 @@ export const postRouter = createTRPCRouter({
 
                   if (newMentionUserIds.size > 0) {
                     await prisma.notification.createMany({
-                      data: Array.from(newMentionUserIds).map((id) => ({
-                        type: NotificationType.MENTION,
-                        message: filteredText,
-                        senderUserId: userId,
-                        receiverUserId: id,
-                        postId: id,
-                        isPublic: true,
-                      })),
+                      data: Array.from(newMentionUserIds).map(
+                        (mentionedUserId) => ({
+                          type: NotificationType.MENTION,
+                          message: filteredText,
+                          senderUserId: userId,
+                          receiverUserId: mentionedUserId,
+                          postId: id,
+                        })
+                      ),
                     });
                   }
                 }

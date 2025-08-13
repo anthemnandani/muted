@@ -21,6 +21,7 @@ const SidebarWrapper = ({
           <div className='flex items-center'>
             <h2 className='text-xl font-bold text-white/90'>{title}</h2>
             <button
+              title='Close'
               onClick={() => setIsOpen(false)}
               className='ml-auto bg-white/10 hover:bg-white/20 transition-colors duration-150 size-7 rounded-full flex-center'
             >
