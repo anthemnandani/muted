@@ -1,9 +1,10 @@
+import { LinkPreviewCardProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Link2, X } from 'lucide-react';
+import Link from 'next/link';
 import { Icons } from '../icons';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-import { LinkPreviewCardProps } from '@/lib/types';
 
 const LinkPreviewCard = ({
   title,
@@ -15,21 +16,30 @@ const LinkPreviewCard = ({
 }: LinkPreviewCardProps) => {
   if (isLoading) {
     return (
-      <Card className='h-20 mx-6 flex-center mb-2'>
+      <Card className='h-40 mx-6 flex-center mb-2'>
         <Icons.spinner className='size-8 animate-spin' />
       </Card>
     );
   }
   const domain = url ? new URL(url).hostname.replace('www.', '') : '';
   return (
-    <Card className='overflow-hidden transition-colors border-border-light rounded-2xl mb-2'>
-      <div className='flex flex-col relative'>
+    <Card
+      className={cn(
+        'overflow-hidden transition-colors border-border-light rounded-2xl mb-2',
+        !onClose && 'min-h-[340px]'
+      )}
+    >
+      <Link
+        href={url}
+        target='_blank'
+        className='flex flex-col relative h-full'
+      >
         {image && (
-          <div className='relative aspect-[1.91/1] w-full overflow-hidden'>
+          <div className='relative w-full overflow-hidden max-h-[150px]'>
             <img
               src={image}
               alt={title || 'Link preview image'}
-              className='object-cover w-full h-full rounded-t-lg'
+              className='object-contain w-full h-full rounded-t-lg'
             />
           </div>
         )}
@@ -72,7 +82,7 @@ const LinkPreviewCard = ({
             </span>
           </div>
         </div>
-      </div>
+      </Link>
     </Card>
   );
 };

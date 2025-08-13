@@ -1,4 +1,4 @@
-import type { LinkPreview } from '@/lib/types';
+import { LinkPreview } from '@/lib/types';
 import usePostDialog from '@/store/postDialog';
 import { useEffect, useState } from 'react';
 

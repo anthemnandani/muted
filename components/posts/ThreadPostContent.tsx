@@ -7,6 +7,7 @@ import Image from 'next/image';
 import MediaControls from '../shared/MediaControls';
 import PostText from '../shared/PostText';
 import PostFooter from './PostFooter';
+import LinkPreviewCard from '../cards/LinkPreviewCard';
 
 const ThreadPostContent: React.FC<ThreadPostContentProps> = ({
   media,
@@ -14,6 +15,7 @@ const ThreadPostContent: React.FC<ThreadPostContentProps> = ({
   createdAt,
   postId,
   threadText,
+  linkPreview,
   pinned,
   mentions,
   reposts,
@@ -47,10 +49,10 @@ const ThreadPostContent: React.FC<ThreadPostContentProps> = ({
       }}
     >
       <div className='post-container-fitted'>
-        <div className='px-3 py-6 w-full flex flex-col bg-gray-6 max-h-[80vh] min-h-[15vh] gap-4'>
+        <div className='px-3 pt-6 pb-3 w-full flex flex-col bg-gray-6 max-h-[80vh] min-h-[15vh] gap-4'>
           <div
             className={cn(
-              'min-h-0 overflow-y-auto scrollbar-thumb-rounded-full scrollbar-track-rounded-full',
+              'overflow-y-auto scrollbar-thumb-rounded-full scrollbar-track-rounded-full',
               'scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent'
             )}
           >
@@ -87,6 +89,7 @@ const ThreadPostContent: React.FC<ThreadPostContentProps> = ({
               </div>
             </div>
           )}
+          {linkPreview && <LinkPreviewCard {...linkPreview} />}
         </div>
       </div>
       <MediaControls

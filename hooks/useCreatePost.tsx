@@ -173,7 +173,7 @@ const useCreatePost = () => {
     const {
       caption,
       threadText,
-      // linkPreview,
+      linkPreview,
       hideLikes,
       turnOffComments,
       privacy,
@@ -206,7 +206,7 @@ const useCreatePost = () => {
           privacy,
           quoteId: quoteInfo?.id,
           postAuthor: quoteInfo?.author.id,
-          // linkPreview: linkPreview ?? undefined,
+          linkPreview: linkPreview ?? undefined,
           hideLikes,
           turnOffComments,
         });

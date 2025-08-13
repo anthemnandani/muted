@@ -133,7 +133,7 @@ const NewPost = () => {
             <Card
               className={cn(
                 'relative border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6 w-[500px]',
-                'h-full min-h-[500px] overflow-y-auto hide-scrollbar max-h-screen',
+                'h-full min-h-[500px] max-h-[calc(100vh_-_100px)]',
                 'transition-all duration-500 ease-in-out z-10',
                 step === 'post'
                   ? 'rounded-l-lg rounded-r-none -translate-x-[150px]'
@@ -153,7 +153,7 @@ const NewPost = () => {
                   onRetry={() => setError(null)}
                 />
               ) : step === 'compose' ? (
-                <div className='p-6 h-full'>
+                <div className='p-6 h-full flex flex-col'>
                   <Tabs
                     value={postType}
                     onValueChange={handleTabChange}
@@ -185,7 +185,10 @@ const NewPost = () => {
                       </TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value='media' className='flex-1'>
+                    <TabsContent
+                      value='media'
+                      className='flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent pr-4'
+                    >
                       <UploadStep
                         getRootProps={getRootProps}
                         getInputProps={getInputProps}
@@ -193,7 +196,10 @@ const NewPost = () => {
                       />
                     </TabsContent>
 
-                    <TabsContent value='thread' className='flex-1'>
+                    <TabsContent
+                      value='thread'
+                      className='flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent pr-4'
+                    >
                       <CreateThread
                         getRootProps={getRootProps}
                         getInputProps={getInputProps}

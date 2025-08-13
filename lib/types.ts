@@ -506,6 +506,7 @@ export interface ThreadPostContentProps {
   createdAt: Date;
   postId: string;
   threadText: string | null;
+  linkPreview: LinkPreview | null;
   pinned?: boolean;
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;

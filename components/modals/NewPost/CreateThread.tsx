@@ -68,8 +68,8 @@ const CreateThread = ({
   const { isLinkPreviewLoading } = useLinkPreview();
 
   return (
-    <div className='flex flex-col h-full'>
-      <div className='flex-1 pt-6'>
+    <div className='flex flex-col h-full pt-6'>
+      <div className='flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent pr-3'>
         <CreatePostInput
           onTextareaChange={handleFieldChange}
           placeholder='Start a thread'
@@ -80,18 +80,16 @@ const CreateThread = ({
           getRootProps={getRootProps}
           getInputProps={getInputProps}
         />
-      </div>
-      {showMentionSuggestions && (
-        <UsersMenu
-          showMentionSuggestions={showMentionSuggestions}
-          mentionSuggestions={mentionSuggestions}
-          cursorPosition={cursorPosition}
-          isLoading={isMentionsLoading}
-          onSelect={insertMention}
-        />
-      )}
-      {(postData.linkPreview || isLinkPreviewLoading) && (
-        <div className='mx-6'>
+        {showMentionSuggestions && (
+          <UsersMenu
+            showMentionSuggestions={showMentionSuggestions}
+            mentionSuggestions={mentionSuggestions}
+            cursorPosition={cursorPosition}
+            isLoading={isMentionsLoading}
+            onSelect={insertMention}
+          />
+        )}
+        {(postData.linkPreview || isLinkPreviewLoading) && (
           <LinkPreviewCard
             url={postData?.linkPreview?.url!}
             title={postData?.linkPreview?.title || ''}
@@ -105,10 +103,11 @@ const CreateThread = ({
               })
             }
           />
-        </div>
-      )}
-      <div className='flex flex-col gap-2'>
-        <div className='flex items-center gap-2'>
+        )}
+      </div>
+
+      <div className='flex flex-col gap-2 pt-8'>
+        <div className='flex-between'>
           <span className='text-sm text-white/90'>
             Hide like count on this post
           </span>
@@ -119,7 +118,7 @@ const CreateThread = ({
           />
         </div>
 
-        <div className='flex items-center gap-2'>
+        <div className='flex-between'>
           <span className='text-sm text-white/90'>Turn off commenting</span>
           <Switch
             disabled={isLoading}
