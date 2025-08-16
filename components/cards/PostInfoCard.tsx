@@ -1,10 +1,12 @@
 'use client';
 
-import type { PostInfoCardProps } from '@/lib/types';
-import { formatTimeAgo, highlightHashtagsAndUrls } from '@/lib/utils';
+import { PostInfoCardProps } from '@/lib/types';
+import { formatTimeAgo } from '@/lib/utils';
 import Link from 'next/link';
 import { useState } from 'react';
 import FollowButton from '../buttons/FollowButton';
+import ParsedText from '../shared/ParsedText';
+import RepostBanner from '../shared/RepostBanner';
 import { Avatar, AvatarImage } from '../ui/avatar';
 import {
   HoverCard,
@@ -12,7 +14,6 @@ import {
   HoverCardTrigger,
 } from '../ui/hover-card';
 import UserProfileCard from './UserProfileCard';
-import RepostBanner from '../shared/RepostBanner';
 
 const PostInfoCard: React.FC<PostInfoCardProps> = ({
   postText,
@@ -80,13 +81,7 @@ const PostInfoCard: React.FC<PostInfoCardProps> = ({
       </div>
       <div className='mb-3'>
         <p className='text-white text-base antialiased whitespace-pre-line break-words'>
-          <span
-            dangerouslySetInnerHTML={{
-              __html: highlightHashtagsAndUrls(
-                displayText!.replace(/\\n/g, '\n')
-              ),
-            }}
-          />
+          <ParsedText text={displayText!.replace(/\\n/g, '\n')} />
           {isTextLong && !isExpanded && (
             <button
               onClick={() => setIsExpanded(true)}

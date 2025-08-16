@@ -7,7 +7,7 @@ import { useProfileVideoPlayer } from '@/store/profileVideoPlayer';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import Player from 'video.js/dist/types/player';
 import { Icons } from '../icons';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -30,7 +30,7 @@ const UserPostCard = ({
   collectionId = null,
   isSearch = false,
 }: UserPostCardProps) => {
-  const [player, setPlayer] = React.useState<Player | null>(null);
+  const [player, setPlayer] = useState<Player | null>(null);
   const router = useRouter();
   const { playingVideoId, setPlayingVideoId } = useProfileVideoPlayer();
   const {
@@ -48,7 +48,7 @@ const UserPostCard = ({
   const isVideo = mediaItem.fileType === 'video';
   const fileUrl = mediaItem.fileUrl;
 
-  const playerOptions = React.useMemo(
+  const playerOptions = useMemo(
     () => ({
       controls: false,
       loop: true,
@@ -72,7 +72,7 @@ const UserPostCard = ({
     [mediaItem.fileUrl]
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (player && playingVideoId === videoId) {
       player.play()?.catch((error) => {
         console.log('Hover play prevented:', error);

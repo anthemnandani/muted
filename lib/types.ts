@@ -1095,3 +1095,12 @@ export interface LinkPreviewCardProps {
   onClose?: () => void;
   url: string;
 }
+
+export interface UserPostThreadCardProps {
+  threadText: string;
+  pinned?: boolean;
+  postId: string;
+  index: number;
+  username: string;
+  mentions?: Mention[];
+}

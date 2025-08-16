@@ -1,9 +1,10 @@
 'use client';
 
 import { PostTextProps } from '@/lib/types';
-import { cn, highlightHashtagsAndUrls } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import Username from '../user/Username';
+import ParsedText from './ParsedText';
 
 const PostText: React.FC<PostTextProps> = ({
   text,
@@ -40,11 +41,7 @@ const PostText: React.FC<PostTextProps> = ({
           className
         )}
       >
-        <span
-          dangerouslySetInnerHTML={{
-            __html: highlightHashtagsAndUrls(displayText),
-          }}
-        />
+        <ParsedText text={displayText} />
         {shouldTruncate && !isExpanded && (
           <button
             type='button'
@@ -72,21 +69,17 @@ const PostText: React.FC<PostTextProps> = ({
 
     if (mentionStartIndex > lastIndex) {
       const textPart = displayText.slice(lastIndex, mentionStartIndex);
-      parts.push(
-        <span
-          key={`text-${i}`}
-          dangerouslySetInnerHTML={{
-            __html: highlightHashtagsAndUrls(textPart),
-          }}
-        />
-      );
+      parts.push(<ParsedText key={`text-${i}`} text={textPart} />);
     }
 
     parts.push(
       <Username
         key={`mention-${i}`}
         author={mention.user}
-        className='!text-primary-blue hover:underline'
+        className={cn(
+          '!text-primary-blue hover:underline',
+          isThreadPost && 'text-base leading-relaxed'
+        )}
       />
     );
 
@@ -95,14 +88,7 @@ const PostText: React.FC<PostTextProps> = ({
 
   if (lastIndex < displayText.length) {
     const remainingText = displayText.slice(lastIndex);
-    parts.push(
-      <span
-        key='text-end'
-        dangerouslySetInnerHTML={{
-          __html: highlightHashtagsAndUrls(remainingText),
-        }}
-      />
-    );
+    parts.push(<ParsedText key='text-end' text={remainingText} />);
   }
 
   return (

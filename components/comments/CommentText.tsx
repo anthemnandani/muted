@@ -1,7 +1,8 @@
 import { CommentTextProps } from '@/lib/types';
-import { cn, highlightHashtagsAndUrls } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
+import ParsedText from '../shared/ParsedText';
 import Username from '../user/Username';
 
 const CommentText: React.FC<CommentTextProps> = ({
@@ -27,12 +28,7 @@ const CommentText: React.FC<CommentTextProps> = ({
   if (!mentions || mentions.length === 0) {
     return (
       <div className='text-[0.9rem] leading-[1.1375rem] mt-1 text-white/90 break-words whitespace-pre-line antialiased'>
-        <span
-          dangerouslySetInnerHTML={{
-            __html: highlightHashtagsAndUrls(text.replace(/\\n/g, '\n')),
-          }}
-          onClick={handleClick}
-        />
+        <ParsedText text={text.replace(/\\n/g, '\n')} />
       </div>
     );
   }
@@ -46,13 +42,7 @@ const CommentText: React.FC<CommentTextProps> = ({
     if (mention.index > lastIndex) {
       const textPart = text.slice(lastIndex, mention.index);
       parts.push(
-        <span
-          key={index}
-          dangerouslySetInnerHTML={{
-            __html: highlightHashtagsAndUrls(textPart.replace(/\\n/g, '\n')),
-          }}
-          onClick={handleClick}
-        />
+        <ParsedText key={index} text={textPart.replace(/\\n/g, '\n')} />
       );
     }
 
@@ -82,17 +72,8 @@ const CommentText: React.FC<CommentTextProps> = ({
   });
 
   if (lastIndex < text.length) {
-    parts.push(
-      <span
-        key={`text-${lastIndex}`}
-        dangerouslySetInnerHTML={{
-          __html: highlightHashtagsAndUrls(
-            text.slice(lastIndex).replace(/\\n/g, '\n')
-          ),
-        }}
-        onClick={handleClick}
-      />
-    );
+    const remainingText = text.slice(lastIndex).replace(/\\n/g, '\n');
+    parts.push(<ParsedText key={`text-${lastIndex}`} text={remainingText} />);
   }
 
   return (
