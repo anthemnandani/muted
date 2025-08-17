@@ -1,9 +1,9 @@
 'use client';
 
-import { VideoPlayerProps } from '@/lib/types';
+import { AspectRatio, VideoPlayerProps } from '@/lib/types';
 import '@videojs/http-streaming';
 import '@videojs/themes/dist/fantasy/index.css';
-import React from 'react';
+import { useRef, useEffect } from 'react';
 import videojs from 'video.js';
 import Player from 'video.js/dist/types/player';
 import 'video.js/dist/video-js.css';
@@ -13,11 +13,12 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onPlayerReady,
   poster,
   onTimeUpdate,
+  aspectRatio,
 }) => {
-  const videoRef = React.useRef<HTMLVideoElement>(null);
-  const playerRef = React.useRef<Player | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const playerRef = useRef<Player | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (videoRef.current && !playerRef.current) {
       const player = videojs(videoRef.current, options);
 
@@ -108,8 +109,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       x-webkit-airplay='allow'
       style={{
         height: '100%',
-        aspectRatio: '9/16',
-        width: 'auto',
+        aspectRatio: aspectRatio === ('16/9' as AspectRatio) ? 16 / 9 : 9 / 16,
+        width: '100%',
+        objectFit:
+          aspectRatio === ('16/9' as AspectRatio) ? 'cover' : 'contain',
       }}
     />
   );

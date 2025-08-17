@@ -427,6 +427,7 @@ export interface VideoContainerProps {
   mentions?: Mention[];
   hideLikes?: boolean;
   turnOffComments?: boolean;
+  isThreadView?: boolean;
 }
 
 export interface MediaControlsProps {
@@ -471,6 +472,8 @@ export interface PostVideoCardProps {
   mentions?: Mention[];
   hideLikes?: boolean;
   turnOffComments?: boolean;
+  aspectRatio?: AspectRatio;
+  isThreadView?: boolean;
 }
 
 export interface PostActionMenuProps {
@@ -526,6 +529,7 @@ export interface VideoPlayerProps {
   onPlayerReady: (player: Player) => void;
   poster?: string;
   onTimeUpdate?: () => void;
+  aspectRatio?: AspectRatio;
 }
 
 export interface MediaTypeIndicatorProps {

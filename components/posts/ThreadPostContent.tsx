@@ -1,13 +1,14 @@
 'use client';
 
 import useMediaControls from '@/hooks/useMediaControls';
-import { ThreadPostContentProps } from '@/lib/types';
+import { AspectRatio, ThreadPostContentProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import MediaControls from '../shared/MediaControls';
 import PostText from '../shared/PostText';
 import PostFooter from './PostFooter';
 import LinkPreviewCard from '../cards/LinkPreviewCard';
+import PostVideoCard from '../cards/PostVideoCard';
 
 const ThreadPostContent: React.FC<ThreadPostContentProps> = ({
   media,
@@ -26,6 +27,7 @@ const ThreadPostContent: React.FC<ThreadPostContentProps> = ({
   const hasMedia = media && media.length > 0;
   const isImageOrGif =
     hasMedia && (media[0].fileType === 'image' || media[0].fileType === 'gif');
+  const isVideo = hasMedia && media[0].fileType === 'video';
 
   const {
     showControls,
@@ -87,6 +89,33 @@ const ThreadPostContent: React.FC<ThreadPostContentProps> = ({
                   />
                 ) : null}
               </div>
+            </div>
+          )}
+          {isVideo && (
+            <div
+              className={cn(
+                'relative w-fit max-w-full flex-shrink-0 overflow-hidden',
+                media?.[0].aspectRatio === ('16/9' as AspectRatio)
+                  ? 'h-[250px]'
+                  : 'h-[325px]'
+              )}
+            >
+              <PostVideoCard
+                video={media[0].fileUrl}
+                poster={media[0].thumbnailUrl!}
+                postId={postId}
+                author={author}
+                createdAt={createdAt}
+                mentions={mentions}
+                text={threadText}
+                reposts={reposts}
+                pinned={pinned}
+                repostedBy={repostedBy}
+                hideLikes={hideLikes}
+                turnOffComments={turnOffComments}
+                aspectRatio={media[0].aspectRatio}
+                isThreadView
+              />
             </div>
           )}
           {linkPreview && <LinkPreviewCard {...linkPreview} />}
