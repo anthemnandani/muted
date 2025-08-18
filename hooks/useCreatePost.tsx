@@ -50,6 +50,7 @@ const useCreatePost = () => {
     api.post.editPost.useMutation({
       onMutate: () => {
         setTimeout(() => {
+          setMediaFiles([]);
           resetPostState();
         }, 150);
       },
@@ -169,7 +170,6 @@ const useCreatePost = () => {
   };
 
   const handleMutation = async () => {
-    const mediaUploadResult = await handleMediaUpload();
     const {
       caption,
       threadText,
@@ -179,39 +179,41 @@ const useCreatePost = () => {
       privacy,
     } = postData;
 
-    if (!mediaUploadResult.success) {
-      return Promise.reject(new Error('Media upload failed'));
+    if (editPostId) {
+      return editPost({
+        id: editPostId,
+        text: postType === 'media' ? caption?.trim() : undefined,
+        threadText: postType === 'thread' ? threadText?.trim() : undefined,
+        hideLikes,
+        turnOffComments,
+        mentions: validMentions.map((m) => ({
+          username: m.username,
+          index: m.startIndex,
+        })),
+      });
+    } else {
+      const mediaUploadResult = await handleMediaUpload();
+
+      if (!mediaUploadResult.success) {
+        return Promise.reject(new Error('Media upload failed'));
+      }
+
+      return createPost({
+        text: postType === 'media' ? caption?.trim() : undefined,
+        threadText: postType === 'thread' ? threadText?.trim() : undefined,
+        media: mediaUploadResult.mediaItems,
+        mentions: validMentions.map((m) => ({
+          mentionedUserId: m.mentionedUserId,
+          index: m.startIndex,
+        })),
+        privacy,
+        quoteId: quoteInfo?.id,
+        postAuthor: quoteInfo?.author.id,
+        linkPreview: linkPreview ?? undefined,
+        hideLikes,
+        turnOffComments,
+      });
     }
-
-    const promise = editPostId
-      ? editPost({
-          id: editPostId,
-          text: postType === 'media' ? caption?.trim() : undefined,
-          threadText: postType === 'thread' ? threadText?.trim() : undefined,
-          hideLikes,
-          turnOffComments,
-          mentions: validMentions.map((m) => ({
-            username: m.username,
-            index: m.startIndex,
-          })),
-        })
-      : createPost({
-          text: postType === 'media' ? caption?.trim() : undefined,
-          threadText: postType === 'thread' ? threadText?.trim() : undefined,
-          media: mediaUploadResult.mediaItems,
-          mentions: validMentions.map((m) => ({
-            mentionedUserId: m.mentionedUserId,
-            index: m.startIndex,
-          })),
-          privacy,
-          quoteId: quoteInfo?.id,
-          postAuthor: quoteInfo?.author.id,
-          linkPreview: linkPreview ?? undefined,
-          hideLikes,
-          turnOffComments,
-        });
-
-    return promise as any;
   };
 
   const handleSubmit = (isEdit = false) => {
@@ -228,7 +230,6 @@ const useCreatePost = () => {
         </div>
       ),
       success: (data) => {
-        const postInfo = data?.isEdited ? data?.updatedPost : data?.createPost;
         return (
           <div className='flex-between w-[270px] p-0 '>
             <div className='flex-center gap-1.5'>
@@ -236,7 +237,7 @@ const useCreatePost = () => {
               {data?.isEdited ? 'Edited' : 'Posted'}
             </div>
             <Link
-              href={`/${postInfo.author.username}/post/${postInfo.id}`}
+              href={`/${data?.post.author.username}/post/${data?.post.id}`}
               className='hover:text-blue-900'
             >
               View

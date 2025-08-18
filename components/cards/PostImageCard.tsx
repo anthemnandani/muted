@@ -19,6 +19,7 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
   mentions,
   turnOffComments,
   hideLikes,
+  media,
 }) => {
   const {
     showControls,
@@ -62,6 +63,7 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
         hideLikes={hideLikes}
         showControls={showControls}
         pinned={pinned}
+        media={media}
       />
       <div className='absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none' />
       <PostFooter

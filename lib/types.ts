@@ -352,6 +352,7 @@ export type MediaFile = {
   };
   originalWidth?: number;
   originalHeight?: number;
+  poster?: string;
 };
 
 export type GiphyMedia = {
@@ -426,6 +427,7 @@ export interface VideoContainerProps {
   repostedBy?: AuthorInfoProps;
   mentions?: Mention[];
   hideLikes?: boolean;
+  media?: PostMedia[];
   turnOffComments?: boolean;
   isThreadView?: boolean;
 }
@@ -441,6 +443,7 @@ export interface MediaControlsProps {
   VolumeControls?: React.ReactNode;
   hideLikes?: boolean;
   turnOffComments?: boolean;
+  media?: PostMedia[];
 }
 
 export interface PostImageCardProps {
@@ -457,6 +460,7 @@ export interface PostImageCardProps {
   mentions?: Mention[];
   hideLikes?: boolean;
   turnOffComments?: boolean;
+  media?: PostMedia[];
 }
 
 export interface PostVideoCardProps {
@@ -473,6 +477,7 @@ export interface PostVideoCardProps {
   hideLikes?: boolean;
   turnOffComments?: boolean;
   aspectRatio?: AspectRatio;
+  media?: PostMedia[];
   isThreadView?: boolean;
 }
 
@@ -487,6 +492,7 @@ export interface PostActionMenuProps {
   showControls: boolean;
   pinned?: boolean;
   isThread?: boolean;
+  media?: PostMedia[];
 }
 
 export interface PostMediaCarouselProps {
@@ -526,7 +532,7 @@ export interface ProfileVideoPlayerProps {
 
 export interface VideoPlayerProps {
   options: any;
-  onPlayerReady: (player: Player) => void;
+  onPlayerReady?: (player: Player) => void;
   poster?: string;
   onTimeUpdate?: () => void;
   aspectRatio?: AspectRatio;
@@ -1108,4 +1114,9 @@ export interface UserPostThreadCardProps {
   index: number;
   username: string;
   mentions?: Mention[];
+}
+
+export interface UseTimeLeftProps {
+  createdAt: Date | string;
+  durationInMinutes?: number;
 }

@@ -1,14 +1,18 @@
 import type {
+  MediaFile,
   ParentPostInfo,
   PostData,
+  PostMedia,
   PostType,
   ValidMention,
 } from '@/lib/types';
 import { PostPrivacy } from '@prisma/client';
 import { create } from 'zustand';
+import useFileStore from './fileStore';
 
 type PostWithId = PostData & {
   id: string;
+  media?: PostMedia[] | null;
 };
 
 interface ToggleState {
@@ -55,6 +59,22 @@ const usePostDialog = create<ToggleState>((set, get) => ({
   setQuoteInfo: (quote) => set({ quoteInfo: quote }),
   openForEditing: (post) => {
     const isThread = !!post.threadText;
+    const { setMediaFiles } = useFileStore.getState();
+    if (post.media && post.media.length > 0) {
+      const mediaFilesForStore: MediaFile[] = post.media.map((m) => ({
+        id: crypto.randomUUID(),
+        preview: m.fileUrl,
+        type: m.fileType as 'image' | 'video',
+        file: new File([], m.fileUrl.split('/').pop() ?? 'mediafile', {
+          type: m.fileType === 'video' ? 'video/mp4' : 'image/jpeg',
+        }),
+        aspectRatio: m.aspectRatio ?? '1:1',
+        poster: m.thumbnailUrl,
+      }));
+      setMediaFiles(mediaFilesForStore);
+    } else {
+      setMediaFiles([]);
+    }
     set({
       editPostId: post.id,
       openDialog: true,

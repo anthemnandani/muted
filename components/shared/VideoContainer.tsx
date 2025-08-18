@@ -23,6 +23,7 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
   mentions,
   hideLikes,
   turnOffComments,
+  media,
   isThreadView,
 }) => {
   const { ref, inView } = useInView({
@@ -80,6 +81,7 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
             VolumeControls={
               <VolumeControls player={player} showControls={showControls} />
             }
+            media={media}
           />
           <PostFooter
             author={author}

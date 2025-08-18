@@ -1,14 +1,21 @@
 'use client';
 
+import { VideoPlayer } from '@/components/shared/VideoPlayer';
 import { Button } from '@/components/ui/button';
 import type { AspectRatio, MediaFile } from '@/lib/types';
 import { getTargetRatio, getVideoObjectFit } from '@/lib/utils';
 import usePostDialog from '@/store/postDialog';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 
-const MainPreview = ({ mediaFiles }: { mediaFiles: MediaFile[] }) => {
+const MainPreview = ({
+  mediaFiles,
+  editPostId,
+}: {
+  mediaFiles: MediaFile[];
+  editPostId: string | null;
+}) => {
   const { currentMediaIndex, setCurrentMediaIndex } = usePostDialog();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [imageDimensions, setImageDimensions] = useState<
@@ -108,6 +115,56 @@ const MainPreview = ({ mediaFiles }: { mediaFiles: MediaFile[] }) => {
 
   const objectFit = getVideoObjectFit(aspectRatio, videoDimensions);
 
+  const isSafari = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  }, []);
+
+  const sourceType = useMemo(() => {
+    if (isSafari) {
+      return 'application/vnd.apple.mpegurl';
+    }
+    return 'application/x-mpegURL';
+  }, [isSafari]);
+
+  const playerOptions = useMemo(
+    () => ({
+      controls: true,
+      loop: true,
+      muted: true,
+      playsinline: true,
+      preload: 'metadata',
+      autoplay: true,
+      disablePictureInPicture: true,
+      userActions: { hotkeys: true, doubleClick: false },
+      controlBar: {
+        pictureInPictureToggle: false,
+        fullscreenToggle: false,
+        volumePanel: false,
+        progressControl: {
+          seekBar: true,
+        },
+        children: ['progressControl'],
+      },
+      sources: [{ src: currentFile.preview, type: sourceType }],
+      html5: {
+        vhs: {
+          overrideNative: !isSafari,
+          withCredentials: false,
+        },
+        nativeTextTracks: isSafari,
+        nativeAudioTracks: isSafari,
+        nativeVideoTracks: isSafari,
+      },
+      hls: {
+        debug: false,
+        enableLowInitialPlaylist: true,
+        manifestLoadingTimeOut: 10000,
+      },
+    }),
+    [currentFile.preview]
+  );
+
   return (
     <div className='relative flex-center size-[500px]'>
       {currentFile && (
@@ -129,6 +186,12 @@ const MainPreview = ({ mediaFiles }: { mediaFiles: MediaFile[] }) => {
                 loading='lazy'
               />
             </div>
+          ) : editPostId ? (
+            <VideoPlayer
+              poster={currentFile.poster}
+              options={playerOptions}
+              aspectRatio={aspectRatio}
+            />
           ) : (
             <video
               ref={videoRef}

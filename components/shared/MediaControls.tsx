@@ -15,6 +15,7 @@ const MediaControls: React.FC<MediaControlsProps> = ({
   VolumeControls,
   turnOffComments,
   hideLikes,
+  media,
 }) => {
   return (
     <div className='absolute top-2 w-full z-50'>
@@ -31,6 +32,7 @@ const MediaControls: React.FC<MediaControlsProps> = ({
           turnOffComments={turnOffComments ?? false}
           hideLikes={hideLikes ?? false}
           pinned={pinned}
+          media={media}
         />
       </div>
     </div>

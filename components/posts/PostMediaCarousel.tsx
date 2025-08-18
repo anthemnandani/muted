@@ -57,6 +57,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                 repostedBy={repostedBy}
                 hideLikes={hideLikes}
                 turnOffComments={turnOffComments}
+                media={media}
               />
             ) : (
               <PostImageCard
@@ -73,6 +74,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                 repostedBy={repostedBy}
                 hideLikes={hideLikes}
                 turnOffComments={turnOffComments}
+                media={media}
               />
             )}
           </SwiperSlide>

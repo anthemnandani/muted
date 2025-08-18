@@ -1,9 +1,5 @@
-import { useState, useEffect } from 'react';
-
-interface UseTimeLeftProps {
-  createdAt: Date | string;
-  durationInMinutes?: number;
-}
+import { UseTimeLeftProps } from '@/lib/types';
+import { useEffect, useState } from 'react';
 
 const useTimeLeft = ({
   createdAt,

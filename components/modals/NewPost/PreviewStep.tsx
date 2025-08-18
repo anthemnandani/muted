@@ -14,7 +14,7 @@ const PreviewStep = ({
   isDragActive,
 }: PreviewStepProps) => {
   const { mediaFiles, setMediaFiles, updateMediaFile } = useFileStore();
-  const { setStep, currentMediaIndex, setCurrentMediaIndex, step } =
+  const { setStep, currentMediaIndex, setCurrentMediaIndex, step, editPostId } =
     usePostDialog();
 
   const currentFile = mediaFiles[currentMediaIndex];
@@ -43,7 +43,7 @@ const PreviewStep = ({
       )}
     >
       <div className='relative h-full'>
-        <MainPreview mediaFiles={mediaFiles} />
+        <MainPreview mediaFiles={mediaFiles} editPostId={editPostId} />
       </div>
 
       {step !== 'post' && (

@@ -205,8 +205,9 @@ export const postRouter = createTRPCRouter({
         }
 
         return {
-          createPost: transactionResult.newpost,
+          post: transactionResult.newpost,
           success: true,
+          isEdited: false,
         };
       }
     ),
@@ -1960,7 +1961,7 @@ export const postRouter = createTRPCRouter({
           }
 
           return {
-            updatedPost: transactionResult.updatedPost,
+            post: transactionResult.updatedPost,
             success: true,
             isEdited: true,
           };

@@ -21,6 +21,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   turnOffComments,
   hideLikes,
   aspectRatio,
+  media,
   isThreadView = false,
 }) => {
   const [player, setPlayer] = useState<Player | null>(null);
@@ -164,6 +165,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
       mentions={mentions}
       hideLikes={hideLikes}
       turnOffComments={turnOffComments}
+      media={media}
       isThreadView={isThreadView}
     >
       <VideoPlayer

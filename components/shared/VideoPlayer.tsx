@@ -93,7 +93,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       });
 
       playerRef.current = player;
-      onPlayerReady(player);
+      onPlayerReady?.(player);
     }
   }, [options, onPlayerReady]);
 

@@ -34,6 +34,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
   hideLikes,
   pinned,
   showControls,
+  media,
   isThread,
 }) => {
   const { user } = useUser();
@@ -69,6 +70,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
       id: postId,
       turnOffComments,
       hideLikes,
+      media,
     });
   };
 
