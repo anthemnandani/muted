@@ -69,22 +69,27 @@ const NotificationCard = ({
           >
             {sender.username}
           </Link>
-          <p
-            className={cn(
-              'line-clamp-6 text-sm leading-[18px] max-h-[130px] break-words',
-              type === NotificationType.LIKE ||
-                type === NotificationType.FOLLOWER
-                ? 'text-white/50'
-                : 'text-white/90'
-            )}
-          >
-            {message}
-            {(type === NotificationType.LIKE ||
-              type === NotificationType.FOLLOWER) &&
-              '.'}
-            &nbsp;
-            <span className='text-white/50'>{formatTimeAgo(createdAt)}</span>
-          </p>
+
+          {type === NotificationType.COMMENT ||
+          type === NotificationType.MENTION ? (
+            <div className='flex flex-col'>
+              <p className='text-white/90 text-sm leading-[18px] max-h-[130px] line-clamp-6 break-all'>
+                {message}
+              </p>
+              <span className='text-white/50 text-sm mt-1'>
+                {formatTimeAgo(createdAt)}
+              </span>
+            </div>
+          ) : (
+            <p className='text-white/50 text-sm leading-[18px] break-words'>
+              {message}
+              {(type === NotificationType.LIKE ||
+                type === NotificationType.FOLLOWER) &&
+                '.'}
+              &nbsp;
+              <span className='text-white/50'>{formatTimeAgo(createdAt)}</span>
+            </p>
+          )}
         </div>
         {type === NotificationType.FOLLOWER ? (
           <FollowButton
@@ -98,15 +103,17 @@ const NotificationCard = ({
             isNotification
           />
         ) : (
-          <Link href={`/post/${postId}`}>
-            <Image
-              src={getImageUrl(media!)!}
-              alt='Thumbnail'
-              width={42}
-              height={56}
-              className='flex-[0_0_48px] rounded-md self-center'
-            />
-          </Link>
+          media && (
+            <Link href={`/post/${postId}`}>
+              <Image
+                src={getImageUrl(media!)!}
+                alt='Thumbnail'
+                width={42}
+                height={56}
+                className='flex-[0_0_48px] rounded-md self-center'
+              />
+            </Link>
+          )
         )}
       </div>
     </div>
