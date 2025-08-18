@@ -80,6 +80,7 @@ const PostText: React.FC<PostTextProps> = ({
           '!text-primary-blue hover:underline',
           isThreadPost && 'text-base leading-relaxed'
         )}
+        isMention
       />
     );
 

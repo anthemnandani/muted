@@ -19,6 +19,7 @@ import { createId } from '@paralleldrive/cuid2';
 import { NotificationType, PostPrivacy } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
+import * as cheerio from 'cheerio';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure, publicProcedure } from '../trpc';
 
@@ -2036,5 +2037,46 @@ export const postRouter = createTRPCRouter({
       });
 
       return { pinned: !postExists.pinned };
+    }),
+
+  getLinkInfo: publicProcedure
+    .input(z.object({ url: z.string().url('Invalid URL') }))
+    .query(async ({ input }) => {
+      try {
+        console.log('Input', input.url);
+        const response = await fetch(input.url);
+        if (
+          !response.ok ||
+          !response.headers.get('content-type')?.includes('text/html')
+        ) {
+          return null;
+        }
+        const html = await response.text();
+        const $ = cheerio.load(html);
+
+        const preview = {
+          url: input.url,
+          title:
+            $('meta[property="og:title"]').attr('content') ||
+            $('title').text() ||
+            '',
+          description:
+            $('meta[property="og:description"]').attr('content') ||
+            $('meta[name="description"]').attr('content') ||
+            '',
+          image: $('meta[property="og:image"]').attr('content') || null,
+        };
+
+        if (!preview.title && !preview.description && !preview.image) {
+          return null;
+        }
+
+        console.log('Preview: ', preview);
+
+        return preview;
+      } catch (error) {
+        console.error('Failed to fetch link preview:', error);
+        return null;
+      }
     }),
 });

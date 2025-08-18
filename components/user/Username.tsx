@@ -1,7 +1,7 @@
 import { UsernameProps } from '@/lib/types';
 import { cn, formatRepostTime } from '@/lib/utils';
 import Link from 'next/link';
-import React, { Fragment } from 'react';
+import { Fragment } from 'react';
 import UserProfileCard from '../cards/UserProfileCard';
 import {
   HoverCard,
@@ -17,6 +17,7 @@ const Username: React.FC<UsernameProps> = ({
   isComment,
   isSearch,
   postAuthorId,
+  isMention = false,
 }) => {
   return (
     <HoverCard>
@@ -35,6 +36,7 @@ const Username: React.FC<UsernameProps> = ({
               className
             )}
           >
+            {isMention && '@'}
             {author.username}{' '}
           </span>
           {isComment && author?.id === postAuthorId && (

@@ -35,7 +35,7 @@ const ParsedText: React.FC<{ text: string }> = ({ text }) => {
         if (urlRegex.test(part)) {
           const fullUrl = part.startsWith('http') ? part : `https://${part}`;
           const domain = part.replace(/^https?:\/\//, '');
-          const displayUrl = domain.slice(0, 25);
+          const displayUrl = domain.slice(0, 30);
           return (
             <a
               key={index}

@@ -776,6 +776,7 @@ export interface UsernameProps {
   isComment?: boolean;
   postAuthorId?: string;
   isSearch?: boolean;
+  isMention?: boolean;
 }
 
 export interface EmojiPickerProps {
