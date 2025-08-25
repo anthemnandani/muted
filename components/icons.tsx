@@ -1045,6 +1045,57 @@ export const Icons = {
       <path d='m24 27.76 13.17-13.17a1 1 0 0 1 1.42 0l2.82 2.82a1 1 0 0 1 0 1.42L25.06 35.18a1.5 1.5 0 0 1-2.12 0L6.59 18.83a1 1 0 0 1 0-1.42L9.4 14.6a1 1 0 0 1 1.42 0L24 27.76Z'></path>
     </svg>
   ),
+  chevronRight: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
+    <svg
+      width='16'
+      data-e2e=''
+      height='16'
+      viewBox='0 0 48 48'
+      fill='currentColor'
+      xmlns='http://www.w3.org/2000/svg'
+      {...props}
+    >
+      <path
+        fill-rule='evenodd'
+        clip-rule='evenodd'
+        d='M34.4142 22.5858L18.1213 6.29289C17.7308 5.90237 17.0976 5.90237 16.7071 6.29289L15.2929 7.70711C14.9024 8.09763 14.9024 8.7308 15.2929 9.12132L30.1716 24L15.2929 38.8787C14.9024 39.2692 14.9024 39.9024 15.2929 40.2929L16.7071 41.7071C17.0976 42.0976 17.7308 42.0976 18.1213 41.7071L34.4142 25.4142C35.1953 24.6332 35.1953 23.3668 34.4142 22.5858Z'
+      ></path>
+    </svg>
+  ),
+  chevronLeft: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
+    <svg
+      width='1em'
+      data-e2e=''
+      height='1em'
+      viewBox='0 0 48 48'
+      fill='currentColor'
+      xmlns='http://www.w3.org/2000/svg'
+      {...props}
+    >
+      <path
+        fillRule='evenodd'
+        clipRule='evenodd'
+        d='M4.58579 22.5858L20.8787 6.29289C21.2692 5.90237 21.9024 5.90237 22.2929 6.29289L23.7071 7.70711C24.0976 8.09763 24.0976 8.7308 23.7071 9.12132L8.82843 24L23.7071 38.8787C24.0976 39.2692 24.0976 39.9024 23.7071 40.2929L22.2929 41.7071C21.9024 42.0976 21.2692 42.0976 20.8787 41.7071L4.58579 25.4142C3.80474 24.6332 3.80474 23.3668 4.58579 22.5858Z'
+      ></path>
+    </svg>
+  ),
+  arrowDown: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
+    <svg
+      {...props}
+      width='1em'
+      data-e2e=''
+      height='1em'
+      viewBox='0 0 48 48'
+      fill='currentColor'
+      xmlns='http://www.w3.org/2000/svg'
+    >
+      <path
+        fill-rule='evenodd'
+        clip-rule='evenodd'
+        d='M24.7125 32.0323C24.3109 32.5525 23.5252 32.5505 23.1263 32.0282L14.4015 20.6071C13.8988 19.949 14.368 19 15.1962 19H32.7385C33.569 19 34.0375 19.9537 33.53 20.6111L24.7125 32.0323Z'
+      ></path>
+    </svg>
+  ),
   hide: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
     <svg
       aria-label='Hide like and share counts'
@@ -1185,6 +1236,23 @@ export const Icons = {
       <path d='M10.3 15H7a4 4 0 0 0-4 4v2' />
       <path d='M15 15.5V14a2 2 0 0 1 4 0v1.5' />
       <rect width='8' height='5' x='13' y='16' rx='.899' />
+    </svg>
+  ),
+  userRound: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      width='24'
+      height='24'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      {...props}
+    >
+      <circle cx='12' cy='8' r='5' />
+      <path d='M20 21a8 8 0 0 0-16 0' />
     </svg>
   ),
   userRoundCheck: (props: IconProps | React.SVGProps<SVGSVGElement>) => (

@@ -14,9 +14,15 @@ import {
   getCommentRepliesCount,
   getLikesWithBlockFilter,
   getPostRepliesCount,
+  getPrivacyFilter,
 } from '@/server/constants';
 import { createId } from '@paralleldrive/cuid2';
-import { NotificationType, PostPrivacy } from '@prisma/client';
+import {
+  NotificationType,
+  PostPrivacy,
+  Privacy,
+  type Prisma,
+} from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
 import * as cheerio from 'cheerio';
@@ -228,57 +234,60 @@ export const postRouter = createTRPCRouter({
     )
     .query(
       async ({ input: { limit = 15, cursor, searchQuery, sortBy }, ctx }) => {
-        const posts = await ctx.db.post.findMany({
-          where: {
-            AND: [
-              {
-                parentPostId: null,
-              },
-              searchQuery
-                ? {
-                    OR: [
-                      { text: { contains: searchQuery, mode: 'insensitive' } },
-                      {
-                        hashtags: {
-                          some: {
-                            name: {
-                              contains: searchQuery,
-                              mode: 'insensitive',
-                            },
+        const whereClause: Prisma.PostWhereInput = {
+          AND: [
+            getPrivacyFilter(ctx.userId),
+            {
+              parentPostId: null,
+            },
+            searchQuery
+              ? {
+                  OR: [
+                    { text: { contains: searchQuery, mode: 'insensitive' } },
+                    {
+                      hashtags: {
+                        some: {
+                          name: {
+                            contains: searchQuery,
+                            mode: 'insensitive',
                           },
                         },
                       },
-                    ],
-                  }
-                : {},
-              {
-                hiddenBy: {
+                    },
+                  ],
+                }
+              : {},
+            {
+              hiddenBy: {
+                none: {
+                  userId: ctx.userId,
+                },
+              },
+            },
+            {
+              author: {
+                mutedByUsers: {
                   none: {
-                    userId: ctx.userId,
+                    mutedByUserId: ctx.userId,
+                  },
+                },
+                blockedByUsers: {
+                  none: {
+                    blockingUserId: ctx.userId,
+                  },
+                },
+                blockedUsers: {
+                  none: {
+                    blockedUserId: ctx.userId,
                   },
                 },
               },
-              {
-                author: {
-                  mutedByUsers: {
-                    none: {
-                      mutedByUserId: ctx.userId,
-                    },
-                  },
-                  blockedByUsers: {
-                    none: {
-                      blockingUserId: ctx.userId,
-                    },
-                  },
-                  blockedUsers: {
-                    none: {
-                      blockedUserId: ctx.userId,
-                    },
-                  },
-                },
-              },
-            ],
-          },
+            },
+          ],
+        };
+
+        const posts = await ctx.db.post.findMany({
+          where: whereClause,
           take: limit + 1,
           cursor: cursor ? { createdAt_id: cursor } : undefined,
           orderBy:
@@ -815,6 +824,20 @@ export const postRouter = createTRPCRouter({
 
       if (!post) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Post not found' });
+      }
+
+      const isPublic = post.author.privacy === Privacy.PUBLIC;
+      const isOwnPost = post.author.id === ctx.userId;
+
+      const isFollowing = post.author.followers.some(
+        (follower) => follower.id === ctx.userId
+      );
+
+      if (!isPublic && !isOwnPost && !isFollowing) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You do not have permission to view this post.',
+        });
       }
 
       return {
@@ -1521,59 +1544,62 @@ export const postRouter = createTRPCRouter({
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
       const { userId } = ctx;
 
-      const followingPosts = await ctx.db.post.findMany({
-        where: {
-          AND: [
-            {
-              OR: [
-                {
-                  author: {
-                    followers: {
-                      some: { id: userId },
-                    },
-                  },
-                },
-
-                {
-                  reposts: {
-                    some: {
-                      user: {
-                        followers: {
-                          some: { id: userId },
-                        },
-                      },
-                    },
-                  },
-
-                  NOT: {
-                    authorId: userId,
-                  },
-                },
-              ],
-            },
-            { parentPostId: null },
-            { hiddenBy: { none: { userId } } },
-            {
-              author: {
-                mutedByUsers: {
-                  none: {
-                    mutedByUserId: userId,
-                  },
-                },
-                blockedByUsers: {
-                  none: {
-                    blockingUserId: userId,
-                  },
-                },
-                blockedUsers: {
-                  none: {
-                    blockedUserId: userId,
+      const whereClause: Prisma.PostWhereInput = {
+        AND: [
+          getPrivacyFilter(ctx.userId),
+          {
+            OR: [
+              {
+                author: {
+                  followers: {
+                    some: { id: userId },
                   },
                 },
               },
+
+              {
+                reposts: {
+                  some: {
+                    user: {
+                      followers: {
+                        some: { id: userId },
+                      },
+                    },
+                  },
+                },
+
+                NOT: {
+                  authorId: userId,
+                },
+              },
+            ],
+          },
+          { parentPostId: null },
+          { hiddenBy: { none: { userId } } },
+          {
+            author: {
+              mutedByUsers: {
+                none: {
+                  mutedByUserId: userId,
+                },
+              },
+              blockedByUsers: {
+                none: {
+                  blockingUserId: userId,
+                },
+              },
+              blockedUsers: {
+                none: {
+                  blockedUserId: userId,
+                },
+              },
             },
-          ],
-        },
+          },
+        ],
+      };
+
+      const followingPosts = await ctx.db.post.findMany({
+        where: whereClause,
         take: limit + 1,
         cursor: cursor ? { createdAt_id: cursor } : undefined,
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
@@ -1667,48 +1693,50 @@ export const postRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { tag, limit = 20, cursor }, ctx }) => {
-      const posts = await ctx.db.post.findMany({
-        where: {
-          hashtags: {
-            some: {
-              name: tag.toLowerCase(),
+      const whereClause: Prisma.PostWhereInput = {
+        hashtags: {
+          some: {
+            name: tag.toLowerCase(),
+          },
+        },
+        OR: [
+          { parentPostId: null },
+          {
+            AND: [{ parentPostId: { not: null } }, { reposts: { some: {} } }],
+          },
+        ],
+        AND: [
+          getPrivacyFilter(ctx.userId!),
+          {
+            hiddenBy: {
+              none: {
+                userId: ctx.userId,
+              },
             },
           },
-          OR: [
-            { parentPostId: null },
-            {
-              AND: [{ parentPostId: { not: null } }, { reposts: { some: {} } }],
-            },
-          ],
-          AND: [
-            {
-              hiddenBy: {
+          {
+            author: {
+              mutedByUsers: {
                 none: {
-                  userId: ctx.userId,
+                  mutedByUserId: ctx.userId,
+                },
+              },
+              blockedByUsers: {
+                none: {
+                  blockingUserId: ctx.userId,
+                },
+              },
+              blockedUsers: {
+                none: {
+                  blockedUserId: ctx.userId,
                 },
               },
             },
-            {
-              author: {
-                mutedByUsers: {
-                  none: {
-                    mutedByUserId: ctx.userId,
-                  },
-                },
-                blockedByUsers: {
-                  none: {
-                    blockingUserId: ctx.userId,
-                  },
-                },
-                blockedUsers: {
-                  none: {
-                    blockedUserId: ctx.userId,
-                  },
-                },
-              },
-            },
-          ],
-        },
+          },
+        ],
+      };
+      const posts = await ctx.db.post.findMany({
+        where: whereClause,
         take: limit + 1,
         cursor: cursor ? { createdAt_id: cursor } : undefined,
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],

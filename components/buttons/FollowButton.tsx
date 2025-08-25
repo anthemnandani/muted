@@ -2,15 +2,8 @@
 
 import { Follow } from '@/components/ui/follow-button';
 import useFollowUser from '@/hooks/useFollowUser';
-import type { AuthorInfoProps } from '@/lib/types';
+import { FollowButtonProps } from '@/lib/types';
 import React from 'react';
-
-interface FollowButtonProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant: 'default' | 'outline' | 'destructive';
-  author: AuthorInfoProps;
-  size: 'default' | 'sm' | 'lg' | 'icon';
-  isNotification?: boolean;
-}
 
 const FollowButton: React.FC<FollowButtonProps> = ({
   variant,
@@ -19,24 +12,42 @@ const FollowButton: React.FC<FollowButtonProps> = ({
   size,
   isNotification,
 }) => {
-  const { handleToggleFollow, isLoading, isSameUser, isFollowedByMe } =
+  const { handleToggleFollow, isLoading, isSameUser, followStatus } =
     useFollowUser({
       author,
     });
 
   const getButtonText = () => {
-    if (isNotification) {
-      return isFollowedByMe ? 'Friends' : 'Follow back';
+    if (isNotification && followStatus === 'NOT_FOLLOWING') {
+      return 'Follow back';
     }
-    return isFollowedByMe ? 'Following' : 'Follow';
+
+    switch (followStatus) {
+      case 'FOLLOWING':
+        return isNotification ? 'Friends' : 'Following';
+      case 'REQUESTED':
+        return 'Requested';
+      case 'NOT_FOLLOWING':
+      default:
+        return 'Follow';
+    }
+  };
+
+  const getButtonVariant = () => {
+    return followStatus === 'NOT_FOLLOWING' ? variant : 'outline';
+  };
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    handleToggleFollow();
   };
 
   return (
     <Follow
       disabled={isLoading || isSameUser}
-      onClick={handleToggleFollow}
+      onClick={handleClick}
       size={size}
-      variant={!isFollowedByMe ? variant : 'outline'}
+      variant={getButtonVariant()}
       className={className}
     >
       {getButtonText()}

@@ -7,10 +7,9 @@ import useEditProfile from '@/store/editProfile';
 import useFileStore from '@/store/fileStore';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
-import { Privacy } from '@prisma/client';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { Lock } from 'lucide-react';
-import React from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import { Icons } from '../icons';
 import UploadPicture from '../menus/UploadPicture';
@@ -25,10 +24,9 @@ import {
 } from '../ui/dialog';
 import { Label } from '../ui/label';
 import { Separator } from '../ui/separator';
-import { Switch } from '../ui/switch';
 import AddBio from './AddBio';
 
-const EditProfile = ({ userBio, userImage, userPrivacy }: EditProfileProps) => {
+const EditProfile = ({ userBio, userImage }: EditProfileProps) => {
   const {
     openDialog,
     setOpenDialog,
@@ -36,16 +34,14 @@ const EditProfile = ({ userBio, userImage, userPrivacy }: EditProfileProps) => {
     setProfileBio,
     profilePic,
     setProfilePic,
-    privacy,
-    setPrivacy,
   } = useEditProfile();
   const { user } = useUser();
-  const resetTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const resetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { profileFile, setProfileFile } = useFileStore();
-  const [isUploading, setIsUploading] = React.useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const { uploadToStorage } = useBunnyUpload();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!openDialog) {
       resetTimeoutRef.current = setTimeout(() => {
         if (userImage) {
@@ -58,15 +54,14 @@ const EditProfile = ({ userBio, userImage, userPrivacy }: EditProfileProps) => {
     }
   }, [openDialog, userImage]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (openDialog) {
       setProfileBio(userBio);
       setProfilePic(userImage);
-      setPrivacy(userPrivacy);
     }
-  }, [openDialog, userBio, userImage, userPrivacy]);
+  }, [openDialog, userBio, userImage]);
 
-  const userFullName = React.useMemo(
+  const userFullName = useMemo(
     () => getFullName(user?.firstName ?? '', user?.lastName ?? ''),
     [user]
   );
@@ -87,13 +82,6 @@ const EditProfile = ({ userBio, userImage, userPrivacy }: EditProfileProps) => {
       retry: false,
     });
 
-  const handlePrivacyChange = React.useCallback(
-    (checked: boolean) => {
-      setPrivacy(checked ? Privacy.PRIVATE : Privacy.PUBLIC);
-    },
-    [setPrivacy]
-  );
-
   const handleUpdateProfile = async () => {
     try {
       setIsUploading(true);
@@ -104,7 +92,6 @@ const EditProfile = ({ userBio, userImage, userPrivacy }: EditProfileProps) => {
       await updateProfile({
         image: imgUrl,
         bio: profileBio,
-        privacy: privacy || Privacy.PUBLIC,
       });
     } catch (error) {
       toast.error('Error updating profile');
@@ -159,7 +146,7 @@ const EditProfile = ({ userBio, userImage, userPrivacy }: EditProfileProps) => {
               <Separator className='bg-border-light h-[0.5px]' />
             </div>
 
-            <div className='flex-between w-full'>
+            {/* <div className='flex-between w-full'>
               <Label
                 htmlFor='profilePrivacy'
                 className='text-[15px] font-semibold'
@@ -171,7 +158,7 @@ const EditProfile = ({ userBio, userImage, userPrivacy }: EditProfileProps) => {
                 checked={privacy === Privacy.PRIVATE}
                 onCheckedChange={handlePrivacyChange}
               />
-            </div>
+            </div> */}
             <Button
               className='w-full h-[52px] flex-center px-4 mt-4 rounded-xl bg-foreground hover:bg-foreground select-none text-white dark:text-black dark:hover:bg-slate-50 disabled:cursor-not-allowed disabled:pointer-events-auto disabled:opacity-100'
               onClick={handleUpdateProfile}

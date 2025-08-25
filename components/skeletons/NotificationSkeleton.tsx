@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const NotificationSkeleton = () => {
   return (
-    <div className='py-2.5 px-2'>
+    <div className='py-2.5 pl-3 pr-4'>
       <div className='flex items-start gap-3'>
         <Skeleton className='size-12 rounded-full flex-shrink-0' />
 

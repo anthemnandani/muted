@@ -1,3 +1,5 @@
+import { Privacy } from '@prisma/client';
+
 export const GET_USER = {
   id: true,
   image: true,
@@ -6,6 +8,7 @@ export const GET_USER = {
   bio: true,
   link: true,
   createdAt: true,
+  privacy: true,
   isAdmin: true,
   followers: {
     select: {
@@ -234,3 +237,37 @@ export const getPostRepliesCount = (userId: string) => ({
     },
   },
 });
+
+export const getPrivacyFilter = (userId: string | null) => {
+  if (!userId) {
+    return {
+      author: {
+        privacy: Privacy.PUBLIC,
+      },
+    };
+  }
+
+  return {
+    OR: [
+      {
+        author: {
+          privacy: Privacy.PUBLIC,
+        },
+      },
+      {
+        author: {
+          id: userId,
+        },
+      },
+      {
+        author: {
+          followers: {
+            some: {
+              id: userId,
+            },
+          },
+        },
+      },
+    ],
+  };
+};

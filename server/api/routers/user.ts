@@ -11,7 +11,7 @@ import {
   getPostRepliesCount,
 } from '@/server/constants';
 import { clerkClient } from '@clerk/nextjs/server';
-import { NotificationType } from '@prisma/client';
+import { FollowRequestStatus, NotificationType, Privacy } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '../trpc';
@@ -43,6 +43,12 @@ export const userRouter = createTRPCRouter({
         include: {
           followers: true,
           following: true,
+          receivedFollowRequests: {
+            where: {
+              requesterId: ctx.userId,
+              status: FollowRequestStatus.PENDING,
+            },
+          },
           blockedByUsers: {
             select: {
               blockingUserId: true,
@@ -140,6 +146,7 @@ export const userRouter = createTRPCRouter({
           following: userProfileInfo.following,
           blockedByUsers: userProfileInfo.blockedByUsers,
           blockedUsers: userProfileInfo.blockedUsers,
+          receivedFollowRequests: userProfileInfo.receivedFollowRequests,
           isMuted,
           posts: posts.map((post) => ({
             ...post,
@@ -167,18 +174,31 @@ export const userRouter = createTRPCRouter({
     )
     .query(async ({ input: { username, sortBy }, ctx }) => {
       const user = await ctx.db.user.findUnique({
-        where: { username },
-        include: {
+        where: {
+          username,
+        },
+        select: {
           blockedUsers: {
             select: {
               blockedUserId: true,
             },
           },
+          id: true,
+          privacy: true,
+          followers: { where: { id: ctx.userId } },
         },
       });
 
       if (!user) {
         throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const isPublic = user.privacy === Privacy.PUBLIC;
+      const isOwnProfile = user.id === ctx.userId;
+      const isFollowing = user.followers.length > 0;
+
+      if (!isPublic && !isOwnProfile && !isFollowing) {
+        return [];
       }
 
       const blockedUsers = user.blockedUsers.map(
@@ -388,10 +408,23 @@ export const userRouter = createTRPCRouter({
     .query(async ({ input: { username, limit = 20, cursor }, ctx }) => {
       const user = await ctx.db.user.findUnique({
         where: { username },
+        select: {
+          id: true,
+          privacy: true,
+          followers: { where: { id: ctx.userId } },
+        },
       });
 
       if (!user) {
         throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const isPublic = user.privacy === Privacy.PUBLIC;
+      const isOwnProfile = user.id === ctx.userId;
+      const isFollowing = user.followers.length > 0;
+
+      if (!isPublic && !isOwnProfile && !isFollowing) {
+        return { posts: [], nextCursor: undefined };
       }
 
       const reposts = await ctx.db.repost.findMany({
@@ -627,10 +660,23 @@ export const userRouter = createTRPCRouter({
         where: {
           username,
         },
+        select: {
+          id: true,
+          privacy: true,
+          followers: { where: { id: ctx.userId } },
+        },
       });
 
       if (!user) {
         throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const isPublic = user.privacy === Privacy.PUBLIC;
+      const isOwnProfile = user.id === ctx.userId;
+      const isFollowing = user.followers.length > 0;
+
+      if (!isPublic && !isOwnProfile && !isFollowing) {
+        return { posts: [], nextCursor: undefined };
       }
 
       const likedPosts = await ctx.db.like.findMany({
@@ -956,12 +1002,12 @@ export const userRouter = createTRPCRouter({
         //     }
         //   ),
         bio: z.string().max(150).optional(),
-        privacy: z.enum(['PUBLIC', 'PRIVATE']),
+        // privacy: z.enum(['PUBLIC', 'PRIVATE']),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const { user } = ctx;
-      const { bio, image, privacy } = input;
+      const { bio, image } = input;
       const email = getUserEmail(user);
       const dbUser = await ctx.db.user.findUnique({
         where: {
@@ -983,7 +1029,6 @@ export const userRouter = createTRPCRouter({
         data: {
           image,
           bio,
-          privacy,
         },
       });
 
@@ -1293,116 +1338,88 @@ export const userRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       const { userId } = ctx;
+      const { id: targetUserId } = input;
 
-      const isAlreadyFollowing = await ctx.db.user.findUnique({
+      if (userId === targetUserId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'You cannot follow yourself.',
+        });
+      }
+
+      const targetUser = await ctx.db.user.findUnique({
+        where: { id: targetUserId },
+        select: { privacy: true },
+      });
+
+      if (!targetUser) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found.' });
+      }
+
+      const isFollowing = await ctx.db.user.findFirst({
+        where: { id: userId, following: { some: { id: targetUserId } } },
+      });
+
+      if (isFollowing) {
+        await ctx.db.user.update({
+          where: { id: userId },
+          data: { following: { disconnect: { id: targetUserId } } },
+        });
+        return { status: 'NOT_FOLLOWING' };
+      }
+
+      const existingRequest = await ctx.db.followRequest.findUnique({
         where: {
-          id: userId,
-        },
-        select: {
-          id: true,
-          username: true,
-          following: {
-            where: {
-              id: input.id,
-            },
+          requesterId_receiverId: {
+            requesterId: userId,
+            receiverId: targetUserId,
           },
         },
       });
 
-      if (isAlreadyFollowing?.following.length === 0) {
-        const transactionResult = await ctx.db.$transaction(async (prisma) => {
-          const followUser = await prisma.user.update({
-            where: { id: userId },
-            data: {
-              following: {
-                connect: {
-                  id: input.id,
-                },
-              },
-            },
-            select: {
-              id: true,
-              username: true,
-            },
-          });
+      if (existingRequest?.status === 'PENDING') {
+        await prisma.followRequest.delete({
+          where: { id: existingRequest.id },
+        });
+        return { status: 'NOT_FOLLOWING' };
+      }
 
-          const existingNotification = await prisma.notification.findFirst({
-            where: {
-              senderUserId: userId,
-              receiverUserId: input.id,
+      if (targetUser.privacy === Privacy.PUBLIC) {
+        await ctx.db.$transaction(async (prisma) => {
+          await prisma.user.update({
+            where: { id: userId },
+            data: { following: { connect: { id: targetUserId } } },
+          });
+          await prisma.notification.create({
+            data: {
               type: NotificationType.FOLLOWER,
+              senderUserId: userId,
+              receiverUserId: targetUserId,
+              message: 'started following you',
             },
-            select: { id: true },
           });
-
-          if (existingNotification) {
-            await prisma.notification.update({
-              where: { id: existingNotification.id },
-              data: { createdAt: new Date() },
-            });
-          } else {
-            await prisma.notification.create({
-              data: {
-                type: NotificationType.FOLLOWER,
-                senderUserId: userId,
-                receiverUserId: input.id,
-                message: 'started following you',
-              },
-            });
-          }
-
-          return {
-            followUser,
-          };
         });
-
-        if (!transactionResult) {
-          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
-        }
-
-        return { followUser: true };
+        return { status: 'FOLLOWING' };
       } else {
-        const transactionResult = await ctx.db.$transaction(async (prisma) => {
-          const unfollowUser = await prisma.user.update({
-            where: { id: userId },
+        await ctx.db.$transaction(async (prisma) => {
+          await prisma.followRequest.create({
             data: {
-              following: {
-                disconnect: {
-                  id: input.id,
-                },
-              },
+              requesterId: userId,
+              receiverId: targetUserId,
             },
           });
 
-          // const notification = await prisma.notification.findFirst({
-          //   where: {
-          //     senderUserId: userId,
-          //     receiverUserId: input.id,
-          //     type: 'FOLLOW',
-          //   },
-          //   select: {
-          //     id: true,
-          //   },
-          // });
-
-          // if (notification) {
-          //   await prisma.notification.delete({
-          //     where: {
-          //       id: notification.id,
-          //     },
-          //   });
-          // }
-
-          return {
-            unfollowUser,
-          };
+          await prisma.notification.create({
+            data: {
+              type: NotificationType.FOLLOW_REQUEST,
+              senderUserId: userId,
+              receiverUserId: targetUserId,
+              message: 'requested to follow you.',
+            },
+          });
         });
 
-        if (!transactionResult) {
-          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
-        }
-
-        return { followUser: false };
+        return { status: 'REQUESTED' };
       }
     }),
 
@@ -1540,11 +1557,23 @@ export const userRouter = createTRPCRouter({
     .query(async ({ input: { username, limit = 20, cursor, sortBy }, ctx }) => {
       const user = await ctx.db.user.findUnique({
         where: { username },
-        select: { id: true },
+        select: {
+          id: true,
+          privacy: true,
+          followers: { where: { id: ctx.userId } },
+        },
       });
 
       if (!user) {
         throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const isPublic = user.privacy === Privacy.PUBLIC;
+      const isOwnProfile = user.id === ctx.userId;
+      const isFollowing = user.followers.length > 0;
+
+      if (!isPublic && !isOwnProfile && !isFollowing) {
+        return { followers: [], nextCursor: undefined };
       }
 
       const followers = await ctx.db.user.findMany({
@@ -1595,11 +1624,23 @@ export const userRouter = createTRPCRouter({
     .query(async ({ input: { username, limit = 20, cursor, sortBy }, ctx }) => {
       const user = await ctx.db.user.findUnique({
         where: { username },
-        select: { id: true },
+        select: {
+          id: true,
+          privacy: true,
+          followers: { where: { id: ctx.userId } },
+        },
       });
 
       if (!user) {
         throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const isPublic = user.privacy === Privacy.PUBLIC;
+      const isOwnProfile = user.id === ctx.userId;
+      const isFollowing = user.followers.length > 0;
+
+      if (!isPublic && !isOwnProfile && !isFollowing) {
+        return { following: [], nextCursor: undefined };
       }
 
       const following = await ctx.db.user.findMany({
@@ -1760,4 +1801,92 @@ export const userRouter = createTRPCRouter({
         });
       }
     }),
+
+  setPrivacy: privateProcedure
+    .input(
+      z.object({
+        isPrivate: z.boolean(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { userId } = ctx;
+      const newPrivacyStatus = input.isPrivate
+        ? Privacy.PRIVATE
+        : Privacy.PUBLIC;
+
+      if (newPrivacyStatus === Privacy.PUBLIC) {
+        await ctx.db.$transaction(async (prisma) => {
+          const pendingRequests = await prisma.followRequest.findMany({
+            where: {
+              receiverId: userId,
+              status: FollowRequestStatus.PENDING,
+            },
+            select: {
+              requesterId: true,
+            },
+          });
+
+          if (pendingRequests.length > 0) {
+            const requesterIds = pendingRequests.map((req) => ({
+              id: req.requesterId,
+            }));
+
+            await prisma.user.update({
+              where: { id: userId },
+              data: {
+                privacy: newPrivacyStatus,
+                followers: {
+                  connect: requesterIds,
+                },
+              },
+            });
+
+            await prisma.notification.createMany({
+              data: pendingRequests.map((req) => ({
+                type: NotificationType.FOLLOWER,
+                senderUserId: req.requesterId,
+                receiverUserId: userId,
+                message: 'started following you',
+              })),
+            });
+
+            await prisma.followRequest.deleteMany({
+              where: {
+                receiverId: userId,
+                status: FollowRequestStatus.PENDING,
+              },
+            });
+          } else {
+            await prisma.user.update({
+              where: { id: userId },
+              data: { privacy: newPrivacyStatus },
+            });
+          }
+        });
+      } else {
+        await ctx.db.user.update({
+          where: { id: userId },
+          data: { privacy: newPrivacyStatus },
+        });
+      }
+
+      return { success: true, privacy: newPrivacyStatus };
+    }),
+
+  getMe: privateProcedure.query(async ({ ctx }) => {
+    const user = await ctx.db.user.findUnique({
+      where: {
+        id: ctx.userId,
+      },
+      select: {
+        ...GET_USER,
+      },
+    });
+
+    if (!user) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found.' });
+    }
+
+    return user;
+  }),
 });

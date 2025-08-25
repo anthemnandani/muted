@@ -22,9 +22,19 @@ const BlockedContent = () => (
   />
 );
 
+const PrivateContent = () => (
+  <EmptyState
+    icon={<Icons.userLock className='size-11 text-white/90' />}
+    title='This account is private'
+    description='Follow this account to see their contents and likes.'
+  />
+);
+
 const UserProfileContent: React.FC<UserProfileContentProps> = ({
   posts,
   userId,
+  privacy,
+  isFollower,
   fetchNextPage,
   selectedFilter,
   setSelectedFilter,
@@ -35,6 +45,9 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
   const { user } = useUser();
   const { activeTab, setActiveTab } = useTabStore();
   const isOwner = user?.id === userId;
+
+  const shouldShowPrivateContent =
+    privacy === 'PRIVATE' && !isOwner && !isFollower;
 
   return (
     <div className='flex flex-[1_1_auto] justify-start items-start min-h-[490px] h-full min-w-0 relative'>
@@ -70,6 +83,8 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
           <TabsContent value='posts' className='w-full'>
             {isBlocked ? (
               <BlockedContent />
+            ) : shouldShowPrivateContent ? (
+              <PrivateContent />
             ) : (
               <UserPostsList
                 posts={posts}
@@ -83,6 +98,8 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
           <TabsContent value='reposts' className='w-full'>
             {isBlocked ? (
               <BlockedContent />
+            ) : shouldShowPrivateContent ? (
+              <PrivateContent />
             ) : (
               <UserRepostsList username={username} />
             )}
@@ -91,6 +108,8 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
           <TabsContent value='liked' className='w-full'>
             {isBlocked ? (
               <BlockedContent />
+            ) : shouldShowPrivateContent ? (
+              <PrivateContent />
             ) : (
               <UserLikedPostsList username={username} />
             )}
@@ -99,6 +118,8 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
           <TabsContent value='collections' className='w-full'>
             {isBlocked ? (
               <BlockedContent />
+            ) : shouldShowPrivateContent ? (
+              <PrivateContent />
             ) : (
               <UserCollectionsList username={username} />
             )}

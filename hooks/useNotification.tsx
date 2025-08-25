@@ -3,17 +3,13 @@ import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
 import { useCallback, useEffect } from 'react';
 
-interface UseNotificationReturn {
-  unreadCount: number;
-  isNotificationOpen: boolean;
-  toggleNotificationSidebar: () => void;
-}
-
-const useNotification = (): UseNotificationReturn => {
+const useNotification = () => {
   const { user } = useUser();
   const {
     unreadCount,
     setUnreadCount,
+    followRequestsCount,
+    setFollowRequestsCount,
     isNotificationOpen,
     setIsNotificationOpen,
   } = useNotificationStore();
@@ -21,15 +17,24 @@ const useNotification = (): UseNotificationReturn => {
   const { data: unreadData } = api.notification.getUnreadCount.useQuery(
     undefined,
     {
-      //   refetchInterval: 30000,
       enabled: !!user,
       trpc: { abortOnUnmount: true },
       staleTime: 10 * 60 * 1000,
     }
   );
 
-  const { mutate: markAllAsRead } =
-    api.notification.markAllAsRead.useMutation();
+  const { data: followRequestData } =
+    api.notification.getFollowRequestsCount.useQuery(undefined, {
+      enabled: !!user,
+      trpc: { abortOnUnmount: true },
+      staleTime: 10 * 60 * 1000,
+    });
+
+  const { mutate: markAllAsRead } = api.notification.markAllAsRead.useMutation({
+    onSuccess: () => {
+      setUnreadCount(0);
+    },
+  });
 
   useEffect(() => {
     if (unreadData) {
@@ -37,26 +42,24 @@ const useNotification = (): UseNotificationReturn => {
     }
   }, [unreadData, setUnreadCount]);
 
+  useEffect(() => {
+    if (followRequestData) {
+      setFollowRequestsCount(followRequestData.followRequestsCount);
+    }
+  }, [followRequestData, setFollowRequestsCount]);
+
   const toggleNotificationSidebar = useCallback(() => {
     const newState = !isNotificationOpen;
     setIsNotificationOpen(newState);
 
-    // Todo: Improve this
-    if (newState) {
+    if (newState && unreadCount > 0) {
       markAllAsRead();
-      setTimeout(() => {
-        setUnreadCount(0);
-      }, 2500);
     }
-  }, [
-    isNotificationOpen,
-    setIsNotificationOpen,
-    markAllAsRead,
-    setUnreadCount,
-  ]);
+  }, [isNotificationOpen, setIsNotificationOpen, markAllAsRead, unreadCount]);
 
   return {
     unreadCount,
+    followRequestsCount,
     isNotificationOpen,
     toggleNotificationSidebar,
   };

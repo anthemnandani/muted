@@ -1,9 +1,9 @@
+import { MessageReportCategory } from '@prisma/client';
 import {
   type NotificationTab,
   type ProfileFilter,
   ReportCategories,
 } from './types';
-import { MessageReportCategory } from '@prisma/client';
 
 export const UPLOAD_CONSTRAINTS = {
   MAX_ITEMS: 10,

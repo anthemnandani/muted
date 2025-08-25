@@ -10,6 +10,7 @@ const PostText: React.FC<PostTextProps> = ({
   text,
   className,
   isThreadPost = false,
+  showMore = true,
   mentions,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -18,7 +19,7 @@ const PostText: React.FC<PostTextProps> = ({
 
   if (!text) return null;
 
-  const shouldTruncate = text.length > MAX_LENGTH;
+  const shouldTruncate = text.length > MAX_LENGTH && showMore;
 
   const displayText =
     !isExpanded && shouldTruncate

@@ -90,6 +90,10 @@
     @apply flex items-center justify-around;
   }
 
+  .flex-stretch {
+    @apply flex justify-between items-stretch;
+  }
+
   .flex-col-center {
     @apply flex flex-col items-center justify-center;
   }
@@ -103,7 +107,7 @@
   }
   /* main */
   .main-container {
-    @apply ml-[90px] 2xl:pl-[185px] lg:pl-[160px] w-[calc(100%-90px)] pr-3 max-w-[1800px]  md:pt-8 pb-9 min-h-[calc(1px_+_100vh)];
+    @apply ml-[90px] 2xl:pl-[185px] lg:pl-[160px] w-[calc(100%-90px)] pr-3 max-w-[1800px] md:pt-8 pb-9 min-h-[calc(1px_+_100vh)];
   }
 
   /* Head Text */
@@ -226,6 +230,10 @@
 
   .create-post-tab {
     @apply flex items-center gap-2 px-4 py-2.5 font-medium transition-all duration-200 rounded-lg text-white/50 data-[state=active]:bg-white/10 data-[state=active]:text-white/90 data-[state=active]:shadow-lg;
+  }
+
+  .custom-separator {
+    @apply relative h-[17px] after:absolute after:left-0 after:top-4 after:block after:h-px after:w-[200%] after:origin-left after:scale-50 after:bg-white/20 after:content-[""];
   }
 }
 

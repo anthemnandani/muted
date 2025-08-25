@@ -25,7 +25,6 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
     fullName,
     image,
     username,
-    privacy,
     followers,
     following,
     totalLikes,
@@ -73,14 +72,11 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
         <div className='flex items-center gap-3'>
           {user?.id === id && (
             <Fragment>
-              <EditProfile
-                userBio={bio || ''}
-                userImage={image || ''}
-                userPrivacy={privacy as Privacy}
-              />
+              <EditProfile userBio={bio || ''} userImage={image || ''} />
               <Button
                 size='icon'
                 className='size-10 bg-white-13 hover:bg-white/20 rounded-md transition-colors duration-200'
+                onClick={() => router.push('/setting')}
               >
                 <Settings className='size-5 text-neutral-50' />
               </Button>

@@ -8,20 +8,34 @@ import FollowButton from '../buttons/FollowButton';
 import Username from '../user/Username';
 
 const UserCard: React.FC<UserCardProps> = (props) => {
-  const { username, fullName, image, bio, followers, isLastUser, showDetails } =
-    props;
-
-  const authorProps = {
-    id: props.id,
-    image,
-    createdAt: props.createdAt,
+  const {
+    id,
+    privacy,
+    createdAt,
+    isAdmin,
+    link,
+    following,
     username,
     fullName,
-    isAdmin: props.isAdmin,
-    link: props.link,
+    image,
     bio,
     followers,
-    following: props.following,
+    isLastUser,
+    showDetails,
+  } = props;
+
+  const authorProps = {
+    id,
+    image,
+    createdAt,
+    username,
+    fullName,
+    isAdmin,
+    link,
+    bio,
+    followers,
+    following,
+    privacy,
   };
 
   return (

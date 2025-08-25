@@ -13,8 +13,8 @@ const CommentNotifications = () => {
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         trpc: { abortOnUnmount: true },
-        staleTime: 0,
-        cacheTime: 0,
+        // staleTime: 0,
+        // cacheTime: 0,
         refetchOnWindowFocus: false,
       }
     );

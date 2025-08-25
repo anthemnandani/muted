@@ -22,24 +22,22 @@ const NotificationSidebar = () => {
       setIsOpen={() => toggleNotificationSidebar()}
       title='Notifications'
     >
-      <div className='flex flex-col h-screen'>
-        <div className='flex flex-wrap items-center w-full gap-2 sm:gap-3 px-4 py-2'>
-          {NOTIFICATION_FILTERS.map((filter) => (
-            <NotificationButton
-              key={filter.id}
-              id={filter.id}
-              btnTitle={filter.label}
-            />
-          ))}
-        </div>
-        <ScrollArea className='flex-1 mt-3'>
-          {activeTab === 'all' && <AllNotifications />}
-          {activeTab === 'likes' && <LikeNotifications />}
-          {activeTab === 'comments' && <CommentNotifications />}
-          {activeTab === 'mentions' && <MentionNotifications />}
-          {activeTab === 'followers' && <FollowerNotifications />}
-        </ScrollArea>
+      <div className='flex flex-wrap items-center w-full gap-2 sm:gap-3 px-4 py-2'>
+        {NOTIFICATION_FILTERS.map((filter) => (
+          <NotificationButton
+            key={filter.id}
+            id={filter.id}
+            btnTitle={filter.label}
+          />
+        ))}
       </div>
+      <ScrollArea className='flex-1 mt-3'>
+        {activeTab === 'all' && <AllNotifications />}
+        {activeTab === 'likes' && <LikeNotifications />}
+        {activeTab === 'comments' && <CommentNotifications />}
+        {activeTab === 'mentions' && <MentionNotifications />}
+        {activeTab === 'followers' && <FollowerNotifications />}
+      </ScrollArea>
     </SidebarWrapper>
   );
 };

@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import Link from 'next/link';
 
 const UserProfile = ({ author }: { author: AuthorInfoProps }) => {
-  const { handleToggleFollow, isLoading, isSameUser, isFollowedByMe } =
+  const { handleToggleFollow, isLoading, isSameUser, followStatus } =
     useFollowUser({ author });
 
   return (
@@ -31,7 +31,7 @@ const UserProfile = ({ author }: { author: AuthorInfoProps }) => {
           disabled={isLoading || isSameUser}
           className='absolute -bottom-2 left-1/2 -translate-x-1/2'
         >
-          {isFollowedByMe ? (
+          {followStatus === 'FOLLOWING' ? (
             <div className='bg-black rounded-2xl cursor-pointer hover:scale-105 active:scale-95'>
               <Check className='size-[22px] p-0.5 text-primary-red' />
             </div>

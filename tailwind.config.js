@@ -108,6 +108,7 @@ module.exports = {
         'count-badge': '0px 0px 6px 2px rgba(219, 188, 159, 0.30)',
         'groups-sidebar': '-30px 0px 60px 0px rgba(28, 28, 31, 0.50)',
         'items-dropdown': '0 0 0 1px rgba(0, 0, 0, 0.08)',
+        'setting-panel': '0px 2px 8px rgba(0, 0, 0, 0.06)',
       },
       dropShadow: {
         main: [

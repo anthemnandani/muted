@@ -36,20 +36,28 @@ const ProfileClient = ({ username }: { username: string }) => {
 
   const userDetails = data?.pages.flatMap((page) => page.userDetails);
 
+  const profileDetails = useMemo(() => userDetails?.[0], [userDetails]);
+
   const isBlockedByMe = useMemo(
     () =>
-      userDetails?.[0].blockedByUsers?.some(
+      profileDetails?.blockedByUsers?.some(
         (blockedUser) => blockedUser.blockingUserId === user?.id
       ),
-    [userDetails, user]
+    [profileDetails, user]
   );
 
   const hasBlockedMe = useMemo(
     () =>
-      userDetails?.[0].blockedUsers?.some(
+      profileDetails?.blockedUsers?.some(
         (blockedUser) => blockedUser.blockedUserId === user?.id
       ),
-    [userDetails, user]
+    [profileDetails, user]
+  );
+
+  const isFollower = useMemo(
+    () =>
+      profileDetails?.followers?.some((follower) => follower.id === user?.id),
+    [profileDetails, user]
   );
 
   if (isLoading)
@@ -65,7 +73,7 @@ const ProfileClient = ({ username }: { username: string }) => {
   if (hasBlockedMe) return <BlockedUserContent />;
 
   const enhancedUserDetails = {
-    ...userDetails![0],
+    ...profileDetails!,
     isBlocked: isBlockedByMe ?? false,
   };
 
@@ -76,7 +84,9 @@ const ProfileClient = ({ username }: { username: string }) => {
         <UserProfileContent
           username={username}
           posts={allPosts!}
-          userId={userDetails![0].id}
+          userId={profileDetails!.id}
+          privacy={profileDetails!.privacy}
+          isFollower={isFollower}
           fetchNextPage={fetchNextPage}
           hasNextPage={hasNextPage}
           selectedFilter={selectedFilter}

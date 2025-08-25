@@ -18,7 +18,7 @@ const EmptyState = ({
         className={cn(
           isNotification
             ? 'size-[70px]'
-            : 'size-[92px] rounded-full bg-zinc-800'
+            : 'size-[92px] rounded-full bg-zinc-800 flex-center'
         )}
       >
         {icon}

@@ -9,6 +9,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import FollowButton from '../buttons/FollowButton';
+import PostText from '../shared/PostText';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 const NotificationCard = ({
@@ -51,7 +52,7 @@ const NotificationCard = ({
       )}
       onClick={handleClick}
     >
-      <div className='flex items-start py-2.5 px-2'>
+      <div className='flex items-start py-2.5 pl-3 pr-4'>
         <Avatar className='size-12 rounded-full object-cover flex-[0_0_48px]'>
           <AvatarImage
             src={sender.image ?? ''}
@@ -73,9 +74,11 @@ const NotificationCard = ({
           {type === NotificationType.COMMENT ||
           type === NotificationType.MENTION ? (
             <div className='flex flex-col'>
-              <p className='text-white/90 text-sm leading-[18px] max-h-[130px] line-clamp-6 break-all'>
-                {message}
-              </p>
+              <PostText
+                className='leading-[18px] max-h-[130px] line-clamp-6'
+                text={message}
+                showMore={false}
+              />
               <span className='text-white/50 text-sm mt-1'>
                 {formatTimeAgo(createdAt)}
               </span>
@@ -97,7 +100,7 @@ const NotificationCard = ({
             size='sm'
             variant='default'
             className={cn(
-              'border-none !text-white/90 bg-blue !h-7',
+              'border-none !text-white/90 !bg-primary-blue !h-7',
               'flex-[0_0_auto] font-semibold !px-2 !py-1.5 !text-xs'
             )}
             isNotification

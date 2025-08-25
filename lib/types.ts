@@ -2,6 +2,7 @@ import type { AppRouter } from '@/server/api/root';
 import type { GifID, IGif } from '@giphy/js-types';
 import type {
   CollectionPrivacy,
+  FollowRequestStatus,
   MessageReportCategory,
   MessageRequestStatus,
   MessageStatus,
@@ -11,7 +12,7 @@ import type {
 import { PostPrivacy, Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
 import { LucideIcon } from 'lucide-react';
-import { ReactNode } from 'react';
+import { ReactNode, RefObject } from 'react';
 import { DropzoneInputProps, DropzoneRootProps } from 'react-dropzone';
 import Player from 'video.js/dist/types/player';
 
@@ -64,6 +65,7 @@ export type UserProfileInfoProps = {
   privacy: Privacy;
   createdAt: Date;
   isAdmin: boolean | null;
+  receivedFollowRequests: FollowRequest[];
   followers: {
     id: string;
     username: string;
@@ -101,9 +103,20 @@ export interface UserPostsListProps {
   collectionId?: string | null;
 }
 
+export type FollowRequest = {
+  id: string;
+  requesterId: string;
+  receiverId: string;
+  status: FollowRequestStatus;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export interface UserProfileContentProps extends UserPostsListProps {
   userId: string;
   username: string;
+  isFollower?: boolean;
+  privacy?: Privacy;
   selectedFilter: ProfileFilter;
   setSelectedFilter: (filter: ProfileFilter) => void;
   isBlocked: boolean;
@@ -122,7 +135,9 @@ export type IconProps =
   | React.HTMLAttributes<SVGElement>
   | React.SVGProps<SVGSVGElement>;
 
-export type AuthorInfoProps = PostProps['author'];
+export type AuthorInfoProps = PostProps['author'] & {
+  receivedFollowRequests?: FollowRequest[];
+};
 
 export interface AppearanceMenuProps {
   theme: string;
@@ -242,7 +257,6 @@ export interface PostsListProps {
 export interface EditProfileProps {
   userBio: string;
   userImage: string;
-  userPrivacy: Privacy;
 }
 
 export interface PostActionsProps {
@@ -1089,6 +1103,7 @@ export interface PostTextProps {
   className?: string;
   isThreadPost?: boolean;
   mentions?: Mention[];
+  showMore?: boolean;
 }
 
 export type ValidMention = {
@@ -1119,4 +1134,57 @@ export interface UserPostThreadCardProps {
 export interface UseTimeLeftProps {
   createdAt: Date | string;
   durationInMinutes?: number;
+}
+
+export type SectionRefsType = {
+  'manage-account': RefObject<HTMLDivElement>;
+  privacy: RefObject<HTMLDivElement>;
+  'push-notifications': RefObject<HTMLDivElement>;
+  'content-preferences': RefObject<HTMLDivElement>;
+  about: RefObject<HTMLDivElement>;
+};
+
+export interface PrivacySectionProps {
+  sectionRef: React.RefObject<HTMLDivElement>;
+  user?: AuthorInfoProps;
+}
+
+export interface SettingRowProps {
+  title: string;
+  description?: string;
+  control: React.ReactNode;
+  onClick?: () => void;
+  isButton?: boolean;
+  border?: boolean;
+  className?: string;
+}
+
+export interface SettingSectionProps {
+  id: string;
+  sectionRef: React.RefObject<HTMLDivElement>;
+  title: string;
+  children: React.ReactNode;
+}
+
+export interface SettingPanelProps {
+  sectionRefs: SectionRefsType;
+  user?: AuthorInfoProps;
+}
+
+export type FollowStatus = 'FOLLOWING' | 'REQUESTED' | 'NOT_FOLLOWING';
+
+export interface FollowButtonProps
+  extends React.HTMLAttributes<HTMLDivElement> {
+  variant: 'default' | 'outline' | 'destructive';
+  author: AuthorInfoProps;
+  size: 'default' | 'sm' | 'lg' | 'icon';
+  isNotification?: boolean;
+}
+
+export interface FollowRequestCardProps {
+  id: string;
+  username: string;
+  image: string;
+  fullName: string;
+  isLast: boolean;
 }
