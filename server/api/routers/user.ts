@@ -1378,7 +1378,7 @@ export const userRouter = createTRPCRouter({
       });
 
       if (existingRequest?.status === 'PENDING') {
-        await prisma.followRequest.delete({
+        await ctx.db.followRequest.delete({
           where: { id: existingRequest.id },
         });
         return { status: 'NOT_FOLLOWING' };
