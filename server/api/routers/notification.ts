@@ -477,8 +477,6 @@ export const notificationRouter = createTRPCRouter({
         where: { id: requestId },
       });
 
-      console.log(request);
-
       if (
         !request ||
         request.receiverId !== userId ||
@@ -534,7 +532,7 @@ export const notificationRouter = createTRPCRouter({
         throw new TRPCError({ code: 'FORBIDDEN' });
       }
 
-      await prisma.followRequest.delete({ where: { id: requestId } });
+      await ctx.db.followRequest.delete({ where: { id: requestId } });
 
       return { success: true };
     }),
