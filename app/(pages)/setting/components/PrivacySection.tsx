@@ -117,6 +117,22 @@ const PrivacySection: React.FC<PrivacySectionProps> = ({
             />
           </Link>
         )}
+        {initialUser?.mutedUsers && initialUser.mutedUsers.length > 0 && (
+          <Link
+            className='block py-4 border-b border-b-white/15'
+            href='/setting/mute-list'
+          >
+            <SettingRow
+              title='Muted accounts'
+              control={
+                <Icons.chevronRight
+                  style={{ fill: '#fff', fillOpacity: '0.34' }}
+                />
+              }
+              isButton
+            />
+          </Link>
+        )}
         <h3 className='text-lg font-medium text-white/90 mx-4 my-3 antialiased'>
           Data
         </h3>

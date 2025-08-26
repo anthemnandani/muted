@@ -6,7 +6,7 @@ const useToggleMuteUser = ({ userId }: { userId: string }) => {
   const { muteUser, unmuteUser } = useMutedUsers();
   const trpcUtils = api.useUtils();
 
-  const { mutateAsync: toggleMuteUser, isLoading } =
+  const { mutate: toggleMuteUser, isLoading } =
     api.user.toggleMuteUser.useMutation({
       onMutate: () => {
         const isCurrentlyMuted = useMutedUsers.getState().isMutedUser(userId);
@@ -15,9 +15,12 @@ const useToggleMuteUser = ({ userId }: { userId: string }) => {
       onError: () => {
         toast.error('Something went wrong!');
       },
-      onSuccess: async (data) => {
-        await trpcUtils.user.userInfo.invalidate();
+      onSuccess: (data) => {
         toast.success(data?.muted ? 'Muted' : 'Unmuted');
+      },
+      onSettled: () => {
+        trpcUtils.user.userInfo.invalidate();
+        trpcUtils.user.getMutedUsers.invalidate();
       },
     });
 

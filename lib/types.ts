@@ -1192,8 +1192,8 @@ export interface FollowRequestCardProps {
   isLast: boolean;
 }
 
-export type BlockedUser = {
-  id: string;
+export type BlockedOrMutedUser = {
+  id?: string;
   image: string | null;
   username: string | null;
   fullName: string | null;
@@ -1201,8 +1201,21 @@ export type BlockedUser = {
   followersCount: number;
 };
 
+export interface UserAccountCardProps extends BlockedOrMutedUser {
+  isLoading: boolean;
+  btnTitle: string;
+  onClick: () => void;
+}
+
 export interface BlockListProps {
-  allBlockedUsers: BlockedUser[] | undefined;
+  allBlockedUsers: BlockedOrMutedUser[] | undefined;
+  isError: boolean;
+  hasNextPage: boolean;
+  fetchNextPage: () => void;
+}
+
+export interface MuteListProps {
+  allMutedUsers: BlockedOrMutedUser[] | undefined;
   isError: boolean;
   hasNextPage: boolean;
   fetchNextPage: () => void;

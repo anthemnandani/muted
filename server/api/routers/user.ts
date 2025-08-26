@@ -1881,6 +1881,7 @@ export const userRouter = createTRPCRouter({
       select: {
         ...GET_USER,
         blockedUsers: true,
+        mutedUsers: true,
       },
     });
 
@@ -1959,6 +1960,78 @@ export const userRouter = createTRPCRouter({
 
       return {
         blockedUsers: formattedBlockedUsers,
+        nextCursor,
+      };
+    }),
+
+  getMutedUsers: privateProcedure
+    .input(
+      z.object({
+        limit: z.number().optional(),
+        cursor: z
+          .object({
+            mutedUserId: z.string(),
+            mutedByUserId: z.string(),
+          })
+          .optional(),
+      })
+    )
+    .query(async ({ input: { limit = 20, cursor }, ctx }) => {
+      if (!ctx.userId) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const mutedUsers = await ctx.db.mutedUser.findMany({
+        where: {
+          mutedByUserId: ctx.userId,
+        },
+        cursor: cursor
+          ? {
+              mutedUserId_mutedByUserId: {
+                mutedUserId: cursor.mutedUserId,
+                mutedByUserId: ctx.userId,
+              },
+            }
+          : undefined,
+        take: limit + 1,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          mutedUser: {
+            select: {
+              id: true,
+              image: true,
+              username: true,
+              fullName: true,
+              bio: true,
+              followers: {
+                select: { id: true },
+              },
+            },
+          },
+        },
+      });
+
+      const formattedMutedUsers = mutedUsers.map((user) => ({
+        id: user.mutedUser.id,
+        image: user.mutedUser.image,
+        username: user.mutedUser.username,
+        fullName: user.mutedUser.fullName,
+        bio: user.mutedUser.bio,
+        followersCount: user.mutedUser.followers.length,
+      }));
+
+      let nextCursor: typeof cursor | undefined;
+      if (formattedMutedUsers.length > limit) {
+        const nextItem = formattedMutedUsers[limit];
+        nextCursor = {
+          mutedUserId: nextItem.id,
+          mutedByUserId: ctx.userId,
+        };
+        formattedMutedUsers.length = limit;
+      }
+
+      return {
+        mutedUsers: formattedMutedUsers,
         nextCursor,
       };
     }),
