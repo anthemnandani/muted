@@ -9,6 +9,7 @@ interface BlockedUsersState {
   removeBlockedUser: (userId: string) => void;
   setIsOpen: (isOpen: boolean) => void;
   setIsLoading: (isLoading: boolean) => void;
+  setInitialBlockedUsers: (userIds: string[]) => void;
 }
 
 export const useBlockedUsers = create<BlockedUsersState>((set, get) => ({
@@ -26,4 +27,5 @@ export const useBlockedUsers = create<BlockedUsersState>((set, get) => ({
     })),
   setIsOpen: (isOpen: boolean) => set({ isOpen }),
   setIsLoading: (isLoading: boolean) => set({ isLoading }),
+  setInitialBlockedUsers: (userIds: string[]) => set({ blockedUsers: userIds }),
 }));

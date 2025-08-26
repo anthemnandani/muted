@@ -29,13 +29,16 @@ const useToggleBlockUser = ({
         return { previousBlockedByMe: isBlockedByMe };
       },
       onSuccess: async (data) => {
-        await trpcUtils.user.userInfo.invalidate();
         if (data.blocked) {
           addBlockedUser(userId);
         } else {
           removeBlockedUser(userId);
         }
         setIsLoading(false);
+      },
+      onSettled: async () => {
+        await trpcUtils.user.userInfo.invalidate();
+        await trpcUtils.user.getBlockedUsers.invalidate();
       },
       onError: (error) => {
         setIsLoading(false);

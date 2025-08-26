@@ -1880,6 +1880,7 @@ export const userRouter = createTRPCRouter({
       },
       select: {
         ...GET_USER,
+        blockedUsers: true,
       },
     });
 
@@ -1889,4 +1890,76 @@ export const userRouter = createTRPCRouter({
 
     return user;
   }),
+
+  getBlockedUsers: privateProcedure
+    .input(
+      z.object({
+        limit: z.number().optional(),
+        cursor: z
+          .object({
+            blockedUserId: z.string(),
+            blockingUserId: z.string(),
+          })
+          .optional(),
+      })
+    )
+    .query(async ({ input: { limit = 20, cursor }, ctx }) => {
+      if (!ctx.userId) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const blockedUsers = await ctx.db.blockedUser.findMany({
+        where: {
+          blockingUserId: ctx.userId,
+        },
+        cursor: cursor
+          ? {
+              blockedUserId_blockingUserId: {
+                blockedUserId: cursor.blockedUserId,
+                blockingUserId: ctx.userId,
+              },
+            }
+          : undefined,
+        take: limit + 1,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          blockedUser: {
+            select: {
+              id: true,
+              image: true,
+              username: true,
+              fullName: true,
+              bio: true,
+              followers: {
+                select: { id: true },
+              },
+            },
+          },
+        },
+      });
+
+      const formattedBlockedUsers = blockedUsers.map((user) => ({
+        id: user.blockedUser.id,
+        image: user.blockedUser.image,
+        username: user.blockedUser.username,
+        fullName: user.blockedUser.fullName,
+        bio: user.blockedUser.bio,
+        followersCount: user.blockedUser.followers.length,
+      }));
+
+      let nextCursor: typeof cursor | undefined;
+      if (formattedBlockedUsers.length > limit) {
+        const nextItem = formattedBlockedUsers[limit];
+        nextCursor = {
+          blockedUserId: nextItem.id,
+          blockingUserId: ctx.userId,
+        };
+        formattedBlockedUsers.length = limit;
+      }
+
+      return {
+        blockedUsers: formattedBlockedUsers,
+        nextCursor,
+      };
+    }),
 });

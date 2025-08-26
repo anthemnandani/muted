@@ -19,21 +19,17 @@ const FollowRequestCard: React.FC<FollowRequestCardProps> = ({
 }) => {
   const router = useRouter();
   const trpcUtils = api.useUtils();
-  // Assuming your store's setMode handles 'ALL' and 'FOLLOW_REQUESTS'
   const { setMode } = useNotificationStore();
 
   const handleOptimisticUpdate = () => {
-    // 1. Cancel any outgoing refetches to prevent them from overwriting our optimistic update.
     trpcUtils.notification.getFollowRequests.cancel();
     trpcUtils.notification.getFollowRequestsCount.cancel();
 
-    // 2. Snapshot the previous values
     const previousRequests =
       trpcUtils.notification.getFollowRequests.getInfiniteData();
     const previousCount =
       trpcUtils.notification.getFollowRequestsCount.getData();
 
-    // 3. Optimistically remove the request from the list
     trpcUtils.notification.getFollowRequests.setInfiniteData({}, (oldData) => {
       if (!oldData) return;
       return {
@@ -45,17 +41,14 @@ const FollowRequestCard: React.FC<FollowRequestCardProps> = ({
       };
     });
 
-    // 4. Optimistically decrement the follow request count
     if (previousCount) {
       trpcUtils.notification.getFollowRequestsCount.setData(undefined, {
         followRequestsCount: Math.max(0, previousCount.followRequestsCount - 1),
       });
     }
 
-    // 5. Immediately switch the view back to "All Notifications"
     setMode('ALL');
 
-    // 6. Return a context object with the snapshotted values
     return { previousRequests, previousCount };
   };
 
@@ -64,7 +57,6 @@ const FollowRequestCard: React.FC<FollowRequestCardProps> = ({
     errorMessage: string
   ) => {
     toast.error(errorMessage);
-    // If the mutation fails, use the context returned from onMutate to roll back
     if (context?.previousRequests) {
       trpcUtils.notification.getFollowRequests.setInfiniteData(
         {},
@@ -86,7 +78,6 @@ const FollowRequestCard: React.FC<FollowRequestCardProps> = ({
         handleMutationError(context, 'Failed to accept request.');
       },
       onSettled: () => {
-        // Invalidate queries to re-sync with the server
         trpcUtils.notification.getFollowRequests.invalidate();
         trpcUtils.notification.getFollowRequestsCount.invalidate();
         trpcUtils.notification.getNotifications.invalidate();

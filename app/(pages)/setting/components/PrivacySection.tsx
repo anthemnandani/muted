@@ -7,6 +7,7 @@ import { Fragment, useState } from 'react';
 import { toast } from 'sonner';
 import SettingRow from './SettingRow';
 import SettingSection from './SettingSection';
+import Link from 'next/link';
 
 const PrivacySection: React.FC<PrivacySectionProps> = ({
   sectionRef,
@@ -100,6 +101,22 @@ const PrivacySection: React.FC<PrivacySectionProps> = ({
           border
           className='mb-5'
         />
+        {initialUser?.blockedUsers && initialUser.blockedUsers.length > 0 && (
+          <Link
+            className='block py-4 border-b border-b-white/15'
+            href='/setting/block-list'
+          >
+            <SettingRow
+              title='Blocked accounts'
+              control={
+                <Icons.chevronRight
+                  style={{ fill: '#fff', fillOpacity: '0.34' }}
+                />
+              }
+              isButton
+            />
+          </Link>
+        )}
         <h3 className='text-lg font-medium text-white/90 mx-4 my-3 antialiased'>
           Data
         </h3>

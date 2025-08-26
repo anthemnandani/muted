@@ -1,4 +1,3 @@
-import React from 'react';
 import SettingClient from './SettingClient';
 
 export const metadata = {
