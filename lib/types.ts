@@ -1136,17 +1136,20 @@ export interface UseTimeLeftProps {
   durationInMinutes?: number;
 }
 
-export type SectionRefsType = {
-  'manage-account': RefObject<HTMLDivElement>;
-  privacy: RefObject<HTMLDivElement>;
-  'push-notifications': RefObject<HTMLDivElement>;
-  'content-preferences': RefObject<HTMLDivElement>;
-  about: RefObject<HTMLDivElement>;
+export type SectionRefs = {
+  [key: string]: RefObject<HTMLDivElement>;
 };
+
+export interface SettingsLayoutProps {
+  sectionRefs: SectionRefs;
+  children: React.ReactNode;
+  isLoading?: boolean;
+  isBlockOrMutePage?: boolean;
+}
 
 export interface PrivacySectionProps {
   sectionRef: React.RefObject<HTMLDivElement>;
-  user?: AuthorInfoProps;
+  user?: RouterOutput['user']['getMe'];
 }
 
 export interface SettingRowProps {
@@ -1167,8 +1170,8 @@ export interface SettingSectionProps {
 }
 
 export interface SettingPanelProps {
-  sectionRefs: SectionRefsType;
-  user?: AuthorInfoProps;
+  sectionRefs: SectionRefs;
+  user?: RouterOutput['user']['getMe'];
 }
 
 export type FollowStatus = 'FOLLOWING' | 'REQUESTED' | 'NOT_FOLLOWING';
@@ -1187,4 +1190,20 @@ export interface FollowRequestCardProps {
   image: string;
   fullName: string;
   isLast: boolean;
+}
+
+export type BlockedUser = {
+  id: string;
+  image: string | null;
+  username: string | null;
+  fullName: string | null;
+  bio: string | null;
+  followersCount: number;
+};
+
+export interface BlockListProps {
+  allBlockedUsers: BlockedUser[] | undefined;
+  isError: boolean;
+  hasNextPage: boolean;
+  fetchNextPage: () => void;
 }

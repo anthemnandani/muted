@@ -1,7 +1,8 @@
 import { Icons } from '@/components/icons';
-import type { SectionRefsType } from '@/lib/types';
+import type { SectionRefs } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Bell, Info, LockKeyhole, Video } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 const SETTING_ITEMS = [
@@ -37,22 +38,29 @@ const SETTING_ITEMS = [
   },
 ];
 
-const SettingSidebar = ({ sectionRefs }: { sectionRefs: SectionRefsType }) => {
+const SettingSidebar = ({ sectionRefs }: { sectionRefs: SectionRefs }) => {
   const [isActive, setIsActive] = useState(0);
+
+  const router = useRouter();
+  const pathname = usePathname();
 
   const handleItemClick = (
     sectionId: keyof typeof sectionRefs,
     index: number
   ) => {
-    setIsActive(index);
-    sectionRefs[sectionId].current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    });
+    if (pathname === '/setting') {
+      setIsActive(index);
+      sectionRefs[sectionId].current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    } else {
+      router.push('/setting');
+    }
   };
 
   return (
-    <div className='relative flex-[0_0_356px] h-full'>
+    <div className='relative flex-[0_0_356px] h-full max-md:hidden'>
       <div
         className={cn(
           'w-[356px] pb-4 px-0 bg-gray-6 shadow-setting-panel rounded-t-lg',
