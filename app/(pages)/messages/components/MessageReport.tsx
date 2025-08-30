@@ -71,6 +71,7 @@ const MessageReport = ({
                 type='button'
                 className='rounded-full p-1 hover:bg-zinc-800'
                 onClick={closeReport}
+                title='Close'
               >
                 <X className='size-6 text-white/90 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-none' />
               </button>
@@ -104,7 +105,7 @@ const MessageReport = ({
                   className={cn(
                     'select-none relative min-w-[164px] min-h-9 rounded-md text-lg',
                     'leading-[25px] flex-center bg-white-8 hover:bg-white-8 text-white/90 px-2 py-1.5',
-                    'box-border font-semibold'
+                    'font-semibold'
                   )}
                 >
                   Cancel
@@ -112,7 +113,7 @@ const MessageReport = ({
                 <Button
                   className={cn(
                     'select-none relative min-w-[164px] min-h-9 rounded-md text-lg leading-[25px]',
-                    'flex-center text-white/90 px-2 py-1.5 box-border font-semibold disabled:text-white/35',
+                    'flex-center text-white/90 px-2 py-1.5 font-semibold disabled:text-white/35',
                     'disabled:pointer-events-none disabled:bg-white-8 disabled:hover:bg-white-8',
                     'bg-primary-blue hover:bg-primary-blue'
                   )}

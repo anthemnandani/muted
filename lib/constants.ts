@@ -891,3 +891,18 @@ export const MESSAGE_REPORT_CATEGORIES = [
     label: 'Other',
   },
 ] as const;
+
+export const DELETE_USER_POINTS = [
+  {
+    id: 1,
+    text: 'You won’t be able to log in and use any Muted services with that account.',
+  },
+  {
+    id: 2,
+    text: 'You will lose access to all your videos.',
+  },
+  {
+    id: 3,
+    text: "Information that isn't stored in your account, such as direct messages, may still be visible to others.",
+  },
+];

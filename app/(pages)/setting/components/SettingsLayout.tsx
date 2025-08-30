@@ -41,7 +41,7 @@ const SettingsLayout = ({
                 id='scrollableDiv'
                 className={cn(
                   'bg-gray-6 shadow-setting-panel rounded-t-lg flex-[0_0_728px]',
-                  'box-border pt-4 pb-6 px-6 overflow-y-auto hide-scrollbar'
+                  'pt-4 pb-6 px-6 overflow-y-auto hide-scrollbar'
                 )}
               >
                 {children}

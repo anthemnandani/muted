@@ -155,7 +155,7 @@ const Report = () => {
             <div className='absolute bottom-0 left-0 right-0 px-5 py-6 bg-[#121212] border-t border-border-light'>
               <div className='w-full flex justify-end'>
                 <Button
-                  className='bg-primary-red hover:bg-primary-red/90 text-white px-4 py-2 rounded-md border-none text-base'
+                  className='bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md border-none text-base'
                   onClick={handleSubmitReport}
                   disabled={loading || !shouldEnableSubmit()}
                 >

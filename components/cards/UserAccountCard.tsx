@@ -44,7 +44,7 @@ const UserAccountCard = ({
           type='button'
           variant='ghost'
           className={cn(
-            'box-border min-h-7 min-w-[76px] text-base font-semibold',
+            'min-h-7 min-w-[76px] text-base font-semibold',
             'bg-white-8 tex-white/90 py-1.5 px-4 rounded-[4px]'
           )}
           disabled={isLoading}

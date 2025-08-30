@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    config.resolve.alias['handlebars'] = 'handlebars/dist/handlebars.js';
+    return config;
+  },
   experimental: {
     serverComponentsExternalPackages: ['mongoose'],
   },

@@ -20,6 +20,10 @@ model User {
   email                    String            @unique
   verified                 Boolean?          @default(false)
   privacy                  Privacy           @default(PUBLIC)
+  deactivated              Boolean?          @default(false)
+  deactivatedAt            DateTime?
+  deletionOtp              String?
+  deletionOtpExpiresAt     DateTime?
   followers                User[]            @relation(name: "followers")
   following                User[]            @relation(name: "followers")
   posts                    Post[]

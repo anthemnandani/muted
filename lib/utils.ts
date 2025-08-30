@@ -622,3 +622,29 @@ export const formatMessageDateSeparator = (date: Date) => {
     return format(date, 'MMM d, yyyy • h:mm a');
   }
 };
+
+export const formatEmail = (email: string): string => {
+  const atIndex = email.indexOf('@');
+
+  if (atIndex < 1) {
+    return email;
+  }
+
+  const localPart = email.substring(0, atIndex);
+  const domain = email.substring(atIndex);
+
+  if (localPart.length <= 2) {
+    return `${localPart.charAt(0)}**${domain}`;
+  }
+
+  const firstChar = localPart.charAt(0);
+  const lastChar = localPart.charAt(localPart.length - 1);
+
+  const formattedEmail = `${firstChar}**${lastChar}${domain}`;
+
+  return formattedEmail;
+};
+
+export const getOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000);
+};

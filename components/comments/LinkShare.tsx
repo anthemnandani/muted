@@ -7,7 +7,7 @@ const LinkShare: React.FC<{ url: string }> = ({ url }) => {
   };
 
   return (
-    <div className='text-[14px] leading-[18px] flex text-white/75 box-border border border-white/0 overflow-hidden rounded-lg'>
+    <div className='text-[14px] leading-[18px] flex text-white/75 border border-white/0 overflow-hidden rounded-lg'>
       <p className='text-ellipsis overflow-hidden whitespace-nowrap flex-[1_1_auto] p-[7px_0px_5px_12px] bg-white-12'>
         {url}
       </p>

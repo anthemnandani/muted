@@ -1220,3 +1220,10 @@ export interface MuteListProps {
   hasNextPage: boolean;
   fetchNextPage: () => void;
 }
+
+export interface DeleteUserFooterProps {
+  btnTitle: string;
+  onClick: () => void;
+  isLoading?: boolean;
+  onCancel?: () => void;
+}
