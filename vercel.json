@@ -3,5 +3,11 @@
     "app/api/**/*": {
       "maxDuration": 300
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/deleteInactiveUsers",
+      "schedule": "0 0 * * *"
+    }
+  ]
 }

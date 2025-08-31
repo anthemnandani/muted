@@ -90,7 +90,7 @@ const ChatListItem: FC<ChatListItemParams> = ({
             >
               {lastMessage ? (
                 <Fragment>
-                  {lastMessage.sender.id === user?.id && (
+                  {lastMessage.sender?.id === user?.id && (
                     <span className='text-white/75'>You: </span>
                   )}
                   {lastMessage.content}
