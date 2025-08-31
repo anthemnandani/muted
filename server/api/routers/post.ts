@@ -266,6 +266,7 @@ export const postRouter = createTRPCRouter({
             },
             {
               author: {
+                deactivated: false,
                 mutedByUsers: {
                   none: {
                     mutedByUserId: ctx.userId,
@@ -322,6 +323,7 @@ export const postRouter = createTRPCRouter({
               ...GET_REPOSTS,
               where: {
                 user: {
+                  deactivated: false,
                   blockedByUsers: {
                     none: {
                       blockingUserId: {
@@ -757,6 +759,7 @@ export const postRouter = createTRPCRouter({
             },
           },
           author: {
+            deactivated: false,
             mutedByUsers: {
               none: {
                 mutedByUserId: ctx.userId,
@@ -802,6 +805,7 @@ export const postRouter = createTRPCRouter({
             ...GET_REPOSTS,
             where: {
               user: {
+                deactivated: false,
                 blockedByUsers: {
                   none: {
                     blockingUserId: {
@@ -876,6 +880,7 @@ export const postRouter = createTRPCRouter({
         where: {
           parentPostId: id,
           author: {
+            deactivated: false,
             blockedByUsers: {
               none: {
                 blockingUserId: ctx.userId,
@@ -903,6 +908,11 @@ export const postRouter = createTRPCRouter({
           pinned: true,
           privacy: true,
           reposts: {
+            where: {
+              user: {
+                deactivated: false,
+              },
+            },
             ...GET_REPOSTS,
             orderBy: {
               createdAt: 'desc',
@@ -969,6 +979,7 @@ export const postRouter = createTRPCRouter({
         where: {
           parentPostId: parentCommentId,
           author: {
+            deactivated: false,
             blockedByUsers: {
               none: {
                 blockingUserId: ctx.userId,
@@ -996,6 +1007,11 @@ export const postRouter = createTRPCRouter({
           pinned: true,
           privacy: true,
           reposts: {
+            where: {
+              user: {
+                deactivated: false,
+              },
+            },
             ...GET_REPOSTS,
             orderBy: {
               createdAt: 'desc',
@@ -1567,7 +1583,6 @@ export const postRouter = createTRPCRouter({
                     },
                   },
                 },
-
                 NOT: {
                   authorId: userId,
                 },
@@ -1578,6 +1593,7 @@ export const postRouter = createTRPCRouter({
           { hiddenBy: { none: { userId } } },
           {
             author: {
+              deactivated: false,
               mutedByUsers: {
                 none: {
                   mutedByUserId: userId,
@@ -1622,6 +1638,11 @@ export const postRouter = createTRPCRouter({
             },
           },
           reposts: {
+            where: {
+              user: {
+                deactivated: false,
+              },
+            },
             ...GET_REPOSTS,
             orderBy: {
               createdAt: 'desc',
@@ -1716,6 +1737,7 @@ export const postRouter = createTRPCRouter({
           },
           {
             author: {
+              deactivated: false,
               mutedByUsers: {
                 none: {
                   mutedByUserId: ctx.userId,
@@ -1762,6 +1784,11 @@ export const postRouter = createTRPCRouter({
           ...getBookmarksWithBlockFilter(ctx.userId!),
           ...getPostRepliesCount(ctx.userId!),
           reposts: {
+            where: {
+              user: {
+                deactivated: false,
+              },
+            },
             ...GET_REPOSTS,
             orderBy: {
               createdAt: 'desc',

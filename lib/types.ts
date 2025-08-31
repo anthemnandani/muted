@@ -1019,9 +1019,9 @@ export interface Message {
   status?: MessageStatus;
   createdAt: string | Date;
   readAt?: Date | null;
-  senderId: string;
+  senderId: string | null;
   chatId: string;
-  sender: ChatUser;
+  sender: ChatUser | null;
   reactions?: MessageReaction[];
 }
 

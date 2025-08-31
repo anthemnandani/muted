@@ -45,6 +45,7 @@ const useGetPostsByType = ({
       enabled: !!username && postType === 'post' && !isMissingParams,
       staleTime: 10 * 60 * 1000,
       retry: false,
+      refetchOnWindowFocus: false,
       onError: (error) => {
         if (error.data?.code === 'FORBIDDEN') {
           setIsBlocked(true);
@@ -59,6 +60,7 @@ const useGetPostsByType = ({
       enabled: !!username && postType === 'liked' && !isMissingParams,
       staleTime: 10 * 60 * 1000,
       retry: false,
+      refetchOnWindowFocus: false,
       onError: (error) => {
         if (error.data?.code === 'FORBIDDEN') {
           setIsBlocked(true);
@@ -73,6 +75,7 @@ const useGetPostsByType = ({
       enabled: !!username && postType === 'repost' && !isMissingParams,
       staleTime: 10 * 60 * 1000,
       retry: false,
+      refetchOnWindowFocus: false,
       onError: (error) => {
         if (error.data?.code === 'FORBIDDEN') {
           setIsBlocked(true);
@@ -87,6 +90,7 @@ const useGetPostsByType = ({
       enabled: !!collectionId && postType === 'collection' && !isMissingParams,
       staleTime: 10 * 60 * 1000,
       retry: false,
+      refetchOnWindowFocus: false,
       onError: (error) => {
         if (error.data?.code === 'FORBIDDEN') {
           setIsBlocked(true);
@@ -101,6 +105,7 @@ const useGetPostsByType = ({
       enabled: !!query && postType === 'topPosts' && !isMissingParams,
       staleTime: 10 * 60 * 1000,
       retry: false,
+      refetchOnWindowFocus: false,
     }
   );
 
@@ -110,6 +115,7 @@ const useGetPostsByType = ({
       enabled: !!query && postType === 'videoPosts' && !isMissingParams,
       staleTime: 10 * 60 * 1000,
       retry: false,
+      refetchOnWindowFocus: false,
     }
   );
 

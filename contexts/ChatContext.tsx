@@ -1,7 +1,7 @@
 'use client';
 
 import { RECEIVE_MSG_EVENT } from '@/lib/socket-events';
-import { Chat, Message, MessageReaction } from '@/lib/types';
+import { Chat, ChatUser, Message, MessageReaction } from '@/lib/types';
 import useChatStore from '@/store/chatStore';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
@@ -62,6 +62,8 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
     refetch: refetchChats,
   } = api.chat.getChats.useQuery(undefined, {
     enabled: !!user?.id,
+    retry: false,
+    refetchOnWindowFocus: false,
   });
 
   const {
@@ -295,8 +297,18 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   useEffect(() => {
     if (chatsData) {
-      setChats(chatsData.chats || []);
-      setMessageRequests(chatsData.messageRequests || []);
+      // Todo: Improve this code
+      const transformChat = (chat: any) => ({
+        ...chat,
+        participants: chat.participants as ChatUser[],
+      });
+
+      const transformedChats = chatsData.chats.map(transformChat);
+      const transformedMessageRequests =
+        chatsData.messageRequests.map(transformChat);
+
+      setChats(transformedChats);
+      setMessageRequests(transformedMessageRequests);
       setMessageRequestsCount(chatsData.messageRequestsCount || 0);
     }
   }, [chatsData, setChats, setMessageRequests, setMessageRequestsCount]);

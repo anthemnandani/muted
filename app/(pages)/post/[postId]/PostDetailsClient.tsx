@@ -49,6 +49,7 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
       enabled: shouldFetchSinglePost,
       staleTime: 10 * 60 * 1000,
       retry: false,
+      refetchOnWindowFocus: false,
     }
   );
 
@@ -176,18 +177,19 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
     return () => container.removeEventListener('scroll', handleScroll);
   }, [userPosts, setCurrentPostId, setCurrentIndex]);
 
-  if (isBlocked) {
+  if (isBlocked || hasError) {
     return (
-      <div className='flex-center w-full h-screen'>
-        <EmptyState
-          icon={<Video className='size-11 text-white/90' />}
-          title='Post currently unavailable'
-        />
+      <div className='flex-center w-full h-full'>
+        <div className='flex flex-col items-center text-center'>
+          <EmptyState
+            icon={<Video className='size-11 text-white/90' />}
+            title='Post currently unavailable'
+            description='Try exploring the latest posts or starting a new search.'
+          />
+        </div>
       </div>
     );
   }
-
-  if (hasError) return <NotFound />;
 
   if (isLoading) {
     return <PostCardSkeleton />;

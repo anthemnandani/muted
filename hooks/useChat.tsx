@@ -1,7 +1,7 @@
 import { useChatContext } from '@/contexts/ChatContext';
 import { useSocket } from '@/contexts/SocketContext';
 import { TYPING_EVENT } from '@/lib/socket-events';
-import { Message } from '@/lib/types';
+import { ChatUser, Message } from '@/lib/types';
 import useChatStore from '@/store/chatStore';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
@@ -9,6 +9,8 @@ import { MessageRequestStatus, MessageStatus } from '@prisma/client';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
+
+const MESSAGE_TIMEOUT = 30000;
 
 const useChat = () => {
   const { currentChat, messages, setViewMode } = useChatStore();
@@ -47,10 +49,14 @@ const useChat = () => {
     api.chat.acceptMessageRequest.useMutation({
       onSuccess: (data) => {
         const acceptedChat = data.chat;
+        const transformedChat = {
+          ...acceptedChat,
+          participants: acceptedChat.participants as ChatUser[],
+        };
         resetChatUnreadCount(acceptedChat.id);
 
         if (currentChat?.id === acceptedChat.id) {
-          updateCurrentChat(acceptedChat);
+          updateCurrentChat(transformedChat);
         }
 
         if (socket && acceptedChat.requestedById) {
@@ -76,7 +82,6 @@ const useChat = () => {
         if (currentChat?.id) {
           closeChat();
         }
-
         refreshChats();
         setViewMode('chats');
       },
@@ -118,31 +123,45 @@ const useChat = () => {
     setLoading(true);
 
     socket.emit(TYPING_EVENT, { chatId: currentChat.id, isTyping: false });
-
     try {
-      const sentMsg: Message = await new Promise((resolve, reject) => {
-        socket.timeout(30000).emit(
-          'SEND_MESSAGE',
-          {
-            chatId: currentChat.id,
-            content: tempMessage,
-            type: 'TEXT',
-          },
-          (err: any, sentMsg: Message) => {
-            if (err) {
-              if (err.type === 'MESSAGE_LIMIT') {
-                setShowRequestLimitAlert(true);
+      const sentMsg: Message = await Promise.race([
+        new Promise<Message>((resolve, reject) => {
+          socket.emit(
+            'SEND_MESSAGE',
+            {
+              chatId: currentChat.id,
+              content: tempMessage,
+              type: 'TEXT',
+            },
+            (response: any) => {
+              if (response.error) {
+                if (response.type === 'MESSAGE_LIMIT') {
+                  setShowRequestLimitAlert(true);
+                }
+                reject(response);
+              } else {
+                resolve(response);
               }
-              reject(err);
-            } else {
-              resolve(sentMsg);
             }
-          }
-        );
-      });
+          );
+        }),
+        new Promise<never>((_, reject) => {
+          setTimeout(() => {
+            reject(
+              new Error(
+                'Message send timeout - request took longer than 30 seconds'
+              )
+            );
+          }, MESSAGE_TIMEOUT);
+        }),
+      ]);
 
       updateMessage(optimisticMessage.id, sentMsg);
     } catch (error: any) {
+      if (error.message?.includes('timeout')) {
+        toast.error('Message send timed out. Please try again.');
+      }
+
       updateMessage(optimisticMessage.id, {
         ...optimisticMessage,
         status: MessageStatus.FAILED,

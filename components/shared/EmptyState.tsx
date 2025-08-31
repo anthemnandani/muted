@@ -25,8 +25,8 @@ const EmptyState = ({
       </div>
       <p
         className={cn(
-          'font-bold text-white/90',
-          isNotification ? 'text-base mt-4' : 'text-2xl mt-6'
+          'font-bold text-white/90 mt-4',
+          isNotification ? 'text-base' : 'text-2xl'
         )}
       >
         {title}
@@ -34,7 +34,7 @@ const EmptyState = ({
       {description && (
         <p
           className={cn(
-            'font-normal text-white/75 mt-2',
+            'font-normal text-white/50 mt-2',
             isNotification ? 'text-sm' : 'text-base'
           )}
         >

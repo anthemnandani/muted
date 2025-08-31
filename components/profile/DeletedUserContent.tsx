@@ -3,18 +3,18 @@
 import { Icons } from '../icons';
 import EmptyState from '../shared/EmptyState';
 
-const BlockedUserContent = () => {
+const DeletedUserContent = () => {
   return (
     <div className='flex-center w-full h-full'>
       <div className='flex flex-col items-center text-center'>
         <EmptyState
-          icon={<Icons.userLock className='size-12 text-white/90' />}
-          title='No content'
-          description="You can't view the posts due to this user's privacy settings."
+          icon={<Icons.userRound className='size-12 text-white/90' />}
+          title="Couldn't find this account"
+          description='Try exploring the latest posts or starting a new search.'
         />
       </div>
     </div>
   );
 };
 
-export default BlockedUserContent;
+export default DeletedUserContent;

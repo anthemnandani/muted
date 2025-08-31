@@ -359,10 +359,10 @@ model Chat {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  senderId   String
-  receiverId String
-  sender     User   @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade)
-  receiver   User   @relation("Receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  senderId   String? 
+  receiverId String?
+  sender     User?   @relation("Sender", fields: [senderId], references: [id], onDelete: SetNull) 
+  receiver   User?   @relation("Receiver", fields: [receiverId], references: [id], onDelete: SetNull)
 
   lastMessageAt DateTime?
   isActive      Boolean   @default(true)
@@ -406,8 +406,8 @@ model Message {
   chatId String
   chat   Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
-  senderId String
-  sender   User   @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  senderId String? // Make optional
+  sender   User?   @relation("SentMessages", fields: [senderId], references: [id], onDelete: SetNull)
 
   readAt    DateTime?
   status    MessageStatus     @default(SENT)

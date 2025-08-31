@@ -908,7 +908,7 @@ export const chatRouter = createTRPCRouter({
           create: {
             messageId: input.messageId,
             reporterId: ctx.userId,
-            targetUserId: message.senderId,
+            targetUserId: message.senderId!,
             category: input.category,
             reason: input.reason,
           },

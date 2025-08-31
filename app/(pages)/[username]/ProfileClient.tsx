@@ -2,6 +2,7 @@
 
 import NotFound from '@/app/not-found';
 import BlockedUserContent from '@/components/profile/BlockedUserContent';
+import DeletedUserContent from '@/components/profile/DeletedUserContent';
 import UserProfile from '@/components/profile/UserProfile';
 import UserProfileContent from '@/components/profile/UserProfileContent';
 import ProfileHeaderSkeleton from '@/components/skeletons/ProfileHeaderSkeleton';
@@ -16,21 +17,21 @@ const ProfileClient = ({ username }: { username: string }) => {
   const { user } = useUser();
   const { selectedFilter, setSelectedFilter } = usePostStore();
   const { setCurrentlyPlaying } = useVideoPlayer();
-  const { data, isLoading, isError, hasNextPage, fetchNextPage } =
+  const { data, isLoading, isError, error, hasNextPage, fetchNextPage } =
     api.user.userInfo.useInfiniteQuery(
       { username, sortBy: selectedFilter },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         trpc: { abortOnUnmount: true },
         staleTime: 10 * 60 * 1000,
+        retry: false,
+        refetchOnWindowFocus: false,
       }
     );
 
   useEffect(() => {
     setCurrentlyPlaying(null);
   }, []);
-
-  if (isError) return <NotFound />;
 
   const allPosts = data?.pages.flatMap((page) => page.userDetails.posts);
 
@@ -71,6 +72,13 @@ const ProfileClient = ({ username }: { username: string }) => {
     );
 
   if (hasBlockedMe) return <BlockedUserContent />;
+
+  if (isError) {
+    if (error.data?.code === 'NOT_FOUND') {
+      return <DeletedUserContent />;
+    }
+    return <NotFound />;
+  }
 
   const enhancedUserDetails = {
     ...profileDetails!,

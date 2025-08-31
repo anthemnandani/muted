@@ -81,6 +81,7 @@ export const searchRouter = createTRPCRouter({
                 },
               },
               { privacy: 'ANYONE' },
+              { author: { deactivated: false } },
               getPrivacyFilter(ctx.userId!),
               { parentPostId: null },
             ],
@@ -138,6 +139,7 @@ export const searchRouter = createTRPCRouter({
 
         const users = await ctx.db.user.findMany({
           where: {
+            deactivated: false,
             OR: [
               { username: { contains: query, mode: 'insensitive' } },
               { fullName: { contains: query, mode: 'insensitive' } },
@@ -188,6 +190,7 @@ export const searchRouter = createTRPCRouter({
           },
           {
             author: {
+              deactivated: false,
               mutedByUsers: {
                 none: {
                   mutedByUserId: ctx.userId,
@@ -328,6 +331,7 @@ export const searchRouter = createTRPCRouter({
           },
           {
             author: {
+              deactivated: false,
               mutedByUsers: {
                 none: {
                   mutedByUserId: ctx.userId,
@@ -451,6 +455,9 @@ export const searchRouter = createTRPCRouter({
         where: {
           AND: [
             {
+              deactivated: false,
+            },
+            {
               OR: [
                 { username: { contains: query, mode: 'insensitive' } },
                 { fullName: { contains: query, mode: 'insensitive' } },
@@ -532,6 +539,7 @@ export const searchRouter = createTRPCRouter({
           },
           {
             author: {
+              deactivated: false,
               mutedByUsers: {
                 none: {
                   mutedByUserId: ctx.userId,
@@ -676,6 +684,7 @@ export const searchRouter = createTRPCRouter({
           },
           {
             author: {
+              deactivated: false,
               mutedByUsers: {
                 none: {
                   mutedByUserId: ctx.userId,

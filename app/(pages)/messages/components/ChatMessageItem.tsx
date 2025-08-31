@@ -117,17 +117,17 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
   };
 
   const renderAvatar = () => {
-    const avatarImage = isOwn ? user?.imageUrl : message.sender.image;
+    const avatarImage = isOwn ? user?.imageUrl : message.sender?.image;
     const avatarName = isOwn
       ? user?.fullName || user?.username || 'You'
-      : message.sender.fullName || message.sender.username || 'User';
+      : message.sender?.fullName || message.sender?.username || 'User';
 
     const initials = isOwn
       ? user?.username?.slice(0, 2).toUpperCase() ||
         user?.fullName?.slice(0, 2).toUpperCase() ||
         'YU'
-      : message.sender.username?.slice(0, 2).toUpperCase() ||
-        message.sender.fullName?.slice(0, 2).toUpperCase() ||
+      : message.sender?.username?.slice(0, 2).toUpperCase() ||
+        message.sender?.fullName?.slice(0, 2).toUpperCase() ||
         'US';
 
     return (

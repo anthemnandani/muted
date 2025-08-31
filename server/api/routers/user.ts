@@ -30,8 +30,10 @@ export const userRouter = createTRPCRouter({
       const isUser = await ctx.db.user.findUnique({
         where: {
           username,
+          deactivated: false,
         },
       });
+
       if (!isUser) {
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
@@ -176,6 +178,7 @@ export const userRouter = createTRPCRouter({
       const user = await ctx.db.user.findUnique({
         where: {
           username,
+          deactivated: false,
         },
         select: {
           blockedUsers: {
@@ -281,7 +284,7 @@ export const userRouter = createTRPCRouter({
     .input(z.object({ username: z.string() }))
     .query(async ({ input: { username }, ctx }) => {
       const user = await ctx.db.user.findUnique({
-        where: { username },
+        where: { username, deactivated: false },
         include: {
           blockedUsers: {
             select: {
@@ -407,7 +410,7 @@ export const userRouter = createTRPCRouter({
     )
     .query(async ({ input: { username, limit = 20, cursor }, ctx }) => {
       const user = await ctx.db.user.findUnique({
-        where: { username },
+        where: { username, deactivated: false },
         select: {
           id: true,
           privacy: true,
@@ -442,6 +445,7 @@ export const userRouter = createTRPCRouter({
               },
               {
                 author: {
+                  deactivated: false,
                   mutedByUsers: {
                     none: {
                       mutedByUserId: ctx.userId,
@@ -534,7 +538,7 @@ export const userRouter = createTRPCRouter({
     .input(z.object({ username: z.string() }))
     .query(async ({ input: { username }, ctx }) => {
       const user = await ctx.db.user.findUnique({
-        where: { username },
+        where: { username, deactivated: false },
         include: {
           blockedUsers: {
             select: {
@@ -572,6 +576,7 @@ export const userRouter = createTRPCRouter({
               },
               {
                 author: {
+                  deactivated: false,
                   mutedByUsers: {
                     none: {
                       mutedByUserId: ctx.userId,
@@ -659,6 +664,7 @@ export const userRouter = createTRPCRouter({
       const user = await ctx.db.user.findUnique({
         where: {
           username,
+          deactivated: false,
         },
         select: {
           id: true,
@@ -694,6 +700,7 @@ export const userRouter = createTRPCRouter({
               },
               {
                 author: {
+                  deactivated: false,
                   mutedByUsers: {
                     none: {
                       mutedByUserId: ctx.userId,
@@ -1529,6 +1536,7 @@ export const userRouter = createTRPCRouter({
       const allUsers = await ctx.db.user.findMany({
         where: {
           username: { contains: searchQuery },
+          deactivated: false,
         },
         take: 10,
         orderBy: { createdAt: 'desc' },
