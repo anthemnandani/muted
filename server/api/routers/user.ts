@@ -2043,4 +2043,31 @@ export const userRouter = createTRPCRouter({
         nextCursor,
       };
     }),
+  reactivateAccount: privateProcedure.mutation(async ({ ctx }) => {
+    const user = await ctx.db.user.findUnique({
+      where: { id: ctx.userId },
+      select: { deactivated: true },
+    });
+
+    if (!user) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' });
+    }
+
+    if (!user?.deactivated) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Account is not deactivated',
+      });
+    }
+
+    await ctx.db.user.update({
+      where: { id: ctx.userId },
+      data: {
+        deactivated: false,
+        deactivatedAt: null,
+      },
+    });
+
+    return { success: true };
+  }),
 });

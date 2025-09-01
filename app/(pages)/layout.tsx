@@ -1,9 +1,7 @@
 import Report from '@/components/modals/Report';
-import BottomBar from '@/components/shared/BottomBar';
-import LeftSideBar from '@/components/sidebars/LeftSideBar';
 import TopBar from '@/components/shared/TopBar';
+import LeftSideBar from '@/components/sidebars/LeftSideBar';
 import { PostNavigatorProvider } from '@/contexts/PostNavigatorContext';
-import { getUserEmail } from '@/lib/utils';
 import { db } from '@/server/db';
 import { currentUser } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
@@ -20,11 +18,18 @@ export default async function PagesLayout({
   const dbUser = await db.user.findUnique({
     where: {
       id: user?.id,
-      email: getUserEmail(user),
+    },
+    select: {
+      verified: true,
+      deactivated: true,
     },
   });
 
-  if (!dbUser?.verified) redirect('/account?origin=/');
+  if (dbUser?.deactivated) redirect('/reactivate');
+
+  if (dbUser && !dbUser.verified) redirect('/account?origin=/');
+
+  if (!dbUser) redirect('/account?origin=/');
 
   return (
     <React.Fragment>
