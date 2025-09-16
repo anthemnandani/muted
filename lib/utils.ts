@@ -648,3 +648,19 @@ export const formatEmail = (email: string): string => {
 export const getOTP = () => {
   return Math.floor(100000 + Math.random() * 900000);
 };
+
+export const formatFeedsToString = (feeds: string[]): string => {
+  if (!feeds || feeds.length === 0) {
+    return '';
+  }
+
+  const formatted = feeds.map((feed) =>
+    feed
+      .toLowerCase()
+      .split('_')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+  );
+
+  return formatted.join(', ');
+};

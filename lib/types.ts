@@ -8,6 +8,7 @@ import type {
   MessageStatus,
   NotificationType,
   User,
+  FilteredKeyword,
 } from '@prisma/client';
 import { PostPrivacy, Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
@@ -1144,7 +1145,7 @@ export interface SettingsLayoutProps {
   sectionRefs: SectionRefs;
   children: React.ReactNode;
   isLoading?: boolean;
-  isBlockOrMutePage?: boolean;
+  isMainPage?: boolean;
 }
 
 export interface PrivacySectionProps {
@@ -1226,4 +1227,33 @@ export interface DeleteUserFooterProps {
   onClick: () => void;
   isLoading?: boolean;
   onCancel?: () => void;
+}
+
+export interface KeywordListItemProps {
+  item: FilteredKeyword;
+  onDelete: (keywordId: string) => void;
+  isDeleting: boolean;
+  onEdit: (keyword: FilteredKeyword) => void;
+}
+
+export interface KeywordListProps {
+  keywords: FilteredKeyword[];
+  totalCount: number;
+  fetchNextPage: () => void;
+  hasNextPage: boolean;
+  onDelete: (keywordId: string) => void;
+  isDeleting: boolean;
+  onEdit: (keyword: FilteredKeyword) => void;
+}
+
+export type FeedsState = {
+  forYou: boolean;
+  following: boolean;
+  friends: boolean;
+};
+
+export interface AddKeywordProps {
+  onSaveSuccess: () => void;
+  onCancel: () => void;
+  keywordToEdit?: FilteredKeyword | null;
 }

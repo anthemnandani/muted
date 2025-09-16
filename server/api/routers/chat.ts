@@ -11,13 +11,15 @@ import { z } from 'zod';
 
 export const chatRouter = createTRPCRouter({
   getChats: privateProcedure.query(async ({ ctx }) => {
+    const { userId, db } = ctx;
+
     try {
-      const rawChats = await ctx.db.chat.findMany({
+      const rawChats = await db.chat.findMany({
         where: {
           OR: [
-            { senderId: ctx.userId },
+            { senderId: userId },
             {
-              receiverId: ctx.userId,
+              receiverId: userId,
               messageRequest: false,
             },
           ],
@@ -58,7 +60,7 @@ export const chatRouter = createTRPCRouter({
             select: {
               messages: {
                 where: {
-                  senderId: { not: ctx.userId },
+                  senderId: { not: userId },
                   status: { not: MessageStatus.SEEN },
                 },
               },
@@ -66,13 +68,13 @@ export const chatRouter = createTRPCRouter({
           },
           chatDeletions: {
             where: {
-              userId: ctx.userId,
+              userId,
               isActive: true,
             },
           },
           mutedBy: {
             where: {
-              userId: ctx.userId,
+              userId,
               isActive: true,
             },
           },
@@ -80,9 +82,9 @@ export const chatRouter = createTRPCRouter({
         orderBy: { lastMessageAt: 'desc' },
       });
 
-      const messageRequests = await ctx.db.chat.findMany({
+      const messageRequests = await db.chat.findMany({
         where: {
-          receiverId: ctx.userId,
+          receiverId: userId,
           messageRequest: true,
           messageRequestStatus: MessageRequestStatus.PENDING,
           messages: {
@@ -122,7 +124,7 @@ export const chatRouter = createTRPCRouter({
           },
           chatDeletions: {
             where: {
-              userId: ctx.userId,
+              userId,
               isActive: true,
             },
           },
@@ -198,11 +200,13 @@ export const chatRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input: { limit = 60, cursor, chatId } }) => {
+      const { userId, db } = ctx;
+
       try {
-        const chat = await ctx.db.chat.findUnique({
+        const chat = await db.chat.findUnique({
           where: { id: chatId },
           include: {
-            chatDeletions: { where: { userId: ctx.userId } },
+            chatDeletions: { where: { userId } },
           },
         });
 
@@ -216,13 +220,13 @@ export const chatRouter = createTRPCRouter({
           chatId,
           deletions: {
             none: {
-              userId: ctx.userId,
+              userId,
             },
           },
         };
 
         if (chatDeletion && chatDeletion.lastMessageId) {
-          const lastMessageBeforeDeletion = await ctx.db.message.findUnique({
+          const lastMessageBeforeDeletion = await db.message.findUnique({
             where: { id: chatDeletion.lastMessageId },
             select: { createdAt: true },
           });
@@ -234,7 +238,7 @@ export const chatRouter = createTRPCRouter({
           }
         }
 
-        const messages = await ctx.db.message.findMany({
+        const messages = await db.message.findMany({
           where: whereClause,
           take: limit + 1,
           cursor: cursor ? { id: cursor.id } : undefined,
@@ -281,18 +285,20 @@ export const chatRouter = createTRPCRouter({
   deleteChat: privateProcedure
     .input(z.object({ chatId: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const { userId, db } = ctx;
+
       try {
-        const lastMessage = await ctx.db.message.findFirst({
+        const lastMessage = await db.message.findFirst({
           where: { chatId: input.chatId },
           orderBy: { createdAt: 'desc' },
           select: { id: true },
         });
 
-        await ctx.db.chatDeletion.upsert({
+        await db.chatDeletion.upsert({
           where: {
             chatId_userId: {
               chatId: input.chatId,
-              userId: ctx.userId,
+              userId,
             },
           },
           update: {
@@ -302,7 +308,7 @@ export const chatRouter = createTRPCRouter({
           },
           create: {
             chatId: input.chatId,
-            userId: ctx.userId,
+            userId,
             deletedAt: new Date(),
             lastMessageId: lastMessage?.id,
             isActive: true,
@@ -323,8 +329,10 @@ export const chatRouter = createTRPCRouter({
   deleteMessages: privateProcedure
     .input(z.object({ chatId: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const { userId, db } = ctx;
+
       try {
-        const chat = await ctx.db.chat.findUnique({
+        const chat = await db.chat.findUnique({
           where: {
             id: input.chatId,
           },
@@ -337,11 +345,11 @@ export const chatRouter = createTRPCRouter({
           });
         }
 
-        await ctx.db.chatDeletion.upsert({
+        await db.chatDeletion.upsert({
           where: {
             chatId_userId: {
               chatId: input.chatId,
-              userId: ctx.userId,
+              userId,
             },
           },
           update: {
@@ -349,7 +357,7 @@ export const chatRouter = createTRPCRouter({
           },
           create: {
             chatId: input.chatId,
-            userId: ctx.userId,
+            userId,
           },
         });
 
@@ -368,11 +376,13 @@ export const chatRouter = createTRPCRouter({
   restoreChat: privateProcedure
     .input(z.object({ chatId: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const { userId, db } = ctx;
+
       try {
-        await ctx.db.chatDeletion.deleteMany({
+        await db.chatDeletion.deleteMany({
           where: {
             chatId: input.chatId,
-            userId: ctx.userId,
+            userId,
           },
         });
 
@@ -388,12 +398,14 @@ export const chatRouter = createTRPCRouter({
   getOrCreateChat: privateProcedure
     .input(z.object({ otherUserId: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const { userId, db } = ctx;
+
       try {
-        let existingChat = await ctx.db.chat.findFirst({
+        let existingChat = await db.chat.findFirst({
           where: {
             OR: [
-              { senderId: ctx.userId, receiverId: input.otherUserId },
-              { senderId: input.otherUserId, receiverId: ctx.userId },
+              { senderId: userId, receiverId: input.otherUserId },
+              { senderId: input.otherUserId, receiverId: userId },
             ],
           },
           include: {
@@ -415,7 +427,7 @@ export const chatRouter = createTRPCRouter({
             },
             chatDeletions: {
               where: {
-                userId: ctx.userId,
+                userId,
               },
             },
           },
@@ -423,10 +435,10 @@ export const chatRouter = createTRPCRouter({
 
         if (existingChat) {
           if (existingChat.chatDeletions.length > 0) {
-            await ctx.db.chatDeletion.deleteMany({
+            await db.chatDeletion.deleteMany({
               where: {
                 chatId: existingChat.id,
-                userId: ctx.userId,
+                userId,
               },
             });
           }
@@ -449,8 +461,8 @@ export const chatRouter = createTRPCRouter({
           };
         }
 
-        const currentUser = await ctx.db.user.findUnique({
-          where: { id: ctx.userId },
+        const currentUser = await db.user.findUnique({
+          where: { id: userId },
           include: {
             following: { where: { id: input.otherUserId } },
             followers: { where: { id: input.otherUserId } },
@@ -465,15 +477,15 @@ export const chatRouter = createTRPCRouter({
         const isFollowedBy = currentUser?.followers.length > 0;
         const areMutualFriends = isFollowing && isFollowedBy;
 
-        const newChat = await ctx.db.chat.create({
+        const newChat = await db.chat.create({
           data: {
-            senderId: ctx.userId,
+            senderId: userId,
             receiverId: input.otherUserId,
             messageRequest: !areMutualFriends,
             ...(!areMutualFriends && {
               messageRequestStatus: MessageRequestStatus.PENDING,
             }),
-            requestedById: areMutualFriends ? null : ctx.userId,
+            requestedById: areMutualFriends ? null : userId,
           },
           include: {
             sender: {
@@ -523,8 +535,10 @@ export const chatRouter = createTRPCRouter({
   resetUnreadCount: privateProcedure
     .input(z.object({ chatId: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const { userId, db } = ctx;
+
       try {
-        const chat = await ctx.db.chat.findUnique({
+        const chat = await db.chat.findUnique({
           where: { id: input.chatId },
         });
 
@@ -535,17 +549,17 @@ export const chatRouter = createTRPCRouter({
           });
         }
 
-        if (chat.senderId !== ctx.userId && chat.receiverId !== ctx.userId) {
+        if (chat.senderId !== userId && chat.receiverId !== userId) {
           throw new TRPCError({
             code: 'FORBIDDEN',
             message: 'Unauthorized access to chat',
           });
         }
 
-        const updatedResult = await ctx.db.message.updateMany({
+        const updatedResult = await db.message.updateMany({
           where: {
             chatId: input.chatId,
-            senderId: { not: ctx.userId },
+            senderId: { not: userId },
             status: { not: MessageStatus.SEEN },
           },
           data: {
@@ -572,8 +586,10 @@ export const chatRouter = createTRPCRouter({
   acceptMessageRequest: privateProcedure
     .input(z.object({ chatId: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const { userId, db } = ctx;
+
       try {
-        const chat = await ctx.db.chat.findUnique({
+        const chat = await db.chat.findUnique({
           where: { id: input.chatId },
         });
 
@@ -584,17 +600,17 @@ export const chatRouter = createTRPCRouter({
           });
         }
 
-        if (chat.receiverId !== ctx.userId) {
+        if (chat.receiverId !== userId) {
           throw new TRPCError({
             code: 'FORBIDDEN',
             message: 'Cannot accept this message request',
           });
         }
 
-        await ctx.db.message.updateMany({
+        await db.message.updateMany({
           where: {
             chatId: input.chatId,
-            senderId: { not: ctx.userId },
+            senderId: { not: userId },
           },
           data: {
             status: 'SEEN',
@@ -602,7 +618,7 @@ export const chatRouter = createTRPCRouter({
           },
         });
 
-        const updatedChat = await ctx.db.chat.update({
+        const updatedChat = await db.chat.update({
           where: { id: input.chatId },
           data: {
             messageRequest: false,
@@ -670,8 +686,10 @@ export const chatRouter = createTRPCRouter({
   declineMessageRequest: privateProcedure
     .input(z.object({ chatId: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const { userId, db } = ctx;
+
       try {
-        const chat = await ctx.db.chat.findUnique({
+        const chat = await db.chat.findUnique({
           where: { id: input.chatId },
         });
 
@@ -682,14 +700,14 @@ export const chatRouter = createTRPCRouter({
           });
         }
 
-        if (chat.receiverId !== ctx.userId) {
+        if (chat.receiverId !== userId) {
           throw new TRPCError({
             code: 'FORBIDDEN',
             message: 'Cannot decline this message request',
           });
         }
 
-        const result = await ctx.db.$transaction(async (prisma) => {
+        const result = await db.$transaction(async (prisma) => {
           await prisma.chat.update({
             where: { id: input.chatId },
             data: {
@@ -700,7 +718,7 @@ export const chatRouter = createTRPCRouter({
             where: {
               chatId_userId: {
                 chatId: input.chatId,
-                userId: ctx.userId,
+                userId,
               },
             },
             update: {
@@ -709,7 +727,7 @@ export const chatRouter = createTRPCRouter({
             },
             create: {
               chatId: input.chatId,
-              userId: ctx.userId,
+              userId,
               deletedAt: new Date(),
               isActive: true,
             },
@@ -737,8 +755,10 @@ export const chatRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const { userId, db } = ctx;
+
       try {
-        const result = await ctx.db.$transaction(async (prisma) => {
+        const result = await db.$transaction(async (prisma) => {
           const message = await prisma.message.findUnique({
             where: { id: input.messageId },
             include: {
@@ -753,8 +773,8 @@ export const chatRouter = createTRPCRouter({
             });
           }
           if (
-            message.chat.senderId !== ctx.userId &&
-            message.chat.receiverId !== ctx.userId
+            message.chat.senderId !== userId &&
+            message.chat.receiverId !== userId
           ) {
             throw new TRPCError({
               code: 'FORBIDDEN',
@@ -766,7 +786,7 @@ export const chatRouter = createTRPCRouter({
             where: {
               messageId_userId: {
                 messageId: input.messageId,
-                userId: ctx.userId,
+                userId,
               },
             },
           });
@@ -781,7 +801,7 @@ export const chatRouter = createTRPCRouter({
           await prisma.messageDeletion.create({
             data: {
               messageId: input.messageId,
-              userId: ctx.userId,
+              userId,
             },
           });
 
@@ -807,7 +827,9 @@ export const chatRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const chat = await ctx.db.chat.findUnique({
+      const { userId, db } = ctx;
+
+      const chat = await db.chat.findUnique({
         where: { id: input.chatId },
       });
 
@@ -818,37 +840,37 @@ export const chatRouter = createTRPCRouter({
         });
       }
 
-      if (chat.senderId !== ctx.userId && chat.receiverId !== ctx.userId) {
+      if (chat.senderId !== userId && chat.receiverId !== userId) {
         throw new TRPCError({
           code: 'FORBIDDEN',
           message: 'Unauthorized access to chat',
         });
       }
 
-      const existingMute = await ctx.db.mutedChat.findUnique({
+      const existingMute = await db.mutedChat.findUnique({
         where: {
           chatId_userId: {
             chatId: input.chatId,
-            userId: ctx.userId,
+            userId,
           },
         },
       });
 
       if (existingMute == null) {
-        await ctx.db.mutedChat.create({
+        await db.mutedChat.create({
           data: {
             chatId: input.chatId,
-            userId: ctx.userId,
+            userId,
             isActive: true,
           },
         });
         return { muted: true };
       } else {
-        await ctx.db.mutedChat.delete({
+        await db.mutedChat.delete({
           where: {
             chatId_userId: {
               chatId: input.chatId,
-              userId: ctx.userId,
+              userId,
             },
           },
         });
@@ -865,8 +887,10 @@ export const chatRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const { userId, db } = ctx;
+
       try {
-        const message = await ctx.db.message.findUnique({
+        const message = await db.message.findUnique({
           where: { id: input.messageId },
           include: {
             sender: true,
@@ -882,8 +906,8 @@ export const chatRouter = createTRPCRouter({
         }
 
         if (
-          message.chat.senderId !== ctx.userId &&
-          message.chat.receiverId !== ctx.userId
+          message.chat.senderId !== userId &&
+          message.chat.receiverId !== userId
         ) {
           throw new TRPCError({
             code: 'FORBIDDEN',
@@ -891,23 +915,23 @@ export const chatRouter = createTRPCRouter({
           });
         }
 
-        if (message.senderId === ctx.userId) {
+        if (message.senderId === userId) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
             message: 'You cannot report your own message',
           });
         }
 
-        await ctx.db.messageReport.upsert({
+        await db.messageReport.upsert({
           where: {
             reporterId_messageId: {
-              reporterId: ctx.userId,
+              reporterId: userId,
               messageId: input.messageId,
             },
           },
           create: {
             messageId: input.messageId,
-            reporterId: ctx.userId,
+            reporterId: userId,
             targetUserId: message.senderId!,
             category: input.category,
             reason: input.reason,

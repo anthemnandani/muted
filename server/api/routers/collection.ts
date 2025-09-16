@@ -25,10 +25,10 @@ export const collectionRouter = createTRPCRouter({
     )
     .mutation(
       async ({ input: { name, privacy, description, postId }, ctx }) => {
-        const { userId } = ctx;
+        const { userId, db } = ctx;
 
         // Get default collection
-        const defaultCollection = await ctx.db.collection.findFirst({
+        const defaultCollection = await db.collection.findFirst({
           where: { userId, isDefault: true },
         });
 
@@ -39,7 +39,7 @@ export const collectionRouter = createTRPCRouter({
           });
         }
 
-        return await ctx.db.$transaction(async (tx) => {
+        return await db.$transaction(async (tx) => {
           const createdCollection = await tx.collection.create({
             data: {
               name,
@@ -52,7 +52,7 @@ export const collectionRouter = createTRPCRouter({
           // Create bookmark in new collection
 
           if (postId) {
-            const post = await ctx.db.post.findUnique({
+            const post = await db.post.findUnique({
               where: { id: postId },
             });
 
@@ -112,10 +112,12 @@ export const collectionRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
+      const { userId, db } = ctx;
+
       const { sortBy, username, limit, cursor } = input;
       const orderBy = sortBy === 'LATEST' ? 'desc' : 'asc';
 
-      const user = await ctx.db.user.findUnique({
+      const user = await db.user.findUnique({
         where: { username },
       });
 
@@ -126,9 +128,9 @@ export const collectionRouter = createTRPCRouter({
         });
       }
 
-      const isOwner = ctx.userId === user.id;
+      const isOwner = userId === user.id;
 
-      const collections = await ctx.db.collection.findMany({
+      const collections = await db.collection.findMany({
         take: limit + 1,
         cursor: cursor ? { name_userId: cursor } : undefined,
         where: {
@@ -146,23 +148,23 @@ export const collectionRouter = createTRPCRouter({
               post: {
                 hiddenBy: {
                   none: {
-                    userId: ctx.userId,
+                    userId,
                   },
                 },
                 author: {
                   mutedByUsers: {
                     none: {
-                      mutedByUserId: ctx.userId,
+                      mutedByUserId: userId,
                     },
                   },
                   blockedByUsers: {
                     none: {
-                      blockingUserId: ctx.userId,
+                      blockingUserId: userId,
                     },
                   },
                   blockedUsers: {
                     none: {
-                      blockedUserId: ctx.userId,
+                      blockedUserId: userId,
                     },
                   },
                 },
@@ -237,10 +239,10 @@ export const collectionRouter = createTRPCRouter({
         input: { postId, collectionId, isDefault, removeFromAll },
         ctx,
       }) => {
-        const { userId } = ctx;
+        const { userId, db } = ctx;
 
         // Get default collection
-        const defaultCollection = await ctx.db.collection.findFirst({
+        const defaultCollection = await db.collection.findFirst({
           where: { userId, isDefault: true },
         });
 
@@ -253,7 +255,7 @@ export const collectionRouter = createTRPCRouter({
 
         // Case 1: Remove from all collections
         if (removeFromAll) {
-          await ctx.db.bookmark.deleteMany({
+          await db.bookmark.deleteMany({
             where: { postId, userId },
           });
           return { addedBookmark: false };
@@ -261,7 +263,7 @@ export const collectionRouter = createTRPCRouter({
 
         // Case 2: Default collection operation (bookmark button click)
         if (isDefault) {
-          const existingBookmark = await ctx.db.bookmark.findUnique({
+          const existingBookmark = await db.bookmark.findUnique({
             where: {
               postId_userId_collectionId: {
                 postId,
@@ -273,7 +275,7 @@ export const collectionRouter = createTRPCRouter({
 
           if (!existingBookmark) {
             // Add to default collection
-            await ctx.db.bookmark.create({
+            await db.bookmark.create({
               data: {
                 postId,
                 userId,
@@ -283,7 +285,7 @@ export const collectionRouter = createTRPCRouter({
             return { addedBookmark: true };
           } else {
             // Remove from default collection
-            await ctx.db.bookmark.delete({
+            await db.bookmark.delete({
               where: {
                 postId_userId_collectionId: {
                   postId,
@@ -304,7 +306,7 @@ export const collectionRouter = createTRPCRouter({
           });
         }
 
-        const existingBookmark = await ctx.db.bookmark.findUnique({
+        const existingBookmark = await db.bookmark.findUnique({
           where: {
             postId_userId_collectionId: {
               postId,
@@ -315,7 +317,7 @@ export const collectionRouter = createTRPCRouter({
         });
 
         if (!existingBookmark) {
-          await ctx.db.$transaction(async (tx) => {
+          await db.$transaction(async (tx) => {
             // Add to selected collection
             await tx.bookmark.create({
               data: {
@@ -345,7 +347,7 @@ export const collectionRouter = createTRPCRouter({
           return { addedBookmark: true };
         } else {
           // Remove from selected collection only
-          await ctx.db.bookmark.delete({
+          await db.bookmark.delete({
             where: {
               postId_userId_collectionId: {
                 postId,
@@ -362,8 +364,8 @@ export const collectionRouter = createTRPCRouter({
   deleteCollection: privateProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input: { id }, ctx }) => {
-      const { userId } = ctx;
-      const collection = await ctx.db.collection.findUnique({
+      const { userId, db } = ctx;
+      const collection = await db.collection.findUnique({
         where: { id, userId },
       });
 
@@ -374,7 +376,7 @@ export const collectionRouter = createTRPCRouter({
         });
       }
 
-      await ctx.db.collection.delete({ where: { id } });
+      await db.collection.delete({ where: { id } });
 
       return { success: true };
     }),
@@ -389,8 +391,8 @@ export const collectionRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input: { id, name, description, privacy }, ctx }) => {
-      const { userId } = ctx;
-      const collection = await ctx.db.collection.findUnique({
+      const { userId, db } = ctx;
+      const collection = await db.collection.findUnique({
         where: { id, userId },
       });
 
@@ -401,7 +403,7 @@ export const collectionRouter = createTRPCRouter({
         });
       }
 
-      await ctx.db.collection.update({
+      await db.collection.update({
         where: { id },
         data: { name, description, privacy, createdAt: collection.createdAt },
       });
@@ -422,7 +424,9 @@ export const collectionRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { id, limit, cursor }, ctx }) => {
-      const collection = await ctx.db.collection.findUnique({
+      const { userId, db } = ctx;
+
+      const collection = await db.collection.findUnique({
         where: { id },
         select: {
           id: true,
@@ -435,23 +439,23 @@ export const collectionRouter = createTRPCRouter({
               post: {
                 hiddenBy: {
                   none: {
-                    userId: ctx.userId,
+                    userId,
                   },
                 },
                 author: {
                   mutedByUsers: {
                     none: {
-                      mutedByUserId: ctx.userId,
+                      mutedByUserId: userId,
                     },
                   },
                   blockedByUsers: {
                     none: {
-                      blockingUserId: ctx.userId,
+                      blockingUserId: userId,
                     },
                   },
                   blockedUsers: {
                     none: {
-                      blockedUserId: ctx.userId,
+                      blockedUserId: userId,
                     },
                   },
                 },
@@ -462,7 +466,7 @@ export const collectionRouter = createTRPCRouter({
               ? {
                   postId_userId_collectionId: {
                     postId: cursor.id,
-                    userId: ctx.userId,
+                    userId,
                     collectionId: id,
                   },
                 }
@@ -486,8 +490,8 @@ export const collectionRouter = createTRPCRouter({
                       ...GET_USER,
                     },
                   },
-                  ...getLikesWithBlockFilter(ctx.userId),
-                  ...getBookmarksWithBlockFilter(ctx.userId),
+                  ...getLikesWithBlockFilter(userId),
+                  ...getBookmarksWithBlockFilter(userId),
                   reposts: {
                     ...GET_REPOSTS,
                     orderBy: {
@@ -560,6 +564,8 @@ export const collectionRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
+      const { userId, db } = ctx;
+
       if (!input.id) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
@@ -567,7 +573,7 @@ export const collectionRouter = createTRPCRouter({
         });
       }
 
-      const collection = await ctx.db.collection.findUnique({
+      const collection = await db.collection.findUnique({
         where: {
           id: input.id,
         },
@@ -583,23 +589,23 @@ export const collectionRouter = createTRPCRouter({
               post: {
                 hiddenBy: {
                   none: {
-                    userId: ctx.userId,
+                    userId,
                   },
                 },
                 author: {
                   mutedByUsers: {
                     none: {
-                      mutedByUserId: ctx.userId,
+                      mutedByUserId: userId,
                     },
                   },
                   blockedByUsers: {
                     none: {
-                      blockingUserId: ctx.userId,
+                      blockingUserId: userId,
                     },
                   },
                   blockedUsers: {
                     none: {
-                      blockedUserId: ctx.userId,
+                      blockedUserId: userId,
                     },
                   },
                 },
@@ -633,9 +639,9 @@ export const collectionRouter = createTRPCRouter({
                       },
                     },
                   },
-                  ...getLikesWithBlockFilter(ctx.userId),
-                  ...getBookmarksWithBlockFilter(ctx.userId),
-                  ...getPostRepliesCount(ctx.userId),
+                  ...getLikesWithBlockFilter(userId),
+                  ...getBookmarksWithBlockFilter(userId),
+                  ...getPostRepliesCount(userId),
                   reposts: {
                     ...GET_REPOSTS,
                     orderBy: {
@@ -659,7 +665,7 @@ export const collectionRouter = createTRPCRouter({
         (blockedUser) => blockedUser.blockedUserId
       );
 
-      const isBlocked = blockedUsers.includes(ctx.userId);
+      const isBlocked = blockedUsers.includes(userId);
 
       if (isBlocked) {
         throw new TRPCError({ code: 'FORBIDDEN' });

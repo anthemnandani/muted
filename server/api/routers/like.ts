@@ -11,18 +11,18 @@ export const likeRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input: { id }, ctx }) => {
-      const { userId } = ctx;
+      const { userId, db } = ctx;
 
       const data = { postId: id, userId };
 
-      const existingLike = await ctx.db.like.findUnique({
+      const existingLike = await db.like.findUnique({
         where: {
           postId_userId: data,
         },
       });
 
       if (existingLike == null) {
-        const transactionResult = await ctx.db.$transaction(async (prisma) => {
+        const transactionResult = await db.$transaction(async (prisma) => {
           const createdLike = await prisma.like.create({
             data,
             select: {
@@ -80,7 +80,7 @@ export const likeRouter = createTRPCRouter({
 
         return { addedLike: true };
       } else {
-        const transactionResult = await ctx.db.$transaction(async (prisma) => {
+        const transactionResult = await db.$transaction(async (prisma) => {
           const removeLike = await prisma.like.delete({
             where: {
               postId_userId: data,

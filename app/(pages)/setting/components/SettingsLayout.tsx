@@ -12,7 +12,7 @@ const SettingsLayout = ({
   sectionRefs,
   children,
   isLoading = false,
-  isBlockOrMutePage = false,
+  isMainPage = false,
 }: SettingsLayoutProps) => {
   const router = useRouter();
 
@@ -26,7 +26,7 @@ const SettingsLayout = ({
         <ArrowLeft className='size-6' />
       </div>
       <div className='m-auto flex h-full w-full max-w-[1100px] flex-stretch pt-4'>
-        {isLoading && !isBlockOrMutePage ? (
+        {isLoading && isMainPage ? (
           <Fragment>
             <Skeleton className='relative flex-[0_0_356px] h-full' />
             <Skeleton className='relative flex-[0_0_728px] h-full' />
@@ -34,7 +34,7 @@ const SettingsLayout = ({
         ) : (
           <Fragment>
             <SettingSidebar sectionRefs={sectionRefs} />
-            {isLoading && isBlockOrMutePage ? (
+            {isLoading && !isMainPage ? (
               <Skeleton className='relative flex-[0_0_728px] h-full' />
             ) : (
               <div

@@ -34,11 +34,7 @@ const BlockListClient = () => {
   }, [allBlockedUsers, setInitialBlockedUsers]);
 
   return (
-    <SettingsLayout
-      sectionRefs={sectionRefs}
-      isLoading={isLoading}
-      isBlockOrMutePage
-    >
+    <SettingsLayout sectionRefs={sectionRefs} isLoading={isLoading}>
       <BlockList
         allBlockedUsers={allBlockedUsers}
         isError={isError}

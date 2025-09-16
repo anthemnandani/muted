@@ -18,20 +18,20 @@ const SETTING_ITEMS = [
     title: 'Privacy',
     sectionId: 'privacy',
   },
+  // {
+  //   id: 2,
+  //   icon: Bell,
+  //   title: 'Push notifications',
+  //   sectionId: 'push-notifications',
+  // },
   {
     id: 2,
-    icon: Bell,
-    title: 'Push notifications',
-    sectionId: 'push-notifications',
-  },
-  {
-    id: 3,
     icon: Video,
     title: 'Content preferences',
     sectionId: 'content-preferences',
   },
   {
-    id: 4,
+    id: 3,
     icon: Info,
     title: 'About',
     sectionId: 'about',

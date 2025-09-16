@@ -90,6 +90,11 @@ module.exports = {
         'hovered-background': 'rgba(255, 255, 255, 0.04)',
         glassmorphism: 'rgba(16, 16, 18, 0.60)',
       },
+      fontSize: {
+        sm: ['0.875rem', '1.1375rem'],
+        base: ['1rem', '1.375rem'],
+        '2xl': ['1.5rem', '1.875rem'],
+      },
       width: {
         15: '60px',
         18: '72px',

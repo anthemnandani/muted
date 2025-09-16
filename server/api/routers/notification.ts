@@ -19,7 +19,7 @@ export const notificationRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
-      const { userId } = ctx;
+      const { userId, db } = ctx;
 
       if (!userId) {
         throw new TRPCError({
@@ -28,7 +28,7 @@ export const notificationRouter = createTRPCRouter({
         });
       }
 
-      const notifications = await ctx.db.notification.findMany({
+      const notifications = await db.notification.findMany({
         where: {
           receiverUserId: userId,
           NOT: {
@@ -82,7 +82,7 @@ export const notificationRouter = createTRPCRouter({
     }),
 
   getUnreadCount: privateProcedure.query(async ({ ctx }) => {
-    const { userId } = ctx;
+    const { userId, db } = ctx;
 
     if (!userId) {
       throw new TRPCError({
@@ -91,7 +91,7 @@ export const notificationRouter = createTRPCRouter({
       });
     }
 
-    const unreadCount = await ctx.db.notification.count({
+    const unreadCount = await db.notification.count({
       where: {
         receiverUserId: userId,
         read: false,
@@ -102,7 +102,7 @@ export const notificationRouter = createTRPCRouter({
   }),
 
   markAllAsRead: privateProcedure.mutation(async ({ ctx }) => {
-    const { userId } = ctx;
+    const { userId, db } = ctx;
 
     if (!userId) {
       throw new TRPCError({
@@ -111,7 +111,7 @@ export const notificationRouter = createTRPCRouter({
       });
     }
 
-    await ctx.db.notification.updateMany({
+    await db.notification.updateMany({
       where: {
         receiverUserId: userId,
         read: false,
@@ -137,7 +137,7 @@ export const notificationRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
-      const { userId } = ctx;
+      const { userId, db } = ctx;
 
       if (!userId) {
         throw new TRPCError({
@@ -146,7 +146,7 @@ export const notificationRouter = createTRPCRouter({
         });
       }
 
-      const notifications = await ctx.db.notification.findMany({
+      const notifications = await db.notification.findMany({
         where: {
           receiverUserId: userId,
           type: NotificationType.LIKE,
@@ -211,7 +211,7 @@ export const notificationRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
-      const { userId } = ctx;
+      const { userId, db } = ctx;
 
       if (!userId) {
         throw new TRPCError({
@@ -220,7 +220,7 @@ export const notificationRouter = createTRPCRouter({
         });
       }
 
-      const notifications = await ctx.db.notification.findMany({
+      const notifications = await db.notification.findMany({
         where: {
           receiverUserId: userId,
           type: NotificationType.COMMENT,
@@ -285,7 +285,7 @@ export const notificationRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
-      const { userId } = ctx;
+      const { userId, db } = ctx;
 
       if (!userId) {
         throw new TRPCError({
@@ -294,7 +294,7 @@ export const notificationRouter = createTRPCRouter({
         });
       }
 
-      const notifications = await ctx.db.notification.findMany({
+      const notifications = await db.notification.findMany({
         where: {
           receiverUserId: userId,
           type: NotificationType.MENTION,
@@ -359,7 +359,7 @@ export const notificationRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
-      const { userId } = ctx;
+      const { userId, db } = ctx;
 
       if (!userId) {
         throw new TRPCError({
@@ -368,7 +368,7 @@ export const notificationRouter = createTRPCRouter({
         });
       }
 
-      const notifications = await ctx.db.notification.findMany({
+      const notifications = await db.notification.findMany({
         where: {
           receiverUserId: userId,
           type: NotificationType.FOLLOWER,
@@ -423,7 +423,7 @@ export const notificationRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
-      const { userId } = ctx;
+      const { userId, db } = ctx;
 
       if (!userId) {
         throw new TRPCError({
@@ -431,7 +431,7 @@ export const notificationRouter = createTRPCRouter({
           message: 'You must be logged in to get follow requests',
         });
       }
-      const requests = await ctx.db.followRequest.findMany({
+      const requests = await db.followRequest.findMany({
         where: {
           receiverId: userId,
           status: 'PENDING',
@@ -470,10 +470,10 @@ export const notificationRouter = createTRPCRouter({
   acceptFollowRequest: privateProcedure
     .input(z.object({ requestId: z.string() }))
     .mutation(async ({ input, ctx }) => {
-      const { userId } = ctx;
+      const { userId, db } = ctx;
       const { requestId } = input;
 
-      const request = await ctx.db.followRequest.findUnique({
+      const request = await db.followRequest.findUnique({
         where: { id: requestId },
       });
 
@@ -488,7 +488,7 @@ export const notificationRouter = createTRPCRouter({
         });
       }
 
-      await ctx.db.$transaction(async (prisma) => {
+      await db.$transaction(async (prisma) => {
         await prisma.followRequest.delete({ where: { id: requestId } });
 
         await prisma.user.update({
@@ -521,10 +521,10 @@ export const notificationRouter = createTRPCRouter({
   deleteFollowRequest: privateProcedure
     .input(z.object({ requestId: z.string() }))
     .mutation(async ({ input, ctx }) => {
-      const { userId } = ctx;
+      const { userId, db } = ctx;
       const { requestId } = input;
 
-      const request = await ctx.db.followRequest.findUnique({
+      const request = await db.followRequest.findUnique({
         where: { id: requestId },
       });
 
@@ -532,13 +532,13 @@ export const notificationRouter = createTRPCRouter({
         throw new TRPCError({ code: 'FORBIDDEN' });
       }
 
-      await ctx.db.followRequest.delete({ where: { id: requestId } });
+      await db.followRequest.delete({ where: { id: requestId } });
 
       return { success: true };
     }),
 
   getFollowRequestsCount: privateProcedure.query(async ({ ctx }) => {
-    const { userId } = ctx;
+    const { userId, db } = ctx;
 
     if (!userId) {
       throw new TRPCError({
@@ -547,7 +547,7 @@ export const notificationRouter = createTRPCRouter({
       });
     }
 
-    const followRequestsCount = await ctx.db.followRequest.count({
+    const followRequestsCount = await db.followRequest.count({
       where: {
         receiverId: userId,
         status: FollowRequestStatus.PENDING,

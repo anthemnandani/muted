@@ -17,6 +17,8 @@ export const reportRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const { db } = ctx;
+
       const {
         postId,
         userId,
@@ -38,7 +40,7 @@ export const reportRouter = createTRPCRouter({
       let existingReport = null;
 
       if (postId) {
-        existingReport = await ctx.db.report.findUnique({
+        existingReport = await db.report.findUnique({
           where: {
             reporterId_postId: {
               reporterId: ctx.userId!,
@@ -47,18 +49,18 @@ export const reportRouter = createTRPCRouter({
           },
         });
       } else if (userId) {
-        existingReport = await ctx.db.report.findUnique({
+        existingReport = await db.report.findUnique({
           where: {
             reporterId_userId: {
               reporterId: ctx.userId!,
-              userId: userId,
+              userId,
             },
           },
         });
       }
 
       if (existingReport) {
-        const updatedReport = await ctx.db.report.update({
+        const updatedReport = await db.report.update({
           where: { id: existingReport.id },
           data: {
             categoryId,
@@ -78,7 +80,7 @@ export const reportRouter = createTRPCRouter({
         };
       }
 
-      const report = await ctx.db.report.create({
+      const report = await db.report.create({
         data: {
           reporterId: ctx.userId!,
           postId,

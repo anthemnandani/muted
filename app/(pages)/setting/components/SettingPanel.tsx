@@ -10,9 +10,9 @@ const SettingPanel: React.FC<SettingPanelProps> = ({ sectionRefs, user }) => {
     <Fragment>
       <ManageAccountSection sectionRef={sectionRefs['manage-account']} />
       <PrivacySection sectionRef={sectionRefs['privacy']} user={user} />
-      <PushNotificationsSection
+      {/* <PushNotificationsSection
         sectionRef={sectionRefs['push-notifications']}
-      />
+      /> */}
       <ContentPreferencesSection
         sectionRef={sectionRefs['content-preferences']}
       />

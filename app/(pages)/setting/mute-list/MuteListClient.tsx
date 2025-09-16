@@ -34,11 +34,7 @@ const MuteListClient = () => {
   }, [allMutedUsers, setInitialMutedUsers]);
 
   return (
-    <SettingsLayout
-      sectionRefs={sectionRefs}
-      isLoading={isLoading}
-      isBlockOrMutePage
-    >
+    <SettingsLayout sectionRefs={sectionRefs} isLoading={isLoading}>
       <MuteList
         allMutedUsers={allMutedUsers}
         isError={isError}

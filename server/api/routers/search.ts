@@ -23,9 +23,10 @@ export const searchRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { query } = input;
+      const { db } = ctx;
 
       try {
-        await ctx.db.searchQuery.upsert({
+        await db.searchQuery.upsert({
           where: { query: query.trim() },
           update: {
             count: { increment: 1 },
@@ -53,8 +54,9 @@ export const searchRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       try {
         const { query, limit } = input;
+        const { userId, db } = ctx;
 
-        const existingSearches = await ctx.db.searchQuery.findMany({
+        const existingSearches = await db.searchQuery.findMany({
           where: {
             query: {
               contains: query,
@@ -82,12 +84,12 @@ export const searchRouter = createTRPCRouter({
               },
               { privacy: 'ANYONE' },
               { author: { deactivated: false } },
-              getPrivacyFilter(ctx.userId!),
+              getPrivacyFilter(userId!),
               { parentPostId: null },
             ],
           };
 
-          const postTexts = await ctx.db.post.findMany({
+          const postTexts = await db.post.findMany({
             where: whereClause,
             orderBy: [{ likes: { _count: 'desc' } }, { createdAt: 'desc' }],
             take: remainingCount,
@@ -136,8 +138,9 @@ export const searchRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       try {
         const { query } = input;
+        const { db } = ctx;
 
-        const users = await ctx.db.user.findMany({
+        const users = await db.user.findMany({
           where: {
             deactivated: false,
             OR: [
@@ -175,16 +178,18 @@ export const searchRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { query, limit = 21, cursor }, ctx }) => {
+      const { userId, db } = ctx;
+
       const whereClause: Prisma.PostWhereInput = {
         AND: [
-          getPrivacyFilter(ctx.userId),
+          getPrivacyFilter(userId),
           {
             parentPostId: null,
           },
           {
             hiddenBy: {
               none: {
-                userId: ctx.userId,
+                userId,
               },
             },
           },
@@ -193,17 +198,17 @@ export const searchRouter = createTRPCRouter({
               deactivated: false,
               mutedByUsers: {
                 none: {
-                  mutedByUserId: ctx.userId,
+                  mutedByUserId: userId,
                 },
               },
               blockedByUsers: {
                 none: {
-                  blockingUserId: ctx.userId,
+                  blockingUserId: userId,
                 },
               },
               blockedUsers: {
                 none: {
-                  blockedUserId: ctx.userId,
+                  blockedUserId: userId,
                 },
               },
             },
@@ -223,7 +228,7 @@ export const searchRouter = createTRPCRouter({
           },
         ],
       };
-      const posts = await ctx.db.post.findMany({
+      const posts = await db.post.findMany({
         where: whereClause,
         take: limit + 1,
         cursor: cursor ? { createdAt_id: cursor } : undefined,
@@ -249,9 +254,9 @@ export const searchRouter = createTRPCRouter({
               ...GET_USER,
             },
           },
-          ...getLikesWithBlockFilter(ctx.userId),
-          ...getBookmarksWithBlockFilter(ctx.userId),
-          ...getPostRepliesCount(ctx.userId),
+          ...getLikesWithBlockFilter(userId),
+          ...getBookmarksWithBlockFilter(userId),
+          ...getPostRepliesCount(userId),
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
           reposts: {
@@ -261,14 +266,14 @@ export const searchRouter = createTRPCRouter({
                 blockedByUsers: {
                   none: {
                     blockingUserId: {
-                      equals: ctx.userId,
+                      equals: userId,
                     },
                   },
                 },
                 blockedUsers: {
                   none: {
                     blockedUserId: {
-                      equals: ctx.userId,
+                      equals: userId,
                     },
                   },
                 },
@@ -316,16 +321,18 @@ export const searchRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { query }, ctx }) => {
+      const { userId, db } = ctx;
+
       const whereClause: Prisma.PostWhereInput = {
         AND: [
-          getPrivacyFilter(ctx.userId),
+          getPrivacyFilter(userId),
           {
             parentPostId: null,
           },
           {
             hiddenBy: {
               none: {
-                userId: ctx.userId,
+                userId,
               },
             },
           },
@@ -334,17 +341,17 @@ export const searchRouter = createTRPCRouter({
               deactivated: false,
               mutedByUsers: {
                 none: {
-                  mutedByUserId: ctx.userId,
+                  mutedByUserId: userId,
                 },
               },
               blockedByUsers: {
                 none: {
-                  blockingUserId: ctx.userId,
+                  blockingUserId: userId,
                 },
               },
               blockedUsers: {
                 none: {
-                  blockedUserId: ctx.userId,
+                  blockedUserId: userId,
                 },
               },
             },
@@ -364,7 +371,7 @@ export const searchRouter = createTRPCRouter({
           },
         ],
       };
-      const posts = await ctx.db.post.findMany({
+      const posts = await db.post.findMany({
         where: whereClause,
         orderBy: [
           { likes: { _count: 'desc' } },
@@ -390,9 +397,9 @@ export const searchRouter = createTRPCRouter({
               ...GET_USER,
             },
           },
-          ...getLikesWithBlockFilter(ctx.userId),
-          ...getBookmarksWithBlockFilter(ctx.userId),
-          ...getPostRepliesCount(ctx.userId),
+          ...getLikesWithBlockFilter(userId),
+          ...getBookmarksWithBlockFilter(userId),
+          ...getPostRepliesCount(userId),
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
           reposts: {
@@ -402,14 +409,14 @@ export const searchRouter = createTRPCRouter({
                 blockedByUsers: {
                   none: {
                     blockingUserId: {
-                      equals: ctx.userId,
+                      equals: userId,
                     },
                   },
                 },
                 blockedUsers: {
                   none: {
                     blockedUserId: {
-                      equals: ctx.userId,
+                      equals: userId,
                     },
                   },
                 },
@@ -451,7 +458,9 @@ export const searchRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { query, limit = 20, cursor }, ctx }) => {
-      const users = await ctx.db.user.findMany({
+      const { userId, db } = ctx;
+
+      const users = await db.user.findMany({
         where: {
           AND: [
             {
@@ -466,17 +475,17 @@ export const searchRouter = createTRPCRouter({
             {
               mutedByUsers: {
                 none: {
-                  mutedByUserId: ctx.userId,
+                  mutedByUserId: userId,
                 },
               },
               blockedByUsers: {
                 none: {
-                  blockingUserId: ctx.userId,
+                  blockingUserId: userId,
                 },
               },
               blockedUsers: {
                 none: {
-                  blockedUserId: ctx.userId,
+                  blockedUserId: userId,
                 },
               },
             },
@@ -524,16 +533,18 @@ export const searchRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { query, limit = 21, cursor }, ctx }) => {
+      const { userId, db } = ctx;
+
       const whereClause: Prisma.PostWhereInput = {
         AND: [
-          getPrivacyFilter(ctx.userId),
+          getPrivacyFilter(userId),
           {
             parentPostId: null,
           },
           {
             hiddenBy: {
               none: {
-                userId: ctx.userId,
+                userId,
               },
             },
           },
@@ -542,17 +553,17 @@ export const searchRouter = createTRPCRouter({
               deactivated: false,
               mutedByUsers: {
                 none: {
-                  mutedByUserId: ctx.userId,
+                  mutedByUserId: userId,
                 },
               },
               blockedByUsers: {
                 none: {
-                  blockingUserId: ctx.userId,
+                  blockingUserId: userId,
                 },
               },
               blockedUsers: {
                 none: {
-                  blockedUserId: ctx.userId,
+                  blockedUserId: userId,
                 },
               },
             },
@@ -572,7 +583,7 @@ export const searchRouter = createTRPCRouter({
           },
         ],
       };
-      const posts = await ctx.db.post.findMany({
+      const posts = await db.post.findMany({
         where: whereClause,
         take: limit + 1,
         cursor: cursor ? { createdAt_id: cursor } : undefined,
@@ -598,9 +609,9 @@ export const searchRouter = createTRPCRouter({
               ...GET_USER,
             },
           },
-          ...getLikesWithBlockFilter(ctx.userId),
-          ...getBookmarksWithBlockFilter(ctx.userId),
-          ...getPostRepliesCount(ctx.userId),
+          ...getLikesWithBlockFilter(userId),
+          ...getBookmarksWithBlockFilter(userId),
+          ...getPostRepliesCount(userId),
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
           reposts: {
@@ -610,14 +621,14 @@ export const searchRouter = createTRPCRouter({
                 blockedByUsers: {
                   none: {
                     blockingUserId: {
-                      equals: ctx.userId,
+                      equals: userId,
                     },
                   },
                 },
                 blockedUsers: {
                   none: {
                     blockedUserId: {
-                      equals: ctx.userId,
+                      equals: userId,
                     },
                   },
                 },
@@ -669,16 +680,18 @@ export const searchRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { query }, ctx }) => {
+      const { userId, db } = ctx;
+
       const whereClause: Prisma.PostWhereInput = {
         AND: [
-          getPrivacyFilter(ctx.userId),
+          getPrivacyFilter(userId),
           {
             parentPostId: null,
           },
           {
             hiddenBy: {
               none: {
-                userId: ctx.userId,
+                userId,
               },
             },
           },
@@ -687,17 +700,17 @@ export const searchRouter = createTRPCRouter({
               deactivated: false,
               mutedByUsers: {
                 none: {
-                  mutedByUserId: ctx.userId,
+                  mutedByUserId: userId,
                 },
               },
               blockedByUsers: {
                 none: {
-                  blockingUserId: ctx.userId,
+                  blockingUserId: userId,
                 },
               },
               blockedUsers: {
                 none: {
-                  blockedUserId: ctx.userId,
+                  blockedUserId: userId,
                 },
               },
             },
@@ -717,7 +730,7 @@ export const searchRouter = createTRPCRouter({
           },
         ],
       };
-      const posts = await ctx.db.post.findMany({
+      const posts = await db.post.findMany({
         where: whereClause,
         orderBy: [
           { likes: { _count: 'desc' } },
@@ -743,9 +756,9 @@ export const searchRouter = createTRPCRouter({
               ...GET_USER,
             },
           },
-          ...getLikesWithBlockFilter(ctx.userId),
-          ...getBookmarksWithBlockFilter(ctx.userId),
-          ...getPostRepliesCount(ctx.userId),
+          ...getLikesWithBlockFilter(userId),
+          ...getBookmarksWithBlockFilter(userId),
+          ...getPostRepliesCount(userId),
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
           reposts: {
@@ -755,14 +768,14 @@ export const searchRouter = createTRPCRouter({
                 blockedByUsers: {
                   none: {
                     blockingUserId: {
-                      equals: ctx.userId,
+                      equals: userId,
                     },
                   },
                 },
                 blockedUsers: {
                   none: {
                     blockedUserId: {
-                      equals: ctx.userId,
+                      equals: userId,
                     },
                   },
                 },

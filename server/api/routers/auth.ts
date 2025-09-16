@@ -14,12 +14,12 @@ export const authRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { userId, user } = ctx;
+      const { userId, user, db } = ctx;
       if (!userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
       const email = getUserEmail(user);
 
-      const dbUser = await ctx.db.user.findUnique({
+      const dbUser = await db.user.findUnique({
         where: {
           email,
         },
@@ -29,7 +29,7 @@ export const authRouter = createTRPCRouter({
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
       }
 
-      await ctx.db.$transaction(async (prisma) => {
+      await db.$transaction(async (prisma) => {
         await prisma.user.update({
           where: {
             id: dbUser.id,

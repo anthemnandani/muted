@@ -18,10 +18,11 @@ import {
 } from '@/server/constants';
 import { createId } from '@paralleldrive/cuid2';
 import {
+  FeedType,
   NotificationType,
   PostPrivacy,
   Privacy,
-  type Prisma,
+  Prisma,
 } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
@@ -88,9 +89,9 @@ export const postRouter = createTRPCRouter({
           turnOffComments,
         },
       }) => {
-        const { user, userId } = ctx;
+        const { user, userId, db } = ctx;
         const email = getUserEmail(user);
-        const dbUser = await ctx.db.user.findUnique({
+        const dbUser = await db.user.findUnique({
           where: {
             email: email,
           },
@@ -108,7 +109,7 @@ export const postRouter = createTRPCRouter({
         const filteredText = filter.clean(textToPost);
         const hashtags = extractHashtags(filteredText);
 
-        const transactionResult = await ctx.db.$transaction(async (prisma) => {
+        const transactionResult = await db.$transaction(async (prisma) => {
           let lPreview;
 
           if (linkPreview) {
@@ -234,60 +235,86 @@ export const postRouter = createTRPCRouter({
     )
     .query(
       async ({ input: { limit = 15, cursor, searchQuery, sortBy }, ctx }) => {
-        const whereClause: Prisma.PostWhereInput = {
-          AND: [
-            getPrivacyFilter(ctx.userId),
-            {
-              parentPostId: null,
+        const { userId, db } = ctx;
+
+        const userFilteredKeywords = await db.filteredKeyword.findMany({
+          where: {
+            userId,
+            feeds: { has: FeedType.FOR_YOU },
+          },
+          select: {
+            keyword: true,
+          },
+        });
+
+        const baseConditions: Prisma.PostWhereInput[] = [
+          getPrivacyFilter(userId),
+          { parentPostId: null },
+          { hiddenBy: { none: { userId } } },
+          {
+            author: {
+              deactivated: false,
+              mutedByUsers: { none: { mutedByUserId: userId } },
+              blockedByUsers: { none: { blockingUserId: userId } },
+              blockedUsers: { none: { blockedUserId: userId } },
             },
-            searchQuery
-              ? {
+          },
+        ];
+
+        if (searchQuery) {
+          baseConditions.push({
+            OR: [
+              { text: { contains: searchQuery, mode: 'insensitive' } },
+              {
+                hashtags: {
+                  some: {
+                    name: { contains: searchQuery, mode: 'insensitive' },
+                  },
+                },
+              },
+            ],
+          });
+        } else if (userFilteredKeywords.length > 0) {
+          const keywords = userFilteredKeywords.map((k) => k.keyword);
+
+          keywords.forEach((keyword) => {
+            baseConditions.push({
+              AND: [
+                {
                   OR: [
-                    { text: { contains: searchQuery, mode: 'insensitive' } },
                     {
-                      hashtags: {
-                        some: {
-                          name: {
-                            contains: searchQuery,
-                            mode: 'insensitive',
-                          },
-                        },
+                      text: { not: { contains: keyword } },
+                    },
+                    { text: null },
+                  ],
+                },
+                {
+                  OR: [
+                    {
+                      threadText: {
+                        not: { contains: keyword },
                       },
                     },
+                    { threadText: null },
                   ],
-                }
-              : {},
-            {
-              hiddenBy: {
-                none: {
-                  userId: ctx.userId,
                 },
-              },
-            },
-            {
-              author: {
-                deactivated: false,
-                mutedByUsers: {
-                  none: {
-                    mutedByUserId: ctx.userId,
+                {
+                  hashtags: {
+                    none: {
+                      name: { equals: keyword, mode: 'insensitive' },
+                    },
                   },
                 },
-                blockedByUsers: {
-                  none: {
-                    blockingUserId: ctx.userId,
-                  },
-                },
-                blockedUsers: {
-                  none: {
-                    blockedUserId: ctx.userId,
-                  },
-                },
-              },
-            },
-          ],
+              ],
+            });
+          });
+        }
+
+        const whereClause: Prisma.PostWhereInput = {
+          AND: baseConditions,
         };
 
-        const posts = await ctx.db.post.findMany({
+        const posts = await db.post.findMany({
           where: whereClause,
           take: limit + 1,
           cursor: cursor ? { createdAt_id: cursor } : undefined,
@@ -314,9 +341,9 @@ export const postRouter = createTRPCRouter({
                 ...GET_USER,
               },
             },
-            ...getLikesWithBlockFilter(ctx.userId),
-            ...getBookmarksWithBlockFilter(ctx.userId),
-            ...getPostRepliesCount(ctx.userId),
+            ...getLikesWithBlockFilter(userId),
+            ...getBookmarksWithBlockFilter(userId),
+            ...getPostRepliesCount(userId),
             ...GET_MENTIONS,
             ...GET_LINK_PREVIEW,
             reposts: {
@@ -327,14 +354,14 @@ export const postRouter = createTRPCRouter({
                   blockedByUsers: {
                     none: {
                       blockingUserId: {
-                        equals: ctx.userId,
+                        equals: userId,
                       },
                     },
                   },
                   blockedUsers: {
                     none: {
                       blockedUserId: {
-                        equals: ctx.userId,
+                        equals: userId,
                       },
                     },
                   },
@@ -395,10 +422,10 @@ export const postRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { userId } = ctx;
+      const { userId, db } = ctx;
 
       try {
-        const transactionResult = await ctx.db.$transaction(async (prisma) => {
+        const transactionResult = await db.$transaction(async (prisma) => {
           const filter = new Filter();
           const filteredText = filter.clean(input.text);
           const hashtags = extractHashtags(filteredText);
@@ -432,7 +459,7 @@ export const postRouter = createTRPCRouter({
             (blockedUser) => blockedUser.blockedUserId
           );
 
-          const isBlocked = blockedUsers.includes(ctx.userId);
+          const isBlocked = blockedUsers.includes(userId);
 
           if (isBlocked) {
             throw new TRPCError({ code: 'FORBIDDEN' });
@@ -580,10 +607,10 @@ export const postRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { userId } = ctx;
+      const { userId, db } = ctx;
 
       try {
-        const transactionResult = await ctx.db.$transaction(async (prisma) => {
+        const transactionResult = await db.$transaction(async (prisma) => {
           const filter = new Filter();
           const filteredText = filter.clean(input.text);
           const hashtags = extractHashtags(filteredText);
@@ -616,7 +643,7 @@ export const postRouter = createTRPCRouter({
             (blockedUser) => blockedUser.blockedUserId
           );
 
-          const isBlocked = blockedUsers.includes(ctx.userId);
+          const isBlocked = blockedUsers.includes(userId);
 
           if (isBlocked) {
             throw new TRPCError({ code: 'FORBIDDEN' });
@@ -749,30 +776,31 @@ export const postRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .query(async ({ input, ctx }) => {
       const { id } = input;
+      const { db, userId } = ctx;
 
-      const post = await ctx.db.post.findUnique({
+      const post = await db.post.findUnique({
         where: {
           id,
           hiddenBy: {
             none: {
-              userId: ctx.userId,
+              userId,
             },
           },
           author: {
             deactivated: false,
             mutedByUsers: {
               none: {
-                mutedByUserId: ctx.userId,
+                mutedByUserId: userId,
               },
             },
             blockedByUsers: {
               none: {
-                blockingUserId: ctx.userId,
+                blockingUserId: userId,
               },
             },
             blockedUsers: {
               none: {
-                blockedUserId: ctx.userId,
+                blockedUserId: userId,
               },
             },
           },
@@ -796,9 +824,9 @@ export const postRouter = createTRPCRouter({
               ...GET_USER,
             },
           },
-          ...getLikesWithBlockFilter(ctx.userId),
-          ...getBookmarksWithBlockFilter(ctx.userId),
-          ...getPostRepliesCount(ctx.userId),
+          ...getLikesWithBlockFilter(userId),
+          ...getBookmarksWithBlockFilter(userId),
+          ...getPostRepliesCount(userId),
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
           reposts: {
@@ -809,14 +837,14 @@ export const postRouter = createTRPCRouter({
                 blockedByUsers: {
                   none: {
                     blockingUserId: {
-                      equals: ctx.userId,
+                      equals: userId,
                     },
                   },
                 },
                 blockedUsers: {
                   none: {
                     blockedUserId: {
-                      equals: ctx.userId,
+                      equals: userId,
                     },
                   },
                 },
@@ -831,10 +859,10 @@ export const postRouter = createTRPCRouter({
       }
 
       const isPublic = post.author.privacy === Privacy.PUBLIC;
-      const isOwnPost = post.author.id === ctx.userId;
+      const isOwnPost = post.author.id === userId;
 
       const isFollowing = post.author.followers.some(
-        (follower) => follower.id === ctx.userId
+        (follower) => follower.id === userId
       );
 
       if (!isPublic && !isOwnPost && !isFollowing) {
@@ -875,20 +903,21 @@ export const postRouter = createTRPCRouter({
     )
     .query(async ({ input, ctx }) => {
       const { id, limit, cursor, sortBy } = input;
+      const { userId, db } = ctx;
 
-      const comments = await ctx.db.post.findMany({
+      const comments = await db.post.findMany({
         where: {
           parentPostId: id,
           author: {
             deactivated: false,
             blockedByUsers: {
               none: {
-                blockingUserId: ctx.userId,
+                blockingUserId: userId,
               },
             },
             blockedUsers: {
               none: {
-                blockedUserId: ctx.userId,
+                blockedUserId: userId,
               },
             },
           },
@@ -918,10 +947,10 @@ export const postRouter = createTRPCRouter({
               createdAt: 'desc',
             },
           },
-          ...getAuthorAndHiddenSelect(ctx.userId!),
-          ...getLikesWithBlockFilter(ctx.userId!),
-          ...getBookmarksWithBlockFilter(ctx.userId!),
-          ...getCommentRepliesCount(ctx.userId!),
+          ...getAuthorAndHiddenSelect(userId!),
+          ...getLikesWithBlockFilter(userId!),
+          ...getBookmarksWithBlockFilter(userId!),
+          ...getCommentRepliesCount(userId!),
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
         },
@@ -974,20 +1003,21 @@ export const postRouter = createTRPCRouter({
     )
     .query(async ({ input, ctx }) => {
       const { parentCommentId, limit, cursor } = input;
+      const { userId, db } = ctx;
 
-      const replies = await ctx.db.post.findMany({
+      const replies = await db.post.findMany({
         where: {
           parentPostId: parentCommentId,
           author: {
             deactivated: false,
             blockedByUsers: {
               none: {
-                blockingUserId: ctx.userId,
+                blockingUserId: userId,
               },
             },
             blockedUsers: {
               none: {
-                blockedUserId: ctx.userId,
+                blockedUserId: userId,
               },
             },
           },
@@ -1017,9 +1047,9 @@ export const postRouter = createTRPCRouter({
               createdAt: 'desc',
             },
           },
-          ...getAuthorAndHiddenSelect(ctx.userId!),
-          ...getLikesWithBlockFilter(ctx.userId!),
-          ...getBookmarksWithBlockFilter(ctx.userId!),
+          ...getAuthorAndHiddenSelect(userId!),
+          ...getLikesWithBlockFilter(userId!),
+          ...getBookmarksWithBlockFilter(userId!),
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
         },
@@ -1062,18 +1092,17 @@ export const postRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input: { id }, ctx }) => {
-      const { userId } = ctx;
-
+      const { userId, db } = ctx;
       const data = { postId: id, userId };
 
-      const existingRepost = await ctx.db.repost.findUnique({
+      const existingRepost = await db.repost.findUnique({
         where: {
           postId_userId: data,
         },
       });
 
       if (existingRepost == null) {
-        const transactionResult = await ctx.db.$transaction(async (prisma) => {
+        const transactionResult = await db.$transaction(async (prisma) => {
           const createdRepost = await prisma.repost.create({
             data,
             select: {
@@ -1108,7 +1137,7 @@ export const postRouter = createTRPCRouter({
 
         return { createdRepost: true };
       } else {
-        const transactionResult = await ctx.db.$transaction(async (prisma) => {
+        const transactionResult = await db.$transaction(async (prisma) => {
           const removeRepost = await prisma.repost.delete({
             where: {
               postId_userId: data,
@@ -1155,8 +1184,8 @@ export const postRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { userId } = ctx;
-      const post = await ctx.db.post.findUnique({
+      const { userId, db } = ctx;
+      const post = await db.post.findUnique({
         where: { id: input.postId },
         select: { authorId: true },
       });
@@ -1165,7 +1194,7 @@ export const postRouter = createTRPCRouter({
         throw new TRPCError({ code: 'FORBIDDEN' });
       }
 
-      await ctx.db.post.update({
+      await db.post.update({
         where: { id: input.postId },
         data: { hideLikes: input.hide },
       });
@@ -1180,7 +1209,8 @@ export const postRouter = createTRPCRouter({
       })
     )
     .query(async ({ input, ctx }) => {
-      const postInfo = await ctx.db.post.findUnique({
+      const { userId, db } = ctx;
+      const postInfo = await db.post.findUnique({
         where: {
           id: input.id,
         },
@@ -1198,7 +1228,7 @@ export const postRouter = createTRPCRouter({
               ...GET_USER,
             },
           },
-          ...getLikesWithBlockFilter(ctx.userId!),
+          ...getLikesWithBlockFilter(userId!),
           ...GET_LINK_PREVIEW,
           ...GET_MENTIONS,
         },
@@ -1231,8 +1261,9 @@ export const postRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
+      const { db } = ctx;
       try {
-        await ctx.db.$transaction(async (prisma) => {
+        await db.$transaction(async (prisma) => {
           const postToDelete = await prisma.post.findUnique({
             where: { id: input.id },
           });
@@ -1272,10 +1303,10 @@ export const postRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { userId } = ctx;
+      const { userId, db } = ctx;
 
       const data = { postId: input.id, userId };
-      const transactionResult = await ctx.db.$transaction(async (prisma) => {
+      const transactionResult = await db.$transaction(async (prisma) => {
         await prisma.repost.delete({
           where: {
             postId_userId: data,
@@ -1306,9 +1337,9 @@ export const postRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
-      const { userId } = ctx;
+      const { userId, db } = ctx;
 
-      const collections = await ctx.db.collection.findMany({
+      const collections = await db.collection.findMany({
         where: {
           userId,
         },
@@ -1321,7 +1352,7 @@ export const postRouter = createTRPCRouter({
                   {
                     hiddenBy: {
                       none: {
-                        userId: ctx.userId,
+                        userId,
                       },
                     },
                   },
@@ -1329,7 +1360,7 @@ export const postRouter = createTRPCRouter({
                     author: {
                       mutedByUsers: {
                         none: {
-                          mutedByUserId: ctx.userId,
+                          mutedByUserId: userId,
                         },
                       },
                     },
@@ -1383,14 +1414,14 @@ export const postRouter = createTRPCRouter({
                       ...GET_USER,
                     },
                   },
-                  ...getLikesWithBlockFilter(ctx.userId),
+                  ...getLikesWithBlockFilter(userId),
                   reposts: {
                     ...GET_REPOSTS,
                     orderBy: {
                       createdAt: 'desc',
                     },
                   },
-                  ...getBookmarksWithBlockFilter(ctx.userId),
+                  ...getBookmarksWithBlockFilter(userId),
                   ...GET_MENTIONS,
                   ...GET_LINK_PREVIEW,
                 },
@@ -1443,8 +1474,8 @@ export const postRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
-      const { userId } = ctx;
-      const likedPosts = await ctx.db.like.findMany({
+      const { userId, db } = ctx;
+      const likedPosts = await db.like.findMany({
         where: {
           userId,
           post: {
@@ -1452,7 +1483,7 @@ export const postRouter = createTRPCRouter({
               {
                 hiddenBy: {
                   none: {
-                    userId: ctx.userId,
+                    userId,
                   },
                 },
               },
@@ -1460,7 +1491,7 @@ export const postRouter = createTRPCRouter({
                 author: {
                   mutedByUsers: {
                     none: {
-                      mutedByUserId: ctx.userId,
+                      mutedByUserId: userId,
                     },
                   },
                 },
@@ -1503,14 +1534,14 @@ export const postRouter = createTRPCRouter({
                   ...GET_USER,
                 },
               },
-              ...getLikesWithBlockFilter(ctx.userId),
+              ...getLikesWithBlockFilter(userId),
               reposts: {
                 ...GET_REPOSTS,
                 orderBy: {
                   createdAt: 'desc',
                 },
               },
-              ...getBookmarksWithBlockFilter(ctx.userId),
+              ...getBookmarksWithBlockFilter(userId),
               ...GET_MENTIONS,
               ...GET_LINK_PREVIEW,
             },
@@ -1558,11 +1589,21 @@ export const postRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
-      const { userId } = ctx;
+      const { userId, db } = ctx;
+
+      const userFilteredKeywords = await db.filteredKeyword.findMany({
+        where: {
+          userId,
+          feeds: { has: FeedType.FOLLOWING },
+        },
+        select: {
+          keyword: true,
+        },
+      });
 
       const whereClause: Prisma.PostWhereInput = {
         AND: [
-          getPrivacyFilter(ctx.userId),
+          getPrivacyFilter(userId),
           {
             OR: [
               {
@@ -1572,7 +1613,6 @@ export const postRouter = createTRPCRouter({
                   },
                 },
               },
-
               {
                 reposts: {
                   some: {
@@ -1614,7 +1654,38 @@ export const postRouter = createTRPCRouter({
         ],
       };
 
-      const followingPosts = await ctx.db.post.findMany({
+      if (userFilteredKeywords.length > 0) {
+        const keywords = userFilteredKeywords.map((k) => k.keyword);
+
+        keywords.forEach((keyword) => {
+          (whereClause.AND as Prisma.PostWhereInput[]).push({
+            AND: [
+              {
+                OR: [{ text: { not: { contains: keyword } } }, { text: null }],
+              },
+              {
+                OR: [
+                  {
+                    threadText: {
+                      not: { contains: keyword },
+                    },
+                  },
+                  { threadText: null },
+                ],
+              },
+              {
+                hashtags: {
+                  none: {
+                    name: { equals: keyword, mode: 'insensitive' },
+                  },
+                },
+              },
+            ],
+          });
+        });
+      }
+
+      const followingPosts = await db.post.findMany({
         where: whereClause,
         take: limit + 1,
         cursor: cursor ? { createdAt_id: cursor } : undefined,
@@ -1648,9 +1719,9 @@ export const postRouter = createTRPCRouter({
               createdAt: 'desc',
             },
           },
-          ...getLikesWithBlockFilter(ctx.userId),
-          ...getBookmarksWithBlockFilter(ctx.userId),
-          ...getPostRepliesCount(ctx.userId),
+          ...getLikesWithBlockFilter(userId),
+          ...getBookmarksWithBlockFilter(userId),
+          ...getPostRepliesCount(userId),
           ...GET_MENTIONS,
           ...GET_LINK_PREVIEW,
         },
@@ -1714,6 +1785,7 @@ export const postRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { tag, limit = 20, cursor }, ctx }) => {
+      const { userId, db } = ctx;
       const whereClause: Prisma.PostWhereInput = {
         hashtags: {
           some: {
@@ -1727,11 +1799,11 @@ export const postRouter = createTRPCRouter({
           },
         ],
         AND: [
-          getPrivacyFilter(ctx.userId!),
+          getPrivacyFilter(userId!),
           {
             hiddenBy: {
               none: {
-                userId: ctx.userId,
+                userId,
               },
             },
           },
@@ -1740,24 +1812,24 @@ export const postRouter = createTRPCRouter({
               deactivated: false,
               mutedByUsers: {
                 none: {
-                  mutedByUserId: ctx.userId,
+                  mutedByUserId: userId,
                 },
               },
               blockedByUsers: {
                 none: {
-                  blockingUserId: ctx.userId,
+                  blockingUserId: userId,
                 },
               },
               blockedUsers: {
                 none: {
-                  blockedUserId: ctx.userId,
+                  blockedUserId: userId,
                 },
               },
             },
           },
         ],
       };
-      const posts = await ctx.db.post.findMany({
+      const posts = await db.post.findMany({
         where: whereClause,
         take: limit + 1,
         cursor: cursor ? { createdAt_id: cursor } : undefined,
@@ -1780,9 +1852,9 @@ export const postRouter = createTRPCRouter({
               ...GET_USER,
             },
           },
-          ...getLikesWithBlockFilter(ctx.userId!),
-          ...getBookmarksWithBlockFilter(ctx.userId!),
-          ...getPostRepliesCount(ctx.userId!),
+          ...getLikesWithBlockFilter(userId!),
+          ...getBookmarksWithBlockFilter(userId!),
+          ...getPostRepliesCount(userId!),
           reposts: {
             where: {
               user: {
@@ -1851,10 +1923,10 @@ export const postRouter = createTRPCRouter({
         ctx,
         input: { id, text, threadText, mentions, hideLikes, turnOffComments },
       }) => {
-        const { userId } = ctx;
+        const { userId, db } = ctx;
 
         try {
-          const post = await ctx.db.post.findUnique({
+          const post = await db.post.findUnique({
             where: { id },
             select: {
               authorId: true,
@@ -1900,116 +1972,114 @@ export const postRouter = createTRPCRouter({
             post.mentions.map((mention) => mention.userId)
           );
 
-          const transactionResult = await ctx.db.$transaction(
-            async (prisma) => {
-              let newMentionUserIds = new Set<string>();
+          const transactionResult = await db.$transaction(async (prisma) => {
+            let newMentionUserIds = new Set<string>();
 
-              await prisma.mention.deleteMany({
+            await prisma.mention.deleteMany({
+              where: {
+                postId: id,
+              },
+            });
+
+            await prisma.post.update({
+              where: { id },
+              data: {
+                hashtags: {
+                  disconnect: post.hashtags.map((tag) => ({
+                    name: tag.name,
+                  })),
+                },
+              },
+            });
+
+            if (mentions && mentions.length > 0) {
+              const uniqueUsernames = Array.from(
+                new Set(mentions.map((m) => m.username))
+              );
+
+              const mentionedUsers = await prisma.user.findMany({
                 where: {
-                  postId: id,
-                },
-              });
-
-              await prisma.post.update({
-                where: { id },
-                data: {
-                  hashtags: {
-                    disconnect: post.hashtags.map((tag) => ({
-                      name: tag.name,
-                    })),
-                  },
-                },
-              });
-
-              if (mentions && mentions.length > 0) {
-                const uniqueUsernames = Array.from(
-                  new Set(mentions.map((m) => m.username))
-                );
-
-                const mentionedUsers = await prisma.user.findMany({
-                  where: {
-                    username: {
-                      in: uniqueUsernames,
-                    },
-                  },
-                  select: {
-                    id: true,
-                    username: true,
-                  },
-                });
-
-                const usernameToIdMap = new Map(
-                  mentionedUsers.map((user) => [user.username, user.id])
-                );
-
-                const validMentions = mentions.filter((mention) =>
-                  usernameToIdMap.has(mention.username)
-                );
-
-                if (validMentions.length > 0) {
-                  await prisma.mention.createMany({
-                    data: validMentions.map((mention) => ({
-                      postId: id,
-                      userId: usernameToIdMap.get(mention.username)!,
-                      index: mention.index,
-                    })),
-                    skipDuplicates: true,
-                  });
-
-                  newMentionUserIds = new Set(
-                    mentionedUsers
-                      .map((user) => user.id)
-                      .filter(
-                        (id) => !existingMentionUserIds.has(id) && id !== userId
-                      )
-                  );
-
-                  if (newMentionUserIds.size > 0) {
-                    await prisma.notification.createMany({
-                      data: Array.from(newMentionUserIds).map(
-                        (mentionedUserId) => ({
-                          type: NotificationType.MENTION,
-                          message: filteredText,
-                          senderUserId: userId,
-                          receiverUserId: mentionedUserId,
-                          postId: id,
-                        })
-                      ),
-                    });
-                  }
-                }
-              }
-
-              const updatedPost = await prisma.post.update({
-                where: { id },
-                data: {
-                  ...(text && { text: filteredText }),
-                  ...(threadText && { threadText: filteredText }),
-                  lastEditedAt: new Date(),
-                  hideLikes: hideLikes,
-                  turnOffComments: turnOffComments,
-                  hashtags: {
-                    connectOrCreate: hashtags.map((tag) => {
-                      const tagName = tag.slice(1);
-                      return {
-                        where: { name: tagName },
-                        create: { name: tagName },
-                      };
-                    }),
+                  username: {
+                    in: uniqueUsernames,
                   },
                 },
                 select: {
                   id: true,
-                  author: true,
+                  username: true,
                 },
               });
 
-              return {
-                updatedPost,
-                newMentionCount: newMentionUserIds.size,
-              };
+              const usernameToIdMap = new Map(
+                mentionedUsers.map((user) => [user.username, user.id])
+              );
+
+              const validMentions = mentions.filter((mention) =>
+                usernameToIdMap.has(mention.username)
+              );
+
+              if (validMentions.length > 0) {
+                await prisma.mention.createMany({
+                  data: validMentions.map((mention) => ({
+                    postId: id,
+                    userId: usernameToIdMap.get(mention.username)!,
+                    index: mention.index,
+                  })),
+                  skipDuplicates: true,
+                });
+
+                newMentionUserIds = new Set(
+                  mentionedUsers
+                    .map((user) => user.id)
+                    .filter(
+                      (id) => !existingMentionUserIds.has(id) && id !== userId
+                    )
+                );
+
+                if (newMentionUserIds.size > 0) {
+                  await prisma.notification.createMany({
+                    data: Array.from(newMentionUserIds).map(
+                      (mentionedUserId) => ({
+                        type: NotificationType.MENTION,
+                        message: filteredText,
+                        senderUserId: userId,
+                        receiverUserId: mentionedUserId,
+                        postId: id,
+                      })
+                    ),
+                  });
+                }
+              }
             }
-          );
+
+            const updatedPost = await prisma.post.update({
+              where: { id },
+              data: {
+                ...(text && { text: filteredText }),
+                ...(threadText && { threadText: filteredText }),
+                lastEditedAt: new Date(),
+                hideLikes: hideLikes,
+                turnOffComments: turnOffComments,
+                hashtags: {
+                  connectOrCreate: hashtags.map((tag) => {
+                    const tagName = tag.slice(1);
+                    return {
+                      where: { name: tagName },
+                      create: { name: tagName },
+                    };
+                  }),
+                },
+              },
+              select: {
+                id: true,
+                author: true,
+              },
+            });
+
+            return {
+              updatedPost,
+              newMentionCount: newMentionUserIds.size,
+            };
+          });
 
           if (!transactionResult) {
             throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
@@ -2040,23 +2110,23 @@ export const postRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { userId } = ctx;
+      const { userId, db } = ctx;
 
       const data = { postId: input.postId, userId };
 
-      const existingHiddenPost = await ctx.db.hiddenPost.findUnique({
+      const existingHiddenPost = await db.hiddenPost.findUnique({
         where: {
           postId_userId: data,
         },
       });
 
       if (existingHiddenPost == null) {
-        await ctx.db.hiddenPost.create({
+        await db.hiddenPost.create({
           data,
         });
         return { hidden: true };
       } else {
-        await ctx.db.hiddenPost.delete({
+        await db.hiddenPost.delete({
           where: {
             postId_userId: data,
           },
@@ -2072,8 +2142,8 @@ export const postRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { userId } = ctx;
-      const postExists = await ctx.db.post.findUnique({
+      const { userId, db } = ctx;
+      const postExists = await db.post.findUnique({
         where: {
           id: input.postId,
           authorId: userId,
@@ -2087,7 +2157,7 @@ export const postRouter = createTRPCRouter({
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
 
-      await ctx.db.post.update({
+      await db.post.update({
         where: { id: input.postId },
         data: { pinned: !postExists.pinned },
       });
@@ -2099,7 +2169,6 @@ export const postRouter = createTRPCRouter({
     .input(z.object({ url: z.string().url('Invalid URL') }))
     .query(async ({ input }) => {
       try {
-        console.log('Input', input.url);
         const response = await fetch(input.url);
         if (
           !response.ok ||

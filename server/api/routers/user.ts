@@ -27,7 +27,8 @@ export const userRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { username, limit = 24, cursor, sortBy }, ctx }) => {
-      const isUser = await ctx.db.user.findUnique({
+      const { userId, db } = ctx;
+      const isUser = await db.user.findUnique({
         where: {
           username,
           deactivated: false,
@@ -38,7 +39,7 @@ export const userRouter = createTRPCRouter({
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
 
-      const userProfileInfo = await ctx.db.user.findUnique({
+      const userProfileInfo = await db.user.findUnique({
         where: {
           username,
         },
@@ -47,7 +48,7 @@ export const userRouter = createTRPCRouter({
           following: true,
           receivedFollowRequests: {
             where: {
-              requesterId: ctx.userId,
+              requesterId: userId,
               status: FollowRequestStatus.PENDING,
             },
           },
@@ -95,8 +96,8 @@ export const userRouter = createTRPCRouter({
                   ...GET_USER,
                 },
               },
-              ...getLikesWithBlockFilter(ctx.userId),
-              ...getBookmarksWithBlockFilter(ctx.userId),
+              ...getLikesWithBlockFilter(userId),
+              ...getBookmarksWithBlockFilter(userId),
               reposts: {
                 ...GET_REPOSTS,
                 orderBy: {
@@ -130,7 +131,7 @@ export const userRouter = createTRPCRouter({
       );
 
       const isMuted = userProfileInfo.mutedByUsers.some(
-        (mutedUser) => mutedUser.mutedByUserId === ctx.userId
+        (mutedUser) => mutedUser.mutedByUserId === userId
       );
 
       return {
@@ -175,7 +176,8 @@ export const userRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { username, sortBy }, ctx }) => {
-      const user = await ctx.db.user.findUnique({
+      const { userId, db } = ctx;
+      const user = await db.user.findUnique({
         where: {
           username,
           deactivated: false,
@@ -188,7 +190,7 @@ export const userRouter = createTRPCRouter({
           },
           id: true,
           privacy: true,
-          followers: { where: { id: ctx.userId } },
+          followers: { where: { id: userId } },
         },
       });
 
@@ -197,7 +199,7 @@ export const userRouter = createTRPCRouter({
       }
 
       const isPublic = user.privacy === Privacy.PUBLIC;
-      const isOwnProfile = user.id === ctx.userId;
+      const isOwnProfile = user.id === userId;
       const isFollowing = user.followers.length > 0;
 
       if (!isPublic && !isOwnProfile && !isFollowing) {
@@ -208,25 +210,25 @@ export const userRouter = createTRPCRouter({
         (blockedUser) => blockedUser.blockedUserId
       );
 
-      const isBlocked = blockedUsers.includes(ctx.userId);
+      const isBlocked = blockedUsers.includes(userId);
 
       if (isBlocked) {
         throw new TRPCError({ code: 'FORBIDDEN' });
       }
 
-      const posts = await ctx.db.post.findMany({
+      const posts = await db.post.findMany({
         where: {
           authorId: user.id,
           parentPostId: null,
           hiddenBy: {
             none: {
-              userId: ctx.userId,
+              userId,
             },
           },
           author: {
             mutedByUsers: {
               none: {
-                mutedByUserId: ctx.userId,
+                mutedByUserId: userId,
               },
             },
           },
@@ -253,9 +255,9 @@ export const userRouter = createTRPCRouter({
               ...GET_USER,
             },
           },
-          ...getLikesWithBlockFilter(ctx.userId),
-          ...getBookmarksWithBlockFilter(ctx.userId),
-          ...getPostRepliesCount(ctx.userId),
+          ...getLikesWithBlockFilter(userId),
+          ...getBookmarksWithBlockFilter(userId),
+          ...getPostRepliesCount(userId),
           reposts: {
             ...GET_REPOSTS,
             orderBy: {
@@ -283,7 +285,8 @@ export const userRouter = createTRPCRouter({
   getUserRepostsFeed: privateProcedure
     .input(z.object({ username: z.string() }))
     .query(async ({ input: { username }, ctx }) => {
-      const user = await ctx.db.user.findUnique({
+      const { userId, db } = ctx;
+      const user = await db.user.findUnique({
         where: { username, deactivated: false },
         include: {
           blockedUsers: {
@@ -302,13 +305,13 @@ export const userRouter = createTRPCRouter({
         (blockedUser) => blockedUser.blockedUserId
       );
 
-      const isBlocked = blockedUsers.includes(ctx.userId);
+      const isBlocked = blockedUsers.includes(userId);
 
       if (isBlocked) {
         throw new TRPCError({ code: 'FORBIDDEN' });
       }
 
-      const reposts = await ctx.db.repost.findMany({
+      const reposts = await db.repost.findMany({
         where: {
           userId: user.id,
           post: {
@@ -317,7 +320,7 @@ export const userRouter = createTRPCRouter({
               {
                 hiddenBy: {
                   none: {
-                    userId: ctx.userId,
+                    userId,
                   },
                 },
               },
@@ -325,17 +328,17 @@ export const userRouter = createTRPCRouter({
                 author: {
                   mutedByUsers: {
                     none: {
-                      mutedByUserId: ctx.userId,
+                      mutedByUserId: userId,
                     },
                   },
                   blockedByUsers: {
                     none: {
-                      blockingUserId: ctx.userId,
+                      blockingUserId: userId,
                     },
                   },
                   blockedUsers: {
                     none: {
-                      blockedUserId: ctx.userId,
+                      blockedUserId: userId,
                     },
                   },
                 },
@@ -364,9 +367,9 @@ export const userRouter = createTRPCRouter({
                   ...GET_USER,
                 },
               },
-              ...getLikesWithBlockFilter(ctx.userId),
-              ...getBookmarksWithBlockFilter(ctx.userId),
-              ...getPostRepliesCount(ctx.userId),
+              ...getLikesWithBlockFilter(userId),
+              ...getBookmarksWithBlockFilter(userId),
+              ...getPostRepliesCount(userId),
               reposts: {
                 ...GET_REPOSTS,
                 orderBy: {
@@ -409,12 +412,13 @@ export const userRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { username, limit = 20, cursor }, ctx }) => {
-      const user = await ctx.db.user.findUnique({
+      const { userId, db } = ctx;
+      const user = await db.user.findUnique({
         where: { username, deactivated: false },
         select: {
           id: true,
           privacy: true,
-          followers: { where: { id: ctx.userId } },
+          followers: { where: { id: userId } },
         },
       });
 
@@ -423,14 +427,14 @@ export const userRouter = createTRPCRouter({
       }
 
       const isPublic = user.privacy === Privacy.PUBLIC;
-      const isOwnProfile = user.id === ctx.userId;
+      const isOwnProfile = user.id === userId;
       const isFollowing = user.followers.length > 0;
 
       if (!isPublic && !isOwnProfile && !isFollowing) {
         return { posts: [], nextCursor: undefined };
       }
 
-      const reposts = await ctx.db.repost.findMany({
+      const reposts = await db.repost.findMany({
         where: {
           userId: user.id,
           post: {
@@ -439,7 +443,7 @@ export const userRouter = createTRPCRouter({
               {
                 hiddenBy: {
                   none: {
-                    userId: ctx.userId,
+                    userId,
                   },
                 },
               },
@@ -448,17 +452,17 @@ export const userRouter = createTRPCRouter({
                   deactivated: false,
                   mutedByUsers: {
                     none: {
-                      mutedByUserId: ctx.userId,
+                      mutedByUserId: userId,
                     },
                   },
                   blockedByUsers: {
                     none: {
-                      blockingUserId: ctx.userId,
+                      blockingUserId: userId,
                     },
                   },
                   blockedUsers: {
                     none: {
-                      blockedUserId: ctx.userId,
+                      blockedUserId: userId,
                     },
                   },
                 },
@@ -491,8 +495,8 @@ export const userRouter = createTRPCRouter({
                   ...GET_USER,
                 },
               },
-              ...getLikesWithBlockFilter(ctx.userId),
-              ...getBookmarksWithBlockFilter(ctx.userId),
+              ...getLikesWithBlockFilter(userId),
+              ...getBookmarksWithBlockFilter(userId),
               reposts: {
                 ...GET_REPOSTS,
                 orderBy: {
@@ -537,7 +541,8 @@ export const userRouter = createTRPCRouter({
   getUserLikedPostsFeed: privateProcedure
     .input(z.object({ username: z.string() }))
     .query(async ({ input: { username }, ctx }) => {
-      const user = await ctx.db.user.findUnique({
+      const { userId, db } = ctx;
+      const user = await db.user.findUnique({
         where: { username, deactivated: false },
         include: {
           blockedUsers: {
@@ -555,13 +560,13 @@ export const userRouter = createTRPCRouter({
         (blockedUser) => blockedUser.blockedUserId
       );
 
-      const isBlocked = blockedUsers.includes(ctx.userId);
+      const isBlocked = blockedUsers.includes(userId);
 
       if (isBlocked) {
         throw new TRPCError({ code: 'FORBIDDEN' });
       }
 
-      const likedPosts = await ctx.db.like.findMany({
+      const likedPosts = await db.like.findMany({
         where: {
           userId: user.id,
           post: {
@@ -570,7 +575,7 @@ export const userRouter = createTRPCRouter({
               {
                 hiddenBy: {
                   none: {
-                    userId: ctx.userId,
+                    userId,
                   },
                 },
               },
@@ -579,17 +584,17 @@ export const userRouter = createTRPCRouter({
                   deactivated: false,
                   mutedByUsers: {
                     none: {
-                      mutedByUserId: ctx.userId,
+                      mutedByUserId: userId,
                     },
                   },
                   blockedByUsers: {
                     none: {
-                      blockingUserId: ctx.userId,
+                      blockingUserId: userId,
                     },
                   },
                   blockedUsers: {
                     none: {
-                      blockedUserId: ctx.userId,
+                      blockedUserId: userId,
                     },
                   },
                 },
@@ -617,9 +622,9 @@ export const userRouter = createTRPCRouter({
                   ...GET_USER,
                 },
               },
-              ...getLikesWithBlockFilter(ctx.userId),
-              ...getBookmarksWithBlockFilter(ctx.userId),
-              ...getPostRepliesCount(ctx.userId),
+              ...getLikesWithBlockFilter(userId),
+              ...getBookmarksWithBlockFilter(userId),
+              ...getPostRepliesCount(userId),
               reposts: {
                 ...GET_REPOSTS,
                 orderBy: {
@@ -661,7 +666,8 @@ export const userRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { username, limit = 20, cursor }, ctx }) => {
-      const user = await ctx.db.user.findUnique({
+      const { userId, db } = ctx;
+      const user = await db.user.findUnique({
         where: {
           username,
           deactivated: false,
@@ -669,7 +675,7 @@ export const userRouter = createTRPCRouter({
         select: {
           id: true,
           privacy: true,
-          followers: { where: { id: ctx.userId } },
+          followers: { where: { id: userId } },
         },
       });
 
@@ -678,14 +684,14 @@ export const userRouter = createTRPCRouter({
       }
 
       const isPublic = user.privacy === Privacy.PUBLIC;
-      const isOwnProfile = user.id === ctx.userId;
+      const isOwnProfile = user.id === userId;
       const isFollowing = user.followers.length > 0;
 
       if (!isPublic && !isOwnProfile && !isFollowing) {
         return { posts: [], nextCursor: undefined };
       }
 
-      const likedPosts = await ctx.db.like.findMany({
+      const likedPosts = await db.like.findMany({
         where: {
           userId: user.id,
           post: {
@@ -694,7 +700,7 @@ export const userRouter = createTRPCRouter({
               {
                 hiddenBy: {
                   none: {
-                    userId: ctx.userId,
+                    userId,
                   },
                 },
               },
@@ -703,17 +709,17 @@ export const userRouter = createTRPCRouter({
                   deactivated: false,
                   mutedByUsers: {
                     none: {
-                      mutedByUserId: ctx.userId,
+                      mutedByUserId: userId,
                     },
                   },
                   blockedByUsers: {
                     none: {
-                      blockingUserId: ctx.userId,
+                      blockingUserId: userId,
                     },
                   },
                   blockedUsers: {
                     none: {
-                      blockedUserId: ctx.userId,
+                      blockedUserId: userId,
                     },
                   },
                 },
@@ -745,8 +751,8 @@ export const userRouter = createTRPCRouter({
                   ...GET_USER,
                 },
               },
-              ...getLikesWithBlockFilter(ctx.userId),
-              ...getBookmarksWithBlockFilter(ctx.userId),
+              ...getLikesWithBlockFilter(userId),
+              ...getBookmarksWithBlockFilter(userId),
               reposts: {
                 ...GET_REPOSTS,
                 orderBy: {
@@ -802,7 +808,8 @@ export const userRouter = createTRPCRouter({
         if (filters.includes('ALL') || filters.length === 0) {
           filters = ['ALL'];
         }
-        const user = await ctx.db.user.findUnique({
+        const { userId, db } = ctx;
+        const user = await db.user.findUnique({
           where: {
             username,
           },
@@ -857,7 +864,7 @@ export const userRouter = createTRPCRouter({
           whereCondition = { OR: conditions };
         }
 
-        const posts = await ctx.db.post.findMany({
+        const posts = await db.post.findMany({
           where: whereCondition,
           take: limit + 1,
           cursor: cursor ? { createdAt_id: cursor } : undefined,
@@ -882,7 +889,7 @@ export const userRouter = createTRPCRouter({
                 parentPost: {
                   select: {
                     id: true,
-                    ...getAuthorAndHiddenSelect(ctx.userId),
+                    ...getAuthorAndHiddenSelect(userId),
                   },
                 },
                 repliesCount: true,
@@ -891,9 +898,9 @@ export const userRouter = createTRPCRouter({
                 pinned: true,
                 privacy: true,
                 replies: true,
-                ...getAuthorAndHiddenSelect(ctx.userId),
-                ...getLikesWithBlockFilter(ctx.userId),
-                ...getBookmarksWithBlockFilter(ctx.userId),
+                ...getAuthorAndHiddenSelect(userId),
+                ...getLikesWithBlockFilter(userId),
+                ...getBookmarksWithBlockFilter(userId),
                 reposts: {
                   ...GET_REPOSTS,
                   orderBy: {
@@ -911,9 +918,9 @@ export const userRouter = createTRPCRouter({
             pinned: true,
             privacy: true,
             replies: true,
-            ...getAuthorAndHiddenSelect(ctx.userId),
-            ...getLikesWithBlockFilter(ctx.userId),
-            ...getBookmarksWithBlockFilter(ctx.userId),
+            ...getAuthorAndHiddenSelect(userId),
+            ...getLikesWithBlockFilter(userId),
+            ...getBookmarksWithBlockFilter(userId),
             ...GET_MENTIONS,
             ...GET_LINK_PREVIEW,
             reposts: {
@@ -1013,10 +1020,10 @@ export const userRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { user } = ctx;
+      const { user, db } = ctx;
       const { bio, image } = input;
       const email = getUserEmail(user);
-      const dbUser = await ctx.db.user.findUnique({
+      const dbUser = await db.user.findUnique({
         where: {
           email: email,
         },
@@ -1031,7 +1038,7 @@ export const userRouter = createTRPCRouter({
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
 
-      const updatedUser = await ctx.db.user.update({
+      const updatedUser = await db.user.update({
         where: { id: dbUser.id },
         data: {
           image,
@@ -1067,7 +1074,8 @@ export const userRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { username, limit = 20, cursor }, ctx }) => {
-      const isUser = await ctx.db.user.findUnique({
+      const { userId, db } = ctx;
+      const isUser = await db.user.findUnique({
         where: {
           username,
         },
@@ -1077,7 +1085,7 @@ export const userRouter = createTRPCRouter({
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
 
-      const userProfileInfo = await ctx.db.post.findMany({
+      const userProfileInfo = await db.post.findMany({
         where: {
           author: {
             username,
@@ -1111,7 +1119,7 @@ export const userRouter = createTRPCRouter({
               parentPost: {
                 select: {
                   id: true,
-                  ...getAuthorAndHiddenSelect(ctx.userId),
+                  ...getAuthorAndHiddenSelect(userId),
                 },
               },
               repliesCount: true,
@@ -1120,9 +1128,9 @@ export const userRouter = createTRPCRouter({
               pinned: true,
               privacy: true,
               replies: true,
-              ...getAuthorAndHiddenSelect(ctx.userId),
-              ...getLikesWithBlockFilter(ctx.userId),
-              ...getBookmarksWithBlockFilter(ctx.userId),
+              ...getAuthorAndHiddenSelect(userId),
+              ...getLikesWithBlockFilter(userId),
+              ...getBookmarksWithBlockFilter(userId),
               reposts: {
                 ...GET_REPOSTS,
                 orderBy: {
@@ -1140,9 +1148,9 @@ export const userRouter = createTRPCRouter({
           turnOffComments: true,
           pinned: true,
           privacy: true,
-          ...getAuthorAndHiddenSelect(ctx.userId),
-          ...getLikesWithBlockFilter(ctx.userId),
-          ...getBookmarksWithBlockFilter(ctx.userId),
+          ...getAuthorAndHiddenSelect(userId),
+          ...getLikesWithBlockFilter(userId),
+          ...getBookmarksWithBlockFilter(userId),
           replies: true,
           reposts: {
             ...GET_REPOSTS,
@@ -1225,7 +1233,8 @@ export const userRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { username, limit = 20, cursor }, ctx }) => {
-      const isUser = await ctx.db.user.findUnique({
+      const { userId, db } = ctx;
+      const isUser = await db.user.findUnique({
         where: {
           username,
         },
@@ -1235,7 +1244,7 @@ export const userRouter = createTRPCRouter({
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
 
-      const userReposts = await ctx.db.repost.findMany({
+      const userReposts = await db.repost.findMany({
         where: {
           userId: isUser.id,
         },
@@ -1273,8 +1282,8 @@ export const userRouter = createTRPCRouter({
               turnOffComments: true,
               pinned: true,
               privacy: true,
-              ...getAuthorAndHiddenSelect(ctx.userId),
-              ...getLikesWithBlockFilter(ctx.userId),
+              ...getAuthorAndHiddenSelect(userId),
+              ...getLikesWithBlockFilter(userId),
               replies: true,
               reposts: {
                 ...GET_REPOSTS,
@@ -1282,7 +1291,7 @@ export const userRouter = createTRPCRouter({
                   createdAt: 'desc',
                 },
               },
-              ...getBookmarksWithBlockFilter(ctx.userId),
+              ...getBookmarksWithBlockFilter(userId),
               ...GET_MENTIONS,
               ...GET_LINK_PREVIEW,
             },
@@ -1344,7 +1353,7 @@ export const userRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { userId } = ctx;
+      const { userId, db } = ctx;
       const { id: targetUserId } = input;
 
       if (userId === targetUserId) {
@@ -1354,7 +1363,7 @@ export const userRouter = createTRPCRouter({
         });
       }
 
-      const targetUser = await ctx.db.user.findUnique({
+      const targetUser = await db.user.findUnique({
         where: { id: targetUserId },
         select: { privacy: true },
       });
@@ -1363,19 +1372,19 @@ export const userRouter = createTRPCRouter({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found.' });
       }
 
-      const isFollowing = await ctx.db.user.findFirst({
+      const isFollowing = await db.user.findFirst({
         where: { id: userId, following: { some: { id: targetUserId } } },
       });
 
       if (isFollowing) {
-        await ctx.db.user.update({
+        await db.user.update({
           where: { id: userId },
           data: { following: { disconnect: { id: targetUserId } } },
         });
         return { status: 'NOT_FOLLOWING' };
       }
 
-      const existingRequest = await ctx.db.followRequest.findUnique({
+      const existingRequest = await db.followRequest.findUnique({
         where: {
           requesterId_receiverId: {
             requesterId: userId,
@@ -1385,14 +1394,14 @@ export const userRouter = createTRPCRouter({
       });
 
       if (existingRequest?.status === 'PENDING') {
-        await ctx.db.followRequest.delete({
+        await db.followRequest.delete({
           where: { id: existingRequest.id },
         });
         return { status: 'NOT_FOLLOWING' };
       }
 
       if (targetUser.privacy === Privacy.PUBLIC) {
-        await ctx.db.$transaction(async (prisma) => {
+        await db.$transaction(async (prisma) => {
           await prisma.user.update({
             where: { id: userId },
             data: { following: { connect: { id: targetUserId } } },
@@ -1408,7 +1417,7 @@ export const userRouter = createTRPCRouter({
         });
         return { status: 'FOLLOWING' };
       } else {
-        await ctx.db.$transaction(async (prisma) => {
+        await db.$transaction(async (prisma) => {
           await prisma.followRequest.create({
             data: {
               requesterId: userId,
@@ -1440,8 +1449,9 @@ export const userRouter = createTRPCRouter({
       if (!searchQuery || searchQuery.trim() === '') {
         return [];
       }
+      const { userId, db } = ctx;
 
-      const allUsers = await ctx.db.user.findMany({
+      const allUsers = await db.user.findMany({
         where: {
           AND: [
             {
@@ -1460,7 +1470,7 @@ export const userRouter = createTRPCRouter({
                 },
               ],
             },
-            { id: { not: ctx.userId } },
+            { id: { not: userId } },
           ],
         },
         take: 10,
@@ -1490,7 +1500,8 @@ export const userRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { limit = 20, cursor, searchQuery }, ctx }) => {
-      const allUsers = await ctx.db.user.findMany({
+      const { db } = ctx;
+      const allUsers = await db.user.findMany({
         where: searchQuery
           ? {
               OR: [
@@ -1533,7 +1544,8 @@ export const userRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { searchQuery }, ctx }) => {
-      const allUsers = await ctx.db.user.findMany({
+      const { db } = ctx;
+      const allUsers = await db.user.findMany({
         where: {
           username: { contains: searchQuery },
           deactivated: false,
@@ -1563,12 +1575,13 @@ export const userRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { username, limit = 20, cursor, sortBy }, ctx }) => {
-      const user = await ctx.db.user.findUnique({
+      const { userId, db } = ctx;
+      const user = await db.user.findUnique({
         where: { username },
         select: {
           id: true,
           privacy: true,
-          followers: { where: { id: ctx.userId } },
+          followers: { where: { id: userId } },
         },
       });
 
@@ -1577,14 +1590,14 @@ export const userRouter = createTRPCRouter({
       }
 
       const isPublic = user.privacy === Privacy.PUBLIC;
-      const isOwnProfile = user.id === ctx.userId;
+      const isOwnProfile = user.id === userId;
       const isFollowing = user.followers.length > 0;
 
       if (!isPublic && !isOwnProfile && !isFollowing) {
         return { followers: [], nextCursor: undefined };
       }
 
-      const followers = await ctx.db.user.findMany({
+      const followers = await db.user.findMany({
         where: {
           following: {
             some: {
@@ -1630,12 +1643,13 @@ export const userRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { username, limit = 20, cursor, sortBy }, ctx }) => {
-      const user = await ctx.db.user.findUnique({
+      const { userId, db } = ctx;
+      const user = await db.user.findUnique({
         where: { username },
         select: {
           id: true,
           privacy: true,
-          followers: { where: { id: ctx.userId } },
+          followers: { where: { id: userId } },
         },
       });
 
@@ -1644,14 +1658,14 @@ export const userRouter = createTRPCRouter({
       }
 
       const isPublic = user.privacy === Privacy.PUBLIC;
-      const isOwnProfile = user.id === ctx.userId;
+      const isOwnProfile = user.id === userId;
       const isFollowing = user.followers.length > 0;
 
       if (!isPublic && !isOwnProfile && !isFollowing) {
         return { following: [], nextCursor: undefined };
       }
 
-      const following = await ctx.db.user.findMany({
+      const following = await db.user.findMany({
         where: {
           followers: {
             some: {
@@ -1692,7 +1706,7 @@ export const userRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { userId: currentUserId } = ctx;
+      const { userId: currentUserId, db } = ctx;
 
       if (currentUserId === input.userId) {
         throw new TRPCError({
@@ -1706,19 +1720,19 @@ export const userRouter = createTRPCRouter({
         mutedByUserId: currentUserId,
       };
 
-      const existingMute = await ctx.db.mutedUser.findUnique({
+      const existingMute = await db.mutedUser.findUnique({
         where: {
           mutedUserId_mutedByUserId: data,
         },
       });
 
       if (existingMute == null) {
-        await ctx.db.mutedUser.create({
+        await db.mutedUser.create({
           data,
         });
         return { muted: true };
       } else {
-        await ctx.db.mutedUser.delete({
+        await db.mutedUser.delete({
           where: {
             mutedUserId_mutedByUserId: data,
           },
@@ -1734,7 +1748,7 @@ export const userRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { userId } = ctx;
+      const { userId, db } = ctx;
       const { targetUserId } = input;
 
       if (userId === targetUserId) {
@@ -1745,7 +1759,7 @@ export const userRouter = createTRPCRouter({
       }
 
       try {
-        const existingBlock = await ctx.db.blockedUser.findUnique({
+        const existingBlock = await db.blockedUser.findUnique({
           where: {
             blockedUserId_blockingUserId: {
               blockedUserId: targetUserId,
@@ -1755,7 +1769,7 @@ export const userRouter = createTRPCRouter({
         });
 
         if (existingBlock) {
-          await ctx.db.blockedUser.delete({
+          await db.blockedUser.delete({
             where: {
               blockedUserId_blockingUserId: {
                 blockedUserId: targetUserId,
@@ -1770,7 +1784,7 @@ export const userRouter = createTRPCRouter({
           };
         }
 
-        return await ctx.db.$transaction(async (prisma) => {
+        return await db.$transaction(async (prisma) => {
           await prisma.blockedUser.create({
             data: {
               blockingUserId: userId,
@@ -1817,13 +1831,13 @@ export const userRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { userId } = ctx;
+      const { userId, db } = ctx;
       const newPrivacyStatus = input.isPrivate
         ? Privacy.PRIVATE
         : Privacy.PUBLIC;
 
       if (newPrivacyStatus === Privacy.PUBLIC) {
-        await ctx.db.$transaction(async (prisma) => {
+        await db.$transaction(async (prisma) => {
           const pendingRequests = await prisma.followRequest.findMany({
             where: {
               receiverId: userId,
@@ -1872,7 +1886,7 @@ export const userRouter = createTRPCRouter({
           }
         });
       } else {
-        await ctx.db.user.update({
+        await db.user.update({
           where: { id: userId },
           data: { privacy: newPrivacyStatus },
         });
@@ -1882,9 +1896,11 @@ export const userRouter = createTRPCRouter({
     }),
 
   getMe: privateProcedure.query(async ({ ctx }) => {
-    const user = await ctx.db.user.findUnique({
+    const { userId, db } = ctx;
+
+    const user = await db.user.findUnique({
       where: {
-        id: ctx.userId,
+        id: userId,
       },
       select: {
         ...GET_USER,
@@ -1913,19 +1929,21 @@ export const userRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
-      if (!ctx.userId) {
+      const { userId, db } = ctx;
+
+      if (!userId) {
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
 
-      const blockedUsers = await ctx.db.blockedUser.findMany({
+      const blockedUsers = await db.blockedUser.findMany({
         where: {
-          blockingUserId: ctx.userId,
+          blockingUserId: userId,
         },
         cursor: cursor
           ? {
               blockedUserId_blockingUserId: {
                 blockedUserId: cursor.blockedUserId,
-                blockingUserId: ctx.userId,
+                blockingUserId: userId,
               },
             }
           : undefined,
@@ -1961,7 +1979,7 @@ export const userRouter = createTRPCRouter({
         const nextItem = formattedBlockedUsers[limit];
         nextCursor = {
           blockedUserId: nextItem.id,
-          blockingUserId: ctx.userId,
+          blockingUserId: userId,
         };
         formattedBlockedUsers.length = limit;
       }
@@ -1985,19 +2003,21 @@ export const userRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
-      if (!ctx.userId) {
+      const { userId, db } = ctx;
+
+      if (!userId) {
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
 
-      const mutedUsers = await ctx.db.mutedUser.findMany({
+      const mutedUsers = await db.mutedUser.findMany({
         where: {
-          mutedByUserId: ctx.userId,
+          mutedByUserId: userId,
         },
         cursor: cursor
           ? {
               mutedUserId_mutedByUserId: {
                 mutedUserId: cursor.mutedUserId,
-                mutedByUserId: ctx.userId,
+                mutedByUserId: userId,
               },
             }
           : undefined,
@@ -2033,7 +2053,7 @@ export const userRouter = createTRPCRouter({
         const nextItem = formattedMutedUsers[limit];
         nextCursor = {
           mutedUserId: nextItem.id,
-          mutedByUserId: ctx.userId,
+          mutedByUserId: userId,
         };
         formattedMutedUsers.length = limit;
       }
@@ -2044,8 +2064,9 @@ export const userRouter = createTRPCRouter({
       };
     }),
   reactivateAccount: privateProcedure.mutation(async ({ ctx }) => {
-    const user = await ctx.db.user.findUnique({
-      where: { id: ctx.userId },
+    const { userId, db } = ctx;
+    const user = await db.user.findUnique({
+      where: { id: userId },
       select: { deactivated: true },
     });
 
@@ -2060,8 +2081,8 @@ export const userRouter = createTRPCRouter({
       });
     }
 
-    await ctx.db.user.update({
-      where: { id: ctx.userId },
+    await db.user.update({
+      where: { id: userId },
       data: {
         deactivated: false,
         deactivatedAt: null,

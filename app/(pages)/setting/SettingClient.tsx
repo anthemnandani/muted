@@ -10,7 +10,7 @@ const SettingClient = () => {
   const sectionRefs = useSettingRefs();
 
   return (
-    <SettingsLayout sectionRefs={sectionRefs} isLoading={isLoading}>
+    <SettingsLayout sectionRefs={sectionRefs} isLoading={isLoading} isMainPage>
       {user && <SettingPanel sectionRefs={sectionRefs} user={user} />}
     </SettingsLayout>
   );

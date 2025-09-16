@@ -50,6 +50,7 @@ model User {
   reactions                MessageReaction[]
   messageDeletions         MessageDeletion[]
   mutedChats               MutedChat[]
+  filteredKeywords         FilteredKeyword[]
   messageReportSubmissions MessageReport[]   @relation("MessageReportSubmissions")
   messageReportTargets     MessageReport[]   @relation("MessageReportTargets")
   sentFollowRequests       FollowRequest[]   @relation("SentFollowRequests")
@@ -359,9 +360,9 @@ model Chat {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  senderId   String? 
+  senderId   String?
   receiverId String?
-  sender     User?   @relation("Sender", fields: [senderId], references: [id], onDelete: SetNull) 
+  sender     User?   @relation("Sender", fields: [senderId], references: [id], onDelete: SetNull)
   receiver   User?   @relation("Receiver", fields: [receiverId], references: [id], onDelete: SetNull)
 
   lastMessageAt DateTime?
@@ -532,4 +533,24 @@ model FollowRequest {
   @@unique([requesterId, receiverId])
   @@index([requesterId])
   @@index([receiverId])
+}
+
+enum FeedType {
+  FOR_YOU
+  FOLLOWING
+  FRIENDS
+}
+
+model FilteredKeyword {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  keyword String
+  feeds   FeedType[]
+
+  @@unique([userId, keyword])
+  @@index([userId])
 }
