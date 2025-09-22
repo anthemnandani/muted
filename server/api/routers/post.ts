@@ -2,6 +2,7 @@ import { DownloadableData, type PostMedia } from '@/lib/types';
 import {
   capitalizeFirstLetter,
   extractHashtags,
+  formatDateAndTime,
   formatUTCDate,
   getTotalRepliesCount,
   getUserEmail,
@@ -2218,14 +2219,17 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         options: z.array(z.nativeEnum(DownloadableData)),
+        format: z.enum(['txt', 'json']).default('txt'),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const { userId, db } = ctx;
-      const { options } = input;
+      const { options, format } = input;
       const zip = new JSZip();
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || '';
       const noDataMessage = 'You have no data in this section';
+
+      const jsonData: Record<string, any> = {};
 
       if (options.includes(DownloadableData.Posts)) {
         const posts = await db.post.findMany({
@@ -2248,21 +2252,34 @@ export const postRouter = createTRPCRouter({
             createdAt: 'desc',
           },
         });
-        let postsContent = '';
-        for (const post of posts) {
-          const postData = [
-            `Datetime: ${formatUTCDate(post.createdAt)}`,
-            `Link: ${baseUrl}/post/${post.id}`,
-            `Likes: ${post._count.likes}`,
-            `Who can view: ${capitalizeFirstLetter(post.privacy)}`,
-            `Allow comments: ${post.turnOffComments ? 'No' : 'Yes'}`,
-            `Text: ${post.text ?? post.threadText ?? 'N/A'}`,
-          ];
-          postsContent += postData.join('\n') + '\n\n';
+        if (format === 'json') {
+          jsonData.Post = {
+            Posts: posts.map((post) => ({
+              Date: formatDateAndTime(post.createdAt),
+              Link: `${baseUrl}/post/${post.id}`,
+              Likes: post._count.likes.toString(),
+              WhoCanView: capitalizeFirstLetter(post.privacy.toLowerCase()),
+              AllowComments: post.turnOffComments ? 'No' : 'Yes',
+              Text: post.text ?? post.threadText ?? 'N/A',
+            })),
+          };
+        } else {
+          let postsContent = '';
+          for (const post of posts) {
+            const postData = [
+              `Datetime: ${formatUTCDate(post.createdAt)}`,
+              `Link: ${baseUrl}/post/${post.id}`,
+              `Likes: ${post._count.likes}`,
+              `Who can view: ${capitalizeFirstLetter(post.privacy)}`,
+              `Allow comments: ${post.turnOffComments ? 'No' : 'Yes'}`,
+              `Text: ${post.text ?? post.threadText ?? 'N/A'}`,
+            ];
+            postsContent += postData.join('\n') + '\n\n';
+          }
+          zip
+            .folder('Posts')
+            ?.file('Posts.txt', postsContent.trim() || noDataMessage);
         }
-        zip
-          .folder('Posts')
-          ?.file('Posts.txt', postsContent.trim() || noDataMessage);
       }
 
       if (options.includes(DownloadableData.Comments)) {
@@ -2280,18 +2297,29 @@ export const postRouter = createTRPCRouter({
           },
         });
 
-        let commentsContent = '';
-        for (const comment of comments) {
-          const commentData = [
-            `Date: ${formatUTCDate(comment.createdAt)}`,
-            `Comment: ${comment.text}`,
-          ];
-          commentsContent += commentData.join('\n') + '\n\n';
-        }
+        if (format === 'json') {
+          jsonData.Comment = {
+            Comments: {
+              CommentsList: comments.map((comment) => ({
+                date: formatDateAndTime(comment.createdAt),
+                comment: comment.text,
+              })),
+            },
+          };
+        } else {
+          let commentsContent = '';
+          for (const comment of comments) {
+            const commentData = [
+              `Date: ${formatUTCDate(comment.createdAt)}`,
+              `Comment: ${comment.text}`,
+            ];
+            commentsContent += commentData.join('\n') + '\n\n';
+          }
 
-        zip
-          .folder('Comments')
-          ?.file('Comments.txt', commentsContent.trim() || noDataMessage);
+          zip
+            .folder('Comments')
+            ?.file('Comments.txt', commentsContent.trim() || noDataMessage);
+        }
       }
 
       if (options.includes(DownloadableData.DirectMessages)) {
@@ -2315,153 +2343,116 @@ export const postRouter = createTRPCRouter({
             },
           },
         });
-        let dmContent = '';
-        for (const chat of chats) {
-          const partner =
-            chat.sender?.id === userId ? chat.receiver : chat.sender;
+        if (format === 'json') {
+          const chatHistory = chats.reduce((acc, chat) => {
+            const partner =
+              chat.sender?.id === userId ? chat.receiver : chat.sender;
+            if (partner) {
+              acc[`Chat History with ${partner.username}:`] = chat.messages.map(
+                (msg) => ({
+                  Date: formatDateAndTime(msg.createdAt),
+                  From: msg.sender?.username ?? 'Unknown User',
+                  Content: msg.content,
+                })
+              );
+            }
+            return acc;
+          }, {} as Record<string, any>);
 
-          if (!partner) continue;
+          jsonData['Direct Message'] = {
+            'Direct Messages': { ChatHistory: chatHistory },
+          };
+        } else {
+          let dmContent = '';
+          for (const chat of chats) {
+            const partner =
+              chat.sender?.id === userId ? chat.receiver : chat.sender;
 
-          dmContent += `>>> Chat History with ${partner.username}::\n\n`;
+            if (!partner) continue;
 
-          for (const message of chat.messages) {
-            const senderUsername = message.sender?.username ?? 'Unknown User';
-            dmContent += `${formatUTCDate(
-              message.createdAt
-            )} ${senderUsername}: ${message.content}\n`;
+            dmContent += `>>> Chat History with ${partner.username}::\n\n`;
+
+            for (const message of chat.messages) {
+              const senderUsername = message.sender?.username ?? 'Unknown User';
+              dmContent += `${formatUTCDate(
+                message.createdAt
+              )} ${senderUsername}: ${message.content}\n`;
+            }
+            dmContent += '\n';
           }
-          dmContent += '\n';
+          zip
+            .folder('Direct Messages')
+            ?.file('Direct Messages.txt', dmContent.trim() || noDataMessage);
         }
-        zip
-          .folder('Direct Messages')
-          ?.file('Direct Messages.txt', dmContent.trim() || noDataMessage);
       }
 
       if (options.includes(DownloadableData.LikesAndFavorites)) {
-        const likesAndFavoritesFolder = zip.folder('Likes and Favorites');
-        const bookmarks = await db.bookmark.findMany({
-          where: { userId },
-          select: {
-            createdAt: true,
-            post: { select: { id: true } },
-          },
-          orderBy: { createdAt: 'desc' },
-        });
+        const [bookmarks, likes] = await Promise.all([
+          db.bookmark.findMany({
+            where: { userId },
+            select: { createdAt: true, post: { select: { id: true } } },
+            orderBy: { createdAt: 'desc' },
+          }),
+          db.like.findMany({
+            where: { userId },
+            select: { createdAt: true, post: { select: { id: true } } },
+            orderBy: { createdAt: 'desc' },
+          }),
+        ]);
 
-        let favoritesContent = '';
-        for (const bookmark of bookmarks) {
-          if (bookmark.post) {
-            favoritesContent += `Date: ${formatUTCDate(bookmark.createdAt)}\n`;
-            favoritesContent += `Link: ${baseUrl}/post/${bookmark.post.id}\n\n`;
+        if (format === 'json') {
+          jsonData['Likes and Favorites'] = {
+            'Favorite Items': {
+              FavoriteItemList: bookmarks.map((b) => ({
+                Date: formatDateAndTime(b.createdAt),
+                Link: `${baseUrl}/post/${b.post.id}`,
+              })),
+            },
+            'Like List': {
+              ItemFavoriteList: likes.map((l) => ({
+                date: formatDateAndTime(l.createdAt),
+                link: `${baseUrl}/post/${l.post.id}`,
+              })),
+            },
+          };
+        } else {
+          const likesAndFavoritesFolder = zip.folder('Likes and Favorites');
+          let favoritesContent = '';
+          for (const bookmark of bookmarks) {
+            if (bookmark.post) {
+              favoritesContent += `Date: ${formatUTCDate(
+                bookmark.createdAt
+              )}\nLink: ${baseUrl}/post/${bookmark.post.id}\n\n`;
+            }
           }
-        }
-        likesAndFavoritesFolder?.file(
-          'Favorite Items.txt',
-          favoritesContent.trim() || noDataMessage
-        );
-
-        const likes = await db.like.findMany({
-          where: { userId },
-          select: {
-            createdAt: true,
-            post: { select: { id: true } },
-          },
-          orderBy: { createdAt: 'desc' },
-        });
-
-        let likesContent = '';
-        for (const like of likes) {
-          if (like.post) {
-            likesContent += `Date: ${formatUTCDate(like.createdAt)}\n`;
-            likesContent += `Link: ${baseUrl}/post/${like.post.id}\n\n`;
+          likesAndFavoritesFolder?.file(
+            'Favorite Items.txt',
+            favoritesContent.trim() || noDataMessage
+          );
+          let likesContent = '';
+          for (const like of likes) {
+            if (like.post) {
+              likesContent += `Date: ${formatUTCDate(
+                like.createdAt
+              )}\nLink: ${baseUrl}/post/${like.post.id}\n\n`;
+            }
           }
+          likesAndFavoritesFolder?.file(
+            'Like List.txt',
+            likesContent.trim() || noDataMessage
+          );
         }
-        likesAndFavoritesFolder?.file(
-          'Like List.txt',
-          likesContent.trim() || noDataMessage
-        );
       }
 
       if (options.includes(DownloadableData.ProfileAndSettings)) {
-        const profileFolder = zip.folder('Profile and Settings');
-        // Block List
-        const blockedUsers = await db.blockedUser.findMany({
-          where: { blockingUserId: userId },
-          select: {
-            createdAt: true,
-            blockedUser: { select: { username: true } },
-          },
-          orderBy: { createdAt: 'desc' },
-        });
-        let blockContent = '';
-        for (const user of blockedUsers) {
-          blockContent += `Date: ${formatUTCDate(user.createdAt)}\n`;
-          blockContent += `Username: ${user.blockedUser.username}\n\n`;
-        }
-        profileFolder?.file(
-          'Block List.txt',
-          blockContent.trim() || noDataMessage
-        );
-
-        // Mute List
-        const mutedUsers = await db.mutedUser.findMany({
-          where: { mutedByUserId: userId },
-          select: {
-            createdAt: true,
-            mutedUser: { select: { username: true } },
-          },
-          orderBy: { createdAt: 'desc' },
-        });
-        let muteContent = '';
-        for (const user of mutedUsers) {
-          muteContent += `Date: ${formatUTCDate(user.createdAt)}\n`;
-          muteContent += `Username: ${user.mutedUser.username}\n\n`;
-        }
-        profileFolder?.file(
-          'Mute List.txt',
-          muteContent.trim() || noDataMessage
-        );
-
-        // Follower
-        const followers = await db.follow.findMany({
-          where: { followingId: userId },
-          select: {
-            createdAt: true,
-            follower: { select: { username: true } },
-          },
-          orderBy: { createdAt: 'desc' },
-        });
-        let followContent = '';
-        for (const user of followers) {
-          followContent += `Date: ${formatUTCDate(user.createdAt)}\n`;
-          followContent += `Username: ${user.follower.username}\n\n`;
-        }
-        profileFolder?.file(
-          'Follower.txt',
-          followContent.trim() || noDataMessage
-        );
-
-        // Following
-        const following = await db.follow.findMany({
-          where: { followerId: userId },
-          select: {
-            createdAt: true,
-            following: { select: { username: true } },
-          },
-          orderBy: { createdAt: 'desc' },
-        });
-        let followingContent = '';
-        for (const user of following) {
-          followingContent += `Date: ${formatUTCDate(user.createdAt)}\n`;
-          followingContent += `Username: ${user.following.username}\n\n`;
-        }
-        profileFolder?.file(
-          'Following.txt',
-          followingContent.trim() || noDataMessage
-        );
-
-        // Profile Information and Settings
-        const [userProfile, filteredKeywords] = await Promise.all([
+        const [
+          userProfile,
+          blockedUsers,
+          mutedUsers,
+          followers,
+          following,
+          filteredKeywords,
+        ] = await Promise.all([
           db.user.findUnique({
             where: { id: userId },
             select: {
@@ -2470,63 +2461,191 @@ export const postRouter = createTRPCRouter({
               email: true,
               bio: true,
               privacy: true,
+              _count: { select: { followers: true, following: true } },
             },
+          }),
+          db.blockedUser.findMany({
+            where: { blockingUserId: userId },
+            select: {
+              createdAt: true,
+              blockedUser: { select: { username: true } },
+            },
+            orderBy: { createdAt: 'desc' },
+          }),
+          db.mutedUser.findMany({
+            where: { mutedByUserId: userId },
+            select: {
+              createdAt: true,
+              mutedUser: { select: { username: true } },
+            },
+            orderBy: { createdAt: 'desc' },
+          }),
+          db.follow.findMany({
+            where: { followingId: userId },
+            select: {
+              createdAt: true,
+              follower: { select: { username: true } },
+            },
+            orderBy: { createdAt: 'desc' },
+          }),
+          db.follow.findMany({
+            where: { followerId: userId },
+            select: {
+              createdAt: true,
+              following: { select: { username: true } },
+            },
+            orderBy: { createdAt: 'desc' },
           }),
           db.filteredKeyword.findMany({
             where: { userId },
-            select: {
-              keyword: true,
-              feeds: true,
-            },
+            select: { keyword: true, feeds: true },
           }),
         ]);
 
-        if (userProfile) {
-          const totalLikesReceived = await db.like.count({
-            where: {
-              post: { authorId: userId },
+        const totalLikesReceived = await db.like.count({
+          where: { post: { authorId: userId } },
+        });
+
+        const forYouKeywords = filteredKeywords
+          .filter((fk) => fk.feeds.includes(FeedType.FOR_YOU))
+          .map((fk) => fk.keyword);
+
+        const followingKeywords = filteredKeywords
+          .filter((fk) => fk.feeds.includes(FeedType.FOLLOWING))
+          .map((fk) => fk.keyword);
+
+        const privateAccountStatus =
+          userProfile?.privacy === Privacy.PRIVATE ? 'Enabled' : 'Disabled';
+
+        if (format === 'json' && userProfile) {
+          jsonData['Profile And Settings'] = {
+            'Block List': {
+              BlockList: blockedUsers.map((u) => ({
+                Date: formatDateAndTime(u.createdAt),
+                Username: u.blockedUser.username,
+              })),
             },
-          });
-
-          const profileData = [
-            `Profile Photo: ${userProfile.image ?? 'None'}`,
-            `Username: ${userProfile.username}`,
-            `Email Address: ${userProfile.email ?? 'None'}`,
-            `Bio Description: ${userProfile.bio ?? '...'}`,
-            `Like(s) Received: ${totalLikesReceived}`,
-          ];
-          const profileInfoContent = profileData.join('\n');
+            'Mute List': {
+              MuteList: mutedUsers.map((u) => ({
+                Date: formatDateAndTime(u.createdAt),
+                Username: u.mutedUser.username,
+              })),
+            },
+            Follower: {
+              FansList: followers.map((u) => ({
+                Date: formatDateAndTime(u.createdAt),
+                Username: u.follower.username,
+              })),
+            },
+            Following: {
+              Following: following.map((u) => ({
+                Date: formatDateAndTime(u.createdAt),
+                Username: u.following.username,
+              })),
+            },
+            'Profile Info': {
+              ProfileMap: {
+                bioDescription: userProfile.bio ?? '...',
+                displayName: userProfile.username,
+                emailAddress: userProfile.email ?? 'None',
+                followerCount: userProfile._count.followers,
+                followingCount: userProfile._count.following,
+                likesReceived: totalLikesReceived.toString(),
+                profilePhoto: userProfile.image ?? '',
+                username: userProfile.username,
+              },
+            },
+            Settings: {
+              SettingsMap: {
+                'Content Preferences': {
+                  'Keyword filters for videos in Following feed':
+                    followingKeywords,
+                  'Keyword filters for videos in For You feed': forYouKeywords,
+                },
+                'Private Account': privateAccountStatus,
+              },
+            },
+          };
+        } else {
+          const profileFolder = zip.folder('Profile and Settings');
+          let blockContent = '';
+          for (const user of blockedUsers) {
+            blockContent += `Date: ${formatUTCDate(
+              user.createdAt
+            )}\nUsername: ${user.blockedUser.username}\n\n`;
+          }
           profileFolder?.file(
-            'Profile Information.txt',
-            profileInfoContent.trim() || noDataMessage
+            'Block List.txt',
+            blockContent.trim() || noDataMessage
           );
 
-          const privateAccountStatus =
-            userProfile.privacy === Privacy.PRIVATE ? 'Enabled' : 'Disabled';
-
-          const forYouKeywords = filteredKeywords
-            .filter((fk) => fk.feeds.includes(FeedType.FOR_YOU))
-            .map((fk) => fk.keyword);
-
-          const followingKeywords = filteredKeywords
-            .filter((fk) => fk.feeds.includes(FeedType.FOLLOWING))
-            .map((fk) => fk.keyword);
-
-          const settingsData = [
-            `Private Account: ${privateAccountStatus}`,
-            `Keyword filters for videos in For You feed: [${forYouKeywords.join(
-              ', '
-            )}]`,
-            `Keyword filters for videos in Following feed: [${followingKeywords.join(
-              ', '
-            )}]`,
-          ];
-          const settingsContent = settingsData.join('\n');
+          let muteContent = '';
+          for (const user of mutedUsers) {
+            muteContent += `Date: ${formatUTCDate(user.createdAt)}\nUsername: ${
+              user.mutedUser.username
+            }\n\n`;
+          }
           profileFolder?.file(
-            'Settings.txt',
-            settingsContent.trim() || noDataMessage
+            'Mute List.txt',
+            muteContent.trim() || noDataMessage
           );
+
+          let followContent = '';
+          for (const user of followers) {
+            followContent += `Date: ${formatUTCDate(
+              user.createdAt
+            )}\nUsername: ${user.follower.username}\n\n`;
+          }
+          profileFolder?.file(
+            'Follower.txt',
+            followContent.trim() || noDataMessage
+          );
+
+          let followingContent = '';
+          for (const user of following) {
+            followingContent += `Date: ${formatUTCDate(
+              user.createdAt
+            )}\nUsername: ${user.following.username}\n\n`;
+          }
+          profileFolder?.file(
+            'Following.txt',
+            followingContent.trim() || noDataMessage
+          );
+
+          if (userProfile) {
+            const profileData = [
+              `Profile Photo: ${userProfile.image ?? 'None'}`,
+              `Username: ${userProfile.username}`,
+              `Email Address: ${userProfile.email ?? 'None'}`,
+              `Bio Description: ${userProfile.bio ?? '...'}`,
+              `Like(s) Received: ${totalLikesReceived}`,
+            ];
+            const profileInfoContent = profileData.join('\n');
+            profileFolder?.file(
+              'Profile Information.txt',
+              profileInfoContent.trim() || noDataMessage
+            );
+
+            const settingsData = [
+              `Private Account: ${privateAccountStatus}`,
+              `Keyword filters for videos in For You feed: [${forYouKeywords.join(
+                ', '
+              )}]`,
+              `Keyword filters for videos in Following feed: [${followingKeywords.join(
+                ', '
+              )}]`,
+            ];
+            const settingsContent = settingsData.join('\n');
+            profileFolder?.file(
+              'Settings.txt',
+              settingsContent.trim() || noDataMessage
+            );
+          }
         }
+      }
+
+      if (format === 'json' && Object.keys(jsonData).length > 0) {
+        zip.file('user_data_muted.json', JSON.stringify(jsonData, null, 2));
       }
 
       const zipAsBase64 = await zip.generateAsync({ type: 'base64' });

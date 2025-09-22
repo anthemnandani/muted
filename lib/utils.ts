@@ -669,6 +669,10 @@ export const formatUTCDate = (date: Date) => {
   return format(date, "yyyy-MM-dd HH:mm:ss 'UTC'");
 };
 
+export const formatDateAndTime = (date: Date) => {
+  return format(date, 'yyyy-MM-dd HH:mm:ss');
+};
+
 export const capitalizeFirstLetter = (
   str: string | null | undefined
 ): string => {

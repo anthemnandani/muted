@@ -16,6 +16,7 @@ const customDataOptions = Object.values(DownloadableData);
 
 const DownloadDataClient = () => {
   const sectionRefs = useSettingRefs();
+  const [dataFormat, setDataFormat] = useState<'json' | 'txt'>('txt');
   const [selectedDataOption, setSelectedDataOption] = useState('all');
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
 
@@ -24,7 +25,7 @@ const DownloadDataClient = () => {
       onSuccess: (data) => {
         const link = document.createElement('a');
         link.href = `data:application/zip;base64,${data.zipData}`;
-        link.download = `Muted_Data_${Date.now()}}.zip`;
+        link.download = `Muted_Data_${Date.now()}.zip`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -52,7 +53,7 @@ const DownloadDataClient = () => {
       return;
     }
 
-    downloadData({ options: selectedOptions });
+    downloadData({ options: selectedOptions, format: dataFormat });
   };
 
   const handleCheckboxChange = (option: string, isChecked: boolean) => {
@@ -87,7 +88,10 @@ const DownloadDataClient = () => {
         </div>
         <div className='max-h-[80vh] flex flex-col overflow-y-auto'>
           <div className='bg-[#242424] p-4 rounded-lg mt-4'>
-            <RadioGroup defaultValue='txt'>
+            <RadioGroup
+              value={dataFormat}
+              onValueChange={(value: 'json' | 'txt') => setDataFormat(value)}
+            >
               <div className='flex-between'>
                 <span className='text-base'>TXT</span>
                 <RadioGroupItem value='txt' />
