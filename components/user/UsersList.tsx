@@ -1,20 +1,10 @@
 import SearchQueryOption from '@/app/(pages)/search/components/SearchQueryOption';
 import UserCard from '@/components/cards/UserCard';
 import { Icons } from '@/components/icons';
-import { AuthorInfoProps } from '@/lib/types';
-import React from 'react';
+import { UsersListProps } from '@/lib/types';
+import { Fragment } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import Loader from '../shared/Loader';
-
-interface UsersListProps {
-  isLoading: boolean;
-  users?: AuthorInfoProps[];
-  fetchNextPage: () => void;
-  hasNextPage: boolean | undefined;
-  type: 'users' | 'followings' | 'followers';
-  showDetails?: boolean;
-  searchQuery?: string;
-}
 
 const UsersList: React.FC<UsersListProps> = ({
   isLoading,
@@ -26,7 +16,7 @@ const UsersList: React.FC<UsersListProps> = ({
   searchQuery,
 }) => {
   return (
-    <>
+    <Fragment>
       {!isLoading && users?.length === 0 && type !== 'users' && (
         <div className='h-[50vh] w-full flex-center text-gray-3'>
           <p>No {type} found.</p>
@@ -36,7 +26,7 @@ const UsersList: React.FC<UsersListProps> = ({
         {isLoading ? (
           <Loader className='md:!h-[80vh]' />
         ) : (
-          <React.Fragment>
+          <Fragment>
             {searchQuery && <SearchQueryOption searchQuery={searchQuery} />}
 
             <InfiniteScroll
@@ -58,10 +48,10 @@ const UsersList: React.FC<UsersListProps> = ({
                 />
               ))}
             </InfiniteScroll>
-          </React.Fragment>
+          </Fragment>
         )}
       </div>
-    </>
+    </Fragment>
   );
 };
 

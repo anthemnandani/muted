@@ -664,3 +664,16 @@ export const formatFeedsToString = (feeds: string[]): string => {
 
   return formatted.join(', ');
 };
+
+export const formatUTCDate = (date: Date) => {
+  return format(date, "yyyy-MM-dd HH:mm:ss 'UTC'");
+};
+
+export const capitalizeFirstLetter = (
+  str: string | null | undefined
+): string => {
+  if (!str) {
+    return '';
+  }
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};

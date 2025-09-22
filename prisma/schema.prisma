@@ -8,6 +8,11 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum Privacy {
+  PUBLIC
+  PRIVATE
+}
+
 model User {
   id                       String            @id
   createdAt                DateTime          @default(now()) @map(name: "created_at")
@@ -24,8 +29,8 @@ model User {
   deactivatedAt            DateTime?
   deletionOtp              String?
   deletionOtpExpiresAt     DateTime?
-  followers                User[]            @relation(name: "followers")
-  following                User[]            @relation(name: "followers")
+  followers                Follow[]          @relation("Followers")
+  following                Follow[]          @relation("Following")
   posts                    Post[]
   likedPosts               Like[]
   isAdmin                  Boolean?          @default(false) @map(name: "is_admin")
@@ -59,9 +64,11 @@ model User {
   @@unique([createdAt, id])
 }
 
-enum Privacy {
-  PUBLIC
-  PRIVATE
+enum PostPrivacy {
+  FOLLOWERS
+  FOLLOWED
+  ANYONE
+  MENTIONED
 }
 
 model Post {
@@ -99,6 +106,19 @@ model Post {
   @@index([authorId])
   @@index([parentPostId])
   @@index([path])
+}
+
+model Follow {
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
 }
 
 model Mention {
@@ -199,13 +219,6 @@ model Notification {
   @@index([receiverUserId])
   @@index([senderUserId])
   @@index([type])
-}
-
-enum PostPrivacy {
-  FOLLOWERS
-  FOLLOWED
-  ANYONE
-  MENTIONED
 }
 
 model Hashtag {

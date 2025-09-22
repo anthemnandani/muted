@@ -12,14 +12,12 @@ export const GET_USER = {
   isAdmin: true,
   followers: {
     select: {
-      id: true,
-      image: true,
+      followerId: true,
     },
   },
   following: {
     select: {
-      id: true,
-      image: true,
+      followingId: true,
     },
   },
 };
@@ -40,6 +38,11 @@ export const GET_REPOSTS = {
     user: {
       select: {
         ...GET_USER,
+        followers: {
+          select: {
+            followerId: true,
+          },
+        },
         blockedUsers: {
           select: {
             blockedUserId: true,
@@ -263,7 +266,7 @@ export const getPrivacyFilter = (userId: string | null) => {
         author: {
           followers: {
             some: {
-              id: userId,
+              followerId: userId,
             },
           },
         },

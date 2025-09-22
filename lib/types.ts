@@ -68,16 +68,10 @@ export type UserProfileInfoProps = {
   isAdmin: boolean | null;
   receivedFollowRequests: FollowRequest[];
   followers: {
-    id: string;
-    username: string;
-    fullName: string | null;
-    image: string | null;
+    followerId: string;
   }[];
   following: {
-    id: string;
-    username: string;
-    fullName: string | null;
-    image: string | null;
+    followingId: string;
   }[];
   posts: {
     id: string;
@@ -1256,4 +1250,22 @@ export interface AddKeywordProps {
   onSaveSuccess: () => void;
   onCancel: () => void;
   keywordToEdit?: FilteredKeyword | null;
+}
+
+export enum DownloadableData {
+  Posts = 'Posts',
+  Comments = 'Comments',
+  DirectMessages = 'Direct Messages',
+  LikesAndFavorites = 'Likes and Favorites',
+  ProfileAndSettings = 'Profile and Settings',
+}
+
+export interface UsersListProps {
+  isLoading: boolean;
+  users?: AuthorInfoProps[];
+  fetchNextPage: () => void;
+  hasNextPage: boolean | undefined;
+  type: 'users' | 'followings' | 'followers';
+  showDetails?: boolean;
+  searchQuery?: string;
 }

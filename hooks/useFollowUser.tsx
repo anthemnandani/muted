@@ -16,7 +16,7 @@ const useFollowUser = ({ author }: { author: AuthorInfoProps }) => {
 
   useEffect(() => {
     const isFollowing = author.followers.some(
-      (follower) => follower.id === loggedUser?.id
+      (follower) => follower.followerId === loggedUser?.id
     );
     const isRequested = author.receivedFollowRequests?.some(
       (req) => req.requesterId === loggedUser?.id

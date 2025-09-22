@@ -5,7 +5,6 @@ import useCopyLink from '@/hooks/useCopyLink';
 import { UserProfileInfoProps } from '@/lib/types';
 import { cn, formatCount } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
-import { Privacy } from '@prisma/client';
 import { Lock, Settings } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';

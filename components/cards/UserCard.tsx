@@ -59,9 +59,9 @@ const UserCard: React.FC<UserCardProps> = (props) => {
               <div className='flex flex-col w-full'>
                 <Username
                   author={authorProps}
-                  className='text-[15px] text-black dark:text-[#f3f5f7] font-semibold'
+                  className='text-[15px] text-white/90 font-semibold'
                 />
-                <span className='text-[15px] text-[#999] dark:text-gray-3 antialiased break-words text-ellipsis'>
+                <span className='text-[15px] text-white/60 antialiased break-words text-ellipsis'>
                   {fullName}
                 </span>
               </div>

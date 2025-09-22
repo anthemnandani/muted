@@ -461,20 +461,23 @@ export const chatRouter = createTRPCRouter({
           };
         }
 
-        const currentUser = await db.user.findUnique({
-          where: { id: userId },
-          include: {
-            following: { where: { id: input.otherUserId } },
-            followers: { where: { id: input.otherUserId } },
+        const isFollowing = await db.follow.findUnique({
+          where: {
+            followerId_followingId: {
+              followerId: userId,
+              followingId: input.otherUserId,
+            },
           },
         });
 
-        if (!currentUser) {
-          throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' });
-        }
-
-        const isFollowing = currentUser?.following.length > 0;
-        const isFollowedBy = currentUser?.followers.length > 0;
+        const isFollowedBy = await db.follow.findUnique({
+          where: {
+            followerId_followingId: {
+              followerId: input.otherUserId,
+              followingId: userId,
+            },
+          },
+        });
         const areMutualFriends = isFollowing && isFollowedBy;
 
         const newChat = await db.chat.create({

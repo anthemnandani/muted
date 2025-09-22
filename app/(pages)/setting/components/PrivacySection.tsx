@@ -133,17 +133,22 @@ const PrivacySection: React.FC<PrivacySectionProps> = ({
             />
           </Link>
         )}
-        <h3 className='text-lg font-medium text-white/90 mx-4 my-3 antialiased'>
-          Data
-        </h3>
-        <SettingRow
-          title='Download your data'
-          description='Get a copy of your Muted data'
-          control={
-            <Icons.chevronRight style={{ fill: '#fff', fillOpacity: '0.34' }} />
-          }
-          isButton
-        />
+        <Link href='/setting/download-your-data'>
+          <h3 className='text-lg font-medium text-white/90 mx-4 my-3 antialiased'>
+            Data
+          </h3>
+
+          <SettingRow
+            title='Download your data'
+            description='Get a copy of your Muted data'
+            control={
+              <Icons.chevronRight
+                style={{ fill: '#fff', fillOpacity: '0.34' }}
+              />
+            }
+            isButton
+          />
+        </Link>
       </SettingSection>
 
       <PrivacyConfirmation

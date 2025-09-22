@@ -36,11 +36,11 @@ export const usePostInteraction = ({
     switch (privacy) {
       case 'FOLLOWERS':
         return userInfo.userDetails.following.some(
-          (user) => user.id === authorId
+          (user) => user.followingId === authorId
         );
       case 'FOLLOWED':
         return userInfo.userDetails.followers.some(
-          (user) => user.id === authorId
+          (user) => user.followerId === authorId
         );
       case 'MENTIONED':
         return mentions.some((mention) => mention.user.id === loggedUser.id);

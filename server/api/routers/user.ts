@@ -190,7 +190,7 @@ export const userRouter = createTRPCRouter({
           },
           id: true,
           privacy: true,
-          followers: { where: { id: userId } },
+          followers: { where: { followerId: userId } },
         },
       });
 
@@ -418,7 +418,7 @@ export const userRouter = createTRPCRouter({
         select: {
           id: true,
           privacy: true,
-          followers: { where: { id: userId } },
+          followers: { where: { followerId: userId } },
         },
       });
 
@@ -675,7 +675,7 @@ export const userRouter = createTRPCRouter({
         select: {
           id: true,
           privacy: true,
-          followers: { where: { id: userId } },
+          followers: { where: { followerId: userId } },
         },
       });
 
@@ -1372,14 +1372,23 @@ export const userRouter = createTRPCRouter({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found.' });
       }
 
-      const isFollowing = await db.user.findFirst({
-        where: { id: userId, following: { some: { id: targetUserId } } },
+      const existingFollow = await db.follow.findUnique({
+        where: {
+          followerId_followingId: {
+            followerId: userId,
+            followingId: targetUserId,
+          },
+        },
       });
 
-      if (isFollowing) {
-        await db.user.update({
-          where: { id: userId },
-          data: { following: { disconnect: { id: targetUserId } } },
+      if (existingFollow) {
+        await db.follow.delete({
+          where: {
+            followerId_followingId: {
+              followerId: userId,
+              followingId: targetUserId,
+            },
+          },
         });
         return { status: 'NOT_FOLLOWING' };
       }
@@ -1402,9 +1411,11 @@ export const userRouter = createTRPCRouter({
 
       if (targetUser.privacy === Privacy.PUBLIC) {
         await db.$transaction(async (prisma) => {
-          await prisma.user.update({
-            where: { id: userId },
-            data: { following: { connect: { id: targetUserId } } },
+          await prisma.follow.create({
+            data: {
+              followerId: userId,
+              followingId: targetUserId,
+            },
           });
           await prisma.notification.create({
             data: {
@@ -1581,7 +1592,7 @@ export const userRouter = createTRPCRouter({
         select: {
           id: true,
           privacy: true,
-          followers: { where: { id: userId } },
+          followers: { where: { followerId: userId } },
         },
       });
 
@@ -1597,31 +1608,34 @@ export const userRouter = createTRPCRouter({
         return { followers: [], nextCursor: undefined };
       }
 
-      const followers = await db.user.findMany({
-        where: {
-          following: {
-            some: {
-              id: user.id,
-            },
-          },
-        },
+      const followRecords = await db.follow.findMany({
+        where: { followingId: user.id },
         take: limit + 1,
         cursor: cursor
-          ? { id: cursor.id, createdAt: cursor.createdAt }
+          ? {
+              followerId_followingId: {
+                followerId: cursor.id,
+                followingId: user.id,
+              },
+            }
           : undefined,
         orderBy: [{ createdAt: sortBy === 'latest' ? 'desc' : 'asc' }],
         select: {
-          ...GET_USER,
+          createdAt: true,
+          follower: {
+            select: { ...GET_USER },
+          },
         },
       });
 
       let nextCursor: typeof cursor | undefined;
+      const followers = followRecords.map((f) => f.follower);
 
       if (followers.length > limit) {
-        const nextItem = followers.pop();
-        if (nextItem != null) {
+        const nextItem = followRecords.pop();
+        if (nextItem) {
           nextCursor = {
-            id: nextItem.id,
+            id: nextItem.follower.id,
             createdAt: nextItem.createdAt,
           };
         }
@@ -1649,7 +1663,7 @@ export const userRouter = createTRPCRouter({
         select: {
           id: true,
           privacy: true,
-          followers: { where: { id: userId } },
+          followers: { where: { followerId: userId } },
         },
       });
 
@@ -1665,29 +1679,34 @@ export const userRouter = createTRPCRouter({
         return { following: [], nextCursor: undefined };
       }
 
-      const following = await db.user.findMany({
-        where: {
-          followers: {
-            some: {
-              id: user.id,
-            },
-          },
-        },
+      const followingRecords = await db.follow.findMany({
+        where: { followerId: user.id },
         take: limit + 1,
-        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        cursor: cursor
+          ? {
+              followerId_followingId: {
+                followerId: user.id,
+                followingId: cursor.id,
+              },
+            }
+          : undefined,
         orderBy: [{ createdAt: sortBy === 'latest' ? 'desc' : 'asc' }],
         select: {
-          ...GET_USER,
+          createdAt: true,
+          following: {
+            select: { ...GET_USER },
+          },
         },
       });
 
       let nextCursor: typeof cursor | undefined;
+      const following = followingRecords.map((f) => f.following);
 
       if (following.length > limit) {
-        const nextItem = following.pop();
-        if (nextItem != null) {
+        const nextItem = followingRecords.pop();
+        if (nextItem) {
           nextCursor = {
-            id: nextItem.id,
+            id: nextItem.following.id,
             createdAt: nextItem.createdAt,
           };
         }
@@ -1792,21 +1811,12 @@ export const userRouter = createTRPCRouter({
             },
           });
 
-          await prisma.user.update({
-            where: { id: userId },
-            data: {
-              following: {
-                disconnect: { id: targetUserId },
-              },
-            },
-          });
-
-          await prisma.user.update({
-            where: { id: targetUserId },
-            data: {
-              following: {
-                disconnect: { id: userId },
-              },
+          await prisma.follow.deleteMany({
+            where: {
+              OR: [
+                { followerId: userId, followingId: targetUserId },
+                { followerId: targetUserId, followingId: userId },
+              ],
             },
           });
 
@@ -1848,19 +1858,18 @@ export const userRouter = createTRPCRouter({
             },
           });
 
-          if (pendingRequests.length > 0) {
-            const requesterIds = pendingRequests.map((req) => ({
-              id: req.requesterId,
-            }));
+          await prisma.user.update({
+            where: { id: userId },
+            data: { privacy: newPrivacyStatus },
+          });
 
-            await prisma.user.update({
-              where: { id: userId },
-              data: {
-                privacy: newPrivacyStatus,
-                followers: {
-                  connect: requesterIds,
-                },
-              },
+          if (pendingRequests.length > 0) {
+            await prisma.follow.createMany({
+              data: pendingRequests.map((req) => ({
+                followerId: req.requesterId,
+                followingId: userId,
+              })),
+              skipDuplicates: true,
             });
 
             await prisma.notification.createMany({
@@ -1958,7 +1967,7 @@ export const userRouter = createTRPCRouter({
               fullName: true,
               bio: true,
               followers: {
-                select: { id: true },
+                select: { followerId: true },
               },
             },
           },
@@ -2032,7 +2041,7 @@ export const userRouter = createTRPCRouter({
               fullName: true,
               bio: true,
               followers: {
-                select: { id: true },
+                select: { followerId: true },
               },
             },
           },

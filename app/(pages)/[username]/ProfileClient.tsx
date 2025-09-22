@@ -57,7 +57,9 @@ const ProfileClient = ({ username }: { username: string }) => {
 
   const isFollower = useMemo(
     () =>
-      profileDetails?.followers?.some((follower) => follower.id === user?.id),
+      profileDetails?.followers?.some(
+        (follower) => follower.followerId === user?.id
+      ),
     [profileDetails, user]
   );
 

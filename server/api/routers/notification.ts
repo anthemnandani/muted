@@ -491,11 +491,12 @@ export const notificationRouter = createTRPCRouter({
       await db.$transaction(async (prisma) => {
         await prisma.followRequest.delete({ where: { id: requestId } });
 
-        await prisma.user.update({
-          where: { id: request.requesterId },
-          data: { following: { connect: { id: userId } } },
+        await prisma.follow.create({
+          data: {
+            followerId: request.requesterId,
+            followingId: userId,
+          },
         });
-
         await prisma.notification.create({
           data: {
             type: NotificationType.FOLLOWER,

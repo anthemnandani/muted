@@ -55,6 +55,7 @@
     "framer-motion": "^12.6.3",
     "handlebars": "^4.7.8",
     "input-otp": "^1.4.2",
+    "jszip": "^3.10.1",
     "lodash": "^4.17.21",
     "lucide-react": "^0.292.0",
     "mongodb": "^6.3.0",
