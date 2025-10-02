@@ -1,3 +1,4 @@
+import { adminRouter } from './routers/admin';
 import { authRouter } from './routers/auth';
 import { chatRouter } from './routers/chat';
 import { collectionRouter } from './routers/collection';
@@ -21,6 +22,7 @@ export const appRouter = createTRPCRouter({
   notification: notificationRouter,
   chat: chatRouter,
   keyword: keywordRouter,
+  admin: adminRouter,
 });
 
 export type AppRouter = typeof appRouter;

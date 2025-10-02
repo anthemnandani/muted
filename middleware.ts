@@ -1,33 +1,19 @@
 import { authMiddleware } from '@clerk/nextjs';
+import { NextResponse } from 'next/server';
 
 export default authMiddleware({
-  publicRoutes: ['/api(.*)'],
-  // async afterAuth(auth, req) {
-  //   if (auth.isPublicRoute) {
-  //     return NextResponse.next();
-  //   }
+  publicRoutes: ['/api/webhooks/clerk'],
+  afterAuth(auth, req) {
+    if (auth.userId && req.nextUrl.pathname.startsWith('/admin')) {
+      const userRole = auth.sessionClaims?.publicMetadata?.role;
 
-  //   const url = new URL(req.nextUrl.origin);
-
-  //   if (!auth.userId) {
-  //     url.pathname = '/sign-in';
-  //     return NextResponse.redirect(url);
-  //   }
-
-  //   const user = await clerkClient.users.getUser(auth.userId);
-
-  //   if (!user) {
-  //     throw new Error('User not found.');
-  //   }
-
-  //   if (!user.privateMetadata.role) {
-  //     await clerkClient.users.updateUserMetadata(auth.userId, {
-  //       privateMetadata: {
-  //         role: 'user',
-  //       },
-  //     });
-  //   }
-  // },
+      if (userRole !== 'ADMIN') {
+        const homeUrl = new URL('/', req.url);
+        return NextResponse.redirect(homeUrl);
+      }
+    }
+    return NextResponse.next();
+  },
 });
 
 export const config = {

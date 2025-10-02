@@ -6,6 +6,7 @@ import { IncomingHttpHeaders } from 'http';
 import { getFullName } from '@/lib/utils';
 import { db } from '@/server/db';
 import { NextResponse } from 'next/server';
+import { clerkClient } from '@clerk/nextjs/server';
 
 type EventType = 'user.created' | 'user.deleted';
 
@@ -75,6 +76,12 @@ export const POST = async (request: Request) => {
             privacy: 'PUBLIC',
           },
         });
+      });
+
+      await clerkClient.users.updateUserMetadata(id, {
+        publicMetadata: {
+          role: 'USER',
+        },
       });
 
       return NextResponse.json(

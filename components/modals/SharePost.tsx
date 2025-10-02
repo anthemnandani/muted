@@ -1,5 +1,5 @@
-import { useRepost } from '@/hooks/useRepost';
 import { SharePostProps } from '@/lib/types';
+import { useUser } from '@clerk/nextjs';
 import { X } from 'lucide-react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../ui/dialog';
-import { useUser } from '@clerk/nextjs';
+import { useRepost } from '@/hooks/useRepost';
 
 const SharePost: React.FC<SharePostProps> = ({
   id,
@@ -48,7 +48,11 @@ const SharePost: React.FC<SharePostProps> = ({
     <div className='flex flex-col items-center'>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <button className='btn-action mt-2 mb-1.5'>
+          <button
+            type='button'
+            title='Share'
+            className='btn-action mt-2 mb-1.5'
+          >
             <Icons.share className='size-6' />
           </button>
         </DialogTrigger>

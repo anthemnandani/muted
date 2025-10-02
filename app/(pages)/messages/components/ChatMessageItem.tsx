@@ -223,6 +223,7 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
               type='button'
               className='p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-white/10'
               disabled={isDeleting}
+              title='Emojis'
             >
               <Icons.chatSmile />
             </button>
@@ -266,6 +267,7 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
             <button
               type='button'
               className='p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-white/10'
+              title='More'
             >
               <MoreHorizontal className='size-4' />
             </button>

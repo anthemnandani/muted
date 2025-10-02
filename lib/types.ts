@@ -1269,3 +1269,20 @@ export interface UsersListProps {
   showDetails?: boolean;
   searchQuery?: string;
 }
+
+type ChartData = {
+  date: string;
+  value: number;
+};
+
+export interface DashboardChartsProps {
+  usersChartData: ChartData[];
+  postsChartData: ChartData[];
+}
+
+export interface SectionCardsProps {
+  totalUsers: number;
+  totalPosts: number;
+  newUsers24h: number;
+  activeUsers24h: number;
+}

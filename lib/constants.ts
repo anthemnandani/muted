@@ -4,6 +4,16 @@ import {
   type ProfileFilter,
   ReportCategories,
 } from './types';
+import {
+  BarChart3,
+  FileText,
+  Flag,
+  LayoutDashboard,
+  LogOut,
+  Settings,
+  Shield,
+  Users,
+} from 'lucide-react';
 
 export const UPLOAD_CONSTRAINTS = {
   MAX_ITEMS: 10,
@@ -904,5 +914,42 @@ export const DELETE_USER_POINTS = [
   {
     id: 3,
     text: "Information that isn't stored in your account, such as direct messages, may still be visible to others.",
+  },
+];
+
+export const ADMIN_MENU_ITEMS = [
+  {
+    title: 'Dashboard',
+    url: '/',
+    icon: LayoutDashboard,
+    isActive: true,
+  },
+  {
+    title: 'Content Moderation',
+    url: '/moderation',
+    icon: FileText,
+  },
+  {
+    title: 'User Management',
+    url: '/users',
+    icon: Users,
+  },
+  {
+    title: 'Reports',
+    url: '/reports',
+    icon: Flag,
+  },
+];
+
+export const ADMIN_ACCOUNT_ITEMS = [
+  {
+    title: 'Settings',
+    url: '/settings',
+    icon: Settings,
+  },
+  {
+    title: 'Logout',
+    url: '/logout',
+    icon: LogOut,
   },
 ];

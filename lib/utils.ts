@@ -681,3 +681,27 @@ export const capitalizeFirstLetter = (
   }
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 };
+
+export const getChartDataTemplate = (daysCount: number) => {
+  const days = Array.from({ length: daysCount }, (_, i) => {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    return date.toISOString().split('T')[0];
+  }).reverse();
+
+  return days.map((date) => ({ date, value: 0 }));
+};
+
+export const tickFormatter = (value: string) => {
+  const date = new Date(value);
+  return date.toLocaleDateString('en-US', { month: 'short' });
+};
+
+export const tooltipLabelFormatter = (value: string) => {
+  const date = new Date(value);
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+};

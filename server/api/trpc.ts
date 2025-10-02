@@ -4,6 +4,7 @@ import { type NextRequest } from 'next/server';
 import superjson from 'superjson';
 import { ZodError } from 'zod';
 import { db } from '../db';
+import { Role } from '@prisma/client';
 
 interface CreateContextOptions {
   headers: Headers;
@@ -56,6 +57,25 @@ const isAuth = middleware(async (opts) => {
   });
 });
 
+const isAdmin = middleware(async (opts) => {
+  const { userId } = opts.ctx;
+
+  const userFromDb = await db.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!userFromDb || userFromDb.role !== Role.ADMIN) {
+    throw new TRPCError({ code: 'FORBIDDEN' });
+  }
+
+  return opts.next({
+    ctx: {
+      userId,
+    },
+  });
+});
+
 export const createTRPCRouter = t.router;
 export const publicProcedure = t.procedure;
 export const privateProcedure = t.procedure.use(isAuth);
+export const adminProcedure = t.procedure.use(isAdmin);
