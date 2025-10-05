@@ -23,12 +23,12 @@ const MenuLink: React.FC<MenuLinkProps> = ({
     <Link
       href={route}
       onClick={handleClick}
-      className='relative size-12 flex-center rounded-xl hover:bg-primary transition-colors duration-150'
+      className='relative size-12 flex-center rounded-xl hover:bg-primary-2 transition-colors duration-150'
     >
       <Icon
         className={cn(
           'size-6 transition-colors duration-150',
-          isActive ? 'text-foreground' : 'text-secondary'
+          isActive ? 'text-foreground' : 'text-secondary-2'
         )}
         fill={isActive && addFill ? 'currentColor' : 'transparent'}
       />

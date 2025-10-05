@@ -13,11 +13,17 @@ import {
 } from '@/components/ui/sidebar';
 import useHomeNavigation from '@/hooks/useHomeNavigation';
 import { ADMIN_ACCOUNT_ITEMS, ADMIN_MENU_ITEMS } from '@/lib/constants';
+import { cn } from '@/lib/utils';
+import { useAuth } from '@clerk/nextjs';
+import { LogOut } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 const AdminSidebar = () => {
   const { handleHomeClick } = useHomeNavigation();
+  const { signOut } = useAuth();
+  const pathname = usePathname();
   return (
     <Sidebar>
       <SidebarHeader className='p-4'>
@@ -47,8 +53,11 @@ const AdminSidebar = () => {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
-                    isActive={item.isActive}
-                    className='text-white/60 hover:text-white/90 hover:bg-white/5 data-[active=true]:bg-white/5 data-[active=true]:text-white/90'
+                    isActive={pathname === item.url}
+                    className={cn(
+                      'text-white/60 hover:text-white/90 hover:bg-white/5',
+                      'data-[active=true]:bg-white/5 data-[active=true]:text-white/90'
+                    )}
                   >
                     <Link href={item.url} className='flex items-center gap-3'>
                       <item.icon className='size-4' />
@@ -71,6 +80,7 @@ const AdminSidebar = () => {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
+                    isActive={pathname === item.url}
                     className='text-white/60 hover:text-white/90 hover:bg-white/5'
                   >
                     <Link href={item.url} className='flex items-center gap-3'>
@@ -80,6 +90,21 @@ const AdminSidebar = () => {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  className='text-white/60 hover:text-white/90 hover:bg-white/5'
+                >
+                  <button
+                    type='button'
+                    onClick={() => signOut()}
+                    className='flex items-center gap-3'
+                  >
+                    <LogOut className='size-4' />
+                    <span>Logout</span>
+                  </button>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

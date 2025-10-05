@@ -11,7 +11,12 @@ import {
   getPostRepliesCount,
 } from '@/server/constants';
 import { clerkClient } from '@clerk/nextjs/server';
-import { FollowRequestStatus, NotificationType, Privacy } from '@prisma/client';
+import {
+  FollowRequestStatus,
+  NotificationType,
+  PostStatus,
+  Privacy,
+} from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '../trpc';
@@ -70,6 +75,7 @@ export const userRouter = createTRPCRouter({
           posts: {
             where: {
               parentPostId: null,
+              status: PostStatus.VISIBLE,
             },
             take: limit + 1,
             cursor: cursor ? { createdAt_id: cursor } : undefined,
@@ -220,6 +226,7 @@ export const userRouter = createTRPCRouter({
         where: {
           authorId: user.id,
           parentPostId: null,
+          status: PostStatus.VISIBLE,
           hiddenBy: {
             none: {
               userId,
@@ -317,6 +324,7 @@ export const userRouter = createTRPCRouter({
           post: {
             AND: [
               { parentPostId: null },
+              { status: PostStatus.VISIBLE },
               {
                 hiddenBy: {
                   none: {
@@ -440,6 +448,7 @@ export const userRouter = createTRPCRouter({
           post: {
             AND: [
               { parentPostId: null },
+              { status: PostStatus.VISIBLE },
               {
                 hiddenBy: {
                   none: {
@@ -572,6 +581,7 @@ export const userRouter = createTRPCRouter({
           post: {
             AND: [
               { parentPostId: null },
+              { status: PostStatus.VISIBLE },
               {
                 hiddenBy: {
                   none: {
@@ -697,6 +707,7 @@ export const userRouter = createTRPCRouter({
           post: {
             AND: [
               { parentPostId: null },
+              { status: PostStatus.VISIBLE },
               {
                 hiddenBy: {
                   none: {

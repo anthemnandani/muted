@@ -12,7 +12,7 @@ import {
 } from '@/server/constants';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure, publicProcedure } from '../trpc';
-import { Prisma } from '@prisma/client';
+import { PostStatus, Prisma } from '@prisma/client';
 
 export const searchRouter = createTRPCRouter({
   trackSearch: publicProcedure
@@ -83,6 +83,7 @@ export const searchRouter = createTRPCRouter({
                 },
               },
               { privacy: 'ANYONE' },
+              { status: PostStatus.VISIBLE },
               { author: { deactivated: false } },
               getPrivacyFilter(userId!),
               { parentPostId: null },
@@ -186,6 +187,7 @@ export const searchRouter = createTRPCRouter({
           {
             parentPostId: null,
           },
+          { status: PostStatus.VISIBLE },
           {
             hiddenBy: {
               none: {
@@ -329,6 +331,7 @@ export const searchRouter = createTRPCRouter({
           {
             parentPostId: null,
           },
+          { status: PostStatus.VISIBLE },
           {
             hiddenBy: {
               none: {
@@ -541,6 +544,7 @@ export const searchRouter = createTRPCRouter({
           {
             parentPostId: null,
           },
+          { status: PostStatus.VISIBLE },
           {
             hiddenBy: {
               none: {
@@ -688,6 +692,7 @@ export const searchRouter = createTRPCRouter({
           {
             parentPostId: null,
           },
+          { status: PostStatus.VISIBLE },
           {
             hiddenBy: {
               none: {

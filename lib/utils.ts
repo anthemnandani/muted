@@ -19,6 +19,8 @@ import {
 import { twMerge } from 'tailwind-merge';
 import {
   type AspectRatio,
+  type ContentType,
+  type AdminPost,
   Message,
   ParentPostProps,
   type PostMedia,
@@ -704,4 +706,36 @@ export const tooltipLabelFormatter = (value: string) => {
     day: 'numeric',
     year: 'numeric',
   });
+};
+
+export const getContentType = (post: AdminPost) => {
+  if (post.threadText) return 'TEXT';
+  if (post.media?.length > 0) {
+    const fileType = post.media[0].fileType;
+    if (fileType === 'image') return 'IMAGE';
+    if (fileType === 'video') return 'VIDEO';
+  }
+};
+
+export const getContentTypeBadgeClass = (type: ContentType) => {
+  const badgeStyles = {
+    IMAGE: 'border-transparent bg-blue-700/70 text-zinc-300 hover:bg-blue-700',
+    VIDEO:
+      'border-transparent bg-yellow-700/70 text-zinc-300 hover:bg-yellow-700',
+    TEXT: 'border-transparent bg-green-700/70 text-zinc-300 hover:bg-green-700',
+  };
+  switch (type) {
+    case 'IMAGE':
+      return badgeStyles['IMAGE'];
+    case 'VIDEO':
+      return badgeStyles['VIDEO'];
+    case 'TEXT':
+    default:
+      return badgeStyles['TEXT'];
+  }
+};
+
+export const getPostThumbnail = (media?: PostMedia) => {
+  if (!media) return '';
+  return media?.fileType === 'image' ? media?.fileUrl : media?.thumbnailUrl;
 };

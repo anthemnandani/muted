@@ -17,11 +17,17 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
-    --primary: 0, 0%, 0%, 0.04;
-    --primary-foreground: 0, 0%, 0%, 0.04;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 0, 0%, 72%;
+    --primary-2: 0, 0%, 0%, 0.04;
+    --primary-foreground-2: 0, 0%, 0%, 0.04;
+
+    --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
+
+    --secondary-2: 0, 0%, 72%;
+    --secondary-foreground-2: 240 5.9% 10%;
 
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
@@ -32,7 +38,7 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0, 0%, 85%;
+    --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 240 10% 3.9%;
 
@@ -55,7 +61,7 @@
   }
 
   .dark {
-    --background: 0, 0%, 6.27%;
+    --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
 
     --card: 240 10% 3.9%;
@@ -64,11 +70,17 @@
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 60, 100%, 52%, 0.05;
-    --primary-foreground: 0, 0%, 4%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
 
-    --secondary: 0, 0%, 30%;
+    --primary-2: 60, 100%, 52%, 0.05;
+    --primary-foreground-2: 0, 0%, 4%;
+
+    --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
+
+    --secondary-2: 0, 0%, 30%;
+    --secondary-foreground-2: 0 0% 98%;
 
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
@@ -79,7 +91,7 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0, 0%, 20%;
+    --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
 
@@ -312,7 +324,7 @@
 
   /* Dropdown */
   .dropdown-content-container {
-    @apply bg-background shadow-xl dark:bg-gray-6 z-[1000];
+    @apply shadow-xl bg-transparent z-[1000];
   }
 
   .dropdown-menu-item {

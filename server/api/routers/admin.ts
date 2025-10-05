@@ -1,6 +1,8 @@
-import { getChartDataTemplate } from '@/lib/utils';
+import { PostMedia } from '@/lib/types';
+import { getChartDataTemplate, getTotalRepliesCount } from '@/lib/utils';
+import { GET_USER, getPostRepliesCount } from '@/server/constants';
 import { clerkClient } from '@clerk/nextjs/server';
-import { Role } from '@prisma/client';
+import { PostStatus, Prisma, Role } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import axios from 'axios';
 import { z } from 'zod';
@@ -56,6 +58,70 @@ export const adminRouter = createTRPCRouter({
       });
 
       return { success: true };
+    }),
+
+  deletePost: adminProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { db } = ctx;
+      try {
+        await db.$transaction(async (prisma) => {
+          const postToDelete = await prisma.post.findUnique({
+            where: { id: input.id },
+          });
+
+          if (!postToDelete) {
+            throw new TRPCError({ code: 'NOT_FOUND' });
+          }
+          await prisma.post.delete({
+            where: {
+              id: input.id,
+            },
+          });
+        });
+
+        return { success: true };
+      } catch (error) {
+        console.error('Error in deletePost:', error);
+
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to delete post',
+        });
+      }
+    }),
+
+  togglePostStatus: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const post = await ctx.db.post.findUnique({
+        where: { id: input.id },
+        select: { status: true },
+      });
+
+      if (!post) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Post not found.' });
+      }
+
+      const newStatus =
+        post.status === PostStatus.VISIBLE
+          ? PostStatus.HIDDEN
+          : PostStatus.VISIBLE;
+
+      await ctx.db.post.update({
+        where: { id: input.id },
+        data: { status: newStatus },
+      });
+
+      return { success: true, newStatus };
     }),
 
   getDashboardAnalytics: adminProcedure.query(async ({ ctx }) => {
@@ -127,4 +193,123 @@ export const adminRouter = createTRPCRouter({
       });
     }
   }),
+
+  getAllPosts: adminProcedure
+    .input(
+      z.object({
+        search: z.string().optional(),
+        type: z.enum(['ALL', 'TEXT', 'IMAGE', 'VIDEO']).default('ALL'),
+        status: z.enum(['ALL', 'VISIBLE', 'HIDDEN']).default('ALL'),
+        limit: z.number().optional(),
+        cursor: z
+          .object({
+            id: z.string(),
+            createdAt: z.date(),
+          })
+          .optional(),
+      })
+    )
+    .query(
+      async ({ input: { limit = 15, cursor, search, type, status }, ctx }) => {
+        const { userId, db } = ctx;
+
+        const whereClause: Prisma.PostWhereInput = {};
+        const conditions: Prisma.PostWhereInput[] = [{ parentPostId: null }];
+
+        if (search) {
+          conditions.push({
+            OR: [
+              { threadText: { contains: search, mode: 'insensitive' } },
+              { text: { contains: search, mode: 'insensitive' } },
+              {
+                author: { username: { contains: search, mode: 'insensitive' } },
+              },
+              {
+                author: { fullName: { contains: search, mode: 'insensitive' } },
+              },
+            ],
+          });
+        }
+
+        if (type === 'TEXT') {
+          conditions.push({ threadText: { not: null } });
+        } else if (type === 'IMAGE') {
+          conditions.push({
+            threadText: null,
+            media: {
+              array_contains: [{ fileType: 'image' }],
+            },
+          });
+        } else if (type === 'VIDEO') {
+          conditions.push({
+            threadText: null,
+            media: {
+              array_contains: [{ fileType: 'video' }],
+            },
+          });
+        }
+
+        if (status === 'VISIBLE') {
+          conditions.push({ status: PostStatus.VISIBLE });
+        } else if (status === 'HIDDEN') {
+          conditions.push({ status: PostStatus.HIDDEN });
+        }
+
+        if (conditions.length > 0) {
+          whereClause.AND = conditions;
+        }
+
+        const posts = await db.post.findMany({
+          where: whereClause,
+          take: limit + 1,
+          cursor: cursor ? { createdAt_id: cursor } : undefined,
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+          select: {
+            id: true,
+            createdAt: true,
+            text: true,
+            threadText: true,
+            media: true,
+            parentPostId: true,
+            quoteId: true,
+            path: true,
+            hideLikes: true,
+            turnOffComments: true,
+            pinned: true,
+            privacy: true,
+            repliesCount: true,
+            likes: true,
+            status: true,
+            author: {
+              select: {
+                ...GET_USER,
+              },
+            },
+            ...getPostRepliesCount(userId!),
+          },
+        });
+
+        const formattedPosts = posts.map((post) => ({
+          ...post,
+          media: post.media as PostMedia[],
+          likesCount: post.likes.length,
+          repliesCount: getTotalRepliesCount(post) as number,
+        }));
+
+        let nextCursor: typeof cursor | undefined;
+        if (formattedPosts.length > limit) {
+          const nextItem = formattedPosts[limit];
+          nextCursor = {
+            id: nextItem.id,
+            createdAt: nextItem.createdAt,
+          };
+          formattedPosts.length = limit;
+        }
+
+        return {
+          posts: formattedPosts,
+          nextCursor,
+        };
+      }
+    ),
 });

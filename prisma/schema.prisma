@@ -77,6 +77,11 @@ enum PostPrivacy {
   MENTIONED
 }
 
+enum PostStatus {
+  VISIBLE
+  HIDDEN
+}
+
 model Post {
   id              String         @id @default(cuid())
   createdAt       DateTime       @default(now())
@@ -101,6 +106,7 @@ model Post {
   path            String?
   hideLikes       Boolean        @default(false)
   turnOffComments Boolean        @default(false)
+  status          PostStatus     @default(VISIBLE)
   hiddenBy        HiddenPost[]
   lastEditedAt    DateTime?
   linkPreviewUrl  String?

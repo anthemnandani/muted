@@ -1,4 +1,5 @@
 import type { AppRouter } from '@/server/api/root';
+import type { RouterOutputs } from '@/trpc/shared';
 import type { GifID, IGif } from '@giphy/js-types';
 import type {
   CollectionPrivacy,
@@ -9,6 +10,7 @@ import type {
   NotificationType,
   User,
   FilteredKeyword,
+  PostStatus,
 } from '@prisma/client';
 import { PostPrivacy, Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
@@ -210,6 +212,7 @@ export type ParentPostProps = {
   isHidden?: boolean;
   isMuted?: boolean;
   privacy: PostPrivacy;
+  status?: PostStatus;
   // _count?: {
   //   likes: number;
   //   reposts: number;
@@ -1286,3 +1289,7 @@ export interface SectionCardsProps {
   newUsers24h: number;
   activeUsers24h: number;
 }
+
+export type AdminPost = RouterOutputs['admin']['getAllPosts']['posts'][0];
+export type ContentType = 'ALL' | 'IMAGE' | 'VIDEO' | 'TEXT';
+export type StatusFilter = 'ALL' | 'VISIBLE' | 'HIDDEN';

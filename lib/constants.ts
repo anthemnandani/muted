@@ -920,23 +920,22 @@ export const DELETE_USER_POINTS = [
 export const ADMIN_MENU_ITEMS = [
   {
     title: 'Dashboard',
-    url: '/',
+    url: '/admin',
     icon: LayoutDashboard,
-    isActive: true,
   },
   {
     title: 'Content Moderation',
-    url: '/moderation',
+    url: '/admin/content',
     icon: FileText,
   },
   {
     title: 'User Management',
-    url: '/users',
+    url: '/admin/users',
     icon: Users,
   },
   {
     title: 'Reports',
-    url: '/reports',
+    url: '/admin/reports',
     icon: Flag,
   },
 ];
@@ -944,12 +943,12 @@ export const ADMIN_MENU_ITEMS = [
 export const ADMIN_ACCOUNT_ITEMS = [
   {
     title: 'Settings',
-    url: '/settings',
+    url: '/admin/settings',
     icon: Settings,
   },
-  {
-    title: 'Logout',
-    url: '/logout',
-    icon: LogOut,
-  },
+  // {
+  //   title: 'Logout',
+  //   url: '/logout',
+  //   icon: LogOut,
+  // },
 ];

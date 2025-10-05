@@ -1,17 +1,30 @@
-import { authMiddleware } from '@clerk/nextjs';
+import { authMiddleware, redirectToSignIn } from '@clerk/nextjs';
 import { NextResponse } from 'next/server';
 
 export default authMiddleware({
-  publicRoutes: ['/api/webhooks/clerk'],
-  afterAuth(auth, req) {
-    if (auth.userId && req.nextUrl.pathname.startsWith('/admin')) {
-      const userRole = auth.sessionClaims?.publicMetadata?.role;
+  publicRoutes: ['/sign-in', '/sign-up', '/api/webhooks/clerk'],
 
-      if (userRole !== 'ADMIN') {
+  afterAuth(auth, req) {
+    if (auth.userId) {
+      if (auth.isPublicRoute) {
         const homeUrl = new URL('/', req.url);
         return NextResponse.redirect(homeUrl);
       }
+
+      if (req.nextUrl.pathname.startsWith('/admin')) {
+        const userRole = auth.sessionClaims?.publicMetadata?.role;
+        if (userRole !== 'ADMIN') {
+          const homeUrl = new URL('/', req.url);
+          return NextResponse.redirect(homeUrl);
+        }
+      }
+      return NextResponse.next();
     }
+
+    if (!auth.userId && !auth.isPublicRoute) {
+      return redirectToSignIn({ returnBackUrl: req.url });
+    }
+
     return NextResponse.next();
   },
 });

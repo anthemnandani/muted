@@ -22,11 +22,13 @@ export async function getPostMetadata(postId: string) {
       return null;
     }
 
+    const postData = { ...post, media: post.media as PostMedia[] };
+
     let mediaUrl = null;
     let mediaType = null;
 
-    if (post.media && Array.isArray(post.media)) {
-      const firstMedia = post.media[0] as PostMedia;
+    if (postData.media.length > 0) {
+      const firstMedia = postData.media[0];
       mediaType = firstMedia.fileType;
       if (firstMedia.fileType === 'image') {
         mediaUrl = firstMedia.fileUrl;
@@ -37,7 +39,7 @@ export async function getPostMetadata(postId: string) {
 
     return {
       id: post.id,
-      text: post.text || '',
+      text: post.text || post.threadText || '',
       mediaUrl,
       mediaType,
       author: post.author,

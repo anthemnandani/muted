@@ -24,6 +24,7 @@ import {
   FeedType,
   NotificationType,
   PostPrivacy,
+  PostStatus,
   Prisma,
   Privacy,
 } from '@prisma/client';
@@ -253,6 +254,7 @@ export const postRouter = createTRPCRouter({
 
         const baseConditions: Prisma.PostWhereInput[] = [
           getPrivacyFilter(userId),
+          { status: PostStatus.VISIBLE },
           { parentPostId: null },
           { hiddenBy: { none: { userId } } },
           {
@@ -340,6 +342,7 @@ export const postRouter = createTRPCRouter({
             pinned: true,
             privacy: true,
             repliesCount: true,
+            status: true,
             author: {
               select: {
                 ...GET_USER,
@@ -785,6 +788,7 @@ export const postRouter = createTRPCRouter({
       const post = await db.post.findUnique({
         where: {
           id,
+          status: PostStatus.VISIBLE,
           hiddenBy: {
             none: {
               userId,
@@ -1640,6 +1644,7 @@ export const postRouter = createTRPCRouter({
             ],
           },
           { parentPostId: null },
+          { status: PostStatus.VISIBLE },
           { hiddenBy: { none: { userId } } },
           {
             author: {
@@ -1810,6 +1815,7 @@ export const postRouter = createTRPCRouter({
         ],
         AND: [
           getPrivacyFilter(userId!),
+          { status: PostStatus.VISIBLE },
           {
             hiddenBy: {
               none: {

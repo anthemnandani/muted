@@ -109,7 +109,7 @@ const NewPost = () => {
           {isMobile ? (
             <CreateThreadMobile />
           ) : (
-            <div className='hidden md:flex relative size-12 flex-center rounded-xl hover:bg-primary transition-colors duration-150 border-none text-secondary hover:text-foreground'>
+            <div className='hidden md:flex relative size-12 flex-center rounded-xl hover:bg-primary-2 transition-colors duration-150 border-none text-secondary-2 hover:text-foreground'>
               <Icons.plus className='size-6' />
             </div>
           )}

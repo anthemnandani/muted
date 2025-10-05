@@ -48,13 +48,13 @@ const Navigation = () => {
           'flex-center size-12 transition-all duration-150',
           isSearchOpen
             ? 'bg-[#1f1f1f] rounded-full'
-            : 'hover:bg-primary rounded-xl'
+            : 'hover:bg-primary-2 rounded-xl'
         )}
       >
         <Icons.search
           className={cn(
             'size-6 transition-colors duration-150',
-            isSearchOpen ? 'text-foreground' : 'text-secondary'
+            isSearchOpen ? 'text-foreground' : 'text-secondary-2'
           )}
         />
       </button>
@@ -75,14 +75,14 @@ const Navigation = () => {
           'relative flex-center size-12 transition-all duration-150',
           isNotificationOpen
             ? 'bg-[#1f1f1f] rounded-full'
-            : 'hover:bg-primary rounded-xl'
+            : 'hover:bg-primary-2 rounded-xl'
         )}
       >
         {unreadCount > 0 ? (
           <Icons.activityWithCircle
             className={cn(
               'size-[30px] transition-colors duration-150',
-              isNotificationOpen ? 'text-white/90' : 'text-secondary'
+              isNotificationOpen ? 'text-white/90' : 'text-secondary-2'
             )}
             fill={isNotificationOpen ? 'currentColor' : 'none'}
           />
@@ -90,7 +90,7 @@ const Navigation = () => {
           <Icons.activity
             className={cn(
               'size-[30px] transition-colors duration-150',
-              isNotificationOpen ? 'text-white/90' : 'text-secondary'
+              isNotificationOpen ? 'text-white/90' : 'text-secondary-2'
             )}
             fill={isNotificationOpen ? 'currentColor' : 'none'}
           />

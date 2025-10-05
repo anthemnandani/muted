@@ -8,11 +8,10 @@ module.exports = {
     './src/**/*.{ts,tsx}',
   ],
   safelist: [
-    'bg-slate-700',
-    'bg-cyan-400',
-    'bg-blue-500',
-    'bg-blue-600',
-    'bg-sky-500',
+    {
+      pattern: /bg-(slate|cyan|blue|sky|green|yellow)-(700|800|900)/,
+      variants: ['hover'],
+    },
   ],
   theme: {
     container: {
@@ -34,9 +33,17 @@ module.exports = {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
         },
+        "primary-2": {
+          DEFAULT: 'hsl(var(--primary-2))',
+          foreground: 'hsl(var(--primary-foreground-2))',
+        },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
           foreground: 'hsl(var(--secondary-foreground))',
+        },
+        "secondary-2": {
+          DEFAULT: 'hsl(var(--secondary-2))',
+          foreground: 'hsl(var(--secondary-foreground-2))',
         },
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
@@ -101,7 +108,7 @@ module.exports = {
         'white-6': '#FFFFFF0F',
         'white-4': '#FFFFFF04',
         'primary-red': '#ff3040',
-        'primary-blue': '#18a3fe',
+        'primary-blue': '#1c8cd2',
         'border-dark': '#00000026',
         'border-light': '#f3f5f726',
         'hovered-background': 'rgba(255, 255, 255, 0.04)',
