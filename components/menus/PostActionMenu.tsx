@@ -1,27 +1,29 @@
 'use client';
 
 import useCopyLink from '@/hooks/useCopyLink';
+import useDeletePost from '@/hooks/useDeletePost';
 import useTimeLeft from '@/hooks/useTimeLeft';
 import useToggleHidePost from '@/hooks/useToggleHidePost';
 import useToggleMuteUser from '@/hooks/useToggleMuteUser';
 import useTogglePinPost from '@/hooks/useTogglePinPost';
 import { PostActionMenuProps } from '@/lib/types';
 import { cn, formatTimeLeft } from '@/lib/utils';
+import useDeletePostStore from '@/store/deletePost';
 import { useMutedUsers } from '@/store/mutedUsers';
 import usePostDialog from '@/store/postDialog';
 import { useReportStore } from '@/store/reportStore';
 import { useUser } from '@clerk/nextjs';
 import { Edit, MoreHorizontal, PinOff } from 'lucide-react';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Icons } from '../icons';
 import BlockUser from '../modals/BlockUser';
-import DeletePost from '../modals/DeletePost';
+import ConfirmDialog from '../modals/ConfirmDialog';
 import MenuItem from '../shared/MenuItem';
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '../ui/hover-card';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
 import { Separator } from '../ui/separator';
 
 const PostActionMenu: React.FC<PostActionMenuProps> = ({
@@ -43,6 +45,11 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
   const { openForEditing } = usePostDialog();
   const [menuOpen, setMenuOpen] = useState(false);
   const { openPostReport } = useReportStore();
+  const { openDeleteDialog, setOpenDeleteDialog } = useDeletePostStore();
+  const { handleDeletePost, isDeleting } = useDeletePost({
+    postId,
+    closeMenu: () => setMenuOpen(false),
+  });
 
   const { handleTogglePinPost, isLoading: isLoadingPinPost } = useTogglePinPost(
     {
@@ -75,8 +82,8 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
   };
 
   return (
-    <HoverCard open={menuOpen} onOpenChange={setMenuOpen}>
-      <HoverCardTrigger asChild>
+    <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen} modal={false}>
+      <DropdownMenuTrigger asChild>
         <div
           className={cn(
             'relative h-12 flex-center cursor-pointer transition-all duration-200 drop-shadow-lg group',
@@ -87,9 +94,9 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
         >
           <MoreHorizontal className='aspect-square object-cover object-center size-6 overflow-hidden flex-1 text-white z-10' />
         </div>
-      </HoverCardTrigger>
+      </DropdownMenuTrigger>
 
-      <HoverCardContent
+      <DropdownMenuContent
         align='end'
         className={cn(
           'w-[200px] p-2 border-none rounded-xl',
@@ -155,7 +162,15 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
             />
             <Separator />
 
-            <DeletePost postId={postId} />
+            <ConfirmDialog
+              open={openDeleteDialog}
+              setOpen={setOpenDeleteDialog}
+              closeMenu={() => setMenuOpen(false)}
+              title='Delete Post'
+              description="If you delete this post, you won't be able to restore it."
+              onClick={handleDeletePost}
+              isLoading={isDeleting}
+            />
           </Fragment>
         )}
         <Separator />
@@ -164,8 +179,8 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
           label='Copy link'
           onClick={handleCopyLink}
         />
-      </HoverCardContent>
-    </HoverCard>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 

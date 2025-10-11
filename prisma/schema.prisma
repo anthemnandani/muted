@@ -18,6 +18,18 @@ enum Role {
   ADMIN
 }
 
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BLOCKED
+}
+
+enum AppealStatus {
+  PENDING
+  UPHELD
+  OVERTURNED
+}
+
 model User {
   id                       String            @id
   createdAt                DateTime          @default(now()) @map(name: "created_at")
@@ -35,6 +47,9 @@ model User {
   deletionOtp              String?
   deletionOtpExpiresAt     DateTime?
   role                     Role              @default(USER)
+  status                   UserStatus        @default(ACTIVE)
+  suspensionEndDate        DateTime?
+  strikes                  Strike[]
   followers                Follow[]          @relation("Followers")
   following                Follow[]          @relation("Following")
   posts                    Post[]
@@ -102,6 +117,7 @@ model Post {
   bookmarks       Bookmark[]
   mentions        Mention[]
   hashtags        Hashtag[]      @relation("PostHashtags")
+  strikes         Strike[]
   repliesCount    Int            @default(0)
   path            String?
   hideLikes       Boolean        @default(false)
@@ -577,5 +593,18 @@ model FilteredKeyword {
   feeds   FeedType[]
 
   @@unique([userId, keyword])
+  @@index([userId])
+}
+
+model Strike {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  reason        String
+  relatedPostId String?
+  relatedPost   Post?    @relation(fields: [relatedPostId], references: [id])
+  createdAt     DateTime @default(now())
+  expiresAt     DateTime
+
   @@index([userId])
 }

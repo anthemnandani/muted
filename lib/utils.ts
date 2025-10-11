@@ -4,6 +4,7 @@ import { useSearchStore } from '@/store/searchStore';
 import useVideoPlayer from '@/store/videoPlayer';
 import { type User } from '@clerk/nextjs/server';
 import { type UserResource } from '@clerk/types';
+import { UserStatus } from '@prisma/client';
 import { type ClassValue, clsx } from 'clsx';
 import {
   differenceInDays,
@@ -18,9 +19,9 @@ import {
 } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
 import {
+  type AdminPost,
   type AspectRatio,
   type ContentType,
-  type AdminPost,
   Message,
   ParentPostProps,
   type PostMedia,
@@ -738,4 +739,48 @@ export const getContentTypeBadgeClass = (type: ContentType) => {
 export const getPostThumbnail = (media?: PostMedia) => {
   if (!media) return '';
   return media?.fileType === 'image' ? media?.fileUrl : media?.thumbnailUrl;
+};
+
+export const getStrikeBadgeClass = (strikes: number) => {
+  switch (strikes) {
+    case 0:
+      return 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/30';
+    case 1:
+      return 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30 hover:bg-yellow-500/30';
+    case 2:
+      return 'bg-orange-500/20 text-orange-500 border-orange-500/30 hover:bg-orange-500/30';
+    case 3:
+      return 'bg-red-500/20 text-red-500 border-red-500/30 hover:bg-red-500/30';
+    default:
+      return 'bg-red-700/20 text-red-700 border-red-700/30 hover:bg-red-700/30 font-bold';
+  }
+};
+
+export const getUserStatusInfo = (status: UserStatus) => {
+  switch (status) {
+    case UserStatus.ACTIVE:
+      return {
+        text: 'Active',
+        className:
+          'border-transparent bg-primary text-primary-foreground hover:bg-primary/80',
+      };
+    case UserStatus.SUSPENDED:
+      return {
+        text: 'Suspended',
+        className:
+          'bg-yellow-500/20 text-yellow-500 border-yellow-500/30 hover:bg-yellow-500/30',
+      };
+    case UserStatus.BLOCKED:
+      return {
+        text: 'Blocked',
+        className:
+          'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80',
+      };
+    default:
+      return {
+        text: 'Unknown',
+        className:
+          'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
+      };
+  }
 };

@@ -263,7 +263,7 @@
   }
 
   .repost-banner {
-    @apply inline-flex items-center gap-1.5 mb-3 px-2.5 py-1 rounded-full cursor-pointer bg-black/20 backdrop-blur-[2px] border border-white/20 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.3)];
+    @apply inline-flex items-center gap-1.5 mb-1.5 px-2.5 py-1 rounded-full cursor-pointer bg-black/20 backdrop-blur-[2px] border border-white/20 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.3)];
   }
 
   .share-btn {
@@ -308,7 +308,7 @@
   }
 
   .icon-container-hover {
-    @apply flex-center relative hover:before:content-[""] hover:before:absolute hover:before:bg-primary hover:before:z-[2] hover:before:-inset-2 hover:before:rounded-full hover:before:pointer-events-none cursor-pointer focus-visible:outline-none active:scale-95;
+    @apply flex-center relative hover:before:content-[""] hover:before:absolute hover:before:bg-white/5 hover:before:z-[2] hover:before:-inset-2 hover:before:rounded-full hover:before:pointer-events-none cursor-pointer focus-visible:outline-none active:scale-95;
   }
 
   /* Shadcn Component Styles */
@@ -324,7 +324,7 @@
 
   /* Dropdown */
   .dropdown-content-container {
-    @apply shadow-xl bg-transparent z-[1000];
+    @apply shadow-xl bg-gray-6 z-[1000];
   }
 
   .dropdown-menu-item {
@@ -371,7 +371,7 @@
   }
 
   .post-container-fitted {
-    @apply relative w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(0px-2rem+100vh)] overflow-hidden flex-grow bg-black rounded-2xl flex-center;
+    @apply relative w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(0px-2rem+100vh)] overflow-hidden flex-grow bg-gray-6 rounded-2xl flex-center;
   }
 
   @media (max-width: 768px) {

@@ -9,12 +9,14 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
   image,
   fullname,
   className,
+  showInfo = false,
 }) => {
   return (
     <Link
       href={`/@${username}`}
       className={cn(
-        'size-9 overflow-visible outline outline-[1.5px] outline-border rounded-full',
+        'overflow-visible',
+        showInfo ? 'size-7 inline-flex items-center gap-2' : 'size-9',
         className
       )}
     >
@@ -28,6 +30,16 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
           {username?.slice(0, 2).toUpperCase()}
         </AvatarFallback>
       </Avatar>
+      {showInfo && (
+        <div className='leading-tight'>
+          <p className='line-clamp-1 break-words truncate font-semibold text-sm text-white/90'>
+            {fullname}
+          </p>
+          <p className='text-ellipsis line-clamp-1 break-words text-white/50'>
+            @{username}
+          </p>
+        </div>
+      )}
     </Link>
   );
 };

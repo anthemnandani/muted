@@ -2,7 +2,7 @@ import { PostMedia } from '@/lib/types';
 import { getChartDataTemplate, getTotalRepliesCount } from '@/lib/utils';
 import { GET_USER, getPostRepliesCount } from '@/server/constants';
 import { clerkClient } from '@clerk/nextjs/server';
-import { PostStatus, Prisma, Role } from '@prisma/client';
+import { PostStatus, UserStatus, Prisma, Role } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import axios from 'axios';
 import { z } from 'zod';
@@ -139,7 +139,7 @@ export const adminRouter = createTRPCRouter({
         postsInLast6Months,
       ] = await Promise.all([
         ctx.db.user.count({ where: { verified: true } }),
-        ctx.db.post.count(),
+        ctx.db.post.count({ where: { parentPostId: null } }),
         ctx.db.user.count({
           where: { createdAt: { gte: twentyFourHoursAgo } },
         }),
@@ -312,4 +312,96 @@ export const adminRouter = createTRPCRouter({
         };
       }
     ),
+
+  getAllUsers: adminProcedure
+    .input(
+      z.object({
+        search: z.string().optional(),
+        status: z
+          .enum(['ALL', 'ACTIVE', 'SUSPENDED', 'BLOCKED'])
+          .default('ALL'),
+        limit: z.number().optional(),
+        cursor: z
+          .object({
+            id: z.string(),
+            createdAt: z.date(),
+          })
+          .optional(),
+      })
+    )
+    .query(async ({ input: { limit = 15, cursor, search, status }, ctx }) => {
+      const { db } = ctx;
+
+      const whereClause: Prisma.UserWhereInput = {};
+      const conditions: Prisma.UserWhereInput[] = [{ verified: true }];
+
+      if (search) {
+        conditions.push({
+          OR: [
+            { username: { contains: search, mode: 'insensitive' } },
+            { fullName: { contains: search, mode: 'insensitive' } },
+          ],
+        });
+      }
+
+      if (status === 'ACTIVE') {
+        conditions.push({ status: UserStatus.ACTIVE });
+      } else if (status === 'SUSPENDED') {
+        conditions.push({ status: UserStatus.SUSPENDED });
+      } else if (status === 'BLOCKED') {
+        conditions.push({ status: UserStatus.BLOCKED });
+      }
+
+      if (conditions.length > 0) {
+        whereClause.AND = conditions;
+      }
+
+      const users = await db.user.findMany({
+        where: whereClause,
+        take: limit + 1,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        select: {
+          id: true,
+          createdAt: true,
+          username: true,
+          fullName: true,
+          email: true,
+          status: true,
+          role: true,
+          image: true,
+          _count: {
+            select: {
+              followers: true,
+              posts: {
+                where: {
+                  parentPostId: null,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const formattedUsers = users.map((user) => ({
+        ...user,
+        followersCount: user._count.followers,
+        postsCount: user._count.posts,
+      }));
+
+      let nextCursor: typeof cursor | undefined;
+      if (formattedUsers.length > limit) {
+        const nextItem = formattedUsers[limit];
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
+        };
+        formattedUsers.length = limit;
+      }
+
+      return {
+        users: formattedUsers,
+        nextCursor,
+      };
+    }),
 });

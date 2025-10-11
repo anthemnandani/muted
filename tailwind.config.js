@@ -9,7 +9,21 @@ module.exports = {
   ],
   safelist: [
     {
-      pattern: /bg-(slate|cyan|blue|sky|green|yellow)-(700|800|900)/,
+      pattern:
+        /^bg-(blue|green|yellow|red|indigo|cyan|teal|orange|emerald|violet|sky)-[1-9]00$/,
+      variants: ['hover'],
+    },
+    {
+      pattern:
+        /^text-(blue|green|yellow|red|indigo|cyan|teal|orange|emerald|violet|sky)-[1-9]00$/,
+    },
+    {
+      pattern:
+        /^border-(blue|green|yellow|red|indigo|cyan|teal|orange|emerald|violet|sky)-[1-9]00$/,
+    },
+    {
+      pattern:
+        /^(bg|border)-(blue|green|yellow|red|indigo|cyan|teal|orange|emerald|violet|sky)-[57]00\/(20|30|40|50|60|70)$/,
       variants: ['hover'],
     },
   ],
@@ -21,7 +35,6 @@ module.exports = {
         '2xl': '1400px',
       },
     },
-
     extend: {
       colors: {
         border: 'hsl(var(--border))',
@@ -33,7 +46,7 @@ module.exports = {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
         },
-        "primary-2": {
+        'primary-2': {
           DEFAULT: 'hsl(var(--primary-2))',
           foreground: 'hsl(var(--primary-foreground-2))',
         },
@@ -41,7 +54,7 @@ module.exports = {
           DEFAULT: 'hsl(var(--secondary))',
           foreground: 'hsl(var(--secondary-foreground))',
         },
-        "secondary-2": {
+        'secondary-2': {
           DEFAULT: 'hsl(var(--secondary-2))',
           foreground: 'hsl(var(--secondary-foreground-2))',
         },
@@ -84,7 +97,6 @@ module.exports = {
         },
         'primary-500': '#877EFF',
         'secondary-500': '#FFB620',
-        // blue: '#0095F6',
         'logout-btn': '#FF5A5A',
         'navbar-menu': 'rgba(16, 16, 18, 0.6)',
         'dark-1': '#000000',
@@ -129,7 +141,6 @@ module.exports = {
         15: '60px',
         18: '72px',
       },
-
       maxHeight: {
         128: '40rem',
       },

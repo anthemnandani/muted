@@ -21,7 +21,7 @@ const PostFooter: React.FC<PostFooterProps> = ({
     <div
       className={cn(
         'absolute left-0 right-0 px-4 z-10',
-        isThread ? 'bottom-3' : 'bottom-7'
+        isThread ? 'bottom-1' : 'bottom-7'
       )}
     >
       <RepostBanner repostedBy={repostedBy} reposts={reposts} />

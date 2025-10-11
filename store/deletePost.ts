@@ -5,9 +5,9 @@ interface ToggleState {
   setOpenDeleteDialog: (open: boolean) => void;
 }
 
-const useDeletePost = create<ToggleState>((set) => ({
+const useDeletePostStore = create<ToggleState>((set) => ({
   openDeleteDialog: false,
   setOpenDeleteDialog: (open) => set({ openDeleteDialog: open }),
 }));
 
-export default useDeletePost;
+export default useDeletePostStore;

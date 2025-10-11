@@ -26,7 +26,7 @@ const LinkPreviewCard = ({
     <Card
       className={cn(
         'overflow-hidden transition-colors border-border-light rounded-2xl mb-2',
-        !onClose && 'min-h-[340px]'
+        !onClose && 'min-h-[330px]'
       )}
     >
       <Link

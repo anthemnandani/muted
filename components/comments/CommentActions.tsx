@@ -1,13 +1,15 @@
+import useDeletePost from '@/hooks/useDeletePost';
 import useTimeLeft from '@/hooks/useTimeLeft';
 import { CommentActionsProps } from '@/lib/types';
 import { cn, formatTimeLeft } from '@/lib/utils';
 import useAddCommentStore from '@/store/addComment';
+import useDeletePostStore from '@/store/deletePost';
 import { useUser } from '@clerk/nextjs';
 import { DropdownMenu } from '@radix-ui/react-dropdown-menu';
 import { Edit, MoreVertical } from 'lucide-react';
 import { Fragment, useState } from 'react';
 import { Icons } from '../icons';
-import DeletePost from '../modals/DeletePost';
+import ConfirmDialog from '../modals/ConfirmDialog';
 import MenuItem from '../shared/MenuItem';
 import { DropdownMenuContent, DropdownMenuTrigger } from '../ui/dropdown-menu';
 
@@ -24,6 +26,11 @@ const CommentActions = ({
   const { timeLeft } = useTimeLeft({ createdAt });
   const { startEditing } = useAddCommentStore();
   const [isOpen, setIsOpen] = useState(false);
+  const { openDeleteDialog, setOpenDeleteDialog } = useDeletePostStore();
+  const { handleDeletePost, isDeleting } = useDeletePost({
+    postId,
+    closeMenu: () => setIsOpen(false),
+  });
 
   const handleStartEditing = () => {
     if (onEditClick) {
@@ -35,10 +42,10 @@ const CommentActions = ({
   };
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <div className='icon-container-hover'>
-          <MoreVertical className='aspect-square object-cover object-center size-[18px] overflow-hidden flex-1 text-secondary' />
+          <MoreVertical className='aspect-square object-cover object-center size-[18px] overflow-hidden flex-1 text-secondary-2' />
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -63,11 +70,17 @@ const CommentActions = ({
               }
               onClick={handleStartEditing}
             />
-            <DeletePost
-              postId={postId}
-              isComment
-              isReply={isReply}
-              closeDropdown={() => setIsOpen(false)}
+
+            <ConfirmDialog
+              open={openDeleteDialog}
+              setOpen={setOpenDeleteDialog}
+              closeMenu={() => setIsOpen(false)}
+              title={`Delete ${isReply ? 'Reply' : 'Comment'}`}
+              description={`If you delete this ${
+                isReply ? 'reply' : 'comment'
+              }, you won't be able to restore it.`}
+              onClick={handleDeletePost}
+              isLoading={isDeleting}
             />
           </Fragment>
         ) : (
@@ -82,11 +95,16 @@ const CommentActions = ({
               iconColor={postAuthorId === user?.id ? 'white' : '#ff3040'}
             />
             {postAuthorId === user?.id && (
-              <DeletePost
-                postId={postId}
-                isComment
-                isReply={isReply}
-                closeDropdown={() => setIsOpen(false)}
+              <ConfirmDialog
+                open={openDeleteDialog}
+                setOpen={setOpenDeleteDialog}
+                closeMenu={() => setIsOpen(false)}
+                title={`Delete ${isReply ? 'Reply' : 'Comment'}`}
+                description={`If you delete this ${
+                  isReply ? 'reply' : 'comment'
+                }, you won't be able to restore it.`}
+                onClick={handleDeletePost}
+                isLoading={isDeleting}
               />
             )}
           </Fragment>

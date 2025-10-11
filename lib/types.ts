@@ -226,9 +226,10 @@ export type ParentPostProps = {
 export interface PostCardProps extends ParentPostProps, PostDisplayProps {}
 
 export interface UserAvatarProps extends React.HTMLAttributes<HTMLDivElement> {
-  image: string | null | undefined;
+  image?: string | null;
   username: string;
-  fullname: string | null | undefined;
+  fullname?: string | null;
+  showInfo?: boolean;
 }
 
 export interface CreatePostInputProps extends DropzoneProps {
@@ -433,15 +434,12 @@ export interface VideoContainerProps {
   createdAt: Date;
   id: string;
   text: string | null;
-  pinned?: boolean;
   setInView: (inView: boolean) => void;
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
   mentions?: Mention[];
-  hideLikes?: boolean;
-  media?: PostMedia[];
-  turnOffComments?: boolean;
   isThreadView?: boolean;
+  showControls: boolean;
 }
 
 export interface MediaControlsProps {
@@ -466,13 +464,9 @@ export interface PostImageCardProps {
   author: AuthorInfoProps;
   id: string;
   text: string | null;
-  pinned?: boolean;
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
   mentions?: Mention[];
-  hideLikes?: boolean;
-  turnOffComments?: boolean;
-  media?: PostMedia[];
 }
 
 export interface PostVideoCardProps {
@@ -482,14 +476,11 @@ export interface PostVideoCardProps {
   author: AuthorInfoProps;
   createdAt: Date;
   text?: string | null;
-  pinned?: boolean;
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
   mentions?: Mention[];
-  hideLikes?: boolean;
-  turnOffComments?: boolean;
   aspectRatio?: AspectRatio;
-  media?: PostMedia[];
+  showControls: boolean;
   isThreadView?: boolean;
 }
 
@@ -695,11 +686,17 @@ export interface CommentActionsProps {
   onEditClick?: () => void;
 }
 
-export interface DeletePostProps {
-  postId: string;
-  isComment?: boolean;
-  isReply?: boolean;
-  closeDropdown?: () => void;
+export interface ConfirmDialogProps {
+  title: string;
+  description: string;
+  onClick: () => void;
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  isLoading: boolean;
+  closeMenu: () => void;
+  btnTitle?: string;
+  btnClassName?: string;
+  trigger?: React.ReactNode;
 }
 
 export interface PostInfoCardProps {
@@ -1292,4 +1289,5 @@ export interface SectionCardsProps {
 
 export type AdminPost = RouterOutputs['admin']['getAllPosts']['posts'][0];
 export type ContentType = 'ALL' | 'IMAGE' | 'VIDEO' | 'TEXT';
-export type StatusFilter = 'ALL' | 'VISIBLE' | 'HIDDEN';
+export type PostStatusFilter = 'ALL' | 'VISIBLE' | 'HIDDEN';
+export type UserStatusFilter = 'ALL' | 'ACTIVE' | 'SUSPENDED' | 'BLOCKED';

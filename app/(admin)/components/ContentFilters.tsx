@@ -10,14 +10,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { ContentType, StatusFilter } from '@/lib/types';
-import { useContentFiltesrStore } from '@/store/contentFilters';
+import type { ContentType, PostStatusFilter } from '@/lib/types';
+import { useAdminFiltersStore } from '@/store/adminFiltersStore';
 import { Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const ContentFilters = () => {
-  const { search, type, status, setSearch, setType, setStatus, reset } =
-    useContentFiltesrStore();
+  const {
+    postSearch,
+    postType,
+    postStatus,
+    setPostSearch,
+    setPostType,
+    setPostStatus,
+    resetPostFilters,
+  } = useAdminFiltersStore();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -34,8 +41,8 @@ const ContentFilters = () => {
           <div className='relative w-full md:max-w-sm'>
             <Search className='pointer-events-none absolute left-2 top-2.5 size-4 text-muted-foreground' />
             <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={postSearch}
+              onChange={(e) => setPostSearch(e.target.value)}
               placeholder='Search by description or author'
               className='pl-8 focus-visible:ring-0 focus-visible:ring-offset-0'
             />
@@ -43,7 +50,10 @@ const ContentFilters = () => {
         </div>
 
         <div className='flex flex-wrap items-center gap-2'>
-          <Select value={type} onValueChange={(v) => setType(v as ContentType)}>
+          <Select
+            value={postType}
+            onValueChange={(v) => setPostType(v as ContentType)}
+          >
             <SelectTrigger className='w-[150px]'>
               <SelectValue placeholder='Content Type' />
             </SelectTrigger>
@@ -56,8 +66,8 @@ const ContentFilters = () => {
           </Select>
 
           <Select
-            value={status}
-            onValueChange={(v) => setStatus(v as StatusFilter)}
+            value={postStatus}
+            onValueChange={(v) => setPostStatus(v as PostStatusFilter)}
           >
             <SelectTrigger className='w-[150px]'>
               <SelectValue placeholder='Status' />
@@ -73,7 +83,7 @@ const ContentFilters = () => {
             variant='ghost'
             size='sm'
             className='bg-primary-blue text-white hover:bg-primary-blue/90'
-            onClick={reset}
+            onClick={resetPostFilters}
           >
             Reset
           </Button>

@@ -1,7 +1,7 @@
 'use client';
 
+import UserAvatar from '@/components/shared/UserAvatar';
 import AdminContentTableSkeleton from '@/components/skeletons/AdminContentTableSkeleton';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
@@ -18,23 +18,22 @@ import {
   getContentTypeBadgeClass,
   getPostThumbnail,
 } from '@/lib/utils';
-import { useContentFiltesrStore } from '@/store/contentFilters';
+import { useAdminFiltersStore } from '@/store/adminFiltersStore';
 import { api } from '@/trpc/react';
 import { PostStatus } from '@prisma/client';
 import { Heart, MessageCircle } from 'lucide-react';
-import Link from 'next/link';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import ContentTableLoader from './ContentTableLoader';
 import PostActions from './PostActions';
+import TableLoader from './TableLoader';
 
 const ContentTable = () => {
-  const { search, type, status } = useContentFiltesrStore();
+  const { postSearch, postType, postStatus } = useAdminFiltersStore();
 
-  const debouncedSearch = useDebounce(search, 500);
+  const debouncedSearch = useDebounce(postSearch, 500);
 
   const { data, isLoading, hasNextPage, fetchNextPage } =
     api.admin.getAllPosts.useInfiniteQuery(
-      { search: debouncedSearch, type, status },
+      { search: debouncedSearch, type: postType, status: postStatus },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         trpc: { abortOnUnmount: true },
@@ -58,18 +57,18 @@ const ContentTable = () => {
         next={fetchNextPage}
         hasMore={hasNextPage ?? false}
         scrollableTarget='scrollableTableContainer'
-        loader={<ContentTableLoader />}
+        loader={<TableLoader />}
       >
         <Table>
           <TableHeader className='sticky top-0 z-10 bg-muted/50 backdrop-blur supports-[backdrop-filter]:bg-muted/40'>
             <TableRow>
-              <TableHead className='w-[27%]'>Content Preview</TableHead>
+              <TableHead className='w-[27%] pl-6'>Content Preview</TableHead>
               <TableHead className='w-[18%]'>Author</TableHead>
               <TableHead>Content Type</TableHead>
               <TableHead>Metrics</TableHead>
               <TableHead>Date Created</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className='text-center pr-6'>Actions</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -111,31 +110,15 @@ const ContentTable = () => {
                     </TableCell>
 
                     <TableCell>
-                      <Link
-                        href={`/@${post.author.username}`}
-                        className='inline-flex items-center gap-2'
-                      >
-                        <Avatar className='size-7'>
-                          <AvatarImage
-                            src={post.author.image ?? ''}
-                            alt={post.author.username}
-                          />
-                          <AvatarFallback>
-                            {post.author?.fullName?.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className='leading-tight'>
-                          <p className='line-clamp-1 break-words truncate font-semibold text-sm text-white/90'>
-                            {post?.author?.fullName}
-                          </p>
-                          <p className='text-ellipsis line-clamp-1 break-words text-white/50'>
-                            @{post.author.username}
-                          </p>
-                        </div>
-                      </Link>
+                      <UserAvatar
+                        username={post.author.username}
+                        fullname={post.author?.fullName}
+                        image={post.author.image}
+                        showInfo
+                      />
                     </TableCell>
 
-                    <TableCell className='text-sm capitalize text-white/60'>
+                    <TableCell className='text-sm capitalize text-white/65'>
                       <Badge className={getContentTypeBadgeClass(contentType!)}>
                         {contentType}
                       </Badge>
@@ -164,7 +147,7 @@ const ContentTable = () => {
                       </div>
                     </TableCell>
 
-                    <TableCell className='text-sm text-white/60'>
+                    <TableCell className='text-sm text-white/65'>
                       {new Date(post.createdAt).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',

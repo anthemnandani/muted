@@ -14,7 +14,7 @@ const HiddenPost: React.FC<{ postId: string }> = ({ postId }) => {
 
   return (
     <div className='-ml-14 w-full max-w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(0px-2rem+100vh)] flex-center relative snap-center snap-always'>
-      <div className='relative h-full w-full overflow-hidden flex-center cursor-pointer bg-black rounded-2xl'>
+      <div className='relative h-full w-full overflow-hidden flex-center cursor-pointer bg-gray-6 rounded-2xl'>
         <div className='flex-col-center gap-3 text-center p-6'>
           <h3 className='text-xl font-medium text-neutral-100'>
             This post has been hidden

@@ -51,7 +51,7 @@ const ThreadPostContent: React.FC<ThreadPostContentProps> = ({
       }}
     >
       <div className='post-container-fitted'>
-        <div className='px-3 pt-6 pb-3 w-full flex flex-col bg-gray-6 max-h-[80vh] min-h-[15vh] gap-4'>
+        <div className='px-3 py-4 w-full flex flex-col bg-black/75 max-h-[74vh] min-h-[15vh] gap-4'>
           <div
             className={cn(
               'overflow-y-auto scrollbar-thumb-rounded-full scrollbar-track-rounded-full',
@@ -109,11 +109,9 @@ const ThreadPostContent: React.FC<ThreadPostContentProps> = ({
                 mentions={mentions}
                 text={threadText}
                 reposts={reposts}
-                pinned={pinned}
                 repostedBy={repostedBy}
-                hideLikes={hideLikes}
-                turnOffComments={turnOffComments}
                 aspectRatio={media[0].aspectRatio}
+                showControls={showControls}
                 isThreadView
               />
             </div>

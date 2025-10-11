@@ -1,12 +1,10 @@
 'use client';
 
-import useMediaControls from '@/hooks/useMediaControls';
 import { VideoContainerProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import React, { Fragment } from 'react';
+import { Fragment, useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import PostFooter from '../posts/PostFooter';
-import MediaControls from './MediaControls';
 import VolumeControls from './VolumeControls';
 
 export const VideoContainer: React.FC<VideoContainerProps> = ({
@@ -17,48 +15,28 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
   id,
   text,
   reposts,
-  pinned,
   setInView,
   repostedBy,
   mentions,
-  hideLikes,
-  turnOffComments,
-  media,
   isThreadView,
+  showControls,
 }) => {
   const { ref, inView } = useInView({
     threshold: 0.5,
     triggerOnce: false,
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     setInView(inView);
   }, [inView, setInView]);
-
-  const {
-    showControls,
-    setShowControls,
-    controlsTimeoutRef,
-    showControlsTemporarily,
-  } = useMediaControls();
 
   return (
     <div
       ref={ref}
       className={cn(
-        'relative h-full w-full overflow-hidden cursor-pointer bg-black',
+        'relative h-full w-full overflow-hidden cursor-pointer bg-gray-6',
         isThreadView ? 'rounded-sm' : 'rounded-2xl'
       )}
-      onMouseEnter={() => setShowControls(true)}
-      onMouseLeave={() => {
-        setShowControls(false);
-      }}
-      onTouchStart={showControlsTemporarily}
-      onTouchMove={() => {
-        if (controlsTimeoutRef.current) {
-          clearTimeout(controlsTimeoutRef.current);
-        }
-      }}
     >
       {children}
       {isThreadView && (
@@ -69,20 +47,9 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
 
       {!isThreadView && (
         <Fragment>
-          <MediaControls
-            author={author}
-            postId={id}
-            createdAt={createdAt}
-            caption={text}
-            hideLikes={hideLikes}
-            turnOffComments={turnOffComments}
-            showControls={showControls}
-            pinned={pinned}
-            VolumeControls={
-              <VolumeControls player={player} showControls={showControls} />
-            }
-            media={media}
-          />
+          <div className='absolute top-5 left-4 z-50'>
+            <VolumeControls player={player} showControls={showControls} />
+          </div>
           <PostFooter
             author={author}
             createdAt={createdAt}

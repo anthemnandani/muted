@@ -1,19 +1,17 @@
 import { MessageReportCategory } from '@prisma/client';
 import {
-  type NotificationTab,
-  type ProfileFilter,
-  ReportCategories,
-} from './types';
-import {
-  BarChart3,
   FileText,
   Flag,
   LayoutDashboard,
-  LogOut,
   Settings,
   Shield,
   Users,
 } from 'lucide-react';
+import {
+  type NotificationTab,
+  type ProfileFilter,
+  ReportCategories,
+} from './types';
 
 export const UPLOAD_CONSTRAINTS = {
   MAX_ITEMS: 10,
@@ -938,6 +936,7 @@ export const ADMIN_MENU_ITEMS = [
     url: '/admin/reports',
     icon: Flag,
   },
+  { title: 'Appeals', url: '/admin/appeals', icon: Shield },
 ];
 
 export const ADMIN_ACCOUNT_ITEMS = [

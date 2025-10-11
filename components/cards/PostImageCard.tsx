@@ -1,9 +1,6 @@
-import useMediaControls from '@/hooks/useMediaControls';
 import { PostImageCardProps } from '@/lib/types';
 import { getTargetRatio } from '@/lib/utils';
-import React from 'react';
 import PostFooter from '../posts/PostFooter';
-import MediaControls from '../shared/MediaControls';
 
 const PostImageCard: React.FC<PostImageCardProps> = ({
   image,
@@ -14,34 +11,11 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
   id,
   text,
   reposts,
-  pinned,
   repostedBy,
   mentions,
-  turnOffComments,
-  hideLikes,
-  media,
 }) => {
-  const {
-    showControls,
-    setShowControls,
-    controlsTimeoutRef,
-    showControlsTemporarily,
-  } = useMediaControls();
-
   return (
-    <div
-      className='post-container-fitted'
-      onMouseEnter={() => setShowControls(true)}
-      onMouseLeave={() => {
-        setShowControls(false);
-      }}
-      onTouchStart={showControlsTemporarily}
-      onTouchMove={() => {
-        if (controlsTimeoutRef.current) {
-          clearTimeout(controlsTimeoutRef.current);
-        }
-      }}
-    >
+    <div className='post-container-fitted'>
       <div className='relative w-full h-full flex-center'>
         <img
           alt='Post'
@@ -54,17 +28,7 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
           }}
         />
       </div>
-      <MediaControls
-        author={author}
-        postId={id}
-        createdAt={createdAt}
-        caption={text}
-        turnOffComments={turnOffComments}
-        hideLikes={hideLikes}
-        showControls={showControls}
-        pinned={pinned}
-        media={media}
-      />
+
       <div className='absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none' />
       <PostFooter
         author={author}

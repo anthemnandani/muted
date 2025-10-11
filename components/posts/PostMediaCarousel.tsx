@@ -1,15 +1,17 @@
 'use client';
 
+import useMediaControls from '@/hooks/useMediaControls';
 import { AspectRatio, PostMediaCarouselProps } from '@/lib/types';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import React from 'react';
+import { Fragment, useState } from 'react';
 import { type Swiper as SwiperType } from 'swiper';
+import 'swiper/css';
+import 'swiper/css/pagination';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import PostImageCard from '../cards/PostImageCard';
 import PostVideoCard from '../cards/PostVideoCard';
+import PostActionMenu from '../menus/PostActionMenu';
 import { Button } from '../ui/button';
-import 'swiper/css';
-import 'swiper/css/pagination';
 
 const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
   media,
@@ -24,14 +26,45 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
   hideLikes,
   turnOffComments,
 }) => {
-  const [swiperRef, setSwiperRef] = React.useState<SwiperType>();
-  const [currentIndex, setCurrentIndex] = React.useState(0);
+  const [swiperRef, setSwiperRef] = useState<SwiperType>();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const {
+    showControls,
+    setShowControls,
+    showControlsTemporarily,
+    controlsTimeoutRef,
+  } = useMediaControls();
 
   const handleSlideChange = (swiper: SwiperType) => {
     setCurrentIndex(swiper.activeIndex);
   };
   return (
-    <div className='post-container'>
+    <div
+      className='post-container'
+      onMouseEnter={() => setShowControls(true)}
+      onMouseLeave={() => {
+        setShowControls(false);
+      }}
+      onTouchStart={showControlsTemporarily}
+      onTouchMove={() => {
+        if (controlsTimeoutRef.current) {
+          clearTimeout(controlsTimeoutRef.current);
+        }
+      }}
+    >
+      <div className='absolute top-2 right-4 z-50'>
+        <PostActionMenu
+          author={author}
+          postId={postId}
+          createdAt={createdAt}
+          caption={text}
+          showControls={showControls}
+          turnOffComments={turnOffComments ?? false}
+          hideLikes={hideLikes ?? false}
+          pinned={pinned}
+          media={media}
+        />
+      </div>
       <Swiper
         pagination={{ clickable: true }}
         className='h-full w-full'
@@ -53,11 +86,8 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                 mentions={mentions}
                 text={text}
                 reposts={reposts}
-                pinned={pinned}
                 repostedBy={repostedBy}
-                hideLikes={hideLikes}
-                turnOffComments={turnOffComments}
-                media={media}
+                showControls={showControls}
               />
             ) : (
               <PostImageCard
@@ -70,11 +100,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                 id={postId}
                 text={text}
                 reposts={reposts}
-                pinned={pinned}
                 repostedBy={repostedBy}
-                hideLikes={hideLikes}
-                turnOffComments={turnOffComments}
-                media={media}
               />
             )}
           </SwiperSlide>
@@ -82,7 +108,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
       </Swiper>
 
       {media?.length > 1 && (
-        <React.Fragment>
+        <Fragment>
           {currentIndex > 0 && (
             <Button
               variant='ghost'
@@ -103,7 +129,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
               <ChevronRight className='size-4' />
             </Button>
           )}
-        </React.Fragment>
+        </Fragment>
       )}
     </div>
   );

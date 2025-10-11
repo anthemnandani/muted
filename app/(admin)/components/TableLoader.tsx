@@ -1,7 +1,7 @@
 import { Icons } from '@/components/icons';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 
-const ContentTableLoader = () => {
+const TableLoader = () => {
   return (
     <Table>
       <TableBody>
@@ -17,4 +17,4 @@ const ContentTableLoader = () => {
   );
 };
 
-export default ContentTableLoader;
+export default TableLoader;
