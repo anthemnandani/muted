@@ -15,6 +15,7 @@ import useDebounce from '@/hooks/useDebounce';
 import {
   cn,
   formatCount,
+  formatStrikesDisplay,
   getStrikeBadgeClass,
   getUserStatusInfo,
 } from '@/lib/utils';
@@ -83,7 +84,6 @@ const UsersTable = () => {
               </TableRow>
             ) : (
               users?.map((user) => {
-                const strikes = 3;
                 const statusInfo = getUserStatusInfo(user.status);
                 return (
                   <TableRow
@@ -108,22 +108,22 @@ const UsersTable = () => {
                       </div>
                     </TableCell>
 
-                    <TableCell className='text-sm font-medium text-white/65'>
-                      {formatCount(user._count.posts)}
+                    <TableCell className='text-sm font-medium text-white/65 pl-5'>
+                      {formatCount(user.postsCount)}
                     </TableCell>
 
-                    <TableCell className='text-sm font-medium text-white/65'>
-                      {formatCount(user._count.followers)}
+                    <TableCell className='text-sm font-medium text-white/65 pl-8'>
+                      {formatCount(user.followersCount)}
                     </TableCell>
 
-                    <TableCell>
+                    <TableCell className='pl-3'>
                       <Badge
                         className={cn(
-                          getStrikeBadgeClass(strikes),
+                          getStrikeBadgeClass(user.strikesCount),
                           'text-[13px] px-2 py-[1px]'
                         )}
                       >
-                        {strikes}
+                        {formatStrikesDisplay(user.strikesCount)}
                       </Badge>
                     </TableCell>
 

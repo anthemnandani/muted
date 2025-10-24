@@ -117,7 +117,6 @@ model Post {
   bookmarks       Bookmark[]
   mentions        Mention[]
   hashtags        Hashtag[]      @relation("PostHashtags")
-  strikes         Strike[]
   repliesCount    Int            @default(0)
   path            String?
   hideLikes       Boolean        @default(false)
@@ -227,6 +226,9 @@ enum NotificationType {
   FOLLOWER
   MENTION
   FOLLOW_REQUEST
+  WARNING
+  SUSPENDED
+  UNSUSPENDED
 }
 
 model Notification {
@@ -236,9 +238,9 @@ model Notification {
   type      NotificationType
   message   String
 
-  senderUserId   String
+  senderUserId   String?
   receiverUserId String?
-  senderUser     User    @relation("sender", fields: [senderUserId], references: [id], onDelete: Cascade)
+  senderUser     User?   @relation("sender", fields: [senderUserId], references: [id], onDelete: Cascade)
   receiverUser   User?   @relation("receiver", fields: [receiverUserId], references: [id], onDelete: Cascade)
 
   postId String?
@@ -602,7 +604,6 @@ model Strike {
   user          User     @relation(fields: [userId], references: [id])
   reason        String
   relatedPostId String?
-  relatedPost   Post?    @relation(fields: [relatedPostId], references: [id])
   createdAt     DateTime @default(now())
   expiresAt     DateTime
 

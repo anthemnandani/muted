@@ -1,14 +1,16 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
+import { api } from '@/trpc/react';
+import { useClerk, useUser } from '@clerk/nextjs';
 import {
   createContext,
+  ReactNode,
   useContext,
   useEffect,
   useState,
-  ReactNode,
 } from 'react';
 import { io as ClientIO, Socket } from 'socket.io-client';
+import { toast } from 'sonner';
 
 interface SocketContextType {
   socket: Socket | null;
@@ -27,10 +29,12 @@ export const useSocket = (): SocketContextType => useContext(SocketContext);
 export const SocketProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
+  const { signOut } = useClerk();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [activeUsers, setActiveUsers] = useState<string[]>([]);
   const { user } = useUser();
+  const utils = api.useUtils();
 
   useEffect(() => {
     if (!user?.id) return;
@@ -60,6 +64,26 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({
 
     socketInstance.on('ACTIVE_USERS:REMOVE', (userId: string) => {
       setActiveUsers((prev) => prev.filter((id) => id !== userId));
+    });
+
+    socketInstance.on('ACCOUNT_UPDATE', (data) => {
+      if (data.type === 'WARNING') {
+        utils.notification.getNotifications.invalidate();
+        utils.notification.getUnreadCount.invalidate();
+      } else if (data.type === 'UNSUSPENDED') {
+        toast.info(data.message, {
+          duration: 10000,
+        });
+      } else if (data.type === 'SUSPENDED' || data.type === 'BANNED') {
+        toast.error(data.message, {
+          description: 'You will be logged out automatically.',
+          duration: 5000,
+        });
+
+        setTimeout(() => {
+          signOut();
+        }, 5000);
+      }
     });
 
     setSocket(socketInstance);

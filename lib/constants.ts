@@ -951,3 +951,16 @@ export const ADMIN_ACCOUNT_ITEMS = [
   //   icon: LogOut,
   // },
 ];
+
+export const STRIKE_REASON_OPTIONS = [
+  { value: 'harassment_bullying', label: 'Harassment and Bullying' },
+  { value: 'hate_speech', label: 'Hate Speech' },
+  { value: 'spam_scams', label: 'Spam and Scams' },
+  { value: 'nudity_sexual_content', label: 'Nudity or Sexual Content' },
+  { value: 'violent_graphic_content', label: 'Violent or Graphic Content' },
+  { value: 'dangerous_acts', label: 'Dangerous Acts or Challenges' },
+  { value: 'illegal_goods_sale', label: 'Sale of illegal or regulated goods' },
+  { value: 'impersonation', label: 'Impersonation' },
+  { value: 'minor_safety', label: 'Minor Safety Violation' },
+  { value: 'other', label: 'Other Policy Violation' },
+] as const;

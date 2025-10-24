@@ -693,7 +693,7 @@ export interface ConfirmDialogProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   isLoading: boolean;
-  closeMenu: () => void;
+  closeMenu?: () => void;
   btnTitle?: string;
   btnClassName?: string;
   trigger?: React.ReactNode;
@@ -937,7 +937,7 @@ export interface SidebarWrapperProps {
 
 export type Notification = {
   id: string;
-  senderUser: AuthorInfoProps;
+  senderUser: AuthorInfoProps | null;
   message: string;
   createdAt: Date;
   media?: PostMedia[];
@@ -946,12 +946,12 @@ export type Notification = {
 };
 
 export interface NotificationCardProps {
-  sender: AuthorInfoProps;
+  sender: AuthorInfoProps | null;
   message: string;
   createdAt: Date;
   media?: PostMedia;
   postId?: string;
-  type?: NotificationType;
+  type: NotificationType;
   isLast: boolean;
 }
 

@@ -29,7 +29,7 @@ const ConfirmDialog = ({
 }: ConfirmDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild className='w-full'>
+      <DialogTrigger asChild>
         {trigger ?? (
           <MenuItem
             icon={Icons.delete}
@@ -40,7 +40,7 @@ const ConfirmDialog = ({
       </DialogTrigger>
       <DialogContent
         isSecondDialog
-        className='w-full !max-w-[320px] select-none border-none bg-transparent shadow-none outline-none z-[1001] box-content'
+        className='w-full !max-w-[350px] select-none border-none bg-transparent shadow-none outline-none z-[1001] box-content'
       >
         <DialogHeader>
           <DialogTitle>
@@ -58,7 +58,7 @@ const ConfirmDialog = ({
               className='flex-1 font-normal text-base rounded-none rounded-l-2xl h-[54px] border-r-[0.8px] border-r-border-dark dark:border-r-gray-7 ring-0 hover:bg-transparent'
               onClick={() => {
                 setOpen(false);
-                closeMenu();
+                closeMenu?.();
               }}
             >
               Cancel

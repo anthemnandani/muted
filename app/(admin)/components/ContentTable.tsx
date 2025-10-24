@@ -170,7 +170,11 @@ const ContentTable = () => {
                     </TableCell>
 
                     <TableCell>
-                      <PostActions id={post.id} status={post.status} />
+                      <PostActions
+                        id={post.id}
+                        userId={post.author.id}
+                        status={post.status}
+                      />
                     </TableCell>
                   </TableRow>
                 );

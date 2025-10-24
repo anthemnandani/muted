@@ -1,7 +1,7 @@
 'use client';
 
 import useWindow from '@/hooks/useWindow';
-import { useAuth } from '@clerk/nextjs';
+import { SignOutButton } from '@clerk/nextjs';
 import { AlertCircle, Bookmark, Heart, LogOut, Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Icons } from '../icons';
@@ -14,7 +14,6 @@ import {
 } from '../ui/dropdown-menu';
 
 const UserMenu = () => {
-  const { signOut } = useAuth();
   const router = useRouter();
   const { isMobile } = useWindow();
   return (
@@ -55,12 +54,9 @@ const UserMenu = () => {
         )}
 
         <DropdownMenuSeparator />
-        <MenuItem
-          icon={LogOut}
-          label='Log out'
-          onClick={() => signOut()}
-          className='py-2'
-        />
+        <SignOutButton>
+          <MenuItem icon={LogOut} label='Log out' className='py-2' />
+        </SignOutButton>
       </DropdownMenuContent>
     </DropdownMenu>
   );

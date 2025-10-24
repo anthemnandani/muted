@@ -751,9 +751,18 @@ export const getStrikeBadgeClass = (strikes: number) => {
       return 'bg-orange-500/20 text-orange-500 border-orange-500/30 hover:bg-orange-500/30';
     case 3:
       return 'bg-red-500/20 text-red-500 border-red-500/30 hover:bg-red-500/30';
-    default:
+    case 4:
       return 'bg-red-700/20 text-red-700 border-red-700/30 hover:bg-red-700/30 font-bold';
+    default:
+      return 'bg-red-900/20 text-red-900 border-red-900/30 hover:bg-red-900/30 font-bold';
   }
+};
+
+export const formatStrikesDisplay = (strikesCount: number): string | number => {
+  if (strikesCount === 1) {
+    return 'W';
+  }
+  return strikesCount;
 };
 
 export const getUserStatusInfo = (status: UserStatus) => {

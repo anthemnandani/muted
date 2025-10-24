@@ -14,7 +14,7 @@ import {
 import useHomeNavigation from '@/hooks/useHomeNavigation';
 import { ADMIN_ACCOUNT_ITEMS, ADMIN_MENU_ITEMS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@clerk/nextjs';
+import { SignOutButton } from '@clerk/nextjs';
 import { LogOut } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -22,7 +22,6 @@ import { usePathname } from 'next/navigation';
 
 const AdminSidebar = () => {
   const { handleHomeClick } = useHomeNavigation();
-  const { signOut } = useAuth();
   const pathname = usePathname();
   return (
     <Sidebar>
@@ -90,21 +89,19 @@ const AdminSidebar = () => {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  className='text-white/60 hover:text-white/90 hover:bg-white/5'
-                >
-                  <button
-                    type='button'
-                    onClick={() => signOut()}
-                    className='flex items-center gap-3'
+              <SignOutButton>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    className='text-white/60 hover:text-white/90 hover:bg-white/5'
                   >
-                    <LogOut className='size-4' />
-                    <span>Logout</span>
-                  </button>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+                    <button type='button' className='flex items-center gap-3'>
+                      <LogOut className='size-4' />
+                      <span>Logout</span>
+                    </button>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SignOutButton>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

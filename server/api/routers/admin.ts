@@ -1,8 +1,9 @@
+import { inngest } from '@/inngest/client';
 import { PostMedia } from '@/lib/types';
 import { getChartDataTemplate, getTotalRepliesCount } from '@/lib/utils';
 import { GET_USER, getPostRepliesCount } from '@/server/constants';
 import { clerkClient } from '@clerk/nextjs/server';
-import { PostStatus, UserStatus, Prisma, Role } from '@prisma/client';
+import { PostStatus, Prisma, Role, UserStatus } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import axios from 'axios';
 import { z } from 'zod';
@@ -373,6 +374,7 @@ export const adminRouter = createTRPCRouter({
           _count: {
             select: {
               followers: true,
+              strikes: true,
               posts: {
                 where: {
                   parentPostId: null,
@@ -387,6 +389,7 @@ export const adminRouter = createTRPCRouter({
         ...user,
         followersCount: user._count.followers,
         postsCount: user._count.posts,
+        strikesCount: user._count.strikes,
       }));
 
       let nextCursor: typeof cursor | undefined;
@@ -402,6 +405,140 @@ export const adminRouter = createTRPCRouter({
       return {
         users: formattedUsers,
         nextCursor,
+      };
+    }),
+
+  issueStrike: adminProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        postId: z.string().optional(),
+        reason: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { userId, postId, reason } = input;
+      const adminId = ctx.userId;
+      const { db } = ctx;
+
+      const user = await db.user.findUnique({
+        where: { id: userId },
+        include: {
+          strikes: {
+            where: { expiresAt: { gt: new Date() } },
+          },
+        },
+      });
+
+      if (!user) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found.' });
+      }
+
+      const activeStrikeCount = user.strikes.length;
+
+      let suspensionEndDate: Date | null = null;
+      let userStatus: UserStatus = user.status;
+      let clerkStatus: 'ACTIVE' | 'SUSPENDED' | 'BANNED' = 'ACTIVE';
+      let notificationType: 'WARNING' | 'SUSPENDED' | null = null;
+      let notificationMessage: string = '';
+
+      switch (activeStrikeCount) {
+        case 0:
+          notificationType = 'WARNING';
+          notificationMessage =
+            'You have received a warning for a policy violation. Please review our community guidelines.';
+          break;
+        case 1:
+          suspensionEndDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+          userStatus = UserStatus.SUSPENDED;
+          clerkStatus = 'SUSPENDED';
+          notificationType = 'SUSPENDED';
+          notificationMessage =
+            'Your account has been suspended for 24 hours due to a policy violation.';
+          break;
+        case 2:
+          suspensionEndDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+          userStatus = UserStatus.SUSPENDED;
+          clerkStatus = 'SUSPENDED';
+          notificationType = 'SUSPENDED';
+          notificationMessage =
+            'Your account has been suspended for 7 days due to repeated policy violations.';
+          break;
+        case 3:
+          suspensionEndDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+          userStatus = UserStatus.SUSPENDED;
+          clerkStatus = 'SUSPENDED';
+          notificationType = 'SUSPENDED';
+          notificationMessage =
+            'Your account has been suspended for 30 days due to multiple policy violations.';
+          break;
+        default:
+          userStatus = UserStatus.BLOCKED;
+          clerkStatus = 'BANNED';
+          break;
+      }
+
+      const ninetyDaysFromNow = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
+
+      try {
+        await db.$transaction(async (tx) => {
+          await tx.strike.create({
+            data: {
+              userId,
+              reason,
+              relatedPostId: postId,
+              expiresAt: ninetyDaysFromNow,
+            },
+          });
+
+          if (user.status !== userStatus) {
+            await tx.user.update({
+              where: { id: userId },
+              data: { status: userStatus, suspensionEndDate },
+            });
+          }
+
+          if (postId) {
+            await tx.post.update({
+              where: { id: postId },
+              data: { status: 'HIDDEN' },
+            });
+          }
+
+          if (notificationType) {
+            await tx.notification.create({
+              data: {
+                type: notificationType,
+                message: notificationMessage,
+                receiverUserId: userId,
+                senderUserId: adminId,
+                postId,
+              },
+            });
+          }
+        });
+      } catch (error) {
+        console.error('Strike DB Transaction failed:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to apply strike consequences to the database.',
+        });
+      }
+
+      await inngest.send({
+        name: 'app/strike.process',
+        data: {
+          userId,
+          clerkStatus,
+          suspensionEndDate: suspensionEndDate?.toISOString(),
+          notificationType,
+          notificationMessage,
+        },
+      });
+
+      return {
+        success: true,
+        message: 'Strike applied. Processing side effects.',
       };
     }),
 });

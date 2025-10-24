@@ -33,7 +33,7 @@ const PostFooter: React.FC<PostFooterProps> = ({
         <div className='hidden size-1 rounded-full bg-white sm:block' />
         <Link
           href={`/@${author.username}/post/${id}`}
-          className='text-white text-sm truncate'
+          className='text-white text-sm truncate mt-1'
         >
           {formatTimeAgo(createdAt)}
         </Link>

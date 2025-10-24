@@ -1,36 +1,24 @@
 import ConfirmDialog from '@/components/modals/ConfirmDialog';
-import MenuItem from '@/components/shared/MenuItem';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Separator } from '@/components/ui/separator';
-import useDeletePost from '@/hooks/useDeletePost';
-import { cn } from '@/lib/utils';
-import useDeletePostStore from '@/store/deletePost';
-import usePostStore from '@/store/postStore';
+import IssueStrike from '@/components/modals/IssueStrike';
+import { Button } from '@/components/ui/button';
 import { api } from '@/trpc/react';
 import { PostStatus } from '@prisma/client';
-import { Eye, EyeOff, MoreHorizontal, ShieldBan } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-const PostActions = ({ id, status }: { id: string; status: PostStatus }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+const PostActions = ({
+  id,
+  status,
+  userId,
+}: {
+  id: string;
+  status: PostStatus;
+  userId: string;
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const router = useRouter();
   const trpcUtils = api.useUtils();
-  const { reset } = usePostStore();
-
-  const { handleDeletePost, isDeleting } = useDeletePost({
-    postId: id,
-    isAdmin: true,
-  });
-
-  const { openDeleteDialog, setOpenDeleteDialog } = useDeletePostStore();
 
   const { mutateAsync: togglePostStatus, isLoading: isTogglingStatus } =
     api.admin.togglePostStatus.useMutation({
@@ -41,7 +29,6 @@ const PostActions = ({ id, status }: { id: string; status: PostStatus }) => {
 
   const handleToggleStatus = () => {
     setIsOpen(false);
-    setIsMenuOpen(false);
     const promise = togglePostStatus({ id });
     const action = status === PostStatus.VISIBLE ? 'Hiding' : 'Making visible';
     const successMsg =
@@ -58,73 +45,48 @@ const PostActions = ({ id, status }: { id: string; status: PostStatus }) => {
   };
 
   return (
-    <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen} modal={false}>
-      <DropdownMenuTrigger asChild>
-        <div
-          className={cn(
-            'relative h-12 flex-center cursor-pointer transition-all duration-200 drop-shadow-lg group',
-            'before:content-[""] before:absolute before:size-10 before:rounded-full before:bg-white-13',
-            'hover:before:scale-100 before:scale-0 before:transition-transform before:duration-200'
-          )}
-        >
-          <MoreHorizontal className='aspect-square object-cover object-center size-6 overflow-hidden flex-1 text-white z-10' />
-        </div>
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent
-        align='end'
-        className='dropdown-content-container w-[175px] p-0 rounded-lg'
-      >
-        <MenuItem
-          icon={Eye}
-          label='View'
-          onClick={() => {
-            reset();
-            router.push(`/post/${id}`);
-          }}
-        />
-        <Separator />
-        <ConfirmDialog
-          open={isOpen}
-          setOpen={(value) => setIsOpen(value)}
-          title={
-            status === PostStatus.VISIBLE ? 'Hide post' : 'Make post visible'
-          }
-          description={
-            status === PostStatus.VISIBLE
-              ? 'The post will be hidden from public view.'
-              : 'The post will become visible to everyone again.'
-          }
-          btnTitle={
-            status === PostStatus.VISIBLE ? 'Confirm Hide' : 'Confirm Visible'
-          }
-          btnClassName={
-            status === PostStatus.HIDDEN
-              ? 'text-primary-blue hover:text-primary-blue/75'
-              : ''
-          }
-          isLoading={isTogglingStatus}
-          onClick={handleToggleStatus}
-          closeMenu={() => setIsMenuOpen(false)}
-          trigger={
-            <MenuItem
-              icon={status === PostStatus.VISIBLE ? EyeOff : ShieldBan}
-              label={status === PostStatus.VISIBLE ? 'Hide' : 'Unhide'}
-            />
-          }
-        />
-        <Separator />
-        <ConfirmDialog
-          open={openDeleteDialog}
-          setOpen={setOpenDeleteDialog}
-          closeMenu={() => setIsMenuOpen(false)}
-          title='Delete Post'
-          description="If you delete this post, you won't be able to restore it."
-          onClick={handleDeletePost}
-          isLoading={isDeleting}
-        />
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className='flex-center gap-1'>
+      <ConfirmDialog
+        open={isOpen}
+        setOpen={(value) => setIsOpen(value)}
+        title={
+          status === PostStatus.VISIBLE ? 'Hide Post' : 'Make Post Visible'
+        }
+        description={
+          status === PostStatus.VISIBLE
+            ? 'The post will be hidden from public view.'
+            : 'The post will become visible to everyone again.'
+        }
+        btnTitle={
+          status === PostStatus.VISIBLE ? 'Confirm Hide' : 'Confirm Visible'
+        }
+        btnClassName={
+          status === PostStatus.HIDDEN
+            ? 'text-primary-blue hover:text-primary-blue/75'
+            : ''
+        }
+        isLoading={isTogglingStatus}
+        onClick={handleToggleStatus}
+        trigger={
+          <Button
+            variant='ghost'
+            size='icon'
+            className='hover:bg-white/10'
+            title={status === PostStatus.VISIBLE ? 'Hide' : 'Unhide'}
+          >
+            {status === PostStatus.VISIBLE ? (
+              <EyeOff className='size-5 text-white/80' />
+            ) : (
+              <Eye className='size-5 text-white/80' />
+            )}
+            <span className='sr-only'>
+              {status === PostStatus.VISIBLE ? 'Hide post' : 'Unhide post'}
+            </span>
+          </Button>
+        }
+      />
+      <IssueStrike userId={userId} postId={id} />
+    </div>
   );
 };
 
