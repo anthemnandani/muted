@@ -24,6 +24,7 @@ import { api } from '@/trpc/react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import TableLoader from './TableLoader';
 import UserActions from './UserActions';
+import { UserStatus } from '@prisma/client';
 
 const UsersTable = () => {
   const { userSearch, userStatus } = useAdminFiltersStore();
@@ -142,7 +143,12 @@ const UsersTable = () => {
                     </TableCell>
 
                     <TableCell>
-                      <UserActions id={user.id} username={user.username} />
+                      <UserActions
+                        id={user.id}
+                        username={user.username}
+                        isSuspended={user.status === UserStatus.SUSPENDED}
+                        isBanned={user.status === UserStatus.BANNED}
+                      />
                     </TableCell>
                   </TableRow>
                 );

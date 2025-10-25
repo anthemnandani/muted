@@ -318,9 +318,7 @@ export const adminRouter = createTRPCRouter({
     .input(
       z.object({
         search: z.string().optional(),
-        status: z
-          .enum(['ALL', 'ACTIVE', 'SUSPENDED', 'BLOCKED'])
-          .default('ALL'),
+        status: z.enum(['ALL', 'ACTIVE', 'SUSPENDED', 'BANNED']).default('ALL'),
         limit: z.number().optional(),
         cursor: z
           .object({
@@ -349,8 +347,8 @@ export const adminRouter = createTRPCRouter({
         conditions.push({ status: UserStatus.ACTIVE });
       } else if (status === 'SUSPENDED') {
         conditions.push({ status: UserStatus.SUSPENDED });
-      } else if (status === 'BLOCKED') {
-        conditions.push({ status: UserStatus.BLOCKED });
+      } else if (status === 'BANNED') {
+        conditions.push({ status: UserStatus.BANNED });
       }
 
       if (conditions.length > 0) {
@@ -473,7 +471,7 @@ export const adminRouter = createTRPCRouter({
             'Your account has been suspended for 30 days due to multiple policy violations.';
           break;
         default:
-          userStatus = UserStatus.BLOCKED;
+          userStatus = UserStatus.BANNED;
           clerkStatus = 'BANNED';
           break;
       }
@@ -512,7 +510,6 @@ export const adminRouter = createTRPCRouter({
                 message: notificationMessage,
                 receiverUserId: userId,
                 senderUserId: adminId,
-                postId,
               },
             });
           }
@@ -540,5 +537,68 @@ export const adminRouter = createTRPCRouter({
         success: true,
         message: 'Strike applied. Processing side effects.',
       };
+    }),
+
+  suspendUser: adminProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        suspensionEndDate: z.date(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { userId, suspensionEndDate } = input;
+      const { db } = ctx;
+      const notificationMessage = `Your account has been suspended until ${suspensionEndDate.toLocaleDateString()} due to multiple policy violations.`;
+
+      try {
+        await db.$transaction([
+          db.user.update({
+            where: { id: userId },
+            data: {
+              status: UserStatus.SUSPENDED,
+              suspensionEndDate,
+            },
+          }),
+          db.notification.create({
+            data: {
+              type: 'SUSPENDED',
+              message: notificationMessage,
+              receiverUserId: userId,
+              senderUserId: ctx.userId,
+            },
+          }),
+        ]);
+
+        await inngest.send({
+          name: 'app/user.suspend',
+          data: {
+            userId,
+            suspensionEndDate: suspensionEndDate?.toISOString(),
+            notificationMessage,
+          },
+        });
+
+        return { success: true };
+      } catch (error) {
+        console.error('Manual suspension failed:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to suspend user.',
+        });
+      }
+    }),
+
+  unsuspendUser: adminProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ input }) => {
+      await inngest.send({
+        name: 'app/user.unsuspend',
+        data: {
+          userId: input.userId,
+        },
+      });
+
+      return { success: true, message: 'Unsuspension process initiated.' };
     }),
 });

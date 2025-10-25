@@ -54,6 +54,12 @@ export function formatDateString(dateString: string) {
   return `${time} - ${formattedDate}`;
 }
 
+export const formatDate = (date: Date) => {
+  if (!date) return '...';
+
+  return format(date, 'MMMM d, yyyy');
+};
+
 export function formatTimeAgo(timestamp: Date): string {
   const now = new Date();
   const secondsDiff = differenceInSeconds(now, timestamp);
@@ -779,9 +785,9 @@ export const getUserStatusInfo = (status: UserStatus) => {
         className:
           'bg-yellow-500/20 text-yellow-500 border-yellow-500/30 hover:bg-yellow-500/30',
       };
-    case UserStatus.BLOCKED:
+    case UserStatus.BANNED:
       return {
-        text: 'Blocked',
+        text: 'Banned',
         className:
           'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80',
       };

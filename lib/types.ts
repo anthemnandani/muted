@@ -1287,7 +1287,14 @@ export interface SectionCardsProps {
   activeUsers24h: number;
 }
 
+export interface UserActionsProps {
+  id: string;
+  username: string;
+  isSuspended: boolean;
+  isBanned: boolean;
+}
+
 export type AdminPost = RouterOutputs['admin']['getAllPosts']['posts'][0];
 export type ContentType = 'ALL' | 'IMAGE' | 'VIDEO' | 'TEXT';
 export type PostStatusFilter = 'ALL' | 'VISIBLE' | 'HIDDEN';
-export type UserStatusFilter = 'ALL' | 'ACTIVE' | 'SUSPENDED' | 'BLOCKED';
+export type UserStatusFilter = 'ALL' | 'ACTIVE' | 'SUSPENDED' | 'BANNED';

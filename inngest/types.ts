@@ -18,6 +18,15 @@ export interface UnsuspendUser extends EventPayload {
   };
 }
 
+export interface SuspendUser extends EventPayload {
+  name: 'app/user.suspend';
+  data: {
+    userId: string;
+    suspensionEndDate?: string;
+    notificationMessage: string;
+  };
+}
+
 export interface SendNotification extends EventPayload {
   name: 'app/notification.send';
   data: {
@@ -25,5 +34,16 @@ export interface SendNotification extends EventPayload {
     type: 'WARNING' | 'SUSPENDED' | 'UNSUSPENDED' | null;
     message: string;
     suspensionEndDate?: string;
+  };
+}
+
+export interface UserStatusChanged extends EventPayload {
+  name: 'app/user.status-changed';
+  data: {
+    userId: string;
+    clerkStatus: 'ACTIVE' | 'SUSPENDED' | 'BANNED';
+    suspensionEndDate?: string;
+    notificationType: 'WARNING' | 'SUSPENDED' | null;
+    notificationMessage: string;
   };
 }

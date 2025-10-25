@@ -58,7 +58,7 @@ const UserFilters = () => {
             <SelectItem value='ALL'>All statuses</SelectItem>
             <SelectItem value='ACTIVE'>Active</SelectItem>
             <SelectItem value='SUSPENDED'>Suspended</SelectItem>
-            <SelectItem value='BLOCKED'>Blocked</SelectItem>
+            <SelectItem value='BANNED'>Banned</SelectItem>
           </SelectContent>
         </Select>
 

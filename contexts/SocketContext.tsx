@@ -78,6 +78,8 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({
         toast.error(data.message, {
           description: 'You will be logged out automatically.',
           duration: 5000,
+          richColors: true,
+          className: 'p-2',
         });
 
         setTimeout(() => {
