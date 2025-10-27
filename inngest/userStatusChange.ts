@@ -23,8 +23,10 @@ export const processUserStatusChange = inngest.createFunction(
       notificationMessage,
     } = event.data;
 
+    const client = await clerkClient();
+
     await step.run('update-clerk-metadata', async () => {
-      await clerkClient.users.updateUserMetadata(userId, {
+      await client.users.updateUserMetadata(userId, {
         publicMetadata: {
           status: clerkStatus,
           suspensionEndDate: suspensionEndDate

@@ -1,4 +1,3 @@
-import { getUserEmail } from '@/lib/utils';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
 import { Privacy } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
@@ -14,14 +13,12 @@ export const authRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { userId, user, db } = ctx;
+      const { userId, db } = ctx;
       if (!userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
-
-      const email = getUserEmail(user);
 
       const dbUser = await db.user.findUnique({
         where: {
-          email,
+          id: userId,
         },
       });
 

@@ -1,6 +1,6 @@
 import ReactivateDialog from '@/components/modals/ReactivateDialog';
 import { db } from '@/server/db';
-import { currentUser } from '@clerk/nextjs';
+import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 
 const ReactivatePage = async () => {

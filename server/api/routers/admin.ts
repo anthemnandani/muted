@@ -52,7 +52,9 @@ export const adminRouter = createTRPCRouter({
         data: { role: input.role },
       });
 
-      await clerkClient.users.updateUserMetadata(input.targetUserId, {
+      const client = await clerkClient();
+
+      await client.users.updateUserMetadata(input.targetUserId, {
         publicMetadata: {
           role: input.role,
         },

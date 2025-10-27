@@ -22,6 +22,7 @@ const SettingsLayout = ({
         role='button'
         onClick={() => router.back()}
         className='cursor-pointer absolute top-8 left-[calc(50%_-_611px)] flex-center size-10 rounded-[50%]'
+        aria-label='Back'
       >
         <ArrowLeft className='size-6' />
       </div>

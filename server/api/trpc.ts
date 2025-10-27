@@ -1,4 +1,4 @@
-import { currentUser } from '@clerk/nextjs';
+import { currentUser } from '@clerk/nextjs/server';
 import { TRPCError, initTRPC } from '@trpc/server';
 import { type NextRequest } from 'next/server';
 import superjson from 'superjson';

@@ -1,13 +1,10 @@
-type UserPublicMetadata = {
-  role?: 'ADMIN' | 'USER';
-};
+export {};
 
 declare global {
   interface CustomJwtSessionClaims {
-    publicMetadata: UserPublicMetadata;
+    metadata: {
+      role?: 'ADMIN' | 'USER';
+      status?: string;
+    };
   }
-
-  interface UserPublicMetadata extends UserPublicMetadata {}
 }
-
-export {};

@@ -3,7 +3,7 @@ import TopBar from '@/components/shared/TopBar';
 import LeftSideBar from '@/components/sidebars/LeftSideBar';
 import { PostNavigatorProvider } from '@/contexts/PostNavigatorContext';
 import { db } from '@/server/db';
-import { currentUser } from '@clerk/nextjs';
+import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import React from 'react';
 
@@ -27,9 +27,7 @@ export default async function PagesLayout({
 
   if (dbUser?.deactivated) redirect('/reactivate');
 
-  if (dbUser && !dbUser.verified) redirect('/account?origin=/');
-
-  if (!dbUser) redirect('/account?origin=/');
+  if ((dbUser && !dbUser.verified) || !dbUser) redirect('/account?origin=/');
 
   return (
     <React.Fragment>

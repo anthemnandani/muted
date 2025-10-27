@@ -11,6 +11,8 @@ export const unsuspendUser = inngest.createFunction(
     const notificationMessage =
       'Your account suspension has been lifted. Welcome back!';
 
+    const client = await clerkClient();
+
     await step.run('update-user-status-and-notify', async () => {
       await db.$transaction([
         db.user.update({
@@ -25,7 +27,7 @@ export const unsuspendUser = inngest.createFunction(
           },
         }),
       ]);
-      await clerkClient.users.updateUserMetadata(userId, {
+      await client.users.updateUserMetadata(userId, {
         publicMetadata: {
           status: 'ACTIVE',
           suspensionEndDate: null,

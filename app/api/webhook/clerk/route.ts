@@ -56,6 +56,7 @@ export const POST = async (request: Request) => {
       console.log(evnt?.data);
       const fullName = getFullName(first_name, last_name);
       const email = email_addresses[0].email_address;
+      const client = await clerkClient();
 
       await db.$transaction(async (tx) => {
         const user = await tx.user.create({
@@ -78,7 +79,7 @@ export const POST = async (request: Request) => {
         });
       });
 
-      await clerkClient.users.updateUserMetadata(id, {
+      await client.users.updateUserMetadata(id, {
         publicMetadata: {
           role: 'USER',
         },

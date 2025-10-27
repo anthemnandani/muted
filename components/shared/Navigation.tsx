@@ -33,7 +33,7 @@ const Navigation = () => {
   }, [pathname]);
 
   return (
-    <ul className='flex flex-col items-center gap-4 w-full'>
+    <div className='flex flex-col items-center gap-4 w-full'>
       <MenuLink
         route='/'
         icon={Icons.home}
@@ -117,7 +117,7 @@ const Navigation = () => {
         isActive={!!pathname?.match(/^\/@\w+$/) && !isSearchOpen}
         addFill
       />
-    </ul>
+    </div>
   );
 };
 

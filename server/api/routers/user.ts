@@ -1062,7 +1062,9 @@ export const userRouter = createTRPCRouter({
           const imageResponse = await fetch(image);
           const imageBlob = await imageResponse.blob();
 
-          await clerkClient.users.updateUserProfileImage(dbUser.id, {
+          const client = await clerkClient();
+
+          await client.users.updateUserProfileImage(dbUser.id, {
             file: imageBlob,
           });
         } catch (error) {
