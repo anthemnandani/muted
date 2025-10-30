@@ -47,6 +47,13 @@ export const processUserStatusChange = inngest.createFunction(
       });
     }
 
+    if (clerkStatus === 'BANNED') {
+      await step.sendEvent('trigger-ban-user', {
+        name: 'app/user.ban',
+        data: { userId },
+      });
+    }
+
     if (clerkStatus === 'SUSPENDED' && suspensionEndDate) {
       const unsuspendAt = new Date(suspensionEndDate);
       await step.sleepUntil('wait-for-suspension-end', unsuspendAt);

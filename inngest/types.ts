@@ -6,8 +6,15 @@ export interface ProcessStrike extends EventPayload {
     userId: string;
     clerkStatus: 'ACTIVE' | 'SUSPENDED' | 'BANNED';
     suspensionEndDate?: string;
-    notificationType: 'WARNING' | 'SUSPENDED' | null;
+    notificationType: 'WARNING' | 'SUSPENDED' | 'BANNED' | null;
     notificationMessage: string;
+  };
+}
+
+export interface BanUser extends EventPayload {
+  name: 'app/user.ban';
+  data: {
+    userId: string;
   };
 }
 
@@ -31,7 +38,7 @@ export interface SendNotification extends EventPayload {
   name: 'app/notification.send';
   data: {
     userId: string;
-    type: 'WARNING' | 'SUSPENDED' | 'UNSUSPENDED' | null;
+    type: 'WARNING' | 'SUSPENDED' | 'UNSUSPENDED' | 'BANNED' | null;
     message: string;
     suspensionEndDate?: string;
   };
@@ -43,7 +50,7 @@ export interface UserStatusChanged extends EventPayload {
     userId: string;
     clerkStatus: 'ACTIVE' | 'SUSPENDED' | 'BANNED';
     suspensionEndDate?: string;
-    notificationType: 'WARNING' | 'SUSPENDED' | null;
+    notificationType: 'WARNING' | 'SUSPENDED' | 'BANNED' | null;
     notificationMessage: string;
   };
 }

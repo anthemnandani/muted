@@ -1,9 +1,10 @@
 'use client';
 
+import BanUser from '@/components/modals/BanUser';
 import SuspendUser from '@/components/modals/SuspendUser';
 import { Button } from '@/components/ui/button';
 import { UserActionsProps } from '@/lib/types';
-import { Eye, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 const UserActions = ({
@@ -29,19 +30,7 @@ const UserActions = ({
 
       <SuspendUser isSuspended={isSuspended} userId={id} />
 
-      <Button
-        variant='ghost'
-        size='icon'
-        className='hover:bg-white/10'
-        title={isBanned ? 'Unban' : 'Ban'}
-      >
-        {isBanned ? (
-          <ShieldCheck className='size-5 text-green-500' />
-        ) : (
-          <ShieldAlert className='size-5 text-red-500' />
-        )}
-        <span className='sr-only'>{isBanned ? 'Unban user' : 'Ban user'}</span>
-      </Button>
+      <BanUser isBanned={isBanned} userId={id} />
     </div>
   );
 };

@@ -17,20 +17,19 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
   if (userId) {
     const userStatus = sessionClaims?.metadata?.status as string | undefined;
-    const isSuspendedOrBanned =
-      userStatus === 'SUSPENDED' || userStatus === 'BANNED';
-    const isTryingToAccessSuspendedPage =
+    const isSuspended = userStatus === 'SUSPENDED';
+    const isAccessingSuspendedPage =
       req.nextUrl.pathname.startsWith('/suspended');
 
-    if (isSuspendedOrBanned && !isTryingToAccessSuspendedPage) {
+    if (isSuspended && !isAccessingSuspendedPage) {
       return NextResponse.redirect(new URL('/suspended', req.url));
     }
 
-    if (!isSuspendedOrBanned && isTryingToAccessSuspendedPage) {
+    if (!isSuspended && isAccessingSuspendedPage) {
       return NextResponse.redirect(new URL('/', req.url));
     }
 
-    if (isPublicRoute(req) && !isTryingToAccessSuspendedPage) {
+    if (isPublicRoute(req) && !isAccessingSuspendedPage) {
       return NextResponse.redirect(new URL('/', req.url));
     }
 

@@ -334,7 +334,7 @@ export const adminRouter = createTRPCRouter({
       const { db } = ctx;
 
       const whereClause: Prisma.UserWhereInput = {};
-      const conditions: Prisma.UserWhereInput[] = [{ verified: true }];
+      const conditions: Prisma.UserWhereInput[] = [];
 
       if (search) {
         conditions.push({
@@ -439,7 +439,7 @@ export const adminRouter = createTRPCRouter({
       let suspensionEndDate: Date | null = null;
       let userStatus: UserStatus = user.status;
       let clerkStatus: 'ACTIVE' | 'SUSPENDED' | 'BANNED' = 'ACTIVE';
-      let notificationType: 'WARNING' | 'SUSPENDED' | null = null;
+      let notificationType: 'WARNING' | 'SUSPENDED' | 'BANNED' | null = null;
       let notificationMessage: string = '';
 
       switch (activeStrikeCount) {
@@ -475,6 +475,9 @@ export const adminRouter = createTRPCRouter({
         default:
           userStatus = UserStatus.BANNED;
           clerkStatus = 'BANNED';
+          notificationType = 'BANNED';
+          notificationMessage =
+            'Account Permanently Banned: This account has been banned due to repeated policy violations. All associated data has been deleted.';
           break;
       }
 
@@ -505,7 +508,7 @@ export const adminRouter = createTRPCRouter({
             });
           }
 
-          if (notificationType) {
+          if (notificationType && notificationType !== 'BANNED') {
             await tx.notification.create({
               data: {
                 type: notificationType,
@@ -602,5 +605,24 @@ export const adminRouter = createTRPCRouter({
       });
 
       return { success: true, message: 'Unsuspension process initiated.' };
+    }),
+
+  banUser: adminProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      await ctx.db.user.update({
+        where: { id: input.userId },
+        data: {
+          status: UserStatus.BANNED,
+        },
+      }),
+        await inngest.send({
+          name: 'app/user.ban',
+          data: {
+            userId: input.userId,
+          },
+        });
+
+      return { success: true, message: 'User ban process initiated.' };
     }),
 });

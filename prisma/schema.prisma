@@ -601,7 +601,7 @@ model FilteredKeyword {
 model Strike {
   id            String   @id @default(cuid())
   userId        String
-  user          User     @relation(fields: [userId], references: [id])
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   reason        String
   relatedPostId String?
   createdAt     DateTime @default(now())

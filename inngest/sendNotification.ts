@@ -13,7 +13,7 @@ export const sendNotification = inngest.createFunction(
       return { status: 'Notification dispatched' };
     } catch (error) {
       console.error('Failed to dispatch notification:', error);
-      // throw error;
+      throw error;
     }
   }
 );

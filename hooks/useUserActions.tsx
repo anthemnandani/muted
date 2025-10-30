@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 
 const useUserActions = ({ userId }: { userId: string }) => {
   const trpcUtils = api.useUtils();
-  const { mutateAsync: suspendUser, isLoading: isSuspendingUser } =
+  const { mutateAsync: suspendUser, isPending: isSuspendingUser } =
     api.admin.suspendUser.useMutation({
       onSettled: async () => {
         await trpcUtils.admin.getAllUsers.invalidate();
@@ -21,7 +21,7 @@ const useUserActions = ({ userId }: { userId: string }) => {
     });
   };
 
-  const { mutateAsync: unsuspendUser, isLoading: isUnsuspendingUser } =
+  const { mutateAsync: unsuspendUser, isPending: isUnsuspendingUser } =
     api.admin.unsuspendUser.useMutation({
       onSettled: async () => {
         await trpcUtils.admin.getAllUsers.invalidate();
@@ -39,11 +39,31 @@ const useUserActions = ({ userId }: { userId: string }) => {
     });
   };
 
+  const { mutateAsync: banUser, isPending: isBanningUser } =
+    api.admin.banUser.useMutation({
+      onSettled: async () => {
+        await trpcUtils.admin.getAllUsers.invalidate();
+      },
+    });
+
+  const handleBan = () => {
+    const promise = banUser({ userId });
+
+    toast.promise(promise, {
+      loading: 'Banning user...',
+      success: () => 'User has been banned.',
+      error: 'Error banning user.',
+      richColors: true,
+    });
+  };
+
   return {
     handleSuspend,
     handleUnsuspend,
+    handleBan,
     isSuspendingUser,
     isUnsuspendingUser,
+    isBanningUser,
   };
 };
 

@@ -130,7 +130,7 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
             <strong className='text-lg text-white/90 antialiased'>
               {formatCount(following.length)}
             </strong>
-            <span className='text-base text-white/75 hover:underline transition-all duration-200 antialiased'>
+            <span className='text-base text-white/75 hover:underline transition-all duration-200 antialiased mt-1'>
               Following
             </span>
           </Link>
@@ -141,7 +141,7 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
             <strong className='text-lg text-white/90 antialiased'>
               {formatCount(followers.length)}
             </strong>
-            <span className='text-base text-white/75 hover:underline transition-all duration-200 antialiased'>
+            <span className='text-base text-white/75 hover:underline transition-all duration-200 antialiased mt-1'>
               Follower{followers.length === 1 ? '' : 's'}
             </span>
           </Link>
@@ -149,7 +149,7 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
             <strong className='text-lg text-white/90 antialiased'>
               {formatCount(totalLikes)}
             </strong>
-            <span className='text-base text-white/75 antialiased'>
+            <span className='text-base text-white/75 antialiased mt-1'>
               Like{totalLikes === 1 ? '' : 's'}
             </span>
           </div>
