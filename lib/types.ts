@@ -1298,3 +1298,4 @@ export type AdminPost = RouterOutputs['admin']['getAllPosts']['posts'][0];
 export type ContentType = 'ALL' | 'IMAGE' | 'VIDEO' | 'TEXT';
 export type PostStatusFilter = 'ALL' | 'VISIBLE' | 'HIDDEN';
 export type UserStatusFilter = 'ALL' | 'ACTIVE' | 'SUSPENDED' | 'BANNED';
+export type AppealStatusFilter = 'ALL' | 'PENDING' | 'UPHELD' | 'OVERTURNED';

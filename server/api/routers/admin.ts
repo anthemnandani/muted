@@ -3,7 +3,14 @@ import { PostMedia } from '@/lib/types';
 import { getChartDataTemplate, getTotalRepliesCount } from '@/lib/utils';
 import { GET_USER, getPostRepliesCount } from '@/server/constants';
 import { clerkClient } from '@clerk/nextjs/server';
-import { PostStatus, Prisma, Role, UserStatus } from '@prisma/client';
+import {
+  AppealStatus,
+  PostStatus,
+  Prisma,
+  Role,
+  SuspensionType,
+  UserStatus,
+} from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import axios from 'axios';
 import { z } from 'zod';
@@ -408,6 +415,79 @@ export const adminRouter = createTRPCRouter({
       };
     }),
 
+  getAppeals: adminProcedure
+    .input(
+      z.object({
+        search: z.string().optional(),
+        status: z.nativeEnum(AppealStatus).optional(),
+        limit: z.number().optional(),
+        cursor: z
+          .object({
+            id: z.string(),
+            createdAt: z.date(),
+          })
+          .optional(),
+      })
+    )
+    .query(async ({ input: { limit = 15, cursor, status, search }, ctx }) => {
+      const { db } = ctx;
+
+      const conditions: Prisma.AppealWhereInput[] = [];
+
+      if (status) {
+        conditions.push({ status });
+      }
+
+      if (search) {
+        conditions.push({
+          user: {
+            OR: [
+              { username: { contains: search, mode: 'insensitive' } },
+              { fullName: { contains: search, mode: 'insensitive' } },
+            ],
+          },
+        });
+      }
+
+      const whereClause: Prisma.AppealWhereInput =
+        conditions.length > 0 ? { AND: conditions } : {};
+
+      const appeals = await db.appeal.findMany({
+        where: whereClause,
+        take: limit + 1,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              fullName: true,
+              image: true,
+            },
+          },
+          suspension: {
+            select: {
+              id: true,
+              createdAt: true,
+            },
+          },
+        },
+      });
+
+      let nextCursor: typeof cursor | undefined;
+      if (appeals.length > limit) {
+        const nextItem = appeals[limit];
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
+        };
+        appeals.length = limit;
+      }
+
+      return { appeals, nextCursor };
+    }),
+
   issueStrike: adminProcedure
     .input(
       z.object({
@@ -485,7 +565,7 @@ export const adminRouter = createTRPCRouter({
 
       try {
         await db.$transaction(async (tx) => {
-          await tx.strike.create({
+          const newStrike = await tx.strike.create({
             data: {
               userId,
               reason,
@@ -498,6 +578,17 @@ export const adminRouter = createTRPCRouter({
             await tx.user.update({
               where: { id: userId },
               data: { status: userStatus, suspensionEndDate },
+            });
+          }
+
+          if (suspensionEndDate) {
+            await tx.suspension.create({
+              data: {
+                endsAt: suspensionEndDate,
+                type: SuspensionType.STRIKE_BASED,
+                userId,
+                strikeId: newStrike.id,
+              },
             });
           }
 
@@ -565,12 +656,21 @@ export const adminRouter = createTRPCRouter({
               suspensionEndDate,
             },
           }),
+
           db.notification.create({
             data: {
               type: 'SUSPENDED',
               message: notificationMessage,
               receiverUserId: userId,
               senderUserId: ctx.userId,
+            },
+          }),
+
+          db.suspension.create({
+            data: {
+              endsAt: suspensionEndDate,
+              type: SuspensionType.MANUAL,
+              userId,
             },
           }),
         ]);
@@ -596,15 +696,81 @@ export const adminRouter = createTRPCRouter({
 
   unsuspendUser: adminProcedure
     .input(z.object({ userId: z.string() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const { db } = ctx;
+      const { userId } = input;
+      await db.$transaction([
+        db.suspension.updateMany({
+          where: { userId, isActive: true },
+          data: { isActive: false },
+        }),
+        db.user.update({
+          where: { id: userId },
+          data: { status: UserStatus.ACTIVE, suspensionEndDate: null },
+        }),
+        db.notification.create({
+          data: {
+            type: 'UNSUSPENDED',
+            message: 'Your account suspension has been lifted. Welcome back!',
+            receiverUserId: userId,
+          },
+        }),
+      ]);
+
       await inngest.send({
         name: 'app/user.unsuspend',
         data: {
           userId: input.userId,
+          isManual: true,
         },
       });
 
       return { success: true, message: 'Unsuspension process initiated.' };
+    }),
+
+  reviewAppeal: adminProcedure
+    .input(
+      z.object({
+        appealId: z.string(),
+        decision: z.enum([AppealStatus.UPHELD, AppealStatus.OVERTURNED]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { db } = ctx;
+      const { appealId, decision } = input;
+
+      const appeal = await db.appeal.findUnique({
+        where: { id: appealId },
+        include: {
+          suspension: {
+            select: { id: true, userId: true },
+          },
+        },
+      });
+
+      if (!appeal || appeal.status !== AppealStatus.PENDING) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Pending appeal not found.',
+        });
+      }
+
+      await db.appeal.update({
+        where: { id: appealId },
+        data: { status: decision },
+      });
+
+      if (decision === AppealStatus.OVERTURNED) {
+        await inngest.send({
+          name: 'app/user.unsuspend',
+          data: {
+            userId: appeal.suspension.userId,
+            isManual: false,
+          },
+        });
+      }
+
+      return { success: true };
     }),
 
   banUser: adminProcedure

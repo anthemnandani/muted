@@ -1,5 +1,8 @@
-import { MessageReportCategory } from '@prisma/client';
+import { AppealStatus, MessageReportCategory } from '@prisma/client';
 import {
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle,
   FileText,
   Flag,
   LayoutDashboard,
@@ -964,3 +967,37 @@ export const STRIKE_REASON_OPTIONS = [
   { value: 'minor_safety', label: 'Minor Safety Violation' },
   { value: 'other', label: 'Other Policy Violation' },
 ] as const;
+
+export const APPEAL_STATUS_INFO = {
+  [AppealStatus.PENDING]: {
+    variant: 'default',
+    icon: AlertTriangle,
+    title: 'Appeal Submitted',
+    description:
+      'Your appeal is under review. Our team will check it and notify you of the decision.',
+    className: 'bg-blue-950/50 border-blue-700 text-blue-200',
+  },
+  [AppealStatus.UPHELD]: {
+    variant: 'destructive',
+    icon: AlertCircle,
+    title: 'Appeal Denied',
+    description:
+      'Your appeal was reviewed, but the original decision was upheld. Your suspension will continue for its original duration.',
+    className: 'bg-red-950/50 border-red-700 text-red-200',
+  },
+  [AppealStatus.OVERTURNED]: {
+    variant: 'default',
+    icon: CheckCircle,
+    title: 'Appeal Successful',
+    description:
+      'Your appeal was successful and your suspension has been lifted. You should regain full account access shortly.',
+    className: 'bg-green-950/50 border-green-700 text-green-200',
+  },
+};
+
+export const SUSPENSION_REASONS = [
+  'We received multiple reports or complaints about your account or content.',
+  'We detected behavior that violates our Community Guidelines (e.g., harassment, hate speech, or bullying).',
+  'Your account posted content that was misleading, spam, or fraudulent.',
+  'Your account was suspected of impersonating another person or entity.',
+];

@@ -17,3 +17,12 @@ export const FormSchema = z.object({
     .or(z.literal('')),
   privacy: z.nativeEnum(Privacy).default(Privacy.PUBLIC),
 });
+
+export const AppealFormSchema = z.object({
+  reason: z
+    .string()
+    .min(20, {
+      message: 'Please provide a detailed reason (at least 20 characters).',
+    })
+    .max(250, { message: 'Reason must be under 250 characters.' }),
+});

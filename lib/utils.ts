@@ -4,7 +4,7 @@ import { useSearchStore } from '@/store/searchStore';
 import useVideoPlayer from '@/store/videoPlayer';
 import { type User } from '@clerk/nextjs/server';
 import { type UserResource } from '@clerk/types';
-import { UserStatus } from '@prisma/client';
+import { AppealStatus, UserStatus } from '@prisma/client';
 import { type ClassValue, clsx } from 'clsx';
 import {
   differenceInDays,
@@ -799,3 +799,28 @@ export const getUserStatusInfo = (status: UserStatus) => {
       };
   }
 };
+
+export function getAppealStatusInfo(status: AppealStatus) {
+  switch (status) {
+    case AppealStatus.PENDING:
+      return {
+        text: 'Pending',
+        className: 'bg-blue-500/20 text-blue-300 border border-blue-400',
+      };
+    case AppealStatus.OVERTURNED:
+      return {
+        text: 'Overturned',
+        className: 'bg-green-500/20 text-green-300 border border-green-400',
+      };
+    case AppealStatus.UPHELD:
+      return {
+        text: 'Upheld',
+        className: 'bg-red-500/20 text-red-300 border border-red-400',
+      };
+    default:
+      return {
+        text: 'Unknown',
+        className: 'bg-gray-500/20 text-gray-300 border border-gray-400',
+      };
+  }
+}

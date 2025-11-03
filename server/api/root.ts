@@ -1,4 +1,5 @@
 import { adminRouter } from './routers/admin';
+import { appealRouter } from './routers/appeal';
 import { authRouter } from './routers/auth';
 import { chatRouter } from './routers/chat';
 import { collectionRouter } from './routers/collection';
@@ -23,6 +24,7 @@ export const appRouter = createTRPCRouter({
   chat: chatRouter,
   keyword: keywordRouter,
   admin: adminRouter,
+  appeal: appealRouter,
 });
 
 export type AppRouter = typeof appRouter;

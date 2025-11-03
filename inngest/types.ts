@@ -22,6 +22,7 @@ export interface UnsuspendUser extends EventPayload {
   name: 'app/user.unsuspend';
   data: {
     userId: string;
+    isManual: boolean;
   };
 }
 

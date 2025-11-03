@@ -6,7 +6,6 @@ const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/api/webhook/clerk',
-  '/suspended',
   '/api/inngest',
 ]);
 
@@ -14,12 +13,16 @@ const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {
   const { userId, sessionClaims } = await auth();
+  const { pathname } = req.nextUrl;
+
+  if (pathname.startsWith('/api')) {
+    return NextResponse.next();
+  }
 
   if (userId) {
     const userStatus = sessionClaims?.metadata?.status as string | undefined;
     const isSuspended = userStatus === 'SUSPENDED';
-    const isAccessingSuspendedPage =
-      req.nextUrl.pathname.startsWith('/suspended');
+    const isAccessingSuspendedPage = pathname.startsWith('/suspended');
 
     if (isSuspended && !isAccessingSuspendedPage) {
       return NextResponse.redirect(new URL('/suspended', req.url));

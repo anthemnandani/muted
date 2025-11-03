@@ -24,12 +24,6 @@ enum UserStatus {
   BANNED
 }
 
-enum AppealStatus {
-  PENDING
-  UPHELD
-  OVERTURNED
-}
-
 model User {
   id                       String            @id
   createdAt                DateTime          @default(now()) @map(name: "created_at")
@@ -77,6 +71,8 @@ model User {
   messageDeletions         MessageDeletion[]
   mutedChats               MutedChat[]
   filteredKeywords         FilteredKeyword[]
+  appeals                  Appeal[]
+  suspensions              Suspension[]
   messageReportSubmissions MessageReport[]   @relation("MessageReportSubmissions")
   messageReportTargets     MessageReport[]   @relation("MessageReportTargets")
   sentFollowRequests       FollowRequest[]   @relation("SentFollowRequests")
@@ -607,5 +603,56 @@ model Strike {
   createdAt     DateTime @default(now())
   expiresAt     DateTime
 
+  suspension Suspension?
+
   @@index([userId])
+}
+
+enum AppealStatus {
+  PENDING
+  UPHELD
+  OVERTURNED
+}
+
+model Appeal {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reason String       @db.Text
+  status AppealStatus @default(PENDING)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  suspensionId String     @unique
+  suspension   Suspension @relation(fields: [suspensionId], references: [id], onDelete: Cascade)
+
+  @@unique([createdAt, id])
+  @@index([userId])
+  @@index([status])
+}
+
+enum SuspensionType {
+  STRIKE_BASED
+  MANUAL
+}
+
+model Suspension {
+  id        String         @id @default(cuid())
+  createdAt DateTime       @default(now())
+  endsAt    DateTime
+  isActive  Boolean        @default(true)
+  type      SuspensionType
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  appeal Appeal?
+
+  strikeId String? @unique
+  strike   Strike? @relation(fields: [strikeId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([isActive])
 }

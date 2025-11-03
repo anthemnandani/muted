@@ -60,7 +60,7 @@ export const processUserStatusChange = inngest.createFunction(
 
       await step.sendEvent('schedule-unsuspend', {
         name: 'app/user.unsuspend',
-        data: { userId },
+        data: { userId, isManual: false },
       });
     }
 
