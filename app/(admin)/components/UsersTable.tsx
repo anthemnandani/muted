@@ -24,7 +24,7 @@ import { api } from '@/trpc/react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import TableLoader from './TableLoader';
 import UserActions from './UserActions';
-import { UserStatus } from '@prisma/client';
+import { Role, UserStatus } from '@prisma/client';
 
 const UsersTable = () => {
   const { userSearch, userStatus } = useAdminFiltersStore();
@@ -67,9 +67,10 @@ const UsersTable = () => {
               <TableHead>Posts</TableHead>
               <TableHead>Followers</TableHead>
               <TableHead>Strikes</TableHead>
-              <TableHead className='w-[15%]'>Date Created</TableHead>
+              <TableHead className='w-[13%]'>Date Created</TableHead>
+              <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className='text-center pr-6'>Actions</TableHead>
+              <TableHead className='w-[15%] text-center'>Actions</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -77,7 +78,7 @@ const UsersTable = () => {
             {!isLoading && users?.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={9}
                   className='py-10 text-center text-sm text-muted-foreground'
                 >
                   No user matches your filters.
@@ -137,6 +138,15 @@ const UsersTable = () => {
                     </TableCell>
 
                     <TableCell>
+                      <Badge
+                        variant={
+                          user.role === Role.USER ? 'secondary' : 'destructive'
+                        }
+                      >
+                        {user.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
                       <Badge className={statusInfo.className}>
                         {statusInfo.text}
                       </Badge>
@@ -145,7 +155,7 @@ const UsersTable = () => {
                     <TableCell>
                       <UserActions
                         id={user.id}
-                        username={user.username}
+                        role={user.role}
                         isSuspended={user.status === UserStatus.SUSPENDED}
                         isBanned={user.status === UserStatus.BANNED}
                       />

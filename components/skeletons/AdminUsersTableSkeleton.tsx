@@ -19,15 +19,16 @@ const AdminUsersTableSkeleton = () => {
             <TableHead>Posts</TableHead>
             <TableHead>Followers</TableHead>
             <TableHead>Strikes</TableHead>
-            <TableHead className='w-[15%]'>Date Created</TableHead>
+            <TableHead className='w-[13%]'>Date Created</TableHead>
+            <TableHead>Role</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead className='text-center pr-6'>Actions</TableHead>
+            <TableHead className='w-[15%] text-center'>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {[...Array(15)].map((_, index) => (
             <TableRow key={index} className='hover:bg-transparent'>
-              <TableCell colSpan={8}>
+              <TableCell colSpan={9}>
                 <Skeleton className='h-12 w-full' />
               </TableCell>
             </TableRow>

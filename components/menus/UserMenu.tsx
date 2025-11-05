@@ -1,8 +1,16 @@
 'use client';
 
 import useWindow from '@/hooks/useWindow';
-import { SignOutButton } from '@clerk/nextjs';
-import { AlertCircle, Bookmark, Heart, LogOut, Settings } from 'lucide-react';
+import { SignOutButton, useUser } from '@clerk/nextjs';
+import { Role } from '@prisma/client';
+import {
+  AlertCircle,
+  Bookmark,
+  Heart,
+  LogOut,
+  Settings,
+  ShieldCheck,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Icons } from '../icons';
 import MenuItem from '../shared/MenuItem';
@@ -16,6 +24,9 @@ import {
 const UserMenu = () => {
   const router = useRouter();
   const { isMobile } = useWindow();
+  const { user } = useUser();
+  const userRole = user?.publicMetadata?.role;
+
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
@@ -28,19 +39,20 @@ const UserMenu = () => {
         <MenuItem
           icon={Settings}
           label='Settings'
-          className='py-2'
           onClick={() => router.push('/setting')}
         />
-        <MenuItem
-          icon={AlertCircle}
-          label='Report a problem'
-          className='py-2'
-        />
+        <MenuItem icon={AlertCircle} label='Report a problem' />
+        {userRole === Role.ADMIN && (
+          <MenuItem
+            label='Admin Panel'
+            icon={ShieldCheck}
+            onClick={() => router.push('/admin')}
+          />
+        )}
         {isMobile && (
           <MenuItem
             icon={Bookmark}
             label='Saved'
-            className='py-2'
             onClick={() => router.push('/saved')}
           />
         )}
@@ -48,14 +60,13 @@ const UserMenu = () => {
           <MenuItem
             icon={Heart}
             label='Liked'
-            className='py-2'
             onClick={() => router.push('/liked')}
           />
         )}
 
         <DropdownMenuSeparator />
         <SignOutButton>
-          <MenuItem icon={LogOut} label='Log out' className='py-2' />
+          <MenuItem icon={LogOut} label='Log out' />
         </SignOutButton>
       </DropdownMenuContent>
     </DropdownMenu>

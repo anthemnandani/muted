@@ -15,7 +15,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
       <button
         type='button'
         className={cn(
-          'w-full flex items-center gap-3 py-2.5 px-3',
+          'w-full flex items-center gap-3 py-2 px-3',
           'text-white hover:bg-white/10 transition-colors',
           'text-sm font-normal',
           disabled && 'opacity-50 cursor-not-allowed',

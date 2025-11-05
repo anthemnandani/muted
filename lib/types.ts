@@ -3,14 +3,15 @@ import type { RouterOutputs } from '@/trpc/shared';
 import type { GifID, IGif } from '@giphy/js-types';
 import type {
   CollectionPrivacy,
+  FilteredKeyword,
   FollowRequestStatus,
   MessageReportCategory,
   MessageRequestStatus,
   MessageStatus,
   NotificationType,
-  User,
-  FilteredKeyword,
   PostStatus,
+  Role,
+  User,
 } from '@prisma/client';
 import { PostPrivacy, Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
@@ -160,7 +161,7 @@ export interface MenuLinkProps {
   route: string;
   isActive: boolean;
   addFill?: boolean;
-  icon: (props: IconProps) => JSX.Element;
+  icon: ((props: IconProps) => JSX.Element) | LucideIcon;
 }
 
 export interface MenuItemProps {
@@ -1289,7 +1290,7 @@ export interface SectionCardsProps {
 
 export interface UserActionsProps {
   id: string;
-  username: string;
+  role: Role;
   isSuspended: boolean;
   isBanned: boolean;
 }

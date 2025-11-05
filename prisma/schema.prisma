@@ -225,6 +225,8 @@ enum NotificationType {
   WARNING
   SUSPENDED
   UNSUSPENDED
+  ADMIN_PROMOTED
+  ADMIN_DEMOTED
 }
 
 model Notification {

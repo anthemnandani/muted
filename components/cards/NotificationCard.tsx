@@ -5,7 +5,13 @@ import { cn, formatTimeAgo, getImageUrl } from '@/lib/utils';
 import useCommentPanelStore from '@/store/commentPanel';
 import { useNotificationStore } from '@/store/notificationStore';
 import { NotificationType } from '@prisma/client';
-import { AlertTriangle, CheckCircle, ShieldBan } from 'lucide-react';
+import {
+  AlertTriangle,
+  CheckCircle,
+  ShieldBan,
+  ShieldCheck,
+  ShieldOff,
+} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -30,6 +36,8 @@ const NotificationCard = ({
     NotificationType.WARNING,
     NotificationType.SUSPENDED,
     NotificationType.UNSUSPENDED,
+    NotificationType.ADMIN_PROMOTED,
+    NotificationType.ADMIN_DEMOTED,
   ];
 
   const isSystemNotificationCheck = isSystemNotification.includes(
@@ -67,6 +75,10 @@ const NotificationCard = ({
         return <ShieldBan className='size-6 text-red-500' />;
       case NotificationType.UNSUSPENDED:
         return <CheckCircle className='size-6 text-green-500' />;
+      case NotificationType.ADMIN_PROMOTED:
+        return <ShieldCheck className='size-6 text-primary-blue' />;
+      case NotificationType.ADMIN_DEMOTED:
+        return <ShieldOff className='size-6 text-yellow-500' />;
       default:
         return null;
     }

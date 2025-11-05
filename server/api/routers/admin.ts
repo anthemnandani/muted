@@ -5,6 +5,7 @@ import { GET_USER, getPostRepliesCount } from '@/server/constants';
 import { clerkClient } from '@clerk/nextjs/server';
 import {
   AppealStatus,
+  NotificationType,
   PostStatus,
   Prisma,
   Role,
@@ -54,18 +55,62 @@ export const adminRouter = createTRPCRouter({
   setRole: adminProcedure
     .input(z.object({ targetUserId: z.string(), role: z.nativeEnum(Role) }))
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.user.update({
-        where: { id: input.targetUserId },
-        data: { role: input.role },
-      });
+      const { targetUserId, role } = input;
+      const { db, userId } = ctx;
+      try {
+        await db.$transaction(async (tx) => {
+          await tx.user.update({
+            where: { id: targetUserId },
+            data: { role },
+          });
 
-      const client = await clerkClient();
+          let notifType: NotificationType;
+          let notifMessage: string;
 
-      await client.users.updateUserMetadata(input.targetUserId, {
-        publicMetadata: {
-          role: input.role,
-        },
-      });
+          if (role === Role.ADMIN) {
+            notifType = NotificationType.ADMIN_PROMOTED;
+            notifMessage = 'Your account has been promoted to an Admin role.';
+          } else {
+            notifType = NotificationType.ADMIN_DEMOTED;
+            notifMessage = 'Your account has been demoted to a User role.';
+          }
+
+          await tx.notification.create({
+            data: {
+              type: notifType,
+              message: notifMessage,
+              receiverUserId: targetUserId,
+              senderUserId: userId,
+            },
+          });
+        });
+      } catch (dbError) {
+        console.error('Failed to update user role in database:', dbError);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to update user role.',
+        });
+      }
+
+      try {
+        const client = await clerkClient();
+        await client.users.updateUserMetadata(targetUserId, {
+          publicMetadata: {
+            role,
+          },
+        });
+      } catch (clerkError) {
+        console.error(
+          `CRITICAL: DB update for user ${targetUserId} succeeded, but Clerk metadata update failed.`,
+          clerkError
+        );
+
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message:
+            'Database role updated, but failed to sync with Clerk. Please check logs.',
+        });
+      }
 
       return { success: true };
     }),
