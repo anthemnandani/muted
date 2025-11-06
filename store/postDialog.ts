@@ -3,7 +3,6 @@ import type {
   ParentPostInfo,
   PostData,
   PostMedia,
-  PostType,
   ValidMention,
 } from '@/lib/types';
 import { PostPrivacy } from '@prisma/client';
@@ -20,8 +19,6 @@ interface ToggleState {
   setOpenDialog: (open: boolean) => void;
   postData: PostData;
   setPostData: (post: PostData) => void;
-  postType: PostType;
-  setPostType: (type: PostType) => void;
   editPostId: string | null;
   quoteInfo: ParentPostInfo | null;
   setQuoteInfo: (quote: ParentPostInfo | null) => void;
@@ -46,19 +43,14 @@ const usePostDialog = create<ToggleState>((set, get) => ({
   postData: {
     privacy: PostPrivacy.ANYONE,
     caption: '',
-    threadText: '',
-    linkPreview: null,
     hideLikes: false,
     turnOffComments: false,
   },
   setPostData: (post) => set({ postData: post }),
-  postType: 'media',
-  setPostType: (type) => set({ postType: type }),
   editPostId: null,
   quoteInfo: null,
   setQuoteInfo: (quote) => set({ quoteInfo: quote }),
   openForEditing: (post) => {
-    const isThread = !!post.threadText;
     const { setMediaFiles } = useFileStore.getState();
     if (post.media && post.media.length > 0) {
       const mediaFilesForStore: MediaFile[] = post.media.map((m) => ({
@@ -78,12 +70,9 @@ const usePostDialog = create<ToggleState>((set, get) => ({
     set({
       editPostId: post.id,
       openDialog: true,
-      postType: isThread ? 'thread' : 'media',
-      step: isThread ? 'compose' : 'post',
+      step: 'post',
       postData: {
         caption: post.caption ?? '',
-        linkPreview: post.linkPreview ?? null,
-        threadText: post.threadText ?? '',
         hideLikes: post.hideLikes ?? false,
         turnOffComments: post.turnOffComments ?? false,
       },
@@ -141,14 +130,11 @@ const usePostDialog = create<ToggleState>((set, get) => ({
       showGallery: false,
       showRatioSelector: false,
       editPostId: null,
-      postType: 'media',
       step: 'compose',
       validMentions: [],
       postData: {
         privacy: PostPrivacy.ANYONE,
         caption: '',
-        threadText: '',
-        linkPreview: null,
         hideLikes: false,
         turnOffComments: false,
       },

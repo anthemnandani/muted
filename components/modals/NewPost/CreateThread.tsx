@@ -1,147 +1,147 @@
-'use client';
+// 'use client';
 
-import LinkPreviewCard from '@/components/cards/LinkPreviewCard';
-import CreatePostInput from '@/components/inputs/CreatePostInput';
-import UsersMenu from '@/components/menus/UsersMenu';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import useLinkPreview from '@/hooks/useLinkPreview';
-import useMentions from '@/hooks/useMentions';
-import { CreateThreadProps } from '@/lib/types';
-import { cn } from '@/lib/utils';
-import usePostDialog from '@/store/postDialog';
-import { useRef, useEffect } from 'react';
+// import LinkPreviewCard from '@/components/cards/LinkPreviewCard';
+// import CreatePostInput from '@/components/inputs/CreatePostInput';
+// import UsersMenu from '@/components/menus/UsersMenu';
+// import { Button } from '@/components/ui/button';
+// import { Switch } from '@/components/ui/switch';
+// import useLinkPreview from '@/hooks/useLinkPreview';
+// import useMentions from '@/hooks/useMentions';
+// import { CreateThreadProps } from '@/lib/types';
+// import { cn } from '@/lib/utils';
+// import usePostDialog from '@/store/postDialog';
+// import { useRef, useEffect } from 'react';
 
-const CreateThread = ({
-  getRootProps,
-  getInputProps,
-  isLoading,
-  handleSubmit,
-}: CreateThreadProps) => {
-  const {
-    postData,
-    setPostData,
-    editPostId,
-    addValidMention,
-    updateMentionIndices,
-  } = usePostDialog();
+// const CreateThread = ({
+//   getRootProps,
+//   getInputProps,
+//   isLoading,
+//   handleSubmit,
+// }: CreateThreadProps) => {
+//   const {
+//     postData,
+//     setPostData,
+//     editPostId,
+//     addValidMention,
+//     updateMentionIndices,
+//   } = usePostDialog();
 
-  const handleFieldChange = (textValue: string) => {
-    setPostData({
-      ...postData,
-      threadText: textValue,
-    });
-  };
+//   const handleFieldChange = (textValue: string) => {
+//     setPostData({
+//       ...postData,
+//       threadText: textValue,
+//     });
+//   };
 
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+//   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
-    if (editPostId && textareaRef.current) {
-      const textLength = textareaRef.current.value.length;
-      textareaRef.current.focus();
-      textareaRef.current.setSelectionRange(textLength, textLength);
-    }
-  }, [editPostId]);
+//   useEffect(() => {
+//     if (editPostId && textareaRef.current) {
+//       const textLength = textareaRef.current.value.length;
+//       textareaRef.current.focus();
+//       textareaRef.current.setSelectionRange(textLength, textLength);
+//     }
+//   }, [editPostId]);
 
-  const handleSwitchChange = (key: 'hideLikes' | 'turnOffComments') => {
-    setPostData({
-      ...postData,
-      [key]: !postData[key],
-    });
-  };
+//   const handleSwitchChange = (key: 'hideLikes' | 'turnOffComments') => {
+//     setPostData({
+//       ...postData,
+//       [key]: !postData[key],
+//     });
+//   };
 
-  const {
-    mentionSuggestions,
-    showMentionSuggestions,
-    cursorPosition,
-    handleMentionSearch,
-    isMentionsLoading,
-    insertMention,
-  } = useMentions({
-    textareaRef,
-    setCommentText: (value: string) =>
-      setPostData({ ...postData, threadText: value }),
-    addValidMention,
-    updateMentionIndices,
-  });
+//   const {
+//     mentionSuggestions,
+//     showMentionSuggestions,
+//     cursorPosition,
+//     handleMentionSearch,
+//     isMentionsLoading,
+//     insertMention,
+//   } = useMentions({
+//     textareaRef,
+//     setCommentText: (value: string) =>
+//       setPostData({ ...postData, threadText: value }),
+//     addValidMention,
+//     updateMentionIndices,
+//   });
 
-  const { isLinkPreviewLoading } = useLinkPreview();
+//   const { isLinkPreviewLoading } = useLinkPreview();
 
-  return (
-    <div className='flex flex-col h-full pt-6'>
-      <div className='flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent pr-3'>
-        <CreatePostInput
-          onTextareaChange={handleFieldChange}
-          placeholder='Start a thread'
-          textareaRef={textareaRef}
-          value={postData.threadText}
-          setPostData={setPostData}
-          handleMentionSearch={handleMentionSearch}
-          getRootProps={getRootProps}
-          getInputProps={getInputProps}
-        />
-        {showMentionSuggestions && (
-          <UsersMenu
-            showMentionSuggestions={showMentionSuggestions}
-            mentionSuggestions={mentionSuggestions}
-            cursorPosition={cursorPosition}
-            isLoading={isMentionsLoading}
-            onSelect={insertMention}
-          />
-        )}
-        {(postData.linkPreview || isLinkPreviewLoading) && (
-          <LinkPreviewCard
-            url={postData?.linkPreview?.url!}
-            title={postData?.linkPreview?.title || ''}
-            description={postData?.linkPreview?.description || ''}
-            image={postData?.linkPreview?.image || ''}
-            isLoading={isLinkPreviewLoading}
-            onClose={() =>
-              setPostData({
-                ...postData,
-                linkPreview: null,
-              })
-            }
-          />
-        )}
-      </div>
+//   return (
+//     <div className='flex flex-col h-full pt-6'>
+//       <div className='flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent pr-3'>
+//         <CreatePostInput
+//           onTextareaChange={handleFieldChange}
+//           placeholder='Start a thread'
+//           textareaRef={textareaRef}
+//           value={postData.threadText}
+//           setPostData={setPostData}
+//           handleMentionSearch={handleMentionSearch}
+//           getRootProps={getRootProps}
+//           getInputProps={getInputProps}
+//         />
+//         {showMentionSuggestions && (
+//           <UsersMenu
+//             showMentionSuggestions={showMentionSuggestions}
+//             mentionSuggestions={mentionSuggestions}
+//             cursorPosition={cursorPosition}
+//             isLoading={isMentionsLoading}
+//             onSelect={insertMention}
+//           />
+//         )}
+//         {(postData.linkPreview || isLinkPreviewLoading) && (
+//           <LinkPreviewCard
+//             url={postData?.linkPreview?.url!}
+//             title={postData?.linkPreview?.title || ''}
+//             description={postData?.linkPreview?.description || ''}
+//             image={postData?.linkPreview?.image || ''}
+//             isLoading={isLinkPreviewLoading}
+//             onClose={() =>
+//               setPostData({
+//                 ...postData,
+//                 linkPreview: null,
+//               })
+//             }
+//           />
+//         )}
+//       </div>
 
-      <div className='flex flex-col gap-2 pt-8'>
-        <div className='flex-between'>
-          <span className='text-sm text-white/90'>
-            Hide like count on this post
-          </span>
-          <Switch
-            disabled={isLoading}
-            checked={postData.hideLikes}
-            onCheckedChange={() => handleSwitchChange('hideLikes')}
-          />
-        </div>
+//       <div className='flex flex-col gap-2 pt-8'>
+//         <div className='flex-between'>
+//           <span className='text-sm text-white/90'>
+//             Hide like count on this post
+//           </span>
+//           <Switch
+//             disabled={isLoading}
+//             checked={postData.hideLikes}
+//             onCheckedChange={() => handleSwitchChange('hideLikes')}
+//           />
+//         </div>
 
-        <div className='flex-between'>
-          <span className='text-sm text-white/90'>Turn off commenting</span>
-          <Switch
-            disabled={isLoading}
-            checked={postData.turnOffComments}
-            onCheckedChange={() => handleSwitchChange('turnOffComments')}
-          />
-        </div>
-        <div className='w-full mt-2'>
-          <Button
-            onClick={() => handleSubmit(!!editPostId)}
-            disabled={isLoading || postData.threadText.length === 0}
-            variant='ghost'
-            className={cn(
-              'w-full bg-white/90 text-black border border-border-light rounded-lg text-[14px] leading-none',
-              'flex-center hover:bg-white/90 hover:text-black disabled:cursor-not-allowed disabled:pointer-events-auto'
-            )}
-          >
-            {editPostId ? 'Edit' : 'Post'}
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-};
+//         <div className='flex-between'>
+//           <span className='text-sm text-white/90'>Turn off commenting</span>
+//           <Switch
+//             disabled={isLoading}
+//             checked={postData.turnOffComments}
+//             onCheckedChange={() => handleSwitchChange('turnOffComments')}
+//           />
+//         </div>
+//         <div className='w-full mt-2'>
+//           <Button
+//             onClick={() => handleSubmit(!!editPostId)}
+//             disabled={isLoading || postData.threadText.length === 0}
+//             variant='ghost'
+//             className={cn(
+//               'w-full bg-white/90 text-black border border-border-light rounded-lg text-[14px] leading-none',
+//               'flex-center hover:bg-white/90 hover:text-black disabled:cursor-not-allowed disabled:pointer-events-auto'
+//             )}
+//           >
+//             {editPostId ? 'Edit' : 'Post'}
+//           </Button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
 
-export default CreateThread;
+// export default CreateThread;

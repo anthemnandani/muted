@@ -11,12 +11,7 @@ interface FileUploadError {
   message: string;
 }
 
-interface UseFileUploadProps {
-  onSuccess?: () => void;
-  isThread?: boolean;
-}
-
-const useFileUpload = ({ onSuccess, isThread }: UseFileUploadProps) => {
+const useFileUpload = ({ onSuccess }: { onSuccess?: () => void }) => {
   const { mediaFiles, setMediaFiles, threadMedia, setThreadMedia } =
     useFileStore();
   const [error, setError] = useState<FileUploadError | null>(null);
@@ -30,17 +25,8 @@ const useFileUpload = ({ onSuccess, isThread }: UseFileUploadProps) => {
 
       setProgress((++currentStep / totalSteps) * 100);
 
-      if (isThread) {
-        const videoFiles = files.filter(
-          (file) => getMediaType(file) === 'video'
-        );
-        if (videoFiles.length > 0) {
-          throw new Error('Videos are not supported in threads at this time.');
-        }
-      }
-
       const totalFiles = files.length + mediaFiles.length;
-      if (!isThread && totalFiles > UPLOAD_CONSTRAINTS.MAX_ITEMS) {
+      if (totalFiles > UPLOAD_CONSTRAINTS.MAX_ITEMS) {
         throw new Error(
           `You can upload up to ${UPLOAD_CONSTRAINTS.MAX_ITEMS} photos and videos.`
         );
@@ -59,28 +45,24 @@ const useFileUpload = ({ onSuccess, isThread }: UseFileUploadProps) => {
 
       setProgress((++currentStep / totalSteps) * 100);
 
-      if (!isThread) {
-        const existingVideos = mediaFiles
-          .filter((media) => getMediaType(media.file) === 'video')
-          .map((media) => media.file);
+      const existingVideos = mediaFiles
+        .filter((media) => getMediaType(media.file) === 'video')
+        .map((media) => media.file);
 
-        const existingDuration = await calculateTotalVideoDuration(
-          existingVideos
+      const existingDuration = await calculateTotalVideoDuration(
+        existingVideos
+      );
+      const newDuration = await calculateTotalVideoDuration(files);
+      const totalDuration = existingDuration + newDuration;
+
+      if (totalDuration > UPLOAD_CONSTRAINTS.MAX_VIDEO_DURATION) {
+        const minutes = Math.floor(UPLOAD_CONSTRAINTS.MAX_VIDEO_DURATION / 60);
+        throw new Error(
+          `One or more videos were too long to be uploaded. Videos must be less than ${minutes} minutes long in total.`
         );
-        const newDuration = await calculateTotalVideoDuration(files);
-        const totalDuration = existingDuration + newDuration;
-
-        if (totalDuration > UPLOAD_CONSTRAINTS.MAX_VIDEO_DURATION) {
-          const minutes = Math.floor(
-            UPLOAD_CONSTRAINTS.MAX_VIDEO_DURATION / 60
-          );
-          throw new Error(
-            `One or more videos were too long to be uploaded. Videos must be less than ${minutes} minutes long in total.`
-          );
-        }
       }
     },
-    [mediaFiles, isThread]
+    [mediaFiles]
   );
 
   const onDrop = useCallback(
@@ -94,31 +76,19 @@ const useFileUpload = ({ onSuccess, isThread }: UseFileUploadProps) => {
       try {
         await validateFiles(acceptedFiles);
 
-        if (isThread) {
-          const acceptedFile = acceptedFiles[0];
-          const newFile = {
-            file: acceptedFile,
-            preview: URL.createObjectURL(acceptedFile),
-            id: crypto.randomUUID(),
-            type: getMediaType(acceptedFile) as 'image' | 'video',
-          };
+        const newFiles = acceptedFiles.map((file) => ({
+          file,
+          preview: URL.createObjectURL(file),
+          id: crypto.randomUUID(),
+          type: getMediaType(file) as 'image' | 'video',
+        }));
 
-          setThreadMedia(newFile);
-        } else {
-          const newFiles = acceptedFiles.map((file) => ({
-            file,
-            preview: URL.createObjectURL(file),
-            id: crypto.randomUUID(),
-            type: getMediaType(file) as 'image' | 'video',
-          }));
-
-          const updatedFiles = [...mediaFiles, ...newFiles].slice(
-            0,
-            UPLOAD_CONSTRAINTS.MAX_ITEMS
-          );
-          setMediaFiles(updatedFiles);
-          onSuccess?.();
-        }
+        const updatedFiles = [...mediaFiles, ...newFiles].slice(
+          0,
+          UPLOAD_CONSTRAINTS.MAX_ITEMS
+        );
+        setMediaFiles(updatedFiles);
+        onSuccess?.();
       } catch (err) {
         setError({
           title: "Media couldn't be uploaded",
@@ -129,28 +99,19 @@ const useFileUpload = ({ onSuccess, isThread }: UseFileUploadProps) => {
         setProgress(0);
       }
     },
-    [
-      validateFiles,
-      onSuccess,
-      isThread,
-      mediaFiles,
-      setMediaFiles,
-      setThreadMedia,
-    ]
+    [validateFiles, onSuccess, mediaFiles, setMediaFiles, setThreadMedia]
   );
 
-  const acceptedFileTypes = isThread
-    ? UPLOAD_CONSTRAINTS.ACCEPTED_IMAGE_TYPES
-    : {
-        ...UPLOAD_CONSTRAINTS.ACCEPTED_IMAGE_TYPES,
-        ...UPLOAD_CONSTRAINTS.ACCEPTED_VIDEO_TYPES,
-      };
+  const acceptedFileTypes = {
+    ...UPLOAD_CONSTRAINTS.ACCEPTED_IMAGE_TYPES,
+    ...UPLOAD_CONSTRAINTS.ACCEPTED_VIDEO_TYPES,
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: acceptedFileTypes,
-    multiple: !isThread,
-    maxFiles: isThread ? 1 : UPLOAD_CONSTRAINTS.MAX_ITEMS,
+    multiple: true,
+    maxFiles: UPLOAD_CONSTRAINTS.MAX_ITEMS,
   });
 
   const cleanup = useCallback(() => {

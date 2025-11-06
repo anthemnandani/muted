@@ -44,19 +44,12 @@ export type PostMedia = {
 
 export type ParentPostInfo = Pick<
   PostProps,
-  'id' | 'text' | 'media' | 'author' | 'linkPreview' | 'mentions'
+  'id' | 'text' | 'media' | 'author' | 'mentions'
 > & { createdAt?: Date };
 
 export type ReplyPostInfo = Pick<
   PostProps,
-  | 'id'
-  | 'text'
-  | 'author'
-  | 'media'
-  | 'mentions'
-  | 'privacy'
-  | 'createdAt'
-  | 'linkPreview'
+  'id' | 'text' | 'author' | 'media' | 'mentions' | 'privacy' | 'createdAt'
 >;
 
 export type UserProfileInfoProps = {
@@ -188,7 +181,6 @@ export type ParentPostProps = {
   id: string;
   createdAt: Date;
   text: string | null;
-  threadText: string | null;
   media: PostMedia[];
   likes: {
     userId: string;
@@ -199,7 +191,6 @@ export type ParentPostProps = {
   parentPostId: string | null;
   parentPost?: any;
   mentions: Mention[];
-  linkPreview: LinkPreview | null;
   author: AuthorInfoProps;
   repostedBy?: AuthorInfoProps;
   postChildren?: ParentPostProps[];
@@ -309,18 +300,9 @@ export type MentionSuggestion = Pick<
   'id' | 'username' | 'fullName' | 'image'
 >;
 
-export interface LinkPreview {
-  url: string;
-  title: string | null;
-  description: string | null;
-  image: string | null;
-}
-
 export type PostData = {
   privacy?: PostPrivacy;
   caption: string;
-  threadText: string;
-  linkPreview?: LinkPreview | null;
   hideLikes: boolean;
   turnOffComments: boolean;
 };
@@ -448,7 +430,6 @@ export interface MediaControlsProps {
   postId: string;
   createdAt: Date;
   caption?: string | null;
-  threadText?: string | null;
   pinned?: boolean;
   showControls: boolean;
   VolumeControls?: React.ReactNode;
@@ -490,7 +471,6 @@ export interface PostActionMenuProps {
   postId: string;
   createdAt: Date;
   caption?: string | null;
-  threadText?: string | null;
   turnOffComments: boolean;
   hideLikes: boolean;
   showControls: boolean;
@@ -505,21 +485,6 @@ export interface PostMediaCarouselProps {
   createdAt: Date;
   postId: string;
   text: string | null;
-  pinned?: boolean;
-  reposts: Repost[];
-  repostedBy?: AuthorInfoProps;
-  mentions?: Mention[];
-  hideLikes?: boolean;
-  turnOffComments?: boolean;
-}
-
-export interface ThreadPostContentProps {
-  media: PostMedia[];
-  author: AuthorInfoProps;
-  createdAt: Date;
-  postId: string;
-  threadText: string | null;
-  linkPreview: LinkPreview | null;
   pinned?: boolean;
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
@@ -1084,8 +1049,6 @@ export interface CreateThreadProps extends DropzoneProps {
   handleSubmit: (value: boolean) => void;
 }
 
-export type PostType = 'media' | 'thread';
-
 export interface PostHeaderProps {
   author: AuthorInfoProps;
   createdAt: Date;
@@ -1109,17 +1072,7 @@ export type ValidMention = {
   endIndex: number;
 };
 
-export interface LinkPreviewCardProps {
-  title: string | null;
-  description: string | null;
-  image: string | null;
-  isLoading?: boolean;
-  onClose?: () => void;
-  url: string;
-}
-
 export interface UserPostThreadCardProps {
-  threadText: string;
   pinned?: boolean;
   postId: string;
   index: number;
@@ -1296,7 +1249,7 @@ export interface UserActionsProps {
 }
 
 export type AdminPost = RouterOutputs['admin']['getAllPosts']['posts'][0];
-export type ContentType = 'ALL' | 'IMAGE' | 'VIDEO' | 'TEXT';
+export type ContentType = 'ALL' | 'IMAGE' | 'VIDEO';
 export type PostStatusFilter = 'ALL' | 'VISIBLE' | 'HIDDEN';
 export type UserStatusFilter = 'ALL' | 'ACTIVE' | 'SUSPENDED' | 'BANNED';
 export type AppealStatusFilter = 'ALL' | 'PENDING' | 'UPHELD' | 'OVERTURNED';

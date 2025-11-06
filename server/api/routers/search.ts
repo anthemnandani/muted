@@ -1,7 +1,6 @@
 import { PostMedia } from '@/lib/types';
 import { extractSuggestions, getTotalRepliesCount } from '@/lib/utils';
 import {
-  GET_LINK_PREVIEW,
   GET_MENTIONS,
   GET_REPOSTS,
   GET_USER,
@@ -243,7 +242,6 @@ export const searchRouter = createTRPCRouter({
           id: true,
           createdAt: true,
           text: true,
-          threadText: true,
           media: true,
           parentPostId: true,
           quoteId: true,
@@ -260,7 +258,6 @@ export const searchRouter = createTRPCRouter({
           ...getBookmarksWithBlockFilter(userId),
           ...getPostRepliesCount(userId),
           ...GET_MENTIONS,
-          ...GET_LINK_PREVIEW,
           reposts: {
             ...GET_REPOSTS,
             where: {
@@ -385,7 +382,6 @@ export const searchRouter = createTRPCRouter({
           id: true,
           createdAt: true,
           text: true,
-          threadText: true,
           media: true,
           parentPostId: true,
           quoteId: true,
@@ -404,7 +400,6 @@ export const searchRouter = createTRPCRouter({
           ...getBookmarksWithBlockFilter(userId),
           ...getPostRepliesCount(userId),
           ...GET_MENTIONS,
-          ...GET_LINK_PREVIEW,
           reposts: {
             ...GET_REPOSTS,
             where: {
@@ -600,7 +595,6 @@ export const searchRouter = createTRPCRouter({
           id: true,
           createdAt: true,
           text: true,
-          threadText: true,
           media: true,
           parentPostId: true,
           quoteId: true,
@@ -617,7 +611,6 @@ export const searchRouter = createTRPCRouter({
           ...getBookmarksWithBlockFilter(userId),
           ...getPostRepliesCount(userId),
           ...GET_MENTIONS,
-          ...GET_LINK_PREVIEW,
           reposts: {
             ...GET_REPOSTS,
             where: {
@@ -746,7 +739,6 @@ export const searchRouter = createTRPCRouter({
           id: true,
           createdAt: true,
           text: true,
-          threadText: true,
           media: true,
           parentPostId: true,
           quoteId: true,
@@ -765,7 +757,6 @@ export const searchRouter = createTRPCRouter({
           ...getBookmarksWithBlockFilter(userId),
           ...getPostRepliesCount(userId),
           ...GET_MENTIONS,
-          ...GET_LINK_PREVIEW,
           reposts: {
             ...GET_REPOSTS,
             where: {

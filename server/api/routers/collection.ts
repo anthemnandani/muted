@@ -2,7 +2,6 @@ import { PostMedia } from '@/lib/types';
 import { getTotalRepliesCount } from '@/lib/utils';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
 import {
-  GET_LINK_PREVIEW,
   GET_MENTIONS,
   GET_REPOSTS,
   GET_USER,
@@ -176,7 +175,6 @@ export const collectionRouter = createTRPCRouter({
                   id: true,
                   media: true,
                   text: true,
-                  threadText: true,
                   author: {
                     select: {
                       ...GET_USER,
@@ -478,7 +476,6 @@ export const collectionRouter = createTRPCRouter({
                   id: true,
                   createdAt: true,
                   text: true,
-                  threadText: true,
                   media: true,
                   parentPostId: true,
                   quoteId: true,
@@ -499,7 +496,6 @@ export const collectionRouter = createTRPCRouter({
                     },
                   },
                   ...GET_MENTIONS,
-                  ...GET_LINK_PREVIEW,
                 },
               },
               user: {
@@ -620,7 +616,6 @@ export const collectionRouter = createTRPCRouter({
                   id: true,
                   createdAt: true,
                   text: true,
-                  threadText: true,
                   media: true,
                   parentPostId: true,
                   quoteId: true,
@@ -649,7 +644,6 @@ export const collectionRouter = createTRPCRouter({
                     },
                   },
                   ...GET_MENTIONS,
-                  ...GET_LINK_PREVIEW,
                 },
               },
             },

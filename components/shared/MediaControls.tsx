@@ -8,7 +8,6 @@ const MediaControls: React.FC<MediaControlsProps> = ({
   author,
   postId,
   createdAt,
-  threadText,
   caption,
   showControls,
   pinned,
@@ -26,7 +25,6 @@ const MediaControls: React.FC<MediaControlsProps> = ({
           author={author}
           postId={postId}
           createdAt={createdAt}
-          threadText={threadText}
           caption={caption}
           showControls={showControls}
           turnOffComments={turnOffComments ?? false}

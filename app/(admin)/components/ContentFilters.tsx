@@ -59,7 +59,6 @@ const ContentFilters = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value='ALL'>All types</SelectItem>
-              <SelectItem value='TEXT'>Text</SelectItem>
               <SelectItem value='IMAGE'>Image</SelectItem>
               <SelectItem value='VIDEO'>Video</SelectItem>
             </SelectContent>

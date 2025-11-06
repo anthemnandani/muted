@@ -716,7 +716,6 @@ export const tooltipLabelFormatter = (value: string) => {
 };
 
 export const getContentType = (post: AdminPost) => {
-  if (post.threadText) return 'TEXT';
   if (post.media?.length > 0) {
     const fileType = post.media[0].fileType;
     if (fileType === 'image') return 'IMAGE';
@@ -736,9 +735,6 @@ export const getContentTypeBadgeClass = (type: ContentType) => {
       return badgeStyles['IMAGE'];
     case 'VIDEO':
       return badgeStyles['VIDEO'];
-    case 'TEXT':
-    default:
-      return badgeStyles['TEXT'];
   }
 };
 

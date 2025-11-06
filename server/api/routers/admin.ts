@@ -253,7 +253,7 @@ export const adminRouter = createTRPCRouter({
     .input(
       z.object({
         search: z.string().optional(),
-        type: z.enum(['ALL', 'TEXT', 'IMAGE', 'VIDEO']).default('ALL'),
+        type: z.enum(['ALL', 'IMAGE', 'VIDEO']).default('ALL'),
         status: z.enum(['ALL', 'VISIBLE', 'HIDDEN']).default('ALL'),
         limit: z.number().optional(),
         cursor: z
@@ -274,7 +274,6 @@ export const adminRouter = createTRPCRouter({
         if (search) {
           conditions.push({
             OR: [
-              { threadText: { contains: search, mode: 'insensitive' } },
               { text: { contains: search, mode: 'insensitive' } },
               {
                 author: { username: { contains: search, mode: 'insensitive' } },
@@ -286,18 +285,14 @@ export const adminRouter = createTRPCRouter({
           });
         }
 
-        if (type === 'TEXT') {
-          conditions.push({ threadText: { not: null } });
-        } else if (type === 'IMAGE') {
+        if (type === 'IMAGE') {
           conditions.push({
-            threadText: null,
             media: {
               array_contains: [{ fileType: 'image' }],
             },
           });
         } else if (type === 'VIDEO') {
           conditions.push({
-            threadText: null,
             media: {
               array_contains: [{ fileType: 'video' }],
             },
@@ -323,7 +318,6 @@ export const adminRouter = createTRPCRouter({
             id: true,
             createdAt: true,
             text: true,
-            threadText: true,
             media: true,
             parentPostId: true,
             quoteId: true,

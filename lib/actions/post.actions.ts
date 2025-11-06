@@ -39,7 +39,7 @@ export async function getPostMetadata(postId: string) {
 
     return {
       id: post.id,
-      text: post.text || post.threadText || '',
+      text: post.text || '',
       mediaUrl,
       mediaType,
       author: post.author,

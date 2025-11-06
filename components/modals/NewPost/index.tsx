@@ -10,19 +10,15 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import useCreatePost from '@/hooks/useCreatePost';
 import useDevice from '@/hooks/useDevice';
 import useFileUpload from '@/hooks/useFileUpload';
-import { type PostType } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
 import usePostDialog from '@/store/postDialog';
-import { ImageIcon } from 'lucide-react';
 import { Fragment, useEffect, useState } from 'react';
 import DiscardPost from '../DiscardPost';
 import CreatePost from './CreatePost';
-import CreateThread from './CreateThread';
 import PostDialogTitle from './PostDialogTitle';
 import PreviewStep from './PreviewStep';
 import UploadError from './UploadError';
@@ -36,13 +32,10 @@ const NewPost = () => {
     step,
     setStep,
     resetPostState,
-    postType,
-    setPostType,
   } = usePostDialog();
   const { setMediaFiles, setThreadMedia } = useFileStore();
   const [showDiscardModal, setShowDiscardModal] = useState(false);
   const { isMobile } = useDevice();
-  const isThread = postType === 'thread';
   const isEditing = !!editPostId;
 
   const {
@@ -56,11 +49,8 @@ const NewPost = () => {
     cleanup,
   } = useFileUpload({
     onSuccess: () => {
-      if (!isThread) {
-        setStep('preview');
-      }
+      setStep('preview');
     },
-    isThread,
   });
 
   useEffect(() => {
@@ -96,11 +86,6 @@ const NewPost = () => {
   };
 
   const { isLoading, handleSubmit } = useCreatePost();
-
-  const handleTabChange = (value: string) => {
-    setPostType(value as PostType);
-    setError(null);
-  };
 
   return (
     <Fragment>
@@ -153,62 +138,11 @@ const NewPost = () => {
                   onRetry={() => setError(null)}
                 />
               ) : step === 'compose' ? (
-                <div className='p-6 h-full flex flex-col'>
-                  <Tabs
-                    value={postType}
-                    onValueChange={handleTabChange}
-                    className='h-full flex flex-col'
-                  >
-                    <TabsList
-                      className={cn(
-                        'grid w-full grid-cols-2 rounded-xl border border-gray-7/50',
-                        'p-1 bg-gray-8/30 overflow-hidden'
-                      )}
-                    >
-                      <TabsTrigger
-                        disabled={
-                          isLoading || (!!editPostId && postType === 'thread')
-                        }
-                        value='media'
-                        className='create-post-tab'
-                      >
-                        <ImageIcon className='size-4' />
-                        Media
-                      </TabsTrigger>
-                      <TabsTrigger
-                        disabled={isLoading}
-                        value='thread'
-                        className='create-post-tab'
-                      >
-                        <Icons.messageSquare className='size-4' />
-                        Thread
-                      </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent
-                      value='media'
-                      className='flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent pr-4'
-                    >
-                      <UploadStep
-                        getRootProps={getRootProps}
-                        getInputProps={getInputProps}
-                        isDragActive={isDragActive}
-                      />
-                    </TabsContent>
-
-                    <TabsContent
-                      value='thread'
-                      className='flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent pr-4'
-                    >
-                      <CreateThread
-                        getRootProps={getRootProps}
-                        getInputProps={getInputProps}
-                        isLoading={isLoading}
-                        handleSubmit={handleSubmit}
-                      />
-                    </TabsContent>
-                  </Tabs>
-                </div>
+                <UploadStep
+                  getRootProps={getRootProps}
+                  getInputProps={getInputProps}
+                  isDragActive={isDragActive}
+                />
               ) : (
                 (step === 'preview' || step === 'post') && (
                   <PreviewStep

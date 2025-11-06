@@ -59,7 +59,7 @@ const CreatePostInput = ({
   ) => {
     const newValue = event.target.value;
     handleMentionSearch(newValue, event.target.selectionStart || 0);
-    setPostData({ ...postData, threadText: newValue });
+    setPostData({ ...postData });
     onTextareaChange(newValue);
   };
 

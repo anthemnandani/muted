@@ -12,7 +12,6 @@ import PostMediaCarousel from '../posts/PostMediaCarousel';
 import PostActions from '../shared/PostActions';
 import HiddenPost from './HiddenPost';
 import MutedPost from './MutedPost';
-import ThreadPostContent from '../posts/ThreadPostContent';
 
 const PostCard: React.FC<PostCardProps> = ({
   media,
@@ -20,7 +19,6 @@ const PostCard: React.FC<PostCardProps> = ({
   author,
   likes,
   text,
-  threadText,
   createdAt,
   repliesCount,
   bookmarks,
@@ -30,7 +28,6 @@ const PostCard: React.FC<PostCardProps> = ({
   repostsCount,
   privacy,
   mentions,
-  linkPreview,
   hideLikes,
   turnOffComments,
   likesCount,
@@ -49,7 +46,6 @@ const PostCard: React.FC<PostCardProps> = ({
 
   const isHidden = isTemporarilyHidden(id);
   const isMuted = isMutedUser(author.id);
-  const isThreadPost = !!threadText;
 
   const { ref: postRef, inView } = useInView({
     threshold: 0.5,
@@ -94,7 +90,7 @@ const PostCard: React.FC<PostCardProps> = ({
             isPanelOpen ? 'translate-x-[-200px]' : 'translate-x-0'
           )}
         >
-          {isThreadPost ? (
+          {/* {isThreadPost ? (
             <ThreadPostContent
               media={media}
               author={author}
@@ -109,21 +105,20 @@ const PostCard: React.FC<PostCardProps> = ({
               hideLikes={hideLikes}
               turnOffComments={turnOffComments}
             />
-          ) : (
-            <PostMediaCarousel
-              media={media}
-              author={author}
-              createdAt={createdAt}
-              mentions={mentions}
-              postId={id!}
-              text={text}
-              pinned={pinned}
-              reposts={reposts}
-              repostedBy={repostedBy}
-              hideLikes={hideLikes}
-              turnOffComments={turnOffComments}
-            />
-          )}
+          ) : ( */}
+          <PostMediaCarousel
+            media={media}
+            author={author}
+            createdAt={createdAt}
+            mentions={mentions}
+            postId={id!}
+            text={text}
+            pinned={pinned}
+            reposts={reposts}
+            repostedBy={repostedBy}
+            hideLikes={hideLikes}
+            turnOffComments={turnOffComments}
+          />
           <PostActions
             id={id}
             likesCount={likesCount ?? 0}

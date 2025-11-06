@@ -21,7 +21,6 @@ const useCreatePost = () => {
     setPostData,
     setOpenDialog,
     postData,
-    postType,
     validMentions,
   } = usePostDialog();
 
@@ -95,7 +94,7 @@ const useCreatePost = () => {
   const handleMediaUpload = async () => {
     try {
       const allMediaItems: PostMedia[] = [];
-      if (postType === 'media' && mediaFiles.length > 0) {
+      if (mediaFiles.length > 0) {
         const mediaItems = await Promise.all(
           mediaFiles.map(async (mediaFile) => {
             const file = mediaFile.file;
@@ -127,37 +126,6 @@ const useCreatePost = () => {
 
         allMediaItems.push(...mediaItems);
       }
-      if (postType === 'thread' && threadMedia) {
-        if (threadMedia.type === 'gif' && 'gif' in threadMedia) {
-          const giphyMedia = await handleGiphyGifUpload(threadMedia.gif);
-          allMediaItems.push(giphyMedia);
-        } else if ('file' in threadMedia) {
-          const file = threadMedia.file;
-
-          if (file.type.startsWith('video/')) {
-            const dimensions = await getVideoDimensions(file);
-            const { fileUrl, thumbnailUrl } = await uploadToStream(file);
-
-            allMediaItems.push({
-              fileType: 'video',
-              fileUrl,
-              thumbnailUrl,
-              aspectRatio: threadMedia.aspectRatio,
-              originalDimensions: dimensions,
-            });
-          } else {
-            const dimensions = await getImageDimensions(file);
-            const fileUrl = await uploadToStorage(file);
-
-            allMediaItems.push({
-              fileType: file.type === 'image/gif' ? 'gif' : 'image',
-              fileUrl,
-              aspectRatio: threadMedia.aspectRatio,
-              originalDimensions: dimensions,
-            });
-          }
-        }
-      }
 
       return {
         success: true,
@@ -170,20 +138,12 @@ const useCreatePost = () => {
   };
 
   const handleMutation = async () => {
-    const {
-      caption,
-      threadText,
-      linkPreview,
-      hideLikes,
-      turnOffComments,
-      privacy,
-    } = postData;
+    const { caption, hideLikes, turnOffComments, privacy } = postData;
 
     if (editPostId) {
       return editPost({
         id: editPostId,
-        text: postType === 'media' ? caption?.trim() : undefined,
-        threadText: postType === 'thread' ? threadText?.trim() : undefined,
+        text: caption?.trim(),
         hideLikes,
         turnOffComments,
         mentions: validMentions.map((m) => ({
@@ -199,8 +159,7 @@ const useCreatePost = () => {
       }
 
       return createPost({
-        text: postType === 'media' ? caption?.trim() : undefined,
-        threadText: postType === 'thread' ? threadText?.trim() : undefined,
+        text: caption?.trim(),
         media: mediaUploadResult.mediaItems,
         mentions: validMentions.map((m) => ({
           mentionedUserId: m.mentionedUserId,
@@ -209,7 +168,6 @@ const useCreatePost = () => {
         privacy,
         quoteId: quoteInfo?.id,
         postAuthor: quoteInfo?.author.id,
-        linkPreview: linkPreview ?? undefined,
         hideLikes,
         turnOffComments,
       });

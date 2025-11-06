@@ -99,7 +99,7 @@ model Post {
   author          User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId        String
   text            String?
-  threadText      String?
+  // threadText      String?
   media           Json?
   likes           Like[]
   parentPostId    String?
@@ -120,12 +120,12 @@ model Post {
   status          PostStatus     @default(VISIBLE)
   hiddenBy        HiddenPost[]
   lastEditedAt    DateTime?
-  linkPreviewUrl  String?
-  linkPreview     LinkPreview?   @relation(fields: [linkPreviewUrl], references: [url])
+  // linkPreviewUrl  String?
+  // linkPreview     LinkPreview?   @relation(fields: [linkPreviewUrl], references: [url])
   pinned          Boolean        @default(false)
 
   @@unique([createdAt, id])
-  @@index([linkPreviewUrl])
+  // @@index([linkPreviewUrl])
   @@index([authorId])
   @@index([parentPostId])
   @@index([path])
@@ -259,17 +259,17 @@ model Hashtag {
   @@index([name])
 }
 
-model LinkPreview {
-  id          String   @id @default(cuid())
-  url         String   @unique
-  title       String?
-  description String?
-  image       String?
-  createdAt   DateTime @default(now())
-  posts       Post[]
+// model LinkPreview {
+//   id          String   @id @default(cuid())
+//   url         String   @unique
+//   title       String?
+//   description String?
+//   image       String?
+//   createdAt   DateTime @default(now())
+//   posts       Post[]
 
-  @@index([url])
-}
+//   @@index([url])
+// }
 
 model HiddenPost {
   createdAt DateTime @default(now())

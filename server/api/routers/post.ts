@@ -8,7 +8,6 @@ import {
   getUserEmail,
 } from '@/lib/utils';
 import {
-  GET_LINK_PREVIEW,
   GET_MENTIONS,
   GET_REPOSTS,
   GET_USER,
@@ -40,7 +39,6 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         text: z.string().optional(),
-        threadText: z.string().optional(),
         media: z
           .array(
             z.object({
@@ -67,14 +65,6 @@ export const postRouter = createTRPCRouter({
         quoteId: z.string().optional(),
         postAuthor: z.string().optional(),
         parentPostId: z.string().optional(),
-        linkPreview: z
-          .object({
-            url: z.string(),
-            title: z.string().nullable().optional(),
-            description: z.string().nullable().optional(),
-            image: z.string().nullable().optional(),
-          })
-          .optional(),
         hideLikes: z.boolean().optional(),
         turnOffComments: z.boolean().optional(),
       })
@@ -84,12 +74,10 @@ export const postRouter = createTRPCRouter({
         ctx,
         input: {
           text,
-          threadText,
           media,
           mentions,
           privacy,
           quoteId,
-          linkPreview,
           hideLikes,
           turnOffComments,
         },
@@ -110,26 +98,11 @@ export const postRouter = createTRPCRouter({
         }
 
         const filter = new Filter();
-        const textToPost = text || threadText || '';
+        const textToPost = text || '';
         const filteredText = filter.clean(textToPost);
         const hashtags = extractHashtags(filteredText);
 
         const transactionResult = await db.$transaction(async (prisma) => {
-          let lPreview;
-
-          if (linkPreview) {
-            lPreview = await prisma.linkPreview.upsert({
-              where: { url: linkPreview?.url },
-              update: {},
-              create: {
-                url: linkPreview?.url || '',
-                title: linkPreview?.title,
-                description: linkPreview?.description,
-                image: linkPreview?.image,
-              },
-            });
-          }
-
           const postId = createId();
           const path = `/${postId}/`;
 
@@ -141,14 +114,12 @@ export const postRouter = createTRPCRouter({
           const newpost = await prisma.post.create({
             data: {
               id: postId,
-              ...(text && { text: filteredText }),
-              ...(threadText && { threadText: filteredText }),
+              text: filteredText,
               authorId: userId,
               media: mediaWithAspectRatio,
               privacy,
               quoteId,
               path,
-              linkPreviewUrl: linkPreview?.url,
               hideLikes,
               turnOffComments,
               hashtags: {
@@ -295,16 +266,6 @@ export const postRouter = createTRPCRouter({
                   ],
                 },
                 {
-                  OR: [
-                    {
-                      threadText: {
-                        not: { contains: keyword },
-                      },
-                    },
-                    { threadText: null },
-                  ],
-                },
-                {
                   hashtags: {
                     none: {
                       name: { equals: keyword, mode: 'insensitive' },
@@ -332,7 +293,6 @@ export const postRouter = createTRPCRouter({
             id: true,
             createdAt: true,
             text: true,
-            threadText: true,
             media: true,
             parentPostId: true,
             quoteId: true,
@@ -352,7 +312,6 @@ export const postRouter = createTRPCRouter({
             ...getBookmarksWithBlockFilter(userId),
             ...getPostRepliesCount(userId),
             ...GET_MENTIONS,
-            ...GET_LINK_PREVIEW,
             reposts: {
               ...GET_REPOSTS,
               where: {
@@ -817,7 +776,6 @@ export const postRouter = createTRPCRouter({
           id: true,
           createdAt: true,
           text: true,
-          threadText: true,
           media: true,
           parentPostId: true,
           quoteId: true,
@@ -844,7 +802,6 @@ export const postRouter = createTRPCRouter({
           ...getBookmarksWithBlockFilter(userId),
           ...getPostRepliesCount(userId),
           ...GET_MENTIONS,
-          ...GET_LINK_PREVIEW,
           reposts: {
             ...GET_REPOSTS,
             where: {
@@ -943,7 +900,6 @@ export const postRouter = createTRPCRouter({
           id: true,
           createdAt: true,
           text: true,
-          threadText: true,
           media: true,
           parentPostId: true,
           quoteId: true,
@@ -966,7 +922,6 @@ export const postRouter = createTRPCRouter({
           ...getBookmarksWithBlockFilter(userId!),
           ...getCommentRepliesCount(userId!),
           ...GET_MENTIONS,
-          ...GET_LINK_PREVIEW,
         },
         orderBy:
           sortBy === 'LATEST' ? { createdAt: 'desc' } : { createdAt: 'asc' },
@@ -1043,7 +998,6 @@ export const postRouter = createTRPCRouter({
           id: true,
           createdAt: true,
           text: true,
-          threadText: true,
           media: true,
           parentPostId: true,
           quoteId: true,
@@ -1065,7 +1019,6 @@ export const postRouter = createTRPCRouter({
           ...getLikesWithBlockFilter(userId!),
           ...getBookmarksWithBlockFilter(userId!),
           ...GET_MENTIONS,
-          ...GET_LINK_PREVIEW,
         },
         orderBy: { createdAt: 'asc' },
       });
@@ -1216,58 +1169,6 @@ export const postRouter = createTRPCRouter({
       return { success: true };
     }),
 
-  getQuotedPost: publicProcedure
-    .input(
-      z.object({
-        id: z.string(),
-      })
-    )
-    .query(async ({ input, ctx }) => {
-      const { userId, db } = ctx;
-      const postInfo = await db.post.findUnique({
-        where: {
-          id: input.id,
-        },
-        select: {
-          id: true,
-          createdAt: true,
-          text: true,
-          threadText: true,
-          media: true,
-          path: true,
-          repliesCount: true,
-          privacy: true,
-          author: {
-            select: {
-              ...GET_USER,
-            },
-          },
-          ...getLikesWithBlockFilter(userId!),
-          ...GET_LINK_PREVIEW,
-          ...GET_MENTIONS,
-        },
-      });
-
-      if (!postInfo) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
-      }
-
-      return {
-        postInfo: {
-          id: postInfo.id,
-          text: postInfo.text,
-          createdAt: postInfo.createdAt,
-          likeCount: postInfo.likes.length,
-          user: postInfo.author,
-          likes: postInfo.likes,
-          repliesCount: postInfo.repliesCount,
-          media: postInfo.media as PostMedia[],
-          linkPreview: postInfo.linkPreview,
-          mentions: postInfo.mentions,
-        },
-      };
-    }),
-
   deletePost: privateProcedure
     .input(
       z.object({
@@ -1402,7 +1303,6 @@ export const postRouter = createTRPCRouter({
                 select: {
                   id: true,
                   text: true,
-                  threadText: true,
                   createdAt: true,
                   media: true,
                   parentPostId: true,
@@ -1437,7 +1337,6 @@ export const postRouter = createTRPCRouter({
                   },
                   ...getBookmarksWithBlockFilter(userId),
                   ...GET_MENTIONS,
-                  ...GET_LINK_PREVIEW,
                 },
               },
             },
@@ -1522,7 +1421,6 @@ export const postRouter = createTRPCRouter({
             select: {
               id: true,
               text: true,
-              threadText: true,
               createdAt: true,
               media: true,
               parentPostId: true,
@@ -1557,7 +1455,6 @@ export const postRouter = createTRPCRouter({
               },
               ...getBookmarksWithBlockFilter(userId),
               ...GET_MENTIONS,
-              ...GET_LINK_PREVIEW,
             },
           },
         },
@@ -1679,16 +1576,6 @@ export const postRouter = createTRPCRouter({
                 OR: [{ text: { not: { contains: keyword } } }, { text: null }],
               },
               {
-                OR: [
-                  {
-                    threadText: {
-                      not: { contains: keyword },
-                    },
-                  },
-                  { threadText: null },
-                ],
-              },
-              {
                 hashtags: {
                   none: {
                     name: { equals: keyword, mode: 'insensitive' },
@@ -1708,7 +1595,6 @@ export const postRouter = createTRPCRouter({
         select: {
           id: true,
           text: true,
-          threadText: true,
           createdAt: true,
           media: true,
           parentPostId: true,
@@ -1738,7 +1624,6 @@ export const postRouter = createTRPCRouter({
           ...getBookmarksWithBlockFilter(userId),
           ...getPostRepliesCount(userId),
           ...GET_MENTIONS,
-          ...GET_LINK_PREVIEW,
         },
       });
 
@@ -1854,7 +1739,6 @@ export const postRouter = createTRPCRouter({
           id: true,
           createdAt: true,
           text: true,
-          threadText: true,
           media: true,
           parentPostId: true,
           quoteId: true,
@@ -1883,7 +1767,6 @@ export const postRouter = createTRPCRouter({
             },
           },
           ...GET_MENTIONS,
-          ...GET_LINK_PREVIEW,
         },
       });
 
@@ -1921,7 +1804,6 @@ export const postRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         text: z.string().optional(),
-        threadText: z.string().optional(),
         mentions: z
           .array(
             z.object({
@@ -1937,7 +1819,7 @@ export const postRouter = createTRPCRouter({
     .mutation(
       async ({
         ctx,
-        input: { id, text, threadText, mentions, hideLikes, turnOffComments },
+        input: { id, text, mentions, hideLikes, turnOffComments },
       }) => {
         const { userId, db } = ctx;
 
@@ -1958,7 +1840,6 @@ export const postRouter = createTRPCRouter({
                 },
               },
               text: true,
-              threadText: true,
             },
           });
 
@@ -1979,7 +1860,7 @@ export const postRouter = createTRPCRouter({
           }
 
           const filter = new Filter();
-          const textToPost = text || threadText || '';
+          const textToPost = text || '';
           const filteredText = filter.clean(textToPost);
 
           const hashtags = extractHashtags(filteredText);
@@ -2070,8 +1951,7 @@ export const postRouter = createTRPCRouter({
             const updatedPost = await prisma.post.update({
               where: { id },
               data: {
-                ...(text && { text: filteredText }),
-                ...(threadText && { threadText: filteredText }),
+                text: filteredText,
                 lastEditedAt: new Date(),
                 hideLikes: hideLikes,
                 turnOffComments: turnOffComments,
@@ -2252,7 +2132,6 @@ export const postRouter = createTRPCRouter({
             privacy: true,
             turnOffComments: true,
             text: true,
-            threadText: true,
           },
           orderBy: {
             createdAt: 'desc',
@@ -2266,7 +2145,7 @@ export const postRouter = createTRPCRouter({
               Likes: post._count.likes.toString(),
               WhoCanView: capitalizeFirstLetter(post.privacy.toLowerCase()),
               AllowComments: post.turnOffComments ? 'No' : 'Yes',
-              Text: post.text ?? post.threadText ?? 'N/A',
+              Text: post.text ?? 'N/A',
             })),
           };
         } else {
@@ -2278,7 +2157,7 @@ export const postRouter = createTRPCRouter({
               `Likes: ${post._count.likes}`,
               `Who can view: ${capitalizeFirstLetter(post.privacy)}`,
               `Allow comments: ${post.turnOffComments ? 'No' : 'Yes'}`,
-              `Text: ${post.text ?? post.threadText ?? 'N/A'}`,
+              `Text: ${post.text ?? 'N/A'}`,
             ];
             postsContent += postData.join('\n') + '\n\n';
           }

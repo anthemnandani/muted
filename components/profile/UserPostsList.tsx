@@ -3,7 +3,6 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import { Icons } from '../icons';
 import EmptyState from '../shared/EmptyState';
 import UserPostCard from './UserPostCard';
-import UserPostThreadCard from './UserPostThreadCard';
 
 const UserPostsList = ({
   posts,
@@ -58,32 +57,18 @@ const UserPostsList = ({
       }
     >
       <div className='main-grid'>
-        {posts.map((post, index) => {
-          if (post.threadText) {
-            return (
-              <UserPostThreadCard
-                threadText={post.threadText}
-                index={index}
-                postId={post.id}
-                username={username}
-                mentions={post.mentions}
-              />
-            );
-          } else {
-            return (
-              <UserPostCard
-                key={post.id}
-                username={username}
-                media={post.media}
-                postId={post.id}
-                pinned={post.pinned}
-                type={type}
-                index={index}
-                collectionId={collectionId}
-              />
-            );
-          }
-        })}
+        {posts.map((post, index) => (
+          <UserPostCard
+            key={post.id}
+            username={username}
+            media={post.media}
+            postId={post.id}
+            pinned={post.pinned}
+            type={type}
+            index={index}
+            collectionId={collectionId}
+          />
+        ))}
       </div>
     </InfiniteScroll>
   );

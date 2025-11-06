@@ -31,7 +31,6 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
   postId,
   createdAt,
   caption,
-  threadText,
   turnOffComments,
   hideLikes,
   pinned,
@@ -73,7 +72,6 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
   const handleEdit = () => {
     openForEditing({
       caption: caption ?? '',
-      threadText: threadText ?? '',
       id: postId,
       turnOffComments,
       hideLikes,

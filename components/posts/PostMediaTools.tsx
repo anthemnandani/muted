@@ -16,7 +16,7 @@ const PostMediaTools = ({
   const { editPostId, postData } = usePostDialog();
   return (
     <div className='flex items-center gap-2'>
-      {!editPostId && !postData.linkPreview && (
+      {!editPostId && (
         <Fragment>
           <div {...getRootProps()} className='space-y-2 mt-1 select-none w-fit'>
             <div className='text-gray-3 flex gap-1 select-none items-center text-[15px]'>

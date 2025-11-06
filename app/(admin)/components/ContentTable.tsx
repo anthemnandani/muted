@@ -92,20 +92,14 @@ const ContentTable = () => {
                   >
                     <TableCell>
                       <button className='group flex w-full items-center gap-3 text-left'>
-                        {post.threadText ? (
-                          <div className='line-clamp-1 text-sm text-white/75 text-ellipsis'>
-                            {post.threadText}
-                          </div>
-                        ) : (
-                          <img
-                            src={getPostThumbnail(post.media?.[0])}
-                            alt='Post media preview'
-                            loading='lazy'
-                            width={96}
-                            height={96}
-                            className='rounded-md object-cover ring-1 ring-border'
-                          />
-                        )}
+                        <img
+                          src={getPostThumbnail(post.media?.[0])}
+                          alt='Post media preview'
+                          loading='lazy'
+                          width={96}
+                          height={96}
+                          className='rounded-md object-cover ring-1 ring-border'
+                        />
                       </button>
                     </TableCell>
 

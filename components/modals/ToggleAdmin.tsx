@@ -43,7 +43,7 @@ const ToggleAdmin = ({
       loading: 'Processing...',
       success: () =>
         `User has been ${
-          isCurrentlyAdmin ? 'demoted to User' : 'promoted to Admin'
+          isCurrentlyAdmin ? 'demoted as an Admin' : 'promoted to Admin'
         }.`,
       error: 'Error changing user.',
       richColors: true,
