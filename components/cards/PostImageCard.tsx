@@ -1,5 +1,5 @@
 import { PostImageCardProps } from '@/lib/types';
-import { getTargetRatio } from '@/lib/utils';
+import { cn, getTargetRatio } from '@/lib/utils';
 import PostFooter from '../posts/PostFooter';
 
 const PostImageCard: React.FC<PostImageCardProps> = ({
@@ -13,9 +13,14 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
   reposts,
   repostedBy,
   mentions,
+  isAdminPanel = false,
 }) => {
   return (
-    <div className='post-container-fitted'>
+    <div
+      className={cn({
+        'post-container-fitted': !isAdminPanel,
+      })}
+    >
       <div className='relative w-full h-full flex-center'>
         <img
           alt='Post'

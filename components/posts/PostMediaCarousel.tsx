@@ -25,6 +25,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
   mentions,
   hideLikes,
   turnOffComments,
+  isAdminPanel = false,
 }) => {
   const [swiperRef, setSwiperRef] = useState<SwiperType>();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -40,7 +41,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
   };
   return (
     <div
-      className='post-container'
+      className={isAdminPanel ? 'relative h-full w-full' : 'post-container'}
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => {
         setShowControls(false);
@@ -52,19 +53,21 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
         }
       }}
     >
-      <div className='absolute top-2 right-4 z-50'>
-        <PostActionMenu
-          author={author}
-          postId={postId}
-          createdAt={createdAt}
-          caption={text}
-          showControls={showControls}
-          turnOffComments={turnOffComments ?? false}
-          hideLikes={hideLikes ?? false}
-          pinned={pinned}
-          media={media}
-        />
-      </div>
+      {!isAdminPanel && (
+        <div className='absolute top-2 right-4 z-50'>
+          <PostActionMenu
+            author={author}
+            postId={postId}
+            createdAt={createdAt}
+            caption={text}
+            showControls={showControls}
+            turnOffComments={turnOffComments ?? false}
+            hideLikes={hideLikes ?? false}
+            pinned={pinned}
+            media={media}
+          />
+        </div>
+      )}
       <Swiper
         pagination={{ clickable: true }}
         className='h-full w-full'
@@ -101,6 +104,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                 text={text}
                 reposts={reposts}
                 repostedBy={repostedBy}
+                isAdminPanel={isAdminPanel}
               />
             )}
           </SwiperSlide>

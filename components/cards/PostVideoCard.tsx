@@ -19,7 +19,6 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   mentions,
   aspectRatio,
   showControls,
-  isThreadView = false,
 }) => {
   const [inView, setInView] = useState(false);
   const [player, setPlayer] = useState<Player | null>(null);
@@ -159,7 +158,6 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
       reposts={reposts}
       repostedBy={repostedBy}
       mentions={mentions}
-      isThreadView={isThreadView}
       showControls={showControls}
     >
       <VideoPlayer

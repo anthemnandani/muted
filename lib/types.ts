@@ -406,7 +406,6 @@ export interface PostFooterProps {
   text?: string | null;
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
-  isThread?: boolean;
   mentions?: Mention[];
 }
 
@@ -449,6 +448,7 @@ export interface PostImageCardProps {
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
   mentions?: Mention[];
+  isAdminPanel?: boolean;
 }
 
 export interface PostVideoCardProps {
@@ -463,7 +463,6 @@ export interface PostVideoCardProps {
   mentions?: Mention[];
   aspectRatio?: AspectRatio;
   showControls: boolean;
-  isThreadView?: boolean;
 }
 
 export interface PostActionMenuProps {
@@ -491,6 +490,7 @@ export interface PostMediaCarouselProps {
   mentions?: Mention[];
   hideLikes?: boolean;
   turnOffComments?: boolean;
+  isAdminPanel?: boolean;
 }
 
 export interface ProfileVideoPlayerProps {
@@ -1248,8 +1248,8 @@ export interface UserActionsProps {
   isBanned: boolean;
 }
 
-export type AdminPost = RouterOutputs['admin']['getAllPosts']['posts'][0];
 export type ContentType = 'ALL' | 'IMAGE' | 'VIDEO';
 export type PostStatusFilter = 'ALL' | 'VISIBLE' | 'HIDDEN';
 export type UserStatusFilter = 'ALL' | 'ACTIVE' | 'SUSPENDED' | 'BANNED';
 export type AppealStatusFilter = 'ALL' | 'PENDING' | 'UPHELD' | 'OVERTURNED';
+export type AdminPost = RouterOutputs['admin']['getAllPosts']['posts'][number];

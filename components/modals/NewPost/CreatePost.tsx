@@ -10,7 +10,8 @@ import EmojiPicker from '../EmojiPicker';
 
 const CreatePost = () => {
   const { user } = useUser();
-  const maxLength = 2200;
+  // const maxLength = 2200;
+  const maxLength = 500;
 
   const { postData, setPostData, editPostId } = usePostDialog();
 

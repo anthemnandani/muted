@@ -9,13 +9,12 @@ import ParsedText from './ParsedText';
 const PostText: React.FC<PostTextProps> = ({
   text,
   className,
-  isThreadPost = false,
   showMore = true,
   mentions,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const MAX_LENGTH = isThreadPost ? 750 : 40;
-  const MAX_EXPANDED_LENGTH = isThreadPost ? 5000 : 190;
+  const MAX_LENGTH = 69;
+  const MAX_EXPANDED_LENGTH = 500;
 
   if (!text) return null;
 
@@ -77,10 +76,7 @@ const PostText: React.FC<PostTextProps> = ({
       <Username
         key={`mention-${i}`}
         author={mention.user}
-        className={cn(
-          '!text-primary-blue hover:underline',
-          isThreadPost && 'text-base leading-relaxed'
-        )}
+        className='!text-primary-blue hover:underline'
         isMention
       />
     );
