@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "prisma": "npx prisma format && npx prisma generate && npx prisma db push",
+    "prisma": "npx prisma format && npx prisma migrate dev",
     "inngest": "npx inngest-cli dev",
     "import:posts": "tsx scripts/importPosts.ts"
   },
