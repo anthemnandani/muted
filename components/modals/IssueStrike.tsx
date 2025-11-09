@@ -1,4 +1,7 @@
+'use client';
+
 import { STRIKE_REASON_OPTIONS } from '@/lib/constants';
+import { IssueStrikeProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { api } from '@/trpc/react';
 import { ShieldBan } from 'lucide-react';
@@ -12,6 +15,7 @@ import {
   DialogFooter,
   DialogTrigger,
 } from '../ui/dialog';
+import { Label } from '../ui/label';
 import {
   Select,
   SelectContent,
@@ -19,20 +23,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
-import { Label } from '../ui/label';
 
-const IssueStrike = ({
-  userId,
-  postId,
-}: {
-  userId: string;
-  postId: string;
-}) => {
+const IssueStrike = ({ userId, postId, reportId }: IssueStrikeProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedReason, setSelectedReason] = useState<string | undefined>();
   const utils = api.useUtils();
 
-  const { mutate: issueStrike, isLoading } = api.admin.issueStrike.useMutation({
+  const { mutate: issueStrike, isPending } = api.admin.issueStrike.useMutation({
     onSuccess: () => {
       toast.success('Strike issued successfully.');
       setIsOpen(false);
@@ -43,6 +40,7 @@ const IssueStrike = ({
     },
     onSettled: () => {
       utils.admin.getAllPosts.invalidate();
+      utils.admin.getAllReports.invalidate();
       utils.admin.getAllUsers.invalidate();
     },
   });
@@ -53,18 +51,13 @@ const IssueStrike = ({
       return;
     }
 
-    issueStrike({ userId, postId, reason: selectedReason });
+    issueStrike({ userId, postId, reportId, reason: selectedReason });
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant='ghost'
-          size='icon'
-          title='Issue Strike'
-          // onClick={handleOpenStrikeDialog}
-        >
+        <Button variant='ghost' size='icon' title='Issue Strike'>
           <ShieldBan className='size-5 text-red-500' />
           <span className='sr-only'>Issue Strike</span>
         </Button>
@@ -128,9 +121,9 @@ const IssueStrike = ({
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={isLoading || !selectedReason}
+              disabled={isPending || !selectedReason}
             >
-              {isLoading ? 'Issuing...' : 'Confirm Strike'}
+              {isPending ? 'Issuing...' : 'Confirm Strike'}
             </Button>
           </DialogFooter>
         </Card>

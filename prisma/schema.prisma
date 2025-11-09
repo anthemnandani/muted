@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // directUrl = env("DIRECT_URL")
 }
 
 enum Privacy {
@@ -326,6 +327,7 @@ model Report {
 
   status ReportStatus @default(PENDING)
 
+  @@unique([createdAt, id])
   @@unique([reporterId, postId])
   @@unique([reporterId, userId])
   @@index([status])

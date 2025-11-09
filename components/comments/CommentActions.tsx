@@ -12,6 +12,7 @@ import { Icons } from '../icons';
 import ConfirmDialog from '../modals/ConfirmDialog';
 import MenuItem from '../shared/MenuItem';
 import { DropdownMenuContent, DropdownMenuTrigger } from '../ui/dropdown-menu';
+import { useReportStore } from '@/store/reportStore';
 
 const CommentActions = ({
   authorId,
@@ -25,6 +26,7 @@ const CommentActions = ({
   const { user } = useUser();
   const { timeLeft } = useTimeLeft({ createdAt });
   const { startEditing } = useAddCommentStore();
+  const { openPostReport } = useReportStore();
   const [isOpen, setIsOpen] = useState(false);
   const { openDeleteDialog, setOpenDeleteDialog } = useDeletePostStore();
   const { handleDeletePost, isDeleting } = useDeletePost({
@@ -92,6 +94,9 @@ const CommentActions = ({
                 'text-primary-red',
                 postAuthorId === user?.id && 'text-white/90'
               )}
+              onClick={() => {
+                openPostReport(postId);
+              }}
               iconColor={postAuthorId === user?.id ? 'white' : '#ff3040'}
             />
             {postAuthorId === user?.id && (

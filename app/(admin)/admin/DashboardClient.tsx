@@ -13,7 +13,11 @@ const DashboardClient = () => {
     data: adminData,
     isLoading,
     isError,
-  } = api.admin.getDashboardAnalytics.useQuery();
+  } = api.admin.getDashboardAnalytics.useQuery(undefined, {
+    trpc: { abortOnUnmount: true },
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
 
   if (isError) return <Error />;
 

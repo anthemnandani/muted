@@ -7,12 +7,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { type AdminPost } from '@/lib/types';
+import type { AdminReportPost, AdminPost } from '@/lib/types';
 import PostMediaCarousel from '../posts/PostMediaCarousel';
 import { cn } from '@/lib/utils';
 
 interface PostViewProps {
-  post: AdminPost;
+  post: AdminPost | AdminReportPost;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
 }

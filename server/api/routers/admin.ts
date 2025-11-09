@@ -1,13 +1,18 @@
 import { inngest } from '@/inngest/client';
 import { PostMedia } from '@/lib/types';
 import { getChartDataTemplate, getTotalRepliesCount } from '@/lib/utils';
-import { GET_USER, getPostRepliesCount } from '@/server/constants';
+import {
+  GET_MENTIONS,
+  GET_USER,
+  getPostRepliesCount,
+} from '@/server/constants';
 import { clerkClient } from '@clerk/nextjs/server';
 import {
   AppealStatus,
   NotificationType,
   PostStatus,
   Prisma,
+  ReportStatus,
   Role,
   SuspensionType,
   UserStatus,
@@ -527,16 +532,142 @@ export const adminRouter = createTRPCRouter({
       return { appeals, nextCursor };
     }),
 
+  getAllReports: adminProcedure
+    .input(
+      z.object({
+        search: z.string().optional(),
+        status: z.nativeEnum(ReportStatus).optional(),
+        limit: z.number().optional(),
+        cursor: z
+          .object({
+            id: z.string(),
+            createdAt: z.date(),
+          })
+          .optional(),
+      })
+    )
+    .query(async ({ input: { limit = 15, cursor, status, search }, ctx }) => {
+      const { db } = ctx;
+      const conditions: Prisma.ReportWhereInput[] = [];
+
+      if (status) {
+        conditions.push({ status });
+      }
+
+      if (search) {
+        conditions.push({
+          OR: [
+            { reason: { contains: search, mode: 'insensitive' } },
+            {
+              reporter: {
+                username: { contains: search, mode: 'insensitive' },
+              },
+            },
+            {
+              reporter: {
+                fullName: { contains: search, mode: 'insensitive' },
+              },
+            },
+            {
+              targetUser: {
+                username: { contains: search, mode: 'insensitive' },
+              },
+            },
+            {
+              targetUser: {
+                fullName: { contains: search, mode: 'insensitive' },
+              },
+            },
+            {
+              post: { text: { contains: search, mode: 'insensitive' } },
+            },
+          ],
+        });
+      }
+
+      const whereClause: Prisma.ReportWhereInput =
+        conditions.length > 0 ? { AND: conditions } : {};
+
+      const reports = await db.report.findMany({
+        where: whereClause,
+        take: limit + 1,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        include: {
+          reporter: {
+            select: { id: true, username: true, fullName: true, image: true },
+          },
+          user: {
+            select: { id: true, username: true, fullName: true, image: true },
+          },
+          post: {
+            select: {
+              id: true,
+              createdAt: true,
+              text: true,
+              media: true,
+              parentPostId: true,
+              quoteId: true,
+              path: true,
+              hideLikes: true,
+              turnOffComments: true,
+              pinned: true,
+              privacy: true,
+              repliesCount: true,
+              likes: true,
+              status: true,
+              author: {
+                select: { ...GET_USER },
+              },
+              ...GET_MENTIONS,
+            },
+          },
+        },
+      });
+
+      let nextCursor: typeof cursor | undefined;
+      if (reports.length > limit) {
+        const nextItem = reports[limit];
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
+        };
+        reports.length = limit;
+      }
+
+      const formattedReports = reports.map((report) => {
+        if (report.post) {
+          return {
+            ...report,
+            post: {
+              ...report.post,
+              media: report.post.media as PostMedia[],
+            },
+          };
+        }
+        return {
+          ...report,
+          post: null,
+        };
+      });
+
+      return {
+        reports: formattedReports,
+        nextCursor,
+      };
+    }),
+
   issueStrike: adminProcedure
     .input(
       z.object({
         userId: z.string(),
-        postId: z.string().optional(),
         reason: z.string(),
+        postId: z.string().optional(),
+        reportId: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { userId, postId, reason } = input;
+      const { userId, postId, reason, reportId } = input;
       const adminId = ctx.userId;
       const { db } = ctx;
 
@@ -635,6 +766,13 @@ export const adminRouter = createTRPCRouter({
             await tx.post.update({
               where: { id: postId },
               data: { status: 'HIDDEN' },
+            });
+          }
+
+          if (reportId) {
+            await tx.report.update({
+              where: { id: reportId },
+              data: { status: ReportStatus.ACTIONED },
             });
           }
 
@@ -829,5 +967,37 @@ export const adminRouter = createTRPCRouter({
         });
 
       return { success: true, message: 'User ban process initiated.' };
+    }),
+
+  dismissReport: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { db } = ctx;
+      const { id } = input;
+
+      const report = await db.report.findUnique({
+        where: { id },
+      });
+
+      if (!report) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Report not found.',
+        });
+      }
+
+      if (report.status !== ReportStatus.PENDING) {
+        throw new TRPCError({
+          code: 'CONFLICT',
+          message: 'This report has already been reviewed.',
+        });
+      }
+
+      await db.report.update({
+        where: { id },
+        data: { status: ReportStatus.DISMISSED },
+      });
+
+      return { success: true };
     }),
 });

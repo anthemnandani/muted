@@ -4,7 +4,7 @@ import { useSearchStore } from '@/store/searchStore';
 import useVideoPlayer from '@/store/videoPlayer';
 import { type User } from '@clerk/nextjs/server';
 import { type UserResource } from '@clerk/types';
-import { AppealStatus, UserStatus } from '@prisma/client';
+import { AppealStatus, ReportStatus, UserStatus } from '@prisma/client';
 import { type ClassValue, clsx } from 'clsx';
 import {
   differenceInDays,
@@ -20,6 +20,7 @@ import {
 import { twMerge } from 'tailwind-merge';
 import {
   type AdminPost,
+  type AdminReport,
   type AspectRatio,
   type ContentType,
   Message,
@@ -820,3 +821,23 @@ export function getAppealStatusInfo(status: AppealStatus) {
       };
   }
 }
+
+export const getReportStatusClass = (status: ReportStatus) => {
+  switch (status) {
+    case ReportStatus.PENDING:
+      return 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30';
+    case ReportStatus.ACTIONED:
+      return 'bg-red-500/20 text-red-500 border-red-500/30';
+    case ReportStatus.DISMISSED:
+      return 'bg-green-500/20 text-green-500 border-green-500/30';
+    default:
+      return 'secondary';
+  }
+};
+
+export const getReportType = (report: AdminReport) => {
+  if (report.post?.parentPostId) return 'Comment';
+  if (report.post) return 'Post';
+  if (report.user) return 'User';
+  return 'Unknown';
+};

@@ -38,6 +38,7 @@ const UsersTable = () => {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         trpc: { abortOnUnmount: true },
         refetchOnWindowFocus: false,
+        retry: false,
       }
     );
 

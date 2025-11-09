@@ -2,6 +2,7 @@ import type { AppRouter } from '@/server/api/root';
 import type { RouterOutputs } from '@/trpc/shared';
 import type { GifID, IGif } from '@giphy/js-types';
 import type {
+  AppealStatus,
   CollectionPrivacy,
   FilteredKeyword,
   FollowRequestStatus,
@@ -10,8 +11,10 @@ import type {
   MessageStatus,
   NotificationType,
   PostStatus,
+  ReportStatus,
   Role,
   User,
+  UserStatus,
 } from '@prisma/client';
 import { PostPrivacy, Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
@@ -1248,8 +1251,26 @@ export interface UserActionsProps {
   isBanned: boolean;
 }
 
+export interface IssueStrikeProps {
+  userId: string;
+  postId?: string;
+  reportId?: string;
+}
+
+export interface CommentViewProps {
+  text: string;
+  author: AuthorInfoProps;
+  mentions?: Mention[];
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+}
+
 export type ContentType = 'ALL' | 'IMAGE' | 'VIDEO';
-export type PostStatusFilter = 'ALL' | 'VISIBLE' | 'HIDDEN';
-export type UserStatusFilter = 'ALL' | 'ACTIVE' | 'SUSPENDED' | 'BANNED';
-export type AppealStatusFilter = 'ALL' | 'PENDING' | 'UPHELD' | 'OVERTURNED';
+export type PostStatusFilter = 'ALL' | PostStatus;
+export type UserStatusFilter = 'ALL' | UserStatus;
+export type AppealStatusFilter = 'ALL' | AppealStatus;
+export type ReportStatusFilter = 'ALL' | ReportStatus;
 export type AdminPost = RouterOutputs['admin']['getAllPosts']['posts'][number];
+export type AdminReport =
+  RouterOutputs['admin']['getAllReports']['reports'][number];
+export type AdminReportPost = NonNullable<AdminReport['post']>;

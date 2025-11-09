@@ -75,7 +75,7 @@ const AdminSidebar = () => {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {ADMIN_ACCOUNT_ITEMS.map((item) => (
+              {/* {ADMIN_ACCOUNT_ITEMS.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
@@ -88,7 +88,7 @@ const AdminSidebar = () => {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              ))}
+              ))} */}
               <SignOutButton>
                 <SidebarMenuItem>
                   <SidebarMenuButton

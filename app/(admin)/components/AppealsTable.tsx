@@ -40,6 +40,7 @@ const AppealsTable = () => {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         trpc: { abortOnUnmount: true },
         refetchOnWindowFocus: false,
+        retry: false,
       }
     );
 

@@ -43,6 +43,7 @@ const ContentTable = () => {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         trpc: { abortOnUnmount: true },
         refetchOnWindowFocus: false,
+        retry: false,
       }
     );
 
@@ -97,10 +98,7 @@ const ContentTable = () => {
                       className='bg-transparent hover:bg-muted/30'
                     >
                       <TableCell>
-                        <button
-                          className='group flex w-full items-center gap-3 text-left'
-                          onClick={() => setSelectedPost(post)}
-                        >
+                        <button onClick={() => setSelectedPost(post)}>
                           <img
                             src={getPostThumbnail(post.media?.[0])}
                             alt='Post media preview'
