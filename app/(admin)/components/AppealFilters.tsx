@@ -1,8 +1,5 @@
 'use client';
 
-import AdminContentFiltersSkeleton from '@/components/skeletons/AdminContentFiltersSkeleton';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -12,8 +9,7 @@ import {
 } from '@/components/ui/select';
 import type { AppealStatusFilter } from '@/lib/types';
 import { useAdminFiltersStore } from '@/store/adminFiltersStore';
-import { Search } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import FilterBar from './FilterBar';
 
 const AppealFilters = () => {
   const {
@@ -23,55 +19,29 @@ const AppealFilters = () => {
     setAppealStatus,
     resetAppealFilters,
   } = useAdminFiltersStore();
-  const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
-    return <AdminContentFiltersSkeleton />;
-  }
   return (
-    <div className='rounded-lg border p-4'>
-      <div className='flex flex-col gap-3 md:flex-row md:items-center md:justify-between'>
-        <div className='flex flex-1 items-center gap-2'>
-          <div className='relative w-full md:max-w-sm'>
-            <Search className='pointer-events-none absolute left-2 top-2.5 size-4 text-muted-foreground' />
-            <Input
-              value={appealSearch}
-              onChange={(e) => setAppealSearch(e.target.value)}
-              placeholder='Search by username or full name'
-              className='pl-8 focus-visible:ring-0 focus-visible:ring-offset-0'
-            />
-          </div>
-        </div>
-
-        <Select
-          value={appealStatus}
-          onValueChange={(v) => setAppealStatus(v as AppealStatusFilter)}
-        >
-          <SelectTrigger className='w-[150px]'>
-            <SelectValue placeholder='Status' />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value='ALL'>All statuses</SelectItem>
-            <SelectItem value='PENDING'>Pending</SelectItem>
-            <SelectItem value='UPHELD'>Upheld</SelectItem>
-            <SelectItem value='OVERTURNED'>Overturned</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Button
-          variant='ghost'
-          size='sm'
-          className='bg-primary-blue text-white hover:bg-primary-blue/90'
-          onClick={resetAppealFilters}
-        >
-          Reset
-        </Button>
-      </div>
-    </div>
+    <FilterBar
+      searchValue={appealSearch}
+      onSearchChange={setAppealSearch}
+      searchPlaceholder='Search by username or full name'
+      onReset={resetAppealFilters}
+    >
+      <Select
+        value={appealStatus}
+        onValueChange={(v) => setAppealStatus(v as AppealStatusFilter)}
+      >
+        <SelectTrigger className='w-[150px]'>
+          <SelectValue placeholder='Status' />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value='ALL'>All statuses</SelectItem>
+          <SelectItem value='PENDING'>Pending</SelectItem>
+          <SelectItem value='UPHELD'>Upheld</SelectItem>
+          <SelectItem value='OVERTURNED'>Overturned</SelectItem>
+        </SelectContent>
+      </Select>
+    </FilterBar>
   );
 };
 

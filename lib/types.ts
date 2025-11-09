@@ -1265,12 +1265,36 @@ export interface CommentViewProps {
   onOpenChange: (isOpen: boolean) => void;
 }
 
+export interface FilterBarProps {
+  searchValue: string;
+  onSearchChange: (value: string) => void;
+  searchPlaceholder: string;
+  onReset: () => void;
+  children: React.ReactNode;
+}
+
+export interface AdminItemsTableProps<T> {
+  items: T[] | undefined;
+  isLoading: boolean;
+  hasNextPage: boolean | undefined;
+  fetchNextPage: () => void;
+  skeleton: React.ReactNode;
+  tableHeader: React.ReactNode;
+  renderRow: (item: T) => React.ReactNode;
+  emptyStateMessage: string;
+  colSpan: number;
+  children?: React.ReactNode;
+}
+
 export type ContentType = 'ALL' | 'IMAGE' | 'VIDEO';
 export type PostStatusFilter = 'ALL' | PostStatus;
 export type UserStatusFilter = 'ALL' | UserStatus;
 export type AppealStatusFilter = 'ALL' | AppealStatus;
 export type ReportStatusFilter = 'ALL' | ReportStatus;
 export type AdminPost = RouterOutputs['admin']['getAllPosts']['posts'][number];
+export type AdminUser = RouterOutputs['admin']['getAllUsers']['users'][number];
 export type AdminReport =
   RouterOutputs['admin']['getAllReports']['reports'][number];
+export type AdminAppeal =
+  RouterOutputs['admin']['getAppeals']['appeals'][number];
 export type AdminReportPost = NonNullable<AdminReport['post']>;

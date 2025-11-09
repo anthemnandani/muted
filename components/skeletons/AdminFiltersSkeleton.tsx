@@ -1,6 +1,6 @@
 import { Skeleton } from '@/components/ui/skeleton';
 
-const AdminContentFiltersSkeleton = () => {
+const AdminFiltersSkeleton = () => {
   return (
     <div className='rounded-lg border p-4'>
       <div className='flex flex-col gap-3 md:flex-row md:items-center md:justify-between'>
@@ -18,4 +18,4 @@ const AdminContentFiltersSkeleton = () => {
   );
 };
 
-export default AdminContentFiltersSkeleton;
+export default AdminFiltersSkeleton;
