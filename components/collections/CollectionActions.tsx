@@ -28,8 +28,8 @@ const CollectionActions = ({ collection }: { collection: Collection }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className='flex-center relative hover:before:content-[""] hover:before:absolute hover:before:bg-primary hover:before:z-[2] hover:before:-inset-2 hover:before:rounded-full cursor-pointer'>
-          <MoreVertical className='aspect-square object-cover object-center size-4 overflow-hidden flex-1 text-secondary' />
+        <div className='flex-center relative hover:before:content-[""] hover:before:absolute hover:before:bg-primary-2 hover:before:z-[2] hover:before:-inset-2 hover:before:rounded-full cursor-pointer'>
+          <MoreVertical className='aspect-square object-cover object-center size-4 overflow-hidden flex-1 text-secondary-2' />
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent
