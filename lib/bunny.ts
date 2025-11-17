@@ -57,36 +57,16 @@ export async function uploadToBunnyStream(file: Buffer, fileName: string) {
       {
         headers: {
           Accept: 'application/json',
-          'Content-Type': 'video/mp4',
+          'Content-Type': 'application/octet-stream',
           AccessKey: bunnyConfig.streamApiKey,
         },
       }
     );
-
-    // Step 3: Get video details including thumbnail
-    const videoDetails = await axios.get(
-      `https://video.bunnycdn.com/library/${bunnyConfig.streamLibraryId}/videos/${videoId}`,
-      {
-        headers: {
-          Accept: 'application/json',
-          AccessKey: bunnyConfig.streamApiKey,
-        },
-      }
-    );
-
-    // Wait for video to be encoded
-    let retries = 0;
-    while (retries < 20) {
-      if (videoDetails.data.status === 'encoded') {
-        break;
-      }
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      retries++;
-    }
 
     return {
       fileUrl: `https://${process.env.NEXT_PUBLIC_BUNNY_STREAM_CDN_HOSTNAME}/${videoId}/playlist.m3u8`,
       thumbnailUrl: `https://${process.env.NEXT_PUBLIC_BUNNY_STREAM_CDN_HOSTNAME}/${videoId}/thumbnail.jpg`,
+      videoId,
     };
   } catch (error) {
     console.error('Error uploading to Bunny Stream:', error);

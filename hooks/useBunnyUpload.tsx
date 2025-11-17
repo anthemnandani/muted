@@ -17,11 +17,11 @@ export const useBunnyUpload = () => {
     try {
       const buffer = Buffer.from(await file.arrayBuffer());
       const fileName = `${Date.now()}-${file.name}`;
-      const { fileUrl, thumbnailUrl } = await uploadToBunnyStream(
+      const { fileUrl, thumbnailUrl, videoId } = await uploadToBunnyStream(
         buffer,
         fileName
       );
-      return { fileUrl, thumbnailUrl };
+      return { fileUrl, thumbnailUrl, videoId };
     } catch (error) {
       console.error('Upload error:', error);
       throw error;

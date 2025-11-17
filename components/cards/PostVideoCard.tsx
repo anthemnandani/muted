@@ -1,9 +1,11 @@
 'use client';
 
-import { PostVideoCardProps } from '@/lib/types';
+import { AspectRatio, PostVideoCardProps } from '@/lib/types';
+import { cn } from '@/lib/utils';
 import useVideoPlayer from '@/store/videoPlayer';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import Player from 'video.js/dist/types/player';
+import { Icons } from '../icons';
 import { VideoContainer } from '../shared/VideoContainer';
 import { VideoPlayer } from '../shared/VideoPlayer';
 
@@ -11,6 +13,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   video,
   postId,
   poster,
+  encodingStatus,
   author,
   createdAt,
   text,
@@ -146,6 +149,62 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [player, inView, currentlyPlaying, postId]);
+
+  if (encodingStatus === 'processing' || encodingStatus === 'failed') {
+    return (
+      <VideoContainer
+        id={postId}
+        author={author}
+        createdAt={createdAt}
+        text={text ?? ''}
+        reposts={reposts}
+        repostedBy={repostedBy}
+        mentions={mentions}
+        setInView={() => {}}
+        showControls={false}
+        player={null}
+      >
+        <div
+          className={cn(
+            'relative h-full w-full',
+            aspectRatio === ('16/9' as AspectRatio)
+              ? 'object-cover'
+              : 'object-contain',
+            aspectRatio === ('16/9' as AspectRatio)
+              ? 'aspect-video'
+              : 'aspect-[9/16]'
+          )}
+        >
+          {poster && (
+            <Fragment>
+              <img
+                alt='Post'
+                loading='lazy'
+                src={poster}
+                className='object-cover h-full w-full'
+              />
+              <div className='absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none' />
+            </Fragment>
+          )}
+
+          <div className='absolute inset-0 flex-col-center z-20'>
+            {encodingStatus === 'processing' ? (
+              <Fragment>
+                <Icons.spinner className='size-10 animate-spin text-primary-blue mb-2' />
+                <p className='text-white text-base font-bold text-center'>
+                  Video is processing...
+                </p>
+              </Fragment>
+            ) : (
+              <p className='text-primary-red text-base font-bold'>
+                Video processing failed
+              </p>
+            )}
+          </div>
+        </div>
+      </VideoContainer>
+    );
+  }
 
   return (
     <VideoContainer

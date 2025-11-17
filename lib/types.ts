@@ -43,6 +43,8 @@ export type PostMedia = {
     width: number;
     height: number;
   };
+  videoId?: string;
+  encodingStatus?: EncodingStatus;
 };
 
 export type ParentPostInfo = Pick<
@@ -360,6 +362,8 @@ export type GiphyMedia = {
   type: 'gif';
 };
 
+export type EncodingStatus = 'processing' | 'encoded' | 'failed';
+
 export interface PreviewStepProps {
   getRootProps: any;
   getInputProps: any;
@@ -458,6 +462,7 @@ export interface PostVideoCardProps {
   video: string;
   postId: string;
   poster: string;
+  encodingStatus?: EncodingStatus;
   author: AuthorInfoProps;
   createdAt: Date;
   text?: string | null;

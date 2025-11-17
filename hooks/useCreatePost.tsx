@@ -26,7 +26,7 @@ const useCreatePost = () => {
 
   const trpcUtils = api.useUtils();
 
-  const { isLoading, mutateAsync: createPost } =
+  const { isPending: isCreating, mutateAsync: createPost } =
     api.post.createPost.useMutation({
       onMutate: () => {
         setTimeout(() => {
@@ -45,7 +45,7 @@ const useCreatePost = () => {
       retry: false,
     });
 
-  const { isLoading: isEditing, mutateAsync: editPost } =
+  const { isPending: isEditing, mutateAsync: editPost } =
     api.post.editPost.useMutation({
       onMutate: () => {
         setTimeout(() => {
@@ -101,7 +101,9 @@ const useCreatePost = () => {
 
             if (file.type.startsWith('video/')) {
               const dimensions = await getVideoDimensions(file);
-              const { fileUrl, thumbnailUrl } = await uploadToStream(file);
+              const { fileUrl, thumbnailUrl, videoId } = await uploadToStream(
+                file
+              );
 
               return {
                 fileType: 'video' as const,
@@ -109,6 +111,8 @@ const useCreatePost = () => {
                 thumbnailUrl,
                 aspectRatio: mediaFile.aspectRatio,
                 originalDimensions: dimensions,
+                videoId,
+                encodingStatus: 'processing' as const,
               };
             } else {
               const dimensions = await getImageDimensions(file);
@@ -211,7 +215,7 @@ const useCreatePost = () => {
   return {
     postData,
     setPostData,
-    isLoading,
+    isLoading: isCreating,
     handleSubmit,
     isEditing,
   };

@@ -46,6 +46,10 @@ export const postRouter = createTRPCRouter({
               fileUrl: z.string(),
               aspectRatio: z.string().optional(),
               thumbnailUrl: z.string().optional(),
+              videoId: z.string().optional(),
+              encodingStatus: z
+                .enum(['processing', 'encoded', 'failed'])
+                .optional(),
               originalDimensions: z.object({
                 width: z.number(),
                 height: z.number(),
@@ -106,9 +110,11 @@ export const postRouter = createTRPCRouter({
           const postId = createId();
           const path = `/${postId}/`;
 
-          const mediaWithAspectRatio = media?.map((item) => ({
+          const mediaWithDetails = media?.map((item) => ({
             ...item,
             aspectRatio: item.aspectRatio || '1:1',
+            videoId: item.videoId,
+            encodingStatus: item.encodingStatus,
           }));
 
           const newpost = await prisma.post.create({
@@ -116,7 +122,7 @@ export const postRouter = createTRPCRouter({
               id: postId,
               text: filteredText,
               authorId: userId,
-              media: mediaWithAspectRatio,
+              media: mediaWithDetails,
               privacy,
               quoteId,
               path,
