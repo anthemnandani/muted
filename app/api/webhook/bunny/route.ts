@@ -1,5 +1,6 @@
 import { PostMedia } from '@/lib/types';
 import { db } from '@/server/db';
+import axios from 'axios';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
@@ -9,9 +10,6 @@ export async function POST(req: NextRequest) {
     const statusCode = payload.Status;
 
     if (!videoId) return NextResponse.json({ ignored: true });
-
-    console.log(statusCode);
-    console.log(videoId);
 
     let newStatus = 'processing';
     if (statusCode === 3 || statusCode === 4) newStatus = 'encoded';
@@ -25,6 +23,7 @@ export async function POST(req: NextRequest) {
           array_contains: [{ videoId }],
         },
       },
+      select: { id: true, media: true, authorId: true },
     });
 
     if (!post || !Array.isArray(post.media)) {
@@ -45,6 +44,19 @@ export async function POST(req: NextRequest) {
         media: updatedMedia,
       },
     });
+
+    const SOCKET_SERVER_URL = process.env.NEXT_PUBLIC_SOCKET_URL;
+
+    axios
+      .post(`${SOCKET_SERVER_URL}/api/video-processed`, {
+        userId: post.authorId,
+        postId: post.id,
+        status: newStatus,
+        videoId: videoId,
+      })
+      .catch((err) => {
+        console.error('Failed to notify socket server:', err.message);
+      });
 
     return NextResponse.json({ success: true });
   } catch (error) {

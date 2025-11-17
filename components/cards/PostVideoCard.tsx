@@ -1,5 +1,6 @@
 'use client';
 
+import { useSocket } from '@/contexts/SocketContext';
 import { AspectRatio, PostVideoCardProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import useVideoPlayer from '@/store/videoPlayer';
@@ -13,7 +14,6 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   video,
   postId,
   poster,
-  encodingStatus,
   author,
   createdAt,
   text,
@@ -22,9 +22,14 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   mentions,
   aspectRatio,
   showControls,
+  videoId,
+  encodingStatus: initialStatus,
 }) => {
   const [inView, setInView] = useState(false);
   const [player, setPlayer] = useState<Player | null>(null);
+  const [status, setStatus] = useState(initialStatus);
+  const { socket } = useSocket();
+
   const {
     currentlyPlaying,
     setCurrentlyPlaying,
@@ -150,7 +155,25 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
     };
   }, [player, inView, currentlyPlaying, postId]);
 
-  if (encodingStatus === 'processing' || encodingStatus === 'failed') {
+  useEffect(() => {
+    if (!socket) return;
+
+    if (status !== 'processing') return;
+
+    const handleVideoUpdate = (data: any) => {
+      if (data.postId === postId && data.videoId === videoId) {
+        setStatus(data.status);
+      }
+    };
+
+    socket.on('VIDEO_STATUS_UPDATE', handleVideoUpdate);
+
+    return () => {
+      socket.off('VIDEO_STATUS_UPDATE', handleVideoUpdate);
+    };
+  }, [socket, postId, videoId, status]);
+
+  if (status === 'processing' || status === 'failed') {
     return (
       <VideoContainer
         id={postId}
@@ -188,7 +211,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
           )}
 
           <div className='absolute inset-0 flex-col-center z-20'>
-            {encodingStatus === 'processing' ? (
+            {status === 'processing' ? (
               <Fragment>
                 <Icons.spinner className='size-10 animate-spin text-primary-blue mb-2' />
                 <p className='text-white text-base font-bold text-center'>

@@ -196,7 +196,7 @@ const MainPreview = ({
             <video
               ref={videoRef}
               src={currentFile.preview}
-              className={`rounded-lg ${objectFit}`}
+              className={`${objectFit}`}
               style={{
                 width: dimensions.width,
                 height: dimensions.height,

@@ -463,6 +463,7 @@ export interface PostVideoCardProps {
   postId: string;
   poster: string;
   encodingStatus?: EncodingStatus;
+  videoId?: string;
   author: AuthorInfoProps;
   createdAt: Date;
   text?: string | null;
