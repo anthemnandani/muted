@@ -27,7 +27,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
 }) => {
   const [inView, setInView] = useState(false);
   const [player, setPlayer] = useState<Player | null>(null);
-  const [status, setStatus] = useState(initialStatus);
+  const [status, setStatus] = useState('processing');
   const [activePoster, setActivePoster] = useState(poster);
   const [imgError, setImgError] = useState(false);
   const { socket } = useSocket();
@@ -225,11 +225,11 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
                 onError={() => setImgError(true)}
                 onLoad={() => setImgError(false)}
                 className={cn(
-                  'object-cover h-full w-full transition-opacity duration-500',
+                  'object-cover h-full w-full transition-opacity duration-500 blur-lg scale-105',
                   imgError ? 'opacity-0' : 'opacity-100'
                 )}
               />
-              <div className='absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none' />
+              <div className='absolute inset-0 bg-black/30 pointer-events-none' />
             </Fragment>
           )}
 
