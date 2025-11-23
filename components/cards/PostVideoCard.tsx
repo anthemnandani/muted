@@ -28,6 +28,8 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   const [inView, setInView] = useState(false);
   const [player, setPlayer] = useState<Player | null>(null);
   const [status, setStatus] = useState(initialStatus);
+  const [activePoster, setActivePoster] = useState(poster);
+  const [imgError, setImgError] = useState(false);
   const { socket } = useSocket();
 
   const {
@@ -88,6 +90,19 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
     }),
     [video]
   );
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (status === 'processing' && imgError && activePoster) {
+      interval = setInterval(() => {
+        setActivePoster(`${poster?.split('?')[0]}?t=${Date.now()}`);
+        setImgError(false);
+      }, 3000);
+    }
+
+    return () => clearInterval(interval);
+  }, [status, imgError, activePoster, poster]);
 
   useEffect(() => {
     if (!player) return;
@@ -163,6 +178,10 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
     const handleVideoUpdate = (data: any) => {
       if (data.postId === postId && data.videoId === videoId) {
         setStatus(data.status);
+        if (data.status === 'encoded') {
+          setActivePoster(`${poster?.split('?')[0]}?success=${Date.now()}`);
+          setImgError(false);
+        }
       }
     };
 
@@ -198,13 +217,17 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
               : 'aspect-[9/16]'
           )}
         >
-          {poster && (
+          {activePoster && (
             <Fragment>
               <img
                 alt='Post'
-                loading='lazy'
-                src={poster}
-                className='object-cover h-full w-full'
+                src={activePoster}
+                onError={() => setImgError(true)}
+                onLoad={() => setImgError(false)}
+                className={cn(
+                  'object-cover h-full w-full transition-opacity duration-500',
+                  imgError ? 'opacity-0' : 'opacity-100'
+                )}
               />
               <div className='absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none' />
             </Fragment>
@@ -243,7 +266,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
       showControls={showControls}
     >
       <VideoPlayer
-        poster={poster}
+        poster={activePoster}
         options={playerOptions}
         onPlayerReady={(p) => {
           setPlayer(p);
