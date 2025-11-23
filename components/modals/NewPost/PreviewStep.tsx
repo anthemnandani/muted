@@ -19,7 +19,7 @@ const PreviewStep = ({
 
   const currentFile = mediaFiles[currentMediaIndex];
 
-  const selectedRatio = currentFile?.aspectRatio || '1:1';
+  const selectedRatio = currentFile?.aspectRatio || 'original';
 
   const handleRemoveMedia = (id: string) => {
     const newFiles = mediaFiles.filter((file) => file.id !== id);
