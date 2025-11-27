@@ -8,15 +8,19 @@ export async function POST(req: NextRequest) {
   try {
     const payload = await req.json();
     const videoId = payload.VideoGuid;
-    const statusCode = payload.Status;
+    const bunnyStatus = payload.Status;
 
     if (!videoId) return NextResponse.json({ ignored: true });
 
-    let newStatus = 'processing';
-    if (statusCode === 3 || statusCode === 4) newStatus = 'encoded';
-    if (statusCode === 5 || statusCode === 6) newStatus = 'failed';
+    let newEncodingStatus: 'processing' | 'encoded' | 'failed' = 'processing';
 
-    if (newStatus === 'processing') return NextResponse.json({ success: true });
+    if (bunnyStatus === 3 || bunnyStatus === 7) {
+      newEncodingStatus = 'encoded';
+    } else if (bunnyStatus === 5 || bunnyStatus === 8) {
+      newEncodingStatus = 'failed';
+    } else {
+      return NextResponse.json({ ignored: true });
+    }
 
     const post = await db.post.findFirst({
       where: {
@@ -34,7 +38,7 @@ export async function POST(req: NextRequest) {
     const currentMedia = post.media as PostMedia[];
     const updatedMedia = currentMedia.map((item) => {
       if (item.videoId === videoId) {
-        return { ...item, encodingStatus: newStatus };
+        return { ...item, encodingStatus: newEncodingStatus };
       }
       return item;
     });
@@ -67,7 +71,7 @@ export async function POST(req: NextRequest) {
       .post(`${SOCKET_SERVER_URL}/api/video-processed`, {
         userId: post.authorId,
         postId: post.id,
-        status: newStatus,
+        status: newEncodingStatus,
         videoId: videoId,
       })
       .catch((err) => {
