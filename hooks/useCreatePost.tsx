@@ -1,69 +1,96 @@
 import { Icons } from '@/components/icons';
-import { type PostMedia } from '@/lib/types';
+import type { PostMedia } from '@/lib/types';
 import { getImageDimensions, getVideoDimensions } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
 import usePostDialog from '@/store/postDialog';
 import { api } from '@/trpc/react';
 import type { IGif } from '@giphy/js-types';
-import { Check } from 'lucide-react';
-import Link from 'next/link';
+import { PostStatus } from '@prisma/client';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useBunnyUpload } from './useBunnyUpload';
 
 const useCreatePost = () => {
-  const { mediaFiles, threadMedia, setMediaFiles, setThreadMedia } =
-    useFileStore();
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const { mediaFiles, setMediaFiles, setThreadMedia } = useFileStore();
   const { uploadToStorage, uploadToStream } = useBunnyUpload();
-  const {
-    quoteInfo,
-    editPostId,
-    resetPostState,
-    setPostData,
-    setOpenDialog,
-    postData,
-    validMentions,
-  } = usePostDialog();
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const { editPostId, resetPostState, setOpenDialog, postData, validMentions } =
+    usePostDialog();
 
   const trpcUtils = api.useUtils();
 
-  const { isPending: isCreating, mutateAsync: createPost } =
+  const cleanupAndClose = () => {
+    setTimeout(() => {
+      setOpenDialog(false);
+      setMediaFiles([]);
+      setThreadMedia(null);
+      resetPostState();
+      setIsUploading(false);
+      setUploadProgress(0);
+      abortControllerRef.current = null;
+    }, 300);
+  };
+
+  const { mutateAsync: createPost, isPending: isCreating } =
     api.post.createPost.useMutation({
-      onMutate: () => {
-        setTimeout(() => {
-          setMediaFiles([]);
-          setThreadMedia(null);
-          resetPostState();
-        }, 150);
+      onSuccess: () => {
+        setUploadProgress(100);
+        cleanupAndClose();
       },
       onError: () => {
-        toast.error('PostingError: Something went wrong!');
+        setIsUploading(false);
       },
       onSettled: async () => {
         await trpcUtils.post.getInfinitePosts.invalidate();
-        await trpcUtils.user.postInfo.invalidate();
       },
-      retry: false,
     });
 
-  const { isPending: isEditing, mutateAsync: editPost } =
+  const { mutateAsync: editPost, isPending: isEditing } =
     api.post.editPost.useMutation({
       onMutate: () => {
-        setTimeout(() => {
-          setMediaFiles([]);
-          resetPostState();
-        }, 150);
-      },
-      onError: (err) => {
-        if (err.message === 'Edit window has expired') {
-          toast.error('Edit time window has expired');
-        } else {
-          toast.error('Error editing post');
-        }
+        cleanupAndClose();
       },
       onSettled: async () => {
-        await trpcUtils.invalidate();
+        await trpcUtils.post.getInfinitePosts.invalidate();
       },
     });
+
+  const cancelUpload = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    cleanupAndClose();
+    setOpenDialog(false);
+    toast.info('Post creation cancelled');
+  };
+
+  const handleEditPost = () => {
+    if (!editPostId) return;
+
+    const promise = editPost({
+      id: editPostId,
+      text: postData.caption,
+      hideLikes: postData.hideLikes,
+      turnOffComments: postData.turnOffComments,
+      mentions: validMentions.map((m) => ({
+        username: m.username,
+        index: m.startIndex,
+      })),
+    });
+
+    toast.promise(promise, {
+      loading: (
+        <div className='flex gap-2'>
+          <Icons.loading className='size-5' /> Editing...
+        </div>
+      ),
+      success: 'Post updated!',
+      error: 'Error editing post',
+    });
+  };
 
   const handleGiphyGifUpload = async (gif: IGif): Promise<PostMedia> => {
     try {
@@ -91,133 +118,98 @@ const useCreatePost = () => {
     }
   };
 
-  const handleMediaUpload = async () => {
+  const handleCreatePost = async () => {
+    if (mediaFiles.length === 0) return;
+
     try {
-      const allMediaItems: PostMedia[] = [];
-      if (mediaFiles.length > 0) {
-        const mediaItems = await Promise.all(
-          mediaFiles.map(async (mediaFile) => {
-            const file = mediaFile.file;
+      setIsUploading(true);
+      setUploadProgress(0);
 
-            if (file.type.startsWith('video/')) {
-              const dimensions = await getVideoDimensions(file);
-              const { fileUrl, thumbnailUrl, videoId } = await uploadToStream(
-                file
-              );
+      abortControllerRef.current = new AbortController();
+      const signal = abortControllerRef.current.signal;
 
-              return {
-                fileType: 'video' as const,
-                fileUrl,
-                thumbnailUrl,
-                aspectRatio: mediaFile.aspectRatio,
-                originalDimensions: dimensions,
-                videoId,
-                encodingStatus: 'processing' as const,
-              };
-            } else {
-              const dimensions = await getImageDimensions(file);
-              const fileUrl = await uploadToStorage(file);
+      const processedMedia = [];
+      const totalFiles = mediaFiles.length;
+      let completedFiles = 0;
 
-              return {
-                fileType: file.type === 'image/gif' ? 'gif' : 'image',
-                fileUrl,
-                aspectRatio: mediaFile.aspectRatio,
-                originalDimensions: dimensions,
-              };
-            }
-          })
-        );
+      for (const fileObj of mediaFiles) {
+        if (signal.aborted) throw new Error('Upload cancelled by user');
 
-        allMediaItems.push(...mediaItems);
+        const file = fileObj.file;
+
+        const updateCombinedProgress = (filePercent: number) => {
+          const rawTotalPercent =
+            (completedFiles * 100 + filePercent) / totalFiles;
+
+          const scaledPercent = Math.round(rawTotalPercent * 0.9);
+
+          setUploadProgress(scaledPercent);
+        };
+
+        if (file.type.startsWith('video/')) {
+          const dimensions = await getVideoDimensions(file);
+          const result = await uploadToStream(file, {
+            onProgress: updateCombinedProgress,
+            signal: signal,
+          });
+
+          processedMedia.push({
+            fileType: 'video',
+            fileUrl: result.fileUrl,
+            thumbnailUrl: result.thumbnailUrl,
+            videoId: result.videoId,
+            aspectRatio: fileObj.aspectRatio,
+            originalDimensions: dimensions,
+            encodingStatus: 'processing',
+          });
+        } else {
+          const dimensions = await getImageDimensions(file);
+          const url = await uploadToStorage(file);
+          updateCombinedProgress(100);
+          processedMedia.push({
+            fileType: 'image',
+            fileUrl: url,
+            aspectRatio: fileObj.aspectRatio,
+            originalDimensions: dimensions,
+          });
+        }
+        completedFiles++;
       }
 
-      return {
-        success: true,
-        mediaItems: allMediaItems,
-      };
-    } catch (error) {
-      toast.error('Error processing media files');
-      return { success: false, error };
-    }
-  };
+      setUploadProgress(92);
 
-  const handleMutation = async () => {
-    const { caption, hideLikes, turnOffComments, privacy } = postData;
+      if (signal.aborted) throw new Error('Upload cancelled by user');
 
-    if (editPostId) {
-      return editPost({
-        id: editPostId,
-        text: caption?.trim(),
-        hideLikes,
-        turnOffComments,
-        mentions: validMentions.map((m) => ({
-          username: m.username,
-          index: m.startIndex,
-        })),
-      });
-    } else {
-      const mediaUploadResult = await handleMediaUpload();
-
-      if (!mediaUploadResult.success) {
-        return Promise.reject(new Error('Media upload failed'));
-      }
-
-      return createPost({
-        text: caption?.trim(),
-        media: mediaUploadResult.mediaItems,
+      await createPost({
+        text: postData.caption,
+        media: processedMedia as PostMedia[],
+        hideLikes: postData.hideLikes,
+        turnOffComments: postData.turnOffComments,
+        privacy: postData.privacy,
         mentions: validMentions.map((m) => ({
           mentionedUserId: m.mentionedUserId,
           index: m.startIndex,
         })),
-        privacy,
-        quoteId: quoteInfo?.id,
-        postAuthor: quoteInfo?.author.id,
-        hideLikes,
-        turnOffComments,
+        status: processedMedia.some((media) => media.fileType === 'video')
+          ? PostStatus.HIDDEN
+          : PostStatus.VISIBLE,
       });
+    } catch (error: any) {
+      if (error.message !== 'Upload cancelled by user') {
+        setIsUploading(false);
+        toast.error('Upload failed. Please try again.');
+      }
     }
   };
 
-  const handleSubmit = (isEdit = false) => {
-    setOpenDialog(false);
-    const promise = handleMutation();
-
-    toast.promise(promise, {
-      loading: (
-        <div className='flex w-[270px] items-center justify-start gap-1.5 p-0'>
-          <div>
-            <Icons.loading className='size-8' />
-          </div>
-          {isEdit ? 'Editing...' : 'Posting...'}
-        </div>
-      ),
-      success: (data) => {
-        return (
-          <div className='flex-between w-[270px] p-0 '>
-            <div className='flex-center gap-1.5'>
-              <Check className='size-5' />
-              {data?.isEdited ? 'Edited' : 'Posted'}
-            </div>
-            <Link
-              href={`/${data?.post.author.username}/post/${data?.post.id}`}
-              className='hover:text-blue-900'
-            >
-              View
-            </Link>
-          </div>
-        );
-      },
-      error: 'Error',
-      richColors: true,
-    });
-  };
-
   return {
-    postData,
-    setPostData,
-    isLoading: isCreating,
-    handleSubmit,
+    handleCreatePost,
+    handleEditPost,
+    cancelUpload,
+    isCreating,
     isEditing,
+    isUploading,
+    uploadProgress,
   };
 };
 

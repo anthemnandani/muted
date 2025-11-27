@@ -210,11 +210,8 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
           className={cn(
             'relative h-full w-full',
             aspectRatio === ('16/9' as AspectRatio)
-              ? 'object-cover'
-              : 'object-contain',
-            aspectRatio === ('16/9' as AspectRatio)
-              ? 'aspect-video'
-              : 'aspect-[9/16]'
+              ? 'object-cover aspect-video'
+              : 'object-contain aspect-[9/16]'
           )}
         >
           {activePoster && (
@@ -236,15 +233,16 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
           <div className='absolute inset-0 flex-col-center z-20'>
             {status === 'processing' ? (
               <Fragment>
-                <Icons.spinner className='size-10 animate-spin text-primary-blue mb-2' />
-                <p className='text-white text-base font-bold text-center'>
-                  Video is processing...
+                <Icons.spinner className='size-10 animate-spin text-primary-blue mb-3' />
+                <p className='text-white/90 font-bold text-lg'>
+                  Media Processing...
+                </p>
+                <p className='text-white/70 text-sm mt-1'>
+                  Encoding video for playback
                 </p>
               </Fragment>
             ) : (
-              <p className='text-primary-red text-base font-bold'>
-                Video processing failed
-              </p>
+              <p className='text-red-500 font-bold'>Video processing failed</p>
             )}
           </div>
         </div>

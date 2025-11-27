@@ -23,6 +23,7 @@ import PostDialogTitle from './PostDialogTitle';
 import PreviewStep from './PreviewStep';
 import UploadError from './UploadError';
 import UploadStep from './UploadStep';
+import UploadingView from './UploadingView';
 
 const NewPost = () => {
   const {
@@ -36,7 +37,6 @@ const NewPost = () => {
   const { setMediaFiles, setThreadMedia } = useFileStore();
   const [showDiscardModal, setShowDiscardModal] = useState(false);
   const { isMobile } = useDevice();
-  const isEditing = !!editPostId;
 
   const {
     error,
@@ -53,14 +53,21 @@ const NewPost = () => {
     },
   });
 
+  const {
+    handleCreatePost,
+    handleEditPost,
+    cancelUpload,
+    isUploading,
+    isCreating,
+    isEditing,
+    uploadProgress,
+  } = useCreatePost();
+
   useEffect(() => {
     return cleanup;
   }, []);
 
-  const handleDiscardPost = () => {
-    setOpenDialog(false);
-    setShowDiscardModal(false);
-
+  const cleanUpState = () => {
     setTimeout(() => {
       setMediaFiles([]);
       setThreadMedia(null);
@@ -68,7 +75,30 @@ const NewPost = () => {
     }, 150);
   };
 
+  const handleConfirmDiscard = () => {
+    if (isUploading) {
+      cancelUpload();
+      setShowDiscardModal(false);
+    } else {
+      setOpenDialog(false);
+      setShowDiscardModal(false);
+      cleanUpState();
+    }
+  };
+
+  const handleMainSubmit = () => {
+    if (!!editPostId) {
+      handleEditPost();
+    } else {
+      handleCreatePost();
+    }
+  };
+
   const handleOpenChange = (open: boolean) => {
+    if (isUploading && !open) {
+      setShowDiscardModal(true);
+      return;
+    }
     if (!isEditing && !open && (step === 'preview' || step === 'post')) {
       setShowDiscardModal(true);
       return;
@@ -77,15 +107,9 @@ const NewPost = () => {
     setOpenDialog(open);
 
     if (!open) {
-      setTimeout(() => {
-        setMediaFiles([]);
-        setThreadMedia(null);
-        resetPostState();
-      }, 150);
+      cleanUpState();
     }
   };
-
-  const { isLoading, handleSubmit } = useCreatePost();
 
   return (
     <Fragment>
@@ -100,80 +124,88 @@ const NewPost = () => {
           )}
         </DialogTrigger>
         <DialogContent className='w-full border-none bg-transparent shadow-none outline-none'>
-          <DialogHeader
-            className={cn(
-              'w-[500px]',
-              step === 'post' &&
-                '-translate-x-[150px] w-full transition-all duration-500 ease-in-out'
-            )}
-          >
-            <PostDialogTitle
-              hasError={!!error}
-              discardPost={handleDiscardPost}
-              isLoading={isLoading}
-              handleSubmit={handleSubmit}
-            />
-          </DialogHeader>
-          <div className='flex'>
-            <Card
-              className={cn(
-                'relative border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6 w-[500px]',
-                'h-full min-h-[500px] max-h-[calc(100vh_-_100px)]',
-                'transition-all duration-500 ease-in-out z-10',
-                step === 'post'
-                  ? 'rounded-l-lg rounded-r-none -translate-x-[150px]'
-                  : 'rounded-lg'
-              )}
-            >
-              {isValidating && (
-                <Progress
-                  value={progress}
-                  className='rounded-lg absolute top-0 left-2 right-2 h-1 w-full animate-progress bg-primary-blue'
-                />
-              )}
-              {error ? (
-                <UploadError
-                  title={error.title}
-                  message={error.message}
-                  onRetry={() => setError(null)}
-                />
-              ) : step === 'compose' ? (
-                <UploadStep
-                  getRootProps={getRootProps}
-                  getInputProps={getInputProps}
-                  isDragActive={isDragActive}
-                />
-              ) : (
-                (step === 'preview' || step === 'post') && (
-                  <PreviewStep
-                    getRootProps={getRootProps}
-                    getInputProps={getInputProps}
-                    isDragActive={isDragActive}
-                  />
-                )
-              )}
-            </Card>
-            {step === 'post' && (
-              <div
+          {isUploading ? (
+            <div className='flex justify-center w-full'>
+              <UploadingView progress={uploadProgress} />
+            </div>
+          ) : (
+            <Fragment>
+              <DialogHeader
                 className={cn(
-                  'relative border-none shadow-2xl ring-1 ring-r-[#393939] bg-gray-6 w-[340px]',
-                  'rounded-r-lg transition-all duration-500 ease-in-out z-20',
-                  step === 'post'
-                    ? '-translate-x-[150px] opacity-100'
-                    : '-translate-x-[340px] opacity-0'
+                  'w-[500px]',
+                  step === 'post' &&
+                    '-translate-x-[150px] w-full transition-all duration-500 ease-in-out'
                 )}
               >
-                <CreatePost />
+                <PostDialogTitle
+                  hasError={!!error}
+                  discardPost={handleConfirmDiscard}
+                  isLoading={isCreating || isEditing}
+                  handleSubmit={handleMainSubmit}
+                />
+              </DialogHeader>
+              <div className='flex'>
+                <Card
+                  className={cn(
+                    'relative border-none shadow-2xl ring-1 ring-[#393939] bg-gray-6 w-[500px]',
+                    'h-full min-h-[500px] max-h-[calc(100vh_-_100px)]',
+                    'transition-all duration-500 ease-in-out z-10',
+                    step === 'post'
+                      ? 'rounded-l-lg rounded-r-none -translate-x-[150px]'
+                      : 'rounded-lg'
+                  )}
+                >
+                  {isValidating && (
+                    <Progress
+                      value={progress}
+                      className='rounded-lg absolute top-0 left-2 right-2 h-1 w-full animate-progress bg-primary-blue'
+                    />
+                  )}
+                  {error ? (
+                    <UploadError
+                      title={error.title}
+                      message={error.message}
+                      onRetry={() => setError(null)}
+                    />
+                  ) : step === 'compose' ? (
+                    <UploadStep
+                      getRootProps={getRootProps}
+                      getInputProps={getInputProps}
+                      isDragActive={isDragActive}
+                    />
+                  ) : (
+                    (step === 'preview' || step === 'post') && (
+                      <PreviewStep
+                        getRootProps={getRootProps}
+                        getInputProps={getInputProps}
+                        isDragActive={isDragActive}
+                      />
+                    )
+                  )}
+                </Card>
+                {step === 'post' && (
+                  <div
+                    className={cn(
+                      'relative border-none shadow-2xl ring-1 ring-r-[#393939] bg-gray-6 w-[340px]',
+                      'rounded-r-lg transition-all duration-500 ease-in-out z-20',
+                      step === 'post'
+                        ? '-translate-x-[150px] opacity-100'
+                        : '-translate-x-[340px] opacity-0'
+                    )}
+                  >
+                    <CreatePost />
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </Fragment>
+          )}
         </DialogContent>
       </Dialog>
 
       <DiscardPost
         isOpen={showDiscardModal}
         onOpenChange={setShowDiscardModal}
-        discardPost={handleDiscardPost}
+        discardPost={handleConfirmDiscard}
       />
     </Fragment>
   );

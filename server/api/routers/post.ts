@@ -66,11 +66,10 @@ export const postRouter = createTRPCRouter({
           )
           .optional(),
         privacy: z.nativeEnum(PostPrivacy).default('ANYONE'),
-        quoteId: z.string().optional(),
-        postAuthor: z.string().optional(),
         parentPostId: z.string().optional(),
         hideLikes: z.boolean().optional(),
         turnOffComments: z.boolean().optional(),
+        status: z.nativeEnum(PostStatus),
       })
     )
     .mutation(
@@ -81,9 +80,9 @@ export const postRouter = createTRPCRouter({
           media,
           mentions,
           privacy,
-          quoteId,
           hideLikes,
           turnOffComments,
+          status,
         },
       }) => {
         const { user, userId, db } = ctx;
@@ -123,8 +122,8 @@ export const postRouter = createTRPCRouter({
               text: filteredText,
               authorId: userId,
               media: mediaWithDetails,
+              status,
               privacy,
-              quoteId,
               path,
               hideLikes,
               turnOffComments,
@@ -156,33 +155,21 @@ export const postRouter = createTRPCRouter({
             },
           });
 
-          // if (input.postAuthor && userId !== input.postAuthor) {
-          //   await prisma.notification.create({
-          //     data: {
-          //       type: 'QUOTE',
-          //       senderUserId: userId,
-          //       receiverUserId: input.postAuthor,
-          //       postId: newpost.id,
-          //       message: filteredText,
-          //     },
-          //   });
-          // }
-
-          // if (mentions?.length) {
-          //   await Promise.all(
-          //     mentions.map((mention) =>
-          //       prisma.notification.create({
-          //         data: {
-          //           type: 'MENTION',
-          //           senderUserId: userId,
-          //           receiverUserId: mention.userId,
-          //           postId: newpost.id,
-          //           message: filteredText,
-          //         },
-          //       })
-          //     )
-          //   );
-          // }
+          if (mentions?.length) {
+            await Promise.all(
+              mentions.map((mention) =>
+                prisma.notification.create({
+                  data: {
+                    type: 'MENTION',
+                    senderUserId: userId,
+                    receiverUserId: mention.mentionedUserId,
+                    postId: newpost.id,
+                    message: filteredText,
+                  },
+                })
+              )
+            );
+          }
 
           return {
             newpost,
@@ -229,9 +216,18 @@ export const postRouter = createTRPCRouter({
           },
         });
 
+        const visibilityCondition: Prisma.PostWhereInput = {
+          OR: [
+            { status: PostStatus.VISIBLE },
+            {
+              AND: [{ status: PostStatus.HIDDEN }, { authorId: userId }],
+            },
+          ],
+        };
+
         const baseConditions: Prisma.PostWhereInput[] = [
           getPrivacyFilter(userId),
-          { status: PostStatus.VISIBLE },
+          visibilityCondition,
           { parentPostId: null },
           { hiddenBy: { none: { userId } } },
           {

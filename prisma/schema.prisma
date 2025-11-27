@@ -117,7 +117,7 @@ model Post {
   path            String?
   hideLikes       Boolean        @default(false)
   turnOffComments Boolean        @default(false)
-  status          PostStatus     @default(VISIBLE)
+  status          PostStatus     @default(HIDDEN)
   hiddenBy        HiddenPost[]
   lastEditedAt    DateTime?
   // linkPreviewUrl  String?
