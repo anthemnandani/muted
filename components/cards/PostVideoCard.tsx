@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 import useVideoPlayer from '@/store/videoPlayer';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import Player from 'video.js/dist/types/player';
-import { Icons } from '../icons';
 import { VideoContainer } from '../shared/VideoContainer';
 import { VideoPlayer } from '../shared/VideoPlayer';
 
@@ -192,7 +191,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
     };
   }, [socket, postId, videoId, status]);
 
-  if (status === 'processing' || status === 'failed') {
+  if (status === 'failed') {
     return (
       <VideoContainer
         id={postId}
@@ -231,19 +230,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
           )}
 
           <div className='absolute inset-0 flex-col-center z-20'>
-            {status === 'processing' ? (
-              <Fragment>
-                <Icons.spinner className='size-10 animate-spin text-primary-blue mb-3' />
-                <p className='text-white/90 font-bold text-lg'>
-                  Media Processing...
-                </p>
-                <p className='text-white/70 text-sm mt-1'>
-                  Encoding video for playback
-                </p>
-              </Fragment>
-            ) : (
-              <p className='text-red-500 font-bold'>Video processing failed</p>
-            )}
+            <p className='text-red-500 font-bold'>Video processing failed</p>
           </div>
         </div>
       </VideoContainer>

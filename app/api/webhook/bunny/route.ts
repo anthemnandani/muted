@@ -1,4 +1,3 @@
-import { PostMedia } from '@/lib/types';
 import { db } from '@/server/db';
 import { PostStatus } from '@prisma/client';
 import axios from 'axios';
@@ -12,71 +11,55 @@ export async function POST(req: NextRequest) {
 
     if (!videoId) return NextResponse.json({ ignored: true });
 
-    let newEncodingStatus: 'processing' | 'encoded' | 'failed' = 'processing';
+    const isSuccess = bunnyStatus === 3 || bunnyStatus === 7;
+    const isFailure = bunnyStatus === 5 || bunnyStatus === 8;
 
-    if (bunnyStatus === 3 || bunnyStatus === 7) {
-      newEncodingStatus = 'encoded';
-    } else if (bunnyStatus === 5 || bunnyStatus === 8) {
-      newEncodingStatus = 'failed';
-    } else {
+    if (!isSuccess && !isFailure) {
       return NextResponse.json({ ignored: true });
     }
 
     const post = await db.post.findFirst({
-      where: {
-        media: {
-          array_contains: [{ videoId }],
-        },
-      },
-      select: { id: true, media: true, authorId: true, status: true },
+      where: { media: { array_contains: [{ videoId }] } },
     });
 
-    if (!post || !Array.isArray(post.media)) {
+    if (!post) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    const currentMedia = post.media as PostMedia[];
-    const updatedMedia = currentMedia.map((item) => {
-      if (item.videoId === videoId) {
-        return { ...item, encodingStatus: newEncodingStatus };
-      }
-      return item;
-    });
+    const newEncodingStatus = isSuccess ? 'encoded' : 'failed';
 
-    const allVideosReady = updatedMedia.every((item) => {
-      if (item.fileType === 'video') {
-        return (
-          item.encodingStatus === 'encoded' || item.encodingStatus === 'failed'
-        );
-      }
-      return true;
-    });
+    const updatedMedia = (post.media as any[]).map((m) =>
+      m.videoId === videoId ? { ...m, encodingStatus: newEncodingStatus } : m
+    );
 
-    let newPostStatus = post.status;
-    if (post.status === PostStatus.HIDDEN && allVideosReady) {
-      newPostStatus = PostStatus.VISIBLE;
-    }
+    const allReady = updatedMedia.every(
+      (m) => m.fileType !== 'video' || m.encodingStatus === 'encoded'
+    );
 
     await db.post.update({
       where: { id: post.id },
       data: {
         media: updatedMedia,
-        status: newPostStatus,
+        status:
+          post.status === PostStatus.HIDDEN && allReady
+            ? PostStatus.VISIBLE
+            : post.status,
       },
     });
 
     const SOCKET_SERVER_URL = process.env.NEXT_PUBLIC_SOCKET_URL;
-
-    axios
-      .post(`${SOCKET_SERVER_URL}/api/video-processed`, {
-        userId: post.authorId,
-        postId: post.id,
-        status: newEncodingStatus,
-        videoId: videoId,
-      })
-      .catch((err) => {
-        console.error('Failed to notify socket server:', err.message);
-      });
+    if (SOCKET_SERVER_URL) {
+      axios
+        .post(`${SOCKET_SERVER_URL}/api/video-processed`, {
+          userId: post.authorId,
+          postId: post.id,
+          status: newEncodingStatus,
+          videoId,
+        })
+        .catch((err) => {
+          console.error('Failed to notify socket server:', err.message);
+        });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
