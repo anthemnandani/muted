@@ -57,7 +57,7 @@ const usePostDialog = create<ToggleState>((set, get) => ({
         id: crypto.randomUUID(),
         preview: m.fileUrl,
         type: m.fileType as 'image' | 'video',
-        file: new File([], m.fileUrl.split('/').pop() ?? 'mediafile', {
+        file: new File([], m.fileUrl!.split('/').pop() ?? 'mediafile', {
           type: m.fileType === 'video' ? 'video/mp4' : 'image/jpeg',
         }),
         aspectRatio: m.aspectRatio ?? '1:1',

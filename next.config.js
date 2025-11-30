@@ -49,11 +49,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'p16-sign-useast2a.tiktokcdn.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'p16-sign-va.tiktokcdn.com',
+        hostname: 'image.mux.com',
       },
     ],
   },

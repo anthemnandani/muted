@@ -1,6 +1,7 @@
 import type { AppRouter } from '@/server/api/root';
 import type { RouterOutputs } from '@/trpc/shared';
 import type { GifID, IGif } from '@giphy/js-types';
+import MuxPlayer from '@mux/mux-player-react';
 import type {
   AppealStatus,
   CollectionPrivacy,
@@ -19,7 +20,7 @@ import type {
 import { PostPrivacy, Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
 import { LucideIcon } from 'lucide-react';
-import { ReactNode, RefObject } from 'react';
+import { ElementRef, ReactNode, RefObject } from 'react';
 import { DropzoneInputProps, DropzoneRootProps } from 'react-dropzone';
 import Player from 'video.js/dist/types/player';
 
@@ -36,7 +37,7 @@ export type PostProps = ArrayElement<
 
 export type PostMedia = {
   fileType: string;
-  fileUrl: string;
+  fileUrl?: string;
   aspectRatio?: AspectRatio;
   thumbnailUrl?: string;
   originalDimensions: {
@@ -44,6 +45,7 @@ export type PostMedia = {
     height: number;
   };
   videoId?: string;
+  playbackId?: string | null;
   encodingStatus?: EncodingStatus;
 };
 
@@ -343,7 +345,7 @@ export type AspectRatio = 'original' | '1:1' | '4:5' | '16:9' | '9:16';
 
 export type MediaFile = {
   file: File;
-  preview: string;
+  preview?: string;
   id: string;
   type: 'image' | 'video';
   aspectRatio?: AspectRatio;
@@ -417,8 +419,8 @@ export interface PostFooterProps {
 }
 
 export interface VideoContainerProps {
+  player: MuxPlayerRef | null;
   children: React.ReactNode;
-  player: Player | null;
   author: AuthorInfoProps;
   createdAt: Date;
   id: string;
@@ -459,11 +461,10 @@ export interface PostImageCardProps {
 }
 
 export interface PostVideoCardProps {
-  video: string;
+  playbackId: string;
   postId: string;
   poster: string;
   encodingStatus?: EncodingStatus;
-  videoId?: string;
   author: AuthorInfoProps;
   createdAt: Date;
   text?: string | null;
@@ -509,11 +510,15 @@ export interface ProfileVideoPlayerProps {
 }
 
 export interface VideoPlayerProps {
-  options: any;
   onPlayerReady?: (player: Player) => void;
   poster?: string;
   onTimeUpdate?: () => void;
-  aspectRatio?: AspectRatio;
+  aspectRatio: AspectRatio;
+  playbackId: string;
+  status: EncodingStatus;
+  isMuted: boolean;
+  startTime?: number;
+  onVolumeChange?: (muted: boolean) => void;
 }
 
 export interface MediaTypeIndicatorProps {
@@ -1304,3 +1309,5 @@ export type AdminReport =
 export type AdminAppeal =
   RouterOutputs['admin']['getAppeals']['appeals'][number];
 export type AdminReportPost = NonNullable<AdminReport['post']>;
+
+export type MuxPlayerRef = ElementRef<typeof MuxPlayer>;

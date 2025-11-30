@@ -57,9 +57,9 @@ const NewPost = () => {
     handleCreatePost,
     handleEditPost,
     cancelUpload,
-    isUploading,
     isCreating,
     isEditing,
+    isUploading,
     uploadProgress,
   } = useCreatePost();
 

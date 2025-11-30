@@ -1,12 +1,12 @@
 'use client';
 
+import type { MuxPlayerRef } from '@/lib/types';
 import useVideoPlayer from '@/store/videoPlayer';
 import { Volume2, VolumeX } from 'lucide-react';
-import React from 'react';
-import Player from 'video.js/dist/types/player';
+import { useEffect, useState } from 'react';
 
 interface VolumeControlsProps {
-  player: Player | null;
+  player: MuxPlayerRef | null;
   showControls: boolean;
 }
 
@@ -14,28 +14,28 @@ const VolumeControls: React.FC<VolumeControlsProps> = ({
   player,
   showControls,
 }) => {
-  const [showVolumeSlider, setShowVolumeSlider] = React.useState(false);
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const { isMuted, setIsMuted } = useVideoPlayer();
-  const [volume, setVolume] = React.useState(1);
+  const [volume, setVolume] = useState(1);
 
   const handleVolumeChange = (newVolume: number) => {
     if (!player) return;
 
     setVolume(newVolume);
-    player.volume(newVolume);
+    player.volume = newVolume;
 
     if (newVolume === 0) {
-      player.muted(true);
+      player.muted = true;
       setIsMuted(true);
     } else if (isMuted) {
-      player.muted(false);
+      player.muted = false;
       setIsMuted(false);
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (player) {
-      setVolume(player.volume() as number);
+      setVolume(player.volume);
     }
   }, [player]);
 
@@ -79,7 +79,7 @@ const VolumeControls: React.FC<VolumeControlsProps> = ({
           step='0.1'
           value={isMuted ? 0 : volume}
           onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-          className='w-full h-1 bg-white/30 rounded-full'
+          className='w-full h-1 bg-white/30 rounded-full accent-white cursor-pointer'
         />
       </div>
     </div>

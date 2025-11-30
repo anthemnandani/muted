@@ -186,13 +186,13 @@ const MainPreview = ({
                 loading='lazy'
               />
             </div>
-          ) : editPostId ? (
-            <VideoPlayer
-              poster={currentFile.poster}
-              options={playerOptions}
-              aspectRatio={aspectRatio}
-            />
           ) : (
+            // ) : editPostId ? (
+            //   <VideoPlayer
+            //     poster={currentFile.poster}
+            //     options={playerOptions}
+            //     aspectRatio={aspectRatio}
+            //   />)
             <video
               ref={videoRef}
               src={currentFile.preview}

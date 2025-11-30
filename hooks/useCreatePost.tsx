@@ -4,24 +4,24 @@ import { getImageDimensions, getVideoDimensions } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
 import usePostDialog from '@/store/postDialog';
 import { api } from '@/trpc/react';
-import type { IGif } from '@giphy/js-types';
+import { createId } from '@paralleldrive/cuid2';
 import { PostStatus } from '@prisma/client';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { useBunnyUpload } from './useBunnyUpload';
+import { useMuxUpload } from './useMuxUpload';
 
 const useCreatePost = () => {
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const { mediaFiles, setMediaFiles, setThreadMedia } = useFileStore();
-  const { uploadToStorage, uploadToStream } = useBunnyUpload();
+  const { uploadToStorage, prepareMuxUpload, startMuxUpload } = useMuxUpload();
   const abortControllerRef = useRef<AbortController | null>(null);
   const { editPostId, resetPostState, setOpenDialog, postData, validMentions } =
     usePostDialog();
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const trpcUtils = api.useUtils();
 
-  const cleanupAndClose = () => {
+  const closeAndReset = () => {
     setTimeout(() => {
       setOpenDialog(false);
       setMediaFiles([]);
@@ -34,23 +34,12 @@ const useCreatePost = () => {
   };
 
   const { mutateAsync: createPost, isPending: isCreating } =
-    api.post.createPost.useMutation({
-      onSuccess: () => {
-        setUploadProgress(100);
-        cleanupAndClose();
-      },
-      onError: () => {
-        setIsUploading(false);
-      },
-      onSettled: async () => {
-        await trpcUtils.post.getInfinitePosts.invalidate();
-      },
-    });
+    api.post.createPost.useMutation();
 
   const { mutateAsync: editPost, isPending: isEditing } =
     api.post.editPost.useMutation({
       onMutate: () => {
-        cleanupAndClose();
+        closeAndReset();
       },
       onSettled: async () => {
         await trpcUtils.post.getInfinitePosts.invalidate();
@@ -62,8 +51,10 @@ const useCreatePost = () => {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
-    cleanupAndClose();
+    closeAndReset();
     setOpenDialog(false);
+    setIsUploading(false);
+    setUploadProgress(0);
     toast.info('Post creation cancelled');
   };
 
@@ -92,31 +83,31 @@ const useCreatePost = () => {
     });
   };
 
-  const handleGiphyGifUpload = async (gif: IGif): Promise<PostMedia> => {
-    try {
-      const response = await fetch(gif.images.original.url);
-      const blob = await response.blob();
-      const gifFile = new File([blob], `${gif.id}.gif`, {
-        type: 'image/gif',
-      });
+  // const handleGiphyGifUpload = async (gif: IGif): Promise<PostMedia> => {
+  //   try {
+  //     const response = await fetch(gif.images.original.url);
+  //     const blob = await response.blob();
+  //     const gifFile = new File([blob], `${gif.id}.gif`, {
+  //       type: 'image/gif',
+  //     });
 
-      const fileUrl = await uploadToStorage(gifFile);
+  //     const fileUrl = await uploadToStorage(gifFile);
 
-      const dimensions = {
-        width: gif.images.original.width,
-        height: gif.images.original.height,
-      };
+  //     const dimensions = {
+  //       width: gif.images.original.width,
+  //       height: gif.images.original.height,
+  //     };
 
-      return {
-        fileType: 'gif',
-        fileUrl,
-        originalDimensions: dimensions,
-      };
-    } catch (error) {
-      console.error('Error processing Giphy GIF:', error);
-      throw new Error('Failed to process Giphy GIF');
-    }
-  };
+  //     return {
+  //       fileType: 'gif',
+  //       fileUrl,
+  //       originalDimensions: dimensions,
+  //     };
+  //   } catch (error) {
+  //     console.error('Error processing Giphy GIF:', error);
+  //     throw new Error('Failed to process Giphy GIF');
+  //   }
+  // };
 
   const handleCreatePost = async () => {
     if (mediaFiles.length === 0) return;
@@ -125,47 +116,42 @@ const useCreatePost = () => {
       setIsUploading(true);
       setUploadProgress(0);
 
+      const generatedPostId = createId();
       abortControllerRef.current = new AbortController();
       const signal = abortControllerRef.current.signal;
 
-      const processedMedia = [];
-      const totalFiles = mediaFiles.length;
-      let completedFiles = 0;
+      const processedMedia: PostMedia[] = [];
+      const uploadsQueue: Array<() => Promise<void>> = [];
 
       for (const fileObj of mediaFiles) {
-        if (signal.aborted) throw new Error('Upload cancelled by user');
-
+        if (signal.aborted) throw new Error('Upload cancelled');
         const file = fileObj.file;
-
-        const updateCombinedProgress = (filePercent: number) => {
-          const rawTotalPercent =
-            (completedFiles * 100 + filePercent) / totalFiles;
-
-          const scaledPercent = Math.round(rawTotalPercent * 0.9);
-
-          setUploadProgress(scaledPercent);
-        };
 
         if (file.type.startsWith('video/')) {
           const dimensions = await getVideoDimensions(file);
-          const result = await uploadToStream(file, {
-            onProgress: updateCombinedProgress,
-            signal: signal,
-          });
+
+          const { url, uploadId } = await prepareMuxUpload(generatedPostId);
+
+          const localBlobUrl = URL.createObjectURL(file);
 
           processedMedia.push({
             fileType: 'video',
-            fileUrl: result.fileUrl,
-            thumbnailUrl: result.thumbnailUrl,
-            videoId: result.videoId,
+            videoId: uploadId,
+            playbackId: localBlobUrl,
             aspectRatio: fileObj.aspectRatio,
             originalDimensions: dimensions,
             encodingStatus: 'processing',
           });
+
+          uploadsQueue.push(() =>
+            startMuxUpload(file, url, (pct) => {
+              const totalProgress = 20 + Math.floor(pct * 0.8);
+              setUploadProgress(totalProgress);
+            })
+          );
         } else {
           const dimensions = await getImageDimensions(file);
           const url = await uploadToStorage(file);
-          updateCombinedProgress(100);
           processedMedia.push({
             fileType: 'image',
             fileUrl: url,
@@ -173,16 +159,14 @@ const useCreatePost = () => {
             originalDimensions: dimensions,
           });
         }
-        completedFiles++;
       }
 
-      setUploadProgress(92);
-
-      if (signal.aborted) throw new Error('Upload cancelled by user');
+      setUploadProgress(10);
 
       await createPost({
+        id: generatedPostId,
         text: postData.caption,
-        media: processedMedia as PostMedia[],
+        media: processedMedia,
         hideLikes: postData.hideLikes,
         turnOffComments: postData.turnOffComments,
         privacy: postData.privacy,
@@ -194,11 +178,22 @@ const useCreatePost = () => {
           ? PostStatus.HIDDEN
           : PostStatus.VISIBLE,
       });
-    } catch (error: any) {
-      if (error.message !== 'Upload cancelled by user') {
-        setIsUploading(false);
-        toast.error('Upload failed. Please try again.');
+
+      setUploadProgress(20);
+
+      for (const uploadTask of uploadsQueue) {
+        if (signal.aborted) throw new Error('Upload cancelled');
+        await uploadTask();
       }
+
+      setUploadProgress(100);
+      toast.success('Post uploaded!');
+      closeAndReset();
+
+      await trpcUtils.post.getInfinitePosts.invalidate();
+    } catch (error: any) {
+      setIsUploading(false);
+      toast.error('Upload failed');
     }
   };
 

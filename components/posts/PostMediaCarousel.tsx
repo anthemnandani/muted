@@ -81,10 +81,9 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
           <SwiperSlide key={`${postId}-${index}`} className='swiper-no-swiping'>
             {item.fileType === 'video' ? (
               <PostVideoCard
-                video={item.fileUrl}
+                playbackId={item.playbackId!}
                 poster={item.thumbnailUrl!}
                 encodingStatus={item.encodingStatus}
-                videoId={item.videoId}
                 postId={postId}
                 author={author}
                 createdAt={createdAt}
@@ -96,7 +95,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
               />
             ) : (
               <PostImageCard
-                image={item.fileUrl}
+                image={item.fileUrl!}
                 originalDimensions={item.originalDimensions}
                 aspectRatio={item.aspectRatio as AspectRatio}
                 author={author}

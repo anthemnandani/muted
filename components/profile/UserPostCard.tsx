@@ -122,7 +122,7 @@ const UserPostCard = ({
           />
         ) : (
           <Image
-            src={fileUrl}
+            src={fileUrl!}
             loading='lazy'
             fill
             alt='Post Image'

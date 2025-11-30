@@ -1,16 +1,13 @@
 'use client';
 
-import { useSocket } from '@/contexts/SocketContext';
-import { AspectRatio, PostVideoCardProps } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { MuxPlayerRef, PostVideoCardProps } from '@/lib/types';
 import useVideoPlayer from '@/store/videoPlayer';
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
-import Player from 'video.js/dist/types/player';
+import { useCallback, useEffect, useState } from 'react';
 import { VideoContainer } from '../shared/VideoContainer';
 import { VideoPlayer } from '../shared/VideoPlayer';
 
 const PostVideoCard: React.FC<PostVideoCardProps> = ({
-  video,
+  playbackId,
   postId,
   poster,
   author,
@@ -21,15 +18,10 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   mentions,
   aspectRatio,
   showControls,
-  videoId,
-  encodingStatus: initialStatus,
+  encodingStatus,
 }) => {
   const [inView, setInView] = useState(false);
-  const [player, setPlayer] = useState<Player | null>(null);
-  const [status, setStatus] = useState(initialStatus);
-  const [activePoster, setActivePoster] = useState(poster);
-  const [imgError, setImgError] = useState(false);
-  const { socket } = useSocket();
+  const [player, setPlayer] = useState<MuxPlayerRef | null>(null);
 
   const {
     currentlyPlaying,
@@ -40,84 +32,21 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
     setTimestamp,
   } = useVideoPlayer();
 
-  const isSafari = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  }, []);
-
-  const sourceType = useMemo(() => {
-    if (isSafari) {
-      return 'application/vnd.apple.mpegurl';
-    }
-    return 'application/x-mpegURL';
-  }, [isSafari]);
-
-  const playerOptions = useMemo(
-    () => ({
-      controls: true,
-      loop: true,
-      muted: true,
-      playsinline: true,
-      preload: 'metadata',
-      autoplay: false,
-      disablePictureInPicture: true,
-      userActions: { hotkeys: true, doubleClick: false },
-      controlBar: {
-        pictureInPictureToggle: false,
-        fullscreenToggle: false,
-        volumePanel: false,
-        progressControl: {
-          seekBar: true,
-        },
-        children: ['progressControl'],
-      },
-      sources: [{ src: video, type: sourceType }],
-      html5: {
-        vhs: {
-          overrideNative: !isSafari,
-          withCredentials: false,
-        },
-        nativeTextTracks: isSafari,
-        nativeAudioTracks: isSafari,
-        nativeVideoTracks: isSafari,
-      },
-      hls: {
-        debug: false,
-        enableLowInitialPlaylist: true,
-        manifestLoadingTimeOut: 10000,
-      },
-    }),
-    [video]
-  );
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-
-    if (status === 'processing' && imgError && activePoster) {
-      interval = setInterval(() => {
-        setActivePoster(`${poster?.split('?')[0]}?t=${Date.now()}`);
-        setImgError(false);
-      }, 3000);
-    }
-
-    return () => clearInterval(interval);
-  }, [status, imgError, activePoster, poster]);
-
   useEffect(() => {
     if (!player) return;
 
     if (inView) {
       setCurrentlyPlaying(postId);
-      player.play();
+      player.play().catch(() => {});
     } else if (currentlyPlaying === postId) {
       player.pause();
     }
-  }, [inView, player, postId, currentlyPlaying]);
+  }, [inView, player, postId, currentlyPlaying, setCurrentlyPlaying]);
 
   useEffect(() => {
     if (!player) return;
 
-    if (currentlyPlaying !== postId && player.paused() === false) {
+    if (currentlyPlaying !== postId && !player.paused) {
       player.pause();
     }
   }, [currentlyPlaying, player, postId]);
@@ -125,117 +54,34 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   useEffect(() => {
     if (!player) return;
 
-    const handleVolumeChange = () => {
-      if (player.muted() !== isMuted) {
-        setIsMuted(player.muted() as boolean);
-      }
-    };
-
-    player.muted(isMuted);
-    player.on('volumechange', handleVolumeChange);
-
-    return () => {
-      player.off('volumechange', handleVolumeChange);
-    };
-  }, [player, isMuted, setIsMuted]);
-
-  useEffect(() => {
-    if (player && timestamps[postId]) {
-      player.currentTime(timestamps[postId]);
-    }
-  }, [player]);
-
-  const handleTimeUpdate = useCallback(() => {
-    if (player && inView) {
-      setTimestamp(postId, player.currentTime() as number);
-    }
-  }, [postId, player, inView, setTimestamp]);
-
-  useEffect(() => {
-    if (!player) return;
-
     const handleVisibilityChange = () => {
-      if (document.hidden && player.paused() === false) {
+      if (document.hidden && !player.paused) {
         player.pause();
       } else if (!document.hidden && inView && currentlyPlaying === postId) {
-        player.play();
+        player.play().catch(() => {});
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [player, inView, currentlyPlaying, postId]);
 
-  useEffect(() => {
-    if (!socket) return;
+  const handleTimeUpdate = useCallback(() => {
+    if (player && inView) {
+      setTimestamp(postId, player.currentTime);
+    }
+  }, [postId, player, inView, setTimestamp]);
 
-    if (status !== 'processing') return;
-
-    const handleVideoUpdate = (data: any) => {
-      if (data.postId === postId && data.videoId === videoId) {
-        setStatus(data.status);
-        if (data.status === 'encoded') {
-          setActivePoster(`${poster?.split('?')[0]}?success=${Date.now()}`);
-          setImgError(false);
-        }
+  const handleVolumeSync = useCallback(
+    (mutedState: boolean) => {
+      if (mutedState !== isMuted) {
+        setIsMuted(mutedState);
       }
-    };
-
-    socket.on('VIDEO_STATUS_UPDATE', handleVideoUpdate);
-
-    return () => {
-      socket.off('VIDEO_STATUS_UPDATE', handleVideoUpdate);
-    };
-  }, [socket, postId, videoId, status]);
-
-  if (status === 'failed') {
-    return (
-      <VideoContainer
-        id={postId}
-        author={author}
-        createdAt={createdAt}
-        text={text ?? ''}
-        reposts={reposts}
-        repostedBy={repostedBy}
-        mentions={mentions}
-        setInView={() => {}}
-        showControls={false}
-        player={null}
-      >
-        <div
-          className={cn(
-            'relative h-full w-full',
-            aspectRatio === ('16/9' as AspectRatio)
-              ? 'object-cover aspect-video'
-              : 'object-contain aspect-[9/16]'
-          )}
-        >
-          {activePoster && (
-            <Fragment>
-              <img
-                alt='Post'
-                src={activePoster}
-                onError={() => setImgError(true)}
-                onLoad={() => setImgError(false)}
-                className={cn(
-                  'object-cover h-full w-full transition-opacity duration-500 blur-lg scale-105',
-                  imgError ? 'opacity-0' : 'opacity-100'
-                )}
-              />
-              <div className='absolute inset-0 bg-black/30 pointer-events-none' />
-            </Fragment>
-          )}
-
-          <div className='absolute inset-0 flex-col-center z-20'>
-            <p className='text-red-500 font-bold'>Video processing failed</p>
-          </div>
-        </div>
-      </VideoContainer>
-    );
-  }
+    },
+    [isMuted, setIsMuted]
+  );
 
   return (
     <VideoContainer
@@ -251,13 +97,16 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
       showControls={showControls}
     >
       <VideoPlayer
-        poster={activePoster}
-        options={playerOptions}
-        onPlayerReady={(p) => {
-          setPlayer(p);
-        }}
+        playbackId={playbackId}
+        poster={poster}
+        isMuted={isMuted}
+        status={encodingStatus!}
+        startTime={timestamps[postId] || 0}
+        // @ts-ignore
+        onPlayerReady={setPlayer}
         onTimeUpdate={handleTimeUpdate}
-        aspectRatio={aspectRatio}
+        onVolumeChange={handleVolumeSync}
+        aspectRatio={aspectRatio!}
       />
     </VideoContainer>
   );

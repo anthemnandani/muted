@@ -38,12 +38,14 @@ export const postRouter = createTRPCRouter({
   createPost: privateProcedure
     .input(
       z.object({
+        id: z.string(),
         text: z.string().optional(),
         media: z
           .array(
             z.object({
               fileType: z.string(),
-              fileUrl: z.string(),
+              fileUrl: z.string().optional(),
+              playbackId: z.string().optional().nullable(),
               aspectRatio: z.string().optional(),
               thumbnailUrl: z.string().optional(),
               videoId: z.string().optional(),
@@ -76,6 +78,7 @@ export const postRouter = createTRPCRouter({
       async ({
         ctx,
         input: {
+          id,
           text,
           media,
           mentions,
@@ -106,8 +109,7 @@ export const postRouter = createTRPCRouter({
         const hashtags = extractHashtags(filteredText);
 
         const transactionResult = await db.$transaction(async (prisma) => {
-          const postId = createId();
-          const path = `/${postId}/`;
+          const path = `/${id}/`;
 
           const mediaWithDetails = media?.map((item) => ({
             ...item,
@@ -118,7 +120,7 @@ export const postRouter = createTRPCRouter({
 
           const newpost = await prisma.post.create({
             data: {
-              id: postId,
+              id,
               text: filteredText,
               authorId: userId,
               media: mediaWithDetails,
