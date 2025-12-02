@@ -853,36 +853,17 @@ export const getReportType = (report: AdminReport) => {
   return 'Unknown';
 };
 
-export const getPostsWithTokens = async (posts: ParentPostProps[]) => {
-  return await Promise.all(
-    posts.map(async (post) => {
-      if (!post.media || post.media.length === 0) return post;
+export async function enrichPostWithTokens<T extends { media: unknown }>(
+  post: T
+): Promise<T & { media: PostMedia[] }> {
+  const mediaItems = (post.media as PostMedia[]) || [];
 
-      const mediaWithTokens = await Promise.all(
-        post.media.map(async (mediaItem) => {
-          if (mediaItem.fileType === 'video' && mediaItem.playbackId) {
-            const { videoToken, thumbnailToken } = await createPlaybackTokens(
-              mediaItem.playbackId
-            );
+  if (mediaItems.length === 0) {
+    return { ...post, media: [] };
+  }
 
-            return {
-              ...mediaItem,
-              videoToken,
-              thumbnailToken,
-            };
-          }
-          return mediaItem;
-        })
-      );
-
-      return { ...post, media: mediaWithTokens };
-    })
-  );
-};
-
-export const getPostWithTokens = async (post: any) => {
-  return await Promise.all(
-    post.media.map(async (mediaItem: PostMedia) => {
+  const mediaWithTokens = await Promise.all(
+    mediaItems.map(async (mediaItem) => {
       if (mediaItem.fileType === 'video' && mediaItem.playbackId) {
         const { videoToken, thumbnailToken } = await createPlaybackTokens(
           mediaItem.playbackId
@@ -897,4 +878,15 @@ export const getPostWithTokens = async (post: any) => {
       return mediaItem;
     })
   );
-};
+
+  return {
+    ...post,
+    media: mediaWithTokens,
+  };
+}
+
+export async function enrichPostsWithTokens<T extends { media: unknown }>(
+  posts: T[]
+): Promise<(T & { media: PostMedia[] })[]> {
+  return Promise.all(posts.map((post) => enrichPostWithTokens(post)));
+}

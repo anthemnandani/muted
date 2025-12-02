@@ -61,7 +61,6 @@ const usePostDialog = create<ToggleState>((set, get) => ({
           type: m.fileType === 'video' ? 'video/mp4' : 'image/jpeg',
         }),
         aspectRatio: m.aspectRatio ?? '1:1',
-        poster: m.thumbnailUrl,
       }));
       setMediaFiles(mediaFilesForStore);
     } else {

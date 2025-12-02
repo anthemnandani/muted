@@ -2,6 +2,7 @@
 
 import { db } from '@/server/db';
 import { PostMedia } from '../types';
+import { getVideoThumbnailUrl } from '../utils';
 
 export async function getPostMetadata(postId: string) {
   try {
@@ -33,7 +34,10 @@ export async function getPostMetadata(postId: string) {
       if (firstMedia.fileType === 'image') {
         mediaUrl = firstMedia.fileUrl;
       } else if (firstMedia.fileType === 'video') {
-        mediaUrl = firstMedia.thumbnailUrl;
+        mediaUrl = getVideoThumbnailUrl(
+          firstMedia.playbackId!,
+          firstMedia.thumbnailToken!
+        );
       }
     }
 

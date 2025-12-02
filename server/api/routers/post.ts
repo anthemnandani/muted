@@ -1,12 +1,12 @@
 import { createPlaybackTokens } from '@/lib/actions/mux.actions';
-import { DownloadableData, ParentPostProps, type PostMedia } from '@/lib/types';
+import { DownloadableData, type PostMedia } from '@/lib/types';
 import {
   capitalizeFirstLetter,
+  enrichPostsWithTokens,
+  enrichPostWithTokens,
   extractHashtags,
   formatDateAndTime,
   formatUTCDate,
-  getPostsWithTokens,
-  getPostWithTokens,
   getTotalRepliesCount,
   getUserEmail,
 } from '@/lib/utils';
@@ -349,7 +349,7 @@ export const postRouter = createTRPCRouter({
 
         const formattedPosts = posts.map((post) => ({
           ...post,
-          media: post.media as PostMedia[],
+          media: post.media,
           likesCount: post.likes.length,
           repostsCount: post.reposts.length,
           repliesCount: getTotalRepliesCount(post) as number,
@@ -358,9 +358,7 @@ export const postRouter = createTRPCRouter({
           ).size,
         }));
 
-        const postsWithTokens: ParentPostProps[] = await getPostsWithTokens(
-          formattedPosts
-        );
+        const postsWithTokens = await enrichPostsWithTokens(formattedPosts);
 
         let nextCursor: typeof cursor | undefined;
         if (postsWithTokens.length > limit) {
@@ -1503,7 +1501,7 @@ export const postRouter = createTRPCRouter({
       return {
         posts: likedPosts.map(async (likedPost) => ({
           ...likedPost.post,
-          media: await getPostWithTokens(likedPost.post),
+          media: await enrichPostWithTokens(likedPost.post),
           likesCount: likedPost.post.likes.length,
           repostsCount: likedPost.post.reposts.length,
           repliesCount: likedPost.post.replies.length,
@@ -1672,7 +1670,7 @@ export const postRouter = createTRPCRouter({
 
         return {
           ...post,
-          media: post.media as PostMedia[],
+          media: post.media,
           likesCount: post.likes.length,
           repostsCount: post.reposts.length,
           repliesCount: getTotalRepliesCount(post) as number,
@@ -1693,9 +1691,7 @@ export const postRouter = createTRPCRouter({
         return bTime - aTime;
       });
 
-      const postsWithTokens: ParentPostProps[] = await getPostsWithTokens(
-        sortedPosts
-      );
+      const postsWithTokens = await enrichPostsWithTokens(sortedPosts);
 
       return {
         posts: postsWithTokens,
@@ -1804,19 +1800,16 @@ export const postRouter = createTRPCRouter({
 
       const formattedPosts = posts.map((post) => ({
         ...post,
-        media: post.media as PostMedia[],
+        media: post.media,
         likesCount: post.likes.length,
         repostsCount: post.reposts.length,
         repliesCount: getTotalRepliesCount(post) as number,
         bookmarksCount: new Set(
           post.bookmarks.map((bookmark) => bookmark.userId)
         ).size,
-        type: 'post' as const,
       }));
 
-      const postsWithTokens: ParentPostProps[] = await getPostsWithTokens(
-        formattedPosts
-      );
+      const postsWithTokens = await enrichPostsWithTokens(formattedPosts);
 
       let nextCursor: typeof cursor | undefined;
 
