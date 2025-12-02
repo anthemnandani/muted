@@ -1,37 +1,53 @@
 'use client';
 
-import { ProfileVideoPlayerProps } from '@/lib/types';
-import '@videojs/http-streaming';
-import '@videojs/themes/dist/fantasy/index.css';
-import React from 'react';
-import videojs from 'video.js';
-import Player from 'video.js/dist/types/player';
-import 'video.js/dist/video-js.css';
+import { MuxPlayerRef, ProfileVideoPlayerProps } from '@/lib/types';
+import { getVideoThumbnailUrl } from '@/lib/utils';
+import MuxPlayer from '@mux/mux-player-react';
+import { useEffect, useMemo, useRef } from 'react';
 
 export const ProfileVideoPlayer: React.FC<ProfileVideoPlayerProps> = ({
-  options,
+  playbackId,
+  videoToken,
+  thumbnailToken,
   onPlayerReady,
-  poster,
 }) => {
-  const videoRef = React.useRef<HTMLVideoElement>(null);
-  const playerRef = React.useRef<Player | null>(null);
+  const playerRef = useRef<MuxPlayerRef>(null);
 
-  React.useEffect(() => {
-    if (videoRef.current && !playerRef.current) {
-      const player = videojs(videoRef.current, options);
-      playerRef.current = player;
-      onPlayerReady(player);
+  useEffect(() => {
+    if (playerRef.current && onPlayerReady) {
+      onPlayerReady(playerRef.current);
     }
-  }, [options, onPlayerReady]);
+  }, [onPlayerReady]);
+
+  const securePoster = useMemo(() => {
+    if (playbackId && thumbnailToken) {
+      return getVideoThumbnailUrl(playbackId, thumbnailToken);
+    }
+    return undefined;
+  }, [playbackId, thumbnailToken]);
 
   return (
-    <div className='profile-video w-full h-full'>
-      <video
-        data-vjs-player
-        ref={videoRef}
-        className='video-js w-full h-full'
-        data-setup='{"inactivityTimeout": 0}'
-        poster={poster}
+    <div className='w-full h-full bg-black'>
+      <MuxPlayer
+        ref={playerRef}
+        playbackId={playbackId}
+        tokens={{
+          playback: videoToken,
+          thumbnail: thumbnailToken,
+        }}
+        poster={securePoster}
+        streamType='on-demand'
+        muted
+        loop
+        preload='auto'
+        style={{
+          height: '100%',
+          width: '100%',
+          aspectRatio: 3 / 4,
+          objectFit: 'cover',
+          '--media-object-fit': 'cover',
+          '--controls': 'none',
+        }}
       />
     </div>
   );

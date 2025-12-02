@@ -1,14 +1,13 @@
 'use client';
 
-import { UserPostCardProps } from '@/lib/types';
+import { type MuxPlayerRef, UserPostCardProps } from '@/lib/types';
 import { formatCount, formatTimeAgo } from '@/lib/utils';
 import usePostStore from '@/store/postStore';
 import { useProfileVideoPlayer } from '@/store/profileVideoPlayer';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMemo, useEffect, useState } from 'react';
-import Player from 'video.js/dist/types/player';
+import { useEffect, useState } from 'react';
 import { Icons } from '../icons';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import Username from '../user/Username';
@@ -30,7 +29,7 @@ const UserPostCard = ({
   collectionId = null,
   isSearch = false,
 }: UserPostCardProps) => {
-  const [player, setPlayer] = useState<Player | null>(null);
+  const [player, setPlayer] = useState<MuxPlayerRef | null>(null);
   const router = useRouter();
   const { playingVideoId, setPlayingVideoId } = useProfileVideoPlayer();
   const {
@@ -48,36 +47,12 @@ const UserPostCard = ({
   const isVideo = mediaItem.fileType === 'video';
   const fileUrl = mediaItem.fileUrl;
 
-  const playerOptions = useMemo(
-    () => ({
-      controls: false,
-      loop: true,
-      muted: true,
-      playsinline: true,
-      preload: 'auto',
-      autoplay: false,
-      sources: [
-        {
-          src: isVideo ? fileUrl : '',
-          type: 'application/x-mpegURL',
-        },
-      ],
-      html5: {
-        vhs: { withCredentials: false },
-        nativeTextTracks: false,
-        nativeAudioTracks: false,
-        nativeVideoTracks: false,
-      },
-    }),
-    [mediaItem.fileUrl]
-  );
-
   useEffect(() => {
-    if (player && playingVideoId === videoId) {
-      player.play()?.catch((error) => {
-        console.log('Hover play prevented:', error);
-      });
-    } else if (player && playingVideoId !== videoId) {
+    if (!player) return;
+
+    if (playingVideoId === videoId) {
+      player.play().catch((err) => {});
+    } else {
       player.pause();
     }
   }, [player, playingVideoId, videoId]);
@@ -113,13 +88,14 @@ const UserPostCard = ({
         onMouseEnter={handleMouseEnter}
       >
         {isVideo ? (
-          <ProfileVideoPlayer
-            poster={mediaItem.thumbnailUrl}
-            options={playerOptions}
-            onPlayerReady={(p) => {
-              setPlayer(p);
-            }}
-          />
+          <div className='w-full h-full pointer-events-none'>
+            <ProfileVideoPlayer
+              playbackId={mediaItem.playbackId!}
+              videoToken={mediaItem.videoToken!}
+              thumbnailToken={mediaItem.thumbnailToken!}
+              onPlayerReady={setPlayer}
+            />
+          </div>
         ) : (
           <Image
             src={fileUrl!}

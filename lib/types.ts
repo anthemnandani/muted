@@ -506,9 +506,10 @@ export interface PostMediaCarouselProps {
 }
 
 export interface ProfileVideoPlayerProps {
-  options: any;
-  onPlayerReady: (player: Player) => void;
-  poster?: string;
+  playbackId: string;
+  videoToken?: string;
+  thumbnailToken?: string;
+  onPlayerReady?: (player: MuxPlayerRef) => void;
 }
 
 export interface VideoPlayerProps {
