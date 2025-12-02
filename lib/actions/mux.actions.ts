@@ -14,7 +14,6 @@ export const createMuxUploadUrl = async (passthrough: string) => {
       new_asset_settings: {
         playback_policies: ['signed'],
         encoding_tier: 'smart',
-        video_quality: 'plus',
         passthrough,
       },
     });
