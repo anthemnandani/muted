@@ -39,7 +39,8 @@ export type PostMedia = {
   fileType: string;
   fileUrl?: string;
   aspectRatio?: AspectRatio;
-  thumbnailUrl?: string;
+  videoToken?: string;
+  thumbnailToken?: string;
   originalDimensions: {
     width: number;
     height: number;
@@ -345,7 +346,7 @@ export type AspectRatio = 'original' | '1:1' | '4:5' | '16:9' | '9:16';
 
 export type MediaFile = {
   file: File;
-  preview?: string;
+  preview: string;
   id: string;
   type: 'image' | 'video';
   aspectRatio?: AspectRatio;
@@ -463,7 +464,6 @@ export interface PostImageCardProps {
 export interface PostVideoCardProps {
   playbackId: string;
   postId: string;
-  poster: string;
   encodingStatus?: EncodingStatus;
   author: AuthorInfoProps;
   createdAt: Date;
@@ -472,6 +472,8 @@ export interface PostVideoCardProps {
   repostedBy?: AuthorInfoProps;
   mentions?: Mention[];
   aspectRatio?: AspectRatio;
+  videoToken?: string;
+  thumbnailToken?: string;
   showControls: boolean;
 }
 
@@ -519,6 +521,8 @@ export interface VideoPlayerProps {
   isMuted: boolean;
   startTime?: number;
   onVolumeChange?: (muted: boolean) => void;
+  videoToken?: string;
+  thumbnailToken?: string;
 }
 
 export interface MediaTypeIndicatorProps {

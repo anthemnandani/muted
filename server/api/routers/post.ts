@@ -1,9 +1,12 @@
-import { DownloadableData, type PostMedia } from '@/lib/types';
+import { createPlaybackTokens } from '@/lib/actions/mux.actions';
+import { DownloadableData, ParentPostProps, type PostMedia } from '@/lib/types';
 import {
   capitalizeFirstLetter,
   extractHashtags,
   formatDateAndTime,
   formatUTCDate,
+  getPostsWithTokens,
+  getPostWithTokens,
   getTotalRepliesCount,
   getUserEmail,
 } from '@/lib/utils';
@@ -353,21 +356,24 @@ export const postRouter = createTRPCRouter({
           bookmarksCount: new Set(
             post.bookmarks.map((bookmark) => bookmark.userId)
           ).size,
-          type: 'post' as const,
         }));
 
+        const postsWithTokens: ParentPostProps[] = await getPostsWithTokens(
+          formattedPosts
+        );
+
         let nextCursor: typeof cursor | undefined;
-        if (formattedPosts.length > limit) {
-          const nextItem = formattedPosts[limit];
+        if (postsWithTokens.length > limit) {
+          const nextItem = postsWithTokens[limit];
           nextCursor = {
             id: nextItem.id,
             createdAt: nextItem.createdAt,
           };
-          formattedPosts.length = limit;
+          postsWithTokens.length = limit;
         }
 
         return {
-          posts: formattedPosts,
+          posts: postsWithTokens,
           nextCursor,
         };
       }
@@ -847,10 +853,27 @@ export const postRouter = createTRPCRouter({
         });
       }
 
+      const mediaWithTokens = await Promise.all(
+        (post.media as PostMedia[])?.map(async (mediaItem) => {
+          if (mediaItem.fileType === 'video' && mediaItem.playbackId) {
+            const { videoToken, thumbnailToken } = await createPlaybackTokens(
+              mediaItem.playbackId
+            );
+
+            return {
+              ...mediaItem,
+              videoToken,
+              thumbnailToken,
+            };
+          }
+          return mediaItem;
+        })
+      );
+
       return {
         post: {
           ...post,
-          media: post.media as PostMedia[],
+          media: mediaWithTokens,
           likesCount: post.likes.length,
           repostsCount: post.reposts.length,
           repliesCount: getTotalRepliesCount(post) as number,
@@ -1476,10 +1499,11 @@ export const postRouter = createTRPCRouter({
         };
         likedPosts.length = limit;
       }
+
       return {
-        posts: likedPosts.map((likedPost) => ({
+        posts: likedPosts.map(async (likedPost) => ({
           ...likedPost.post,
-          media: likedPost.post.media as PostMedia[],
+          media: await getPostWithTokens(likedPost.post),
           likesCount: likedPost.post.likes.length,
           repostsCount: likedPost.post.reposts.length,
           repliesCount: likedPost.post.replies.length,
@@ -1669,8 +1693,12 @@ export const postRouter = createTRPCRouter({
         return bTime - aTime;
       });
 
+      const postsWithTokens: ParentPostProps[] = await getPostsWithTokens(
+        sortedPosts
+      );
+
       return {
-        posts: sortedPosts,
+        posts: postsWithTokens,
         nextCursor,
       };
     }),
@@ -1786,19 +1814,23 @@ export const postRouter = createTRPCRouter({
         type: 'post' as const,
       }));
 
+      const postsWithTokens: ParentPostProps[] = await getPostsWithTokens(
+        formattedPosts
+      );
+
       let nextCursor: typeof cursor | undefined;
 
-      if (formattedPosts.length > limit) {
-        const nextItem = formattedPosts[limit];
+      if (postsWithTokens.length > limit) {
+        const nextItem = postsWithTokens[limit];
         nextCursor = {
           id: nextItem.id,
           createdAt: nextItem.createdAt,
         };
-        formattedPosts.length = limit;
+        postsWithTokens.length = limit;
       }
 
       return {
-        posts: formattedPosts,
+        posts: postsWithTokens,
         nextCursor,
       };
     }),

@@ -18,6 +18,7 @@ import {
   isYesterday,
 } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
+import { createPlaybackTokens } from './actions/mux.actions';
 import {
   type AdminPost,
   type AdminReport,
@@ -317,6 +318,14 @@ export const getVideoObjectFit = (
   }
 };
 
+export const getVideoThumbnailUrl = (
+  playbackId: string,
+  thumbnailToken: string
+) => {
+  if (!playbackId || !thumbnailToken) return '';
+  return `https://image.mux.com/${playbackId}/thumbnail.png?token=${thumbnailToken}`;
+};
+
 export const getImageObjectFit = (
   aspectRatio: AspectRatio,
   originalDimensions?: { width: number; height: number }
@@ -603,7 +612,7 @@ export const getImageUrl = (media: PostMedia) => {
   if (media.fileType === 'image') {
     return media.fileUrl;
   }
-  return media.thumbnailUrl;
+  return `https://image.mux.com/${media.playbackId}/thumbnail.png?token=${media.thumbnailToken}`;
 };
 
 export const shouldShowDateSeparator = (
@@ -741,7 +750,9 @@ export const getContentTypeBadgeClass = (type: ContentType) => {
 
 export const getPostThumbnail = (media?: PostMedia) => {
   if (!media) return '';
-  return media?.fileType === 'image' ? media?.fileUrl : media?.thumbnailUrl;
+  return media?.fileType === 'image'
+    ? media?.fileUrl
+    : getVideoThumbnailUrl(media.playbackId!, media.thumbnailToken!);
 };
 
 export const getStrikeBadgeClass = (strikes: number) => {
@@ -840,4 +851,50 @@ export const getReportType = (report: AdminReport) => {
   if (report.post) return 'Post';
   if (report.user) return 'User';
   return 'Unknown';
+};
+
+export const getPostsWithTokens = async (posts: ParentPostProps[]) => {
+  return await Promise.all(
+    posts.map(async (post) => {
+      if (!post.media || post.media.length === 0) return post;
+
+      const mediaWithTokens = await Promise.all(
+        post.media.map(async (mediaItem) => {
+          if (mediaItem.fileType === 'video' && mediaItem.playbackId) {
+            const { videoToken, thumbnailToken } = await createPlaybackTokens(
+              mediaItem.playbackId
+            );
+
+            return {
+              ...mediaItem,
+              videoToken,
+              thumbnailToken,
+            };
+          }
+          return mediaItem;
+        })
+      );
+
+      return { ...post, media: mediaWithTokens };
+    })
+  );
+};
+
+export const getPostWithTokens = async (post: any) => {
+  return await Promise.all(
+    post.media.map(async (mediaItem: PostMedia) => {
+      if (mediaItem.fileType === 'video' && mediaItem.playbackId) {
+        const { videoToken, thumbnailToken } = await createPlaybackTokens(
+          mediaItem.playbackId
+        );
+
+        return {
+          ...mediaItem,
+          videoToken,
+          thumbnailToken,
+        };
+      }
+      return mediaItem;
+    })
+  );
 };

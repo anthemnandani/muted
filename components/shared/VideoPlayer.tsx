@@ -1,19 +1,21 @@
 'use client';
 
 import { type MuxPlayerRef, VideoPlayerProps } from '@/lib/types';
+import { getVideoThumbnailUrl } from '@/lib/utils';
 import MuxPlayer from '@mux/mux-player-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   playbackId,
   onPlayerReady,
-  poster,
   status,
   onTimeUpdate,
   aspectRatio,
   isMuted,
   startTime,
   onVolumeChange,
+  videoToken,
+  thumbnailToken,
 }) => {
   const playerRef = useRef<MuxPlayerRef>(null);
 
@@ -24,16 +26,27 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
   }, [onPlayerReady]);
 
+  const securePoster = useMemo(() => {
+    if (status === 'encoded' && playbackId && thumbnailToken) {
+      return getVideoThumbnailUrl(playbackId, thumbnailToken);
+    }
+    return undefined;
+  }, [playbackId, thumbnailToken, status]);
+
   return (
     <MuxPlayer
       ref={playerRef}
       playbackId={status === 'encoded' ? playbackId : undefined}
-      src={status == 'processing' ? playbackId : undefined}
-      poster={poster}
+      src={status === 'processing' ? playbackId : undefined}
+      tokens={{
+        playback: videoToken,
+        thumbnail: thumbnailToken,
+      }}
+      poster={securePoster}
       muted={isMuted}
       startTime={startTime}
       loop
-      preload='metadata'
+      preload='auto'
       streamType='on-demand'
       onTimeUpdate={onTimeUpdate}
       onVolumeChange={(e) => {

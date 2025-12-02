@@ -22,8 +22,8 @@ const useCreatePost = () => {
   const trpcUtils = api.useUtils();
 
   const closeAndReset = () => {
+    setOpenDialog(false);
     setTimeout(() => {
-      setOpenDialog(false);
       setMediaFiles([]);
       setThreadMedia(null);
       resetPostState();

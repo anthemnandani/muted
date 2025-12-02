@@ -58,9 +58,6 @@ export async function POST(req: NextRequest) {
           ...m,
           encodingStatus: newEncodingStatus,
           playbackId: isSuccess ? playbackId : null,
-          thumbnailUrl: isSuccess
-            ? `https://image.mux.com/${playbackId}/thumbnail.png`
-            : null,
         };
       }
       return m;

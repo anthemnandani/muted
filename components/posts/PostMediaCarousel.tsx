@@ -82,8 +82,9 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
             {item.fileType === 'video' ? (
               <PostVideoCard
                 playbackId={item.playbackId!}
-                poster={item.thumbnailUrl!}
                 encodingStatus={item.encodingStatus}
+                videoToken={item.videoToken}
+                thumbnailToken={item.thumbnailToken}
                 postId={postId}
                 author={author}
                 createdAt={createdAt}

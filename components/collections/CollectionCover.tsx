@@ -2,7 +2,7 @@
 
 import useBookmark from '@/hooks/useBookmark';
 import type { Collection } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { cn, getVideoThumbnailUrl } from '@/lib/utils';
 import { Check } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react';
@@ -60,7 +60,10 @@ const CollectionCover = ({ collection, postId }: CollectionCoverProps) => {
               src={
                 firstMedia?.fileType === 'image'
                   ? firstMedia.fileUrl!
-                  : firstMedia.thumbnailUrl!
+                  : getVideoThumbnailUrl(
+                      firstMedia.playbackId!,
+                      firstMedia.thumbnailToken!
+                    )
               }
               alt='collection-cover'
               fill

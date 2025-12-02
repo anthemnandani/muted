@@ -9,7 +9,8 @@ import { VideoPlayer } from '../shared/VideoPlayer';
 const PostVideoCard: React.FC<PostVideoCardProps> = ({
   playbackId,
   postId,
-  poster,
+  videoToken,
+  thumbnailToken,
   author,
   createdAt,
   text,
@@ -98,7 +99,8 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
     >
       <VideoPlayer
         playbackId={playbackId}
-        poster={poster}
+        videoToken={videoToken}
+        thumbnailToken={thumbnailToken}
         isMuted={isMuted}
         status={encodingStatus!}
         startTime={timestamps[postId] || 0}

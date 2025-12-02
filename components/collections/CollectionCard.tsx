@@ -1,6 +1,7 @@
 'use client';
 
 import { CollectionCardProps } from '@/lib/types';
+import { getVideoThumbnailUrl } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -33,7 +34,12 @@ const CollectionCard = ({ collection, username }: CollectionCardProps) => {
     return (
       <Image
         src={
-          fileType === 'image' ? media[0]?.fileUrl! : media[0]?.thumbnailUrl!
+          fileType === 'image'
+            ? media[0]?.fileUrl!
+            : getVideoThumbnailUrl(
+                media[0].playbackId!,
+                media[0].thumbnailToken!
+              )
         }
         alt={collection.name}
         fill
