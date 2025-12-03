@@ -520,6 +520,7 @@ export interface VideoPlayerProps {
   playbackId: string;
   status: EncodingStatus;
   isMuted: boolean;
+  inView: boolean;
   startTime?: number;
   onVolumeChange?: (muted: boolean) => void;
   videoToken?: string;

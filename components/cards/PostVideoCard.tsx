@@ -102,6 +102,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
         videoToken={videoToken}
         thumbnailToken={thumbnailToken}
         isMuted={isMuted}
+        inView={inView}
         status={encodingStatus!}
         startTime={timestamps[postId] || 0}
         // @ts-ignore

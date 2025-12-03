@@ -1,9 +1,10 @@
 'use client';
 
 import { type MuxPlayerRef, VideoPlayerProps } from '@/lib/types';
-import { getVideoThumbnailUrl } from '@/lib/utils';
+import { cn, getVideoThumbnailUrl } from '@/lib/utils';
 import MuxPlayer from '@mux/mux-player-react';
-import { useEffect, useMemo, useRef } from 'react';
+import { Play } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   playbackId,
@@ -12,12 +13,14 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onTimeUpdate,
   aspectRatio,
   isMuted,
+  inView,
   startTime,
   onVolumeChange,
   videoToken,
   thumbnailToken,
 }) => {
   const playerRef = useRef<MuxPlayerRef>(null);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     if (playerRef.current) {
@@ -34,42 +37,62 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   }, [playbackId, thumbnailToken, status]);
 
   return (
-    <MuxPlayer
-      ref={playerRef}
-      playbackId={status === 'encoded' ? playbackId : undefined}
-      src={status === 'processing' ? playbackId : undefined}
-      tokens={{
-        playback: videoToken,
-        thumbnail: thumbnailToken,
-      }}
-      poster={securePoster}
-      muted={isMuted}
-      startTime={startTime}
-      loop
-      preload='auto'
-      streamType='on-demand'
-      onTimeUpdate={onTimeUpdate}
-      accentColor='#bf1313'
-      onVolumeChange={(e) => {
-        const target = e.target as HTMLVideoElement;
-        onVolumeChange?.(target.muted);
-      }}
-      style={{
-        height: '100%',
-        width: '100%',
-        aspectRatio: aspectRatio === '16:9' ? 16 / 9 : 9 / 16,
-        '--media-object-fit': aspectRatio === '16:9' ? 'cover' : 'contain',
-        '--fullscreen-button': 'none',
-        '--volume-range': 'none',
-        '--mute-button': 'none',
-        '--cast-button': 'none',
-        '--airplay-button': 'none',
-        '--playback-rate-button': 'none',
-        '--rendition-menu-button': 'none',
-        '--pip-button': 'none',
-        '--seek-backward-button': 'none',
-        '--seek-forward-button': 'none',
-      }}
-    />
+    <div className='relative h-full w-full group'>
+      <MuxPlayer
+        ref={playerRef}
+        playbackId={status === 'encoded' ? playbackId : undefined}
+        src={status === 'processing' ? playbackId : undefined}
+        tokens={{
+          playback: videoToken,
+          thumbnail: thumbnailToken,
+        }}
+        poster={securePoster}
+        muted={isMuted}
+        startTime={startTime}
+        loop
+        preload='auto'
+        streamType='on-demand'
+        onTimeUpdate={onTimeUpdate}
+        onPlay={() => setIsPaused(false)}
+        onPause={() => {
+          if (inView) setIsPaused(true);
+        }}
+        accentColor='#bf1313'
+        onVolumeChange={(e) => {
+          const target = e.target as HTMLVideoElement;
+          onVolumeChange?.(target.muted);
+        }}
+        style={{
+          height: '100%',
+          width: '100%',
+          aspectRatio: aspectRatio === '16:9' ? 16 / 9 : 9 / 16,
+          '--media-object-fit': aspectRatio === '16:9' ? 'cover' : 'contain',
+          '--play-button': 'none',
+          '--fullscreen-button': 'none',
+          '--volume-range': 'none',
+          '--mute-button': 'none',
+          '--cast-button': 'none',
+          '--airplay-button': 'none',
+          '--playback-rate-button': 'none',
+          '--rendition-menu-button': 'none',
+          '--pip-button': 'none',
+          '--seek-backward-button': 'none',
+          '--seek-forward-button': 'none',
+        }}
+      />
+      {isPaused && inView && (
+        <div className='absolute inset-0 flex-center bg-black/10 transition-all duration-200 pointer-events-none'>
+          <button
+            onClick={() => playerRef.current?.play()}
+            className={cn(
+              'rounded-full bg-black/40 p-4 text-white hover:bg-black/60',
+              'hover:scale-110 transition-all pointer-events-auto backdrop-blur-sm'
+            )}
+          >
+            <Play className='size-8 fill-current' />
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
