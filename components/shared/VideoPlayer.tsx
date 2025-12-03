@@ -49,6 +49,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       preload='auto'
       streamType='on-demand'
       onTimeUpdate={onTimeUpdate}
+      accentColor='#bf1313'
       onVolumeChange={(e) => {
         const target = e.target as HTMLVideoElement;
         onVolumeChange?.(target.muted);
@@ -58,6 +59,16 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         width: '100%',
         aspectRatio: aspectRatio === '16:9' ? 16 / 9 : 9 / 16,
         '--media-object-fit': aspectRatio === '16:9' ? 'cover' : 'contain',
+        '--fullscreen-button': 'none',
+        '--volume-range': 'none',
+        '--mute-button': 'none',
+        '--cast-button': 'none',
+        '--airplay-button': 'none',
+        '--playback-rate-button': 'none',
+        '--rendition-menu-button': 'none',
+        '--pip-button': 'none',
+        '--seek-backward-button': 'none',
+        '--seek-forward-button': 'none',
       }}
     />
   );
