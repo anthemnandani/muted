@@ -18,7 +18,10 @@ import {
   isYesterday,
 } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
-import { createPlaybackTokens } from './actions/mux.actions';
+import {
+  createPlaybackTokens,
+  createThumbnailToken,
+} from './actions/mux.actions';
 import {
   type AdminPost,
   type AdminReport,
@@ -890,3 +893,42 @@ export async function enrichPostsWithTokens<T extends { media: unknown }>(
 ): Promise<(T & { media: PostMedia[] })[]> {
   return Promise.all(posts.map((post) => enrichPostWithTokens(post)));
 }
+
+export const enrichThumbnailToken = async (media: PostMedia[]) => {
+  if (!media || !Array.isArray(media) || media.length === 0) return [];
+
+  const newMedia = [...media];
+  const firstItem = newMedia[0];
+
+  if (firstItem.fileType === 'video' && firstItem.playbackId) {
+    const { thumbnailToken } = await createThumbnailToken(firstItem.playbackId);
+
+    newMedia[0] = {
+      ...firstItem,
+      thumbnailToken,
+    };
+  }
+
+  return newMedia;
+};
+
+export const enrichPlaybackTokens = async (media: PostMedia[]) => {
+  if (!media || !Array.isArray(media) || media.length === 0) return [];
+
+  const newMedia = [...media];
+  const firstItem = newMedia[0];
+
+  if (firstItem.fileType === 'video' && firstItem.playbackId) {
+    const { thumbnailToken, videoToken } = await createPlaybackTokens(
+      firstItem.playbackId
+    );
+
+    newMedia[0] = {
+      ...firstItem,
+      thumbnailToken,
+      videoToken,
+    };
+  }
+
+  return newMedia;
+};

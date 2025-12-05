@@ -15,6 +15,7 @@ const UserCollectionsList = ({ username }: { username: string }) => {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         trpc: { abortOnUnmount: true },
         staleTime: 10 * 60 * 1000,
+        retry: false,
       }
     );
 

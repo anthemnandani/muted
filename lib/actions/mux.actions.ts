@@ -29,35 +29,44 @@ export const createMuxUploadUrl = async (passthrough: string) => {
   }
 };
 
+const getSigningOptions = () => {
+  const signingKeyId = process.env.MUX_SIGNING_KEY_ID!;
+  const base64PrivateKey = process.env.MUX_PRIVATE_KEY!;
+  const playbackRestrictionId = process.env.MUX_PLAYBACK_RESTRICTION_ID!;
+
+  if (!signingKeyId || !base64PrivateKey) {
+    throw new Error('Missing MUX signing keys in environment variables');
+  }
+
+  const privateKeyBuffer = Buffer.from(base64PrivateKey, 'base64');
+  const privateKey = privateKeyBuffer.toString('utf8');
+
+  return {
+    keyId: signingKeyId,
+    keySecret: privateKey,
+    expiration: '24h',
+    playbackRestrictionId,
+  };
+};
+
+const signToken = async (playbackId: string, type: 'video' | 'thumbnail') => {
+  const { playbackRestrictionId, ...baseOptions } = getSigningOptions();
+
+  return await mux.jwt.signPlaybackId(playbackId, {
+    ...baseOptions,
+    type,
+    params: {
+      playback_restriction_id: playbackRestrictionId,
+    },
+  });
+};
+
 export const createPlaybackTokens = async (playbackId: string) => {
   try {
-    const signingKeyId = process.env.MUX_SIGNING_KEY_ID!;
-    const base64PrivateKey = process.env.MUX_PRIVATE_KEY!;
-
-    const privateKeyBuffer = Buffer.from(base64PrivateKey, 'base64');
-    const privateKey = privateKeyBuffer.toString('utf8');
-
-    const baseOptions = {
-      keyId: signingKeyId,
-      keySecret: privateKey,
-      expiration: '24h',
-    };
-
-    const videoToken = await mux.jwt.signPlaybackId(playbackId, {
-      ...baseOptions,
-      type: 'video',
-      params: {
-        playback_restriction_id: process.env.MUX_PLAYBACK_RESTRICTION_ID!,
-      },
-    });
-
-    const thumbnailToken = await mux.jwt.signPlaybackId(playbackId, {
-      ...baseOptions,
-      type: 'thumbnail',
-      params: {
-        playback_restriction_id: process.env.MUX_PLAYBACK_RESTRICTION_ID!,
-      },
-    });
+    const [videoToken, thumbnailToken] = await Promise.all([
+      signToken(playbackId, 'video'),
+      signToken(playbackId, 'thumbnail'),
+    ]);
 
     return {
       success: true,
@@ -66,6 +75,19 @@ export const createPlaybackTokens = async (playbackId: string) => {
     };
   } catch (error) {
     console.error('Token Generation Error:', error);
+    return { success: false, error: 'Failed to sign' };
+  }
+};
+
+export const createThumbnailToken = async (playbackId: string) => {
+  try {
+    const thumbnailToken = await signToken(playbackId, 'thumbnail');
+    return {
+      success: true,
+      thumbnailToken,
+    };
+  } catch (error) {
+    console.error('Thumbnail Token Generation Error:', error);
     return { success: false, error: 'Failed to sign' };
   }
 };

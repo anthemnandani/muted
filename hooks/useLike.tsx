@@ -47,11 +47,8 @@ const useLike = ({
     },
     onSuccess: async () => {
       await trpcUtils.post.getInfinitePosts.invalidate();
-      await trpcUtils.post.getComments.invalidate();
       await trpcUtils.post.getLikedPosts.invalidate();
       await trpcUtils.user.getUserLikedPosts.invalidate();
-      await trpcUtils.post.getPostsByTag.invalidate();
-      await trpcUtils.post.getFollowingPosts.invalidate();
     },
   });
   return {

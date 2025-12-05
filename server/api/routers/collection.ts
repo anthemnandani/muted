@@ -1,5 +1,9 @@
 import { PostMedia } from '@/lib/types';
-import { getTotalRepliesCount } from '@/lib/utils';
+import {
+  enrichPlaybackTokens,
+  enrichThumbnailToken,
+  getTotalRepliesCount,
+} from '@/lib/utils';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
 import {
   GET_MENTIONS,
@@ -200,22 +204,40 @@ export const collectionRouter = createTRPCRouter({
         collections.length = limit;
       }
 
-      const formattedCollections = collections.map((collection) => {
-        return {
-          id: collection.id,
-          name: collection.name,
-          description: collection.description,
-          privacy: collection.privacy,
-          isDefault: collection.isDefault,
-          bookmarks: collection.bookmarks.map((bookmark) => ({
-            id: bookmark.post.id,
-            media: bookmark.post.media as PostMedia[],
-            author: bookmark.post.author,
-            text: bookmark.post.text,
-          })),
-          postsCount: collection.bookmarks.length,
-        };
-      });
+      const formattedCollections = await Promise.all(
+        collections.map(async (collection) => {
+          const coverIndex = collection.isDefault
+            ? collection.bookmarks.length - 1
+            : 0;
+
+          const bookmarks = await Promise.all(
+            collection.bookmarks.map(async (bookmark, index) => {
+              let media = bookmark.post.media as PostMedia[];
+
+              if (index === coverIndex) {
+                media = await enrichThumbnailToken(media);
+              }
+
+              return {
+                id: bookmark.post.id,
+                media,
+                author: bookmark.post.author,
+                text: bookmark.post.text,
+              };
+            })
+          );
+
+          return {
+            id: collection.id,
+            name: collection.name,
+            description: collection.description,
+            privacy: collection.privacy,
+            isDefault: collection.isDefault,
+            bookmarks,
+            postsCount: collection.bookmarks.length,
+          };
+        })
+      );
 
       return {
         collections: formattedCollections,
@@ -518,16 +540,17 @@ export const collectionRouter = createTRPCRouter({
         });
       }
 
-      const posts = collection?.bookmarks.map((bookmark) => ({
-        ...bookmark.post,
-        media: bookmark.post.media as PostMedia[],
-        likesCount: bookmark.post.likes.length,
-        repostsCount: bookmark.post.reposts.length,
-        bookmarksCount: new Set(
-          bookmark.post.bookmarks.map((bookmark) => bookmark.userId)
-        ).size,
-        type: 'post' as const,
-      }));
+      const posts = await Promise.all(
+        collection?.bookmarks.map(async (bookmark) => ({
+          ...bookmark.post,
+          media: await enrichPlaybackTokens(bookmark.post.media as PostMedia[]),
+          likesCount: bookmark.post.likes.length,
+          repostsCount: bookmark.post.reposts.length,
+          bookmarksCount: new Set(
+            bookmark.post.bookmarks.map((bookmark) => bookmark.userId)
+          ).size,
+        }))
+      );
 
       let nextCursor: typeof cursor | undefined;
       if (posts.length > limit) {

@@ -1,5 +1,6 @@
 import { PostMedia } from '@/lib/types';
 import {
+  enrichPlaybackTokens,
   enrichPostsWithTokens,
   getTotalRepliesCount,
   getUserEmail,
@@ -141,18 +142,18 @@ export const userRouter = createTRPCRouter({
         (mutedUser) => mutedUser.mutedByUserId === userId
       );
 
-      const formattedPosts = rawPosts.map((post) => ({
-        ...post,
-        media: post.media,
-        likesCount: post.likes.length,
-        repostsCount: post.reposts.length,
-        repliesCount: post.replies.length,
-        bookmarksCount: new Set(
-          post.bookmarks.map((bookmark) => bookmark.userId)
-        ).size,
-      }));
-
-      const postsWithTokens = await enrichPostsWithTokens(formattedPosts);
+      const formattedPosts = await Promise.all(
+        rawPosts.map(async (post) => ({
+          ...post,
+          media: await enrichPlaybackTokens(post.media as PostMedia[]),
+          likesCount: post.likes.length,
+          repostsCount: post.reposts.length,
+          repliesCount: post.replies.length,
+          bookmarksCount: new Set(
+            post.bookmarks.map((bookmark) => bookmark.userId)
+          ).size,
+        }))
+      );
 
       return {
         userDetails: {
@@ -171,7 +172,7 @@ export const userRouter = createTRPCRouter({
           blockedUsers: userProfileInfo.blockedUsers,
           receivedFollowRequests: userProfileInfo.receivedFollowRequests,
           isMuted,
-          posts: postsWithTokens,
+          posts: formattedPosts,
           totalLikes,
         },
         nextCursor,
@@ -521,31 +522,31 @@ export const userRouter = createTRPCRouter({
         },
       });
 
-      const formattedReposts = reposts.map((repost) => ({
-        ...repost.post,
-        media: repost.post.media,
-        likesCount: repost.post.likes.length,
-        repostsCount: repost.post.reposts.length,
-        repliesCount: repost.post.replies.length,
-        bookmarksCount: new Set(
-          repost.post.bookmarks.map((bookmark) => bookmark.userId)
-        ).size,
-      }));
-
-      const repostsWithTokens = await enrichPostsWithTokens(formattedReposts);
+      const formattedReposts = await Promise.all(
+        reposts.map(async (repost) => ({
+          ...repost.post,
+          media: await enrichPlaybackTokens(repost.post.media as PostMedia[]),
+          likesCount: repost.post.likes.length,
+          repostsCount: repost.post.reposts.length,
+          repliesCount: repost.post.replies.length,
+          bookmarksCount: new Set(
+            repost.post.bookmarks.map((bookmark) => bookmark.userId)
+          ).size,
+        }))
+      );
 
       let nextCursor: typeof cursor | undefined;
-      if (repostsWithTokens.length > limit) {
-        const nextItem = repostsWithTokens[limit];
+      if (formattedReposts.length > limit) {
+        const nextItem = formattedReposts[limit];
         nextCursor = {
           postId: nextItem.id,
           userId: user.id,
         };
-        repostsWithTokens.length = limit;
+        formattedReposts.length = limit;
       }
 
       return {
-        posts: repostsWithTokens,
+        posts: formattedReposts,
         nextCursor,
       };
     }),
@@ -761,7 +762,6 @@ export const userRouter = createTRPCRouter({
               hideLikes: true,
               turnOffComments: true,
               privacy: true,
-              replies: true,
               author: {
                 select: {
                   ...GET_USER,
@@ -769,6 +769,7 @@ export const userRouter = createTRPCRouter({
               },
               ...getLikesWithBlockFilter(userId),
               ...getBookmarksWithBlockFilter(userId),
+              ...getPostRepliesCount(userId),
               reposts: {
                 ...GET_REPOSTS,
                 orderBy: {
@@ -782,32 +783,32 @@ export const userRouter = createTRPCRouter({
         orderBy: { createdAt: 'desc' },
       });
 
-      const formattedLikedPosts = likedPosts.map((likedPost) => ({
-        ...likedPost.post,
-        media: likedPost.post.media,
-        likesCount: likedPost.post.likes.length,
-        repostsCount: likedPost.post.reposts.length,
-        repliesCount: getTotalRepliesCount(likedPost.post) as number,
-        bookmarksCount: new Set(
-          likedPost.post.bookmarks.map((bookmark) => bookmark.userId)
-        ).size,
-      }));
-
-      const likedPostsWithTokens = await enrichPostsWithTokens(
-        formattedLikedPosts
+      const formattedLikedPosts = await Promise.all(
+        likedPosts.map(async (likedPost) => ({
+          ...likedPost.post,
+          media: await enrichPlaybackTokens(
+            likedPost.post.media as PostMedia[]
+          ),
+          likesCount: likedPost.post.likes.length,
+          repostsCount: likedPost.post.reposts.length,
+          repliesCount: getTotalRepliesCount(likedPost.post) as number,
+          bookmarksCount: new Set(
+            likedPost.post.bookmarks.map((bookmark) => bookmark.userId)
+          ).size,
+        }))
       );
 
       let nextCursor: typeof cursor | undefined;
-      if (likedPostsWithTokens.length > limit) {
-        const nextItem = likedPostsWithTokens[limit];
+      if (formattedLikedPosts.length > limit) {
+        const nextItem = formattedLikedPosts[limit];
         nextCursor = {
           postId: nextItem.id,
           userId: user.id,
         };
-        likedPostsWithTokens.length = limit;
+        formattedLikedPosts.length = limit;
       }
       return {
-        posts: likedPostsWithTokens,
+        posts: formattedLikedPosts,
         nextCursor,
       };
     }),
