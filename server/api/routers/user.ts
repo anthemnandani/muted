@@ -1,6 +1,6 @@
 import { PostMedia } from '@/lib/types';
 import {
-  enrichPlaybackTokens,
+  enrichMediaTokens,
   enrichPostsWithTokens,
   getTotalRepliesCount,
   getUserEmail,
@@ -145,7 +145,7 @@ export const userRouter = createTRPCRouter({
       const formattedPosts = await Promise.all(
         rawPosts.map(async (post) => ({
           ...post,
-          media: await enrichPlaybackTokens(post.media as PostMedia[]),
+          media: await enrichMediaTokens(post.media as PostMedia[]),
           likesCount: post.likes.length,
           repostsCount: post.reposts.length,
           repliesCount: post.replies.length,
@@ -281,7 +281,6 @@ export const userRouter = createTRPCRouter({
 
       const formattedPosts = posts.map((post) => ({
         ...post,
-        media: post.media,
         likesCount: post.likes.length,
         repostsCount: post.reposts.length,
         repliesCount: getTotalRepliesCount(post) as number,
@@ -397,7 +396,6 @@ export const userRouter = createTRPCRouter({
 
       const formattedReposts = reposts.map((repost) => ({
         ...repost.post,
-        media: repost.post,
         likesCount: repost.post.likes.length,
         repostsCount: repost.post.reposts.length,
         repliesCount: getTotalRepliesCount(repost.post) as number,
@@ -407,7 +405,6 @@ export const userRouter = createTRPCRouter({
       }));
 
       const repostsWithTokens = await enrichPostsWithTokens(formattedReposts);
-
       return repostsWithTokens;
     }),
 
@@ -525,7 +522,7 @@ export const userRouter = createTRPCRouter({
       const formattedReposts = await Promise.all(
         reposts.map(async (repost) => ({
           ...repost.post,
-          media: await enrichPlaybackTokens(repost.post.media as PostMedia[]),
+          media: await enrichMediaTokens(repost.post.media as PostMedia[]),
           likesCount: repost.post.likes.length,
           repostsCount: repost.post.reposts.length,
           repliesCount: repost.post.replies.length,
@@ -653,7 +650,6 @@ export const userRouter = createTRPCRouter({
 
       const formattedLikedPosts = likedPosts.map((likedPost) => ({
         ...likedPost.post,
-        media: likedPost.post.media,
         likesCount: likedPost.post.likes.length,
         repostsCount: likedPost.post.reposts.length,
         repliesCount: getTotalRepliesCount(likedPost.post) as number,
@@ -662,11 +658,8 @@ export const userRouter = createTRPCRouter({
         ).size,
       }));
 
-      const likedPostsWithTokens = await enrichPostsWithTokens(
-        formattedLikedPosts
-      );
-
-      return likedPostsWithTokens;
+      const postsWithTokens = await enrichPostsWithTokens(formattedLikedPosts);
+      return postsWithTokens;
     }),
 
   getUserLikedPosts: privateProcedure
@@ -786,9 +779,7 @@ export const userRouter = createTRPCRouter({
       const formattedLikedPosts = await Promise.all(
         likedPosts.map(async (likedPost) => ({
           ...likedPost.post,
-          media: await enrichPlaybackTokens(
-            likedPost.post.media as PostMedia[]
-          ),
+          media: await enrichMediaTokens(likedPost.post.media as PostMedia[]),
           likesCount: likedPost.post.likes.length,
           repostsCount: likedPost.post.reposts.length,
           repliesCount: getTotalRepliesCount(likedPost.post) as number,

@@ -35,8 +35,8 @@ export async function getPostMetadata(postId: string) {
         mediaUrl = firstMedia.fileUrl;
       } else if (firstMedia.fileType === 'video') {
         mediaUrl = getVideoThumbnailUrl(
-          firstMedia.playbackId!,
-          firstMedia.thumbnailToken!
+          firstMedia.playbackId as string,
+          firstMedia.thumbnailToken as string
         );
       }
     }

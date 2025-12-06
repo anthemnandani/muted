@@ -79,6 +79,19 @@ export const createPlaybackTokens = async (playbackId: string) => {
   }
 };
 
+export const createVideoToken = async (playbackId: string) => {
+  try {
+    const videoToken = await signToken(playbackId, 'video');
+    return {
+      success: true,
+      videoToken,
+    };
+  } catch (error) {
+    console.error('Video Token Generation Error:', error);
+    return { success: false, error: 'Failed to sign' };
+  }
+};
+
 export const createThumbnailToken = async (playbackId: string) => {
   try {
     const thumbnailToken = await signToken(playbackId, 'thumbnail');

@@ -30,19 +30,21 @@ const CollectionCard = ({ collection, username }: CollectionCardProps) => {
 
     const { media } = firstBookmark;
     const fileType = media[0]?.fileType;
+    const isVideo = fileType === 'video';
 
     return (
       <Image
         src={
-          fileType === 'image'
+          !isVideo
             ? media[0]?.fileUrl!
             : getVideoThumbnailUrl(
-                media[0].playbackId!,
-                media[0].thumbnailToken!
+                media[0].playbackId as string,
+                media[0].thumbnailToken as string
               )
         }
         alt={collection.name}
         fill
+        unoptimized={isVideo}
         className='object-cover transition-transform duration-300 group-hover:scale-105'
       />
     );

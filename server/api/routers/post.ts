@@ -1,4 +1,3 @@
-import { createPlaybackTokens } from '@/lib/actions/mux.actions';
 import { DownloadableData, type PostMedia } from '@/lib/types';
 import {
   capitalizeFirstLetter,
@@ -349,7 +348,6 @@ export const postRouter = createTRPCRouter({
 
         const formattedPosts = posts.map((post) => ({
           ...post,
-          media: post.media,
           likesCount: post.likes.length,
           repostsCount: post.reposts.length,
           repliesCount: getTotalRepliesCount(post) as number,
@@ -851,22 +849,7 @@ export const postRouter = createTRPCRouter({
         });
       }
 
-      const mediaWithTokens = await Promise.all(
-        (post.media as PostMedia[])?.map(async (mediaItem) => {
-          if (mediaItem.fileType === 'video' && mediaItem.playbackId) {
-            const { videoToken, thumbnailToken } = await createPlaybackTokens(
-              mediaItem.playbackId
-            );
-
-            return {
-              ...mediaItem,
-              videoToken,
-              thumbnailToken,
-            };
-          }
-          return mediaItem;
-        })
-      );
+      const mediaWithTokens = await enrichPostWithTokens(post);
 
       return {
         post: {
@@ -878,7 +861,6 @@ export const postRouter = createTRPCRouter({
           bookmarksCount: new Set(
             post.bookmarks.map((bookmark) => bookmark.userId)
           ).size,
-          type: 'post' as const,
         },
       };
     }),
@@ -971,7 +953,6 @@ export const postRouter = createTRPCRouter({
         bookmarksCount: new Set(
           comment.bookmarks.map((bookmark) => bookmark.userId)
         ).size,
-        type: 'post' as const,
         isHidden: comment.hiddenBy.length > 0,
         isMuted: comment.author.mutedByUsers?.length > 0,
       }));
@@ -1261,142 +1242,6 @@ export const postRouter = createTRPCRouter({
       }
 
       return { success: true };
-    }),
-
-  getSavedPosts: privateProcedure
-    .input(
-      z.object({
-        limit: z.number().optional(),
-        cursor: z
-          .object({
-            postId: z.string(),
-            userId: z.string(),
-            collectionId: z.string(),
-          })
-          .optional(),
-      })
-    )
-    .query(async ({ input: { limit = 20, cursor }, ctx }) => {
-      const { userId, db } = ctx;
-
-      const collections = await db.collection.findMany({
-        where: {
-          userId,
-        },
-        select: {
-          id: true,
-          bookmarks: {
-            where: {
-              post: {
-                AND: [
-                  {
-                    hiddenBy: {
-                      none: {
-                        userId,
-                      },
-                    },
-                  },
-                  {
-                    author: {
-                      mutedByUsers: {
-                        none: {
-                          mutedByUserId: userId,
-                        },
-                      },
-                    },
-                  },
-                ],
-              },
-            },
-            orderBy: {
-              createdAt: 'desc',
-            },
-            take: cursor ? undefined : limit + 1,
-            cursor: cursor
-              ? {
-                  postId_userId_collectionId: {
-                    postId: cursor.postId,
-                    userId: cursor.userId,
-                    collectionId: cursor.collectionId,
-                  },
-                }
-              : undefined,
-            select: {
-              createdAt: true,
-              collectionId: true,
-              post: {
-                select: {
-                  id: true,
-                  text: true,
-                  createdAt: true,
-                  media: true,
-                  parentPostId: true,
-                  parentPost: {
-                    select: {
-                      id: true,
-                      author: {
-                        select: {
-                          ...GET_USER,
-                        },
-                      },
-                    },
-                  },
-                  quoteId: true,
-                  path: true,
-                  hideLikes: true,
-                  turnOffComments: true,
-                  pinned: true,
-                  privacy: true,
-                  replies: true,
-                  author: {
-                    select: {
-                      ...GET_USER,
-                    },
-                  },
-                  ...getLikesWithBlockFilter(userId),
-                  reposts: {
-                    ...GET_REPOSTS,
-                    orderBy: {
-                      createdAt: 'desc',
-                    },
-                  },
-                  ...getBookmarksWithBlockFilter(userId),
-                  ...GET_MENTIONS,
-                },
-              },
-            },
-          },
-        },
-      });
-
-      const allBookmarks = collections
-        .flatMap((collection) => collection.bookmarks)
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-
-      let nextCursor: typeof cursor | undefined;
-      if (allBookmarks.length > limit) {
-        const nextItem = allBookmarks[limit];
-        nextCursor = {
-          postId: nextItem.post.id,
-          userId,
-          collectionId: nextItem.collectionId,
-        };
-        allBookmarks.length = limit;
-      }
-
-      return {
-        posts: allBookmarks.map((bookmark) => ({
-          ...bookmark.post,
-          media: bookmark.post.media as PostMedia[],
-          likesCount: bookmark.post.likes.length,
-          repostsCount: bookmark.post.reposts.length,
-          repliesCount: bookmark.post.replies.length,
-          bookmarksCount: new Set(
-            bookmark.post.bookmarks.map((bookmark) => bookmark.userId)
-          ).size,
-        })),
-        nextCursor,
-      };
     }),
 
   getLikedPosts: privateProcedure
@@ -1813,13 +1658,13 @@ export const postRouter = createTRPCRouter({
 
       let nextCursor: typeof cursor | undefined;
 
-      if (postsWithTokens.length > limit) {
-        const nextItem = postsWithTokens[limit];
+      if (formattedPosts.length > limit) {
+        const nextItem = formattedPosts[limit];
         nextCursor = {
           id: nextItem.id,
           createdAt: nextItem.createdAt,
         };
-        postsWithTokens.length = limit;
+        formattedPosts.length = limit;
       }
 
       return {

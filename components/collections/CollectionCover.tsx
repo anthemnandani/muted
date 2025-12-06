@@ -37,6 +37,7 @@ const CollectionCover = ({ collection, postId }: CollectionCoverProps) => {
   };
 
   const firstMedia = bookmarks[0]?.media[0];
+  const isVideo = firstMedia?.fileType === 'video';
 
   const renderContent = () => (
     <div className='flex-between w-full mb-3'>
@@ -58,15 +59,16 @@ const CollectionCover = ({ collection, postId }: CollectionCoverProps) => {
           ) : (
             <Image
               src={
-                firstMedia?.fileType === 'image'
+                !isVideo
                   ? firstMedia.fileUrl!
                   : getVideoThumbnailUrl(
-                      firstMedia.playbackId!,
-                      firstMedia.thumbnailToken!
+                      firstMedia.playbackId as string,
+                      firstMedia.thumbnailToken as string
                     )
               }
               alt='collection-cover'
               fill
+              unoptimized={isVideo}
               className='object-cover rounded-md'
             />
           )}

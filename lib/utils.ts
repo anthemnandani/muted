@@ -325,7 +325,7 @@ export const getVideoThumbnailUrl = (
   playbackId: string,
   thumbnailToken: string
 ) => {
-  if (!playbackId || !thumbnailToken) return '';
+  if (!playbackId && !thumbnailToken) return '';
   return `https://image.mux.com/${playbackId}/thumbnail.png?token=${thumbnailToken}`;
 };
 
@@ -755,7 +755,10 @@ export const getPostThumbnail = (media?: PostMedia) => {
   if (!media) return '';
   return media?.fileType === 'image'
     ? media?.fileUrl
-    : getVideoThumbnailUrl(media.playbackId!, media.thumbnailToken!);
+    : getVideoThumbnailUrl(
+        media.playbackId as string,
+        media.thumbnailToken as string
+      );
 };
 
 export const getStrikeBadgeClass = (strikes: number) => {
@@ -912,21 +915,21 @@ export const enrichThumbnailToken = async (media: PostMedia[]) => {
   return newMedia;
 };
 
-export const enrichPlaybackTokens = async (media: PostMedia[]) => {
+export const enrichMediaTokens = async (media: PostMedia[]) => {
   if (!media || !Array.isArray(media) || media.length === 0) return [];
 
   const newMedia = [...media];
   const firstItem = newMedia[0];
 
   if (firstItem.fileType === 'video' && firstItem.playbackId) {
-    const { thumbnailToken, videoToken } = await createPlaybackTokens(
+    const { videoToken, thumbnailToken } = await createPlaybackTokens(
       firstItem.playbackId
     );
 
     newMedia[0] = {
       ...firstItem,
-      thumbnailToken,
       videoToken,
+      thumbnailToken,
     };
   }
 
