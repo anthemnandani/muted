@@ -1,9 +1,9 @@
+import { Icons } from '@/components/icons';
 import type { Repost } from '@/lib/types';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { Icons } from '@/components/icons';
 
 interface UseRepostProps {
   reposts: Repost[];
@@ -40,7 +40,6 @@ export function useRepost({
         await Promise.all([
           trpcUtils.user.getUserReposts.invalidate(),
           trpcUtils.post.getInfinitePosts.invalidate(),
-          // trpcUtils.post.getPostDetails.invalidate({ id: postId }),
         ]);
       },
     });

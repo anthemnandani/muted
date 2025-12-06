@@ -31,7 +31,7 @@ const useFollowUser = ({ author }: { author: AuthorInfoProps }) => {
     }
   }, [author.followers, author.receivedFollowRequests, loggedUser?.id]);
 
-  const { mutateAsync: toggleFollow, isLoading } =
+  const { mutateAsync: toggleFollow, isPending } =
     api.user.toggleFollow.useMutation({
       onSettled: async () => {
         await trpcUtils.user.userInfo.invalidate({ username: author.username });
@@ -72,7 +72,7 @@ const useFollowUser = ({ author }: { author: AuthorInfoProps }) => {
     });
   };
 
-  return { handleToggleFollow, isLoading, isSameUser, followStatus };
+  return { handleToggleFollow, isLoading: isPending, isSameUser, followStatus };
 };
 
 export default useFollowUser;

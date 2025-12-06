@@ -26,20 +26,26 @@ export const ProfileVideoPlayer: React.FC<ProfileVideoPlayerProps> = ({
     return undefined;
   }, [playbackId, thumbnailToken]);
 
+  const tokens = useMemo(
+    () => ({
+      playback: videoToken,
+      thumbnail: thumbnailToken,
+    }),
+    [videoToken, thumbnailToken]
+  );
+
   return (
     <div className='w-full h-full bg-black'>
       <MuxPlayer
         ref={playerRef}
         playbackId={playbackId}
-        tokens={{
-          playback: videoToken,
-          thumbnail: thumbnailToken,
-        }}
+        tokens={tokens}
         poster={securePoster}
+        playsInline
         streamType='on-demand'
         muted
         loop
-        preload='auto'
+        preload='metadata'
         style={{
           height: '100%',
           width: '100%',

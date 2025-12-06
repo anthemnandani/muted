@@ -24,6 +24,15 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   const [inView, setInView] = useState(false);
   const [player, setPlayer] = useState<MuxPlayerRef | null>(null);
 
+  const [stableTokens, setStableTokens] = useState({
+    videoToken,
+    thumbnailToken,
+  });
+
+  useEffect(() => {
+    setStableTokens({ videoToken, thumbnailToken });
+  }, [playbackId]);
+
   const {
     currentlyPlaying,
     setCurrentlyPlaying,
@@ -99,8 +108,8 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
     >
       <VideoPlayer
         playbackId={playbackId}
-        videoToken={videoToken}
-        thumbnailToken={thumbnailToken}
+        videoToken={stableTokens.videoToken}
+        thumbnailToken={stableTokens.thumbnailToken}
         isMuted={isMuted}
         inView={inView}
         status={encodingStatus!}

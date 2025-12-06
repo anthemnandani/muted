@@ -1,6 +1,6 @@
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 const useLike = ({
@@ -25,7 +25,7 @@ const useLike = ({
 
   const trpcUtils = api.useUtils();
 
-  const { mutate: toggleLike, isLoading } = api.like.toggleLike.useMutation({
+  const { mutate: toggleLike, isPending } = api.like.toggleLike.useMutation({
     onMutate: async () => {
       setIsLikedByMe((prev) => !prev);
       setLikesCount((prev) => (isLikedByMe ? prev - 1 : prev + 1));
@@ -48,14 +48,13 @@ const useLike = ({
     onSuccess: async () => {
       await trpcUtils.post.getInfinitePosts.invalidate();
       await trpcUtils.post.getLikedPosts.invalidate();
-      await trpcUtils.user.getUserLikedPosts.invalidate();
     },
   });
   return {
     isLikedByMe,
     likesCount,
     toggleLike,
-    isLoading,
+    isLoading: isPending,
   };
 };
 

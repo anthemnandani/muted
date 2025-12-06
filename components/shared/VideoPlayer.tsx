@@ -36,21 +36,27 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return undefined;
   }, [playbackId, thumbnailToken, status]);
 
+  const tokens = useMemo(
+    () => ({
+      playback: videoToken,
+      thumbnail: thumbnailToken,
+    }),
+    [videoToken, thumbnailToken]
+  );
+
   return (
     <div className='relative h-full w-full group'>
       <MuxPlayer
         ref={playerRef}
         playbackId={status === 'encoded' ? playbackId : undefined}
         src={status === 'processing' ? playbackId : undefined}
-        tokens={{
-          playback: videoToken,
-          thumbnail: thumbnailToken,
-        }}
+        tokens={tokens}
         poster={securePoster}
         muted={isMuted}
         startTime={startTime}
+        playsInline
         loop
-        preload='auto'
+        preload='metadata'
         streamType='on-demand'
         onTimeUpdate={onTimeUpdate}
         onPlay={() => setIsPaused(false)}

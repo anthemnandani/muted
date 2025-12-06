@@ -42,7 +42,7 @@ const useCreatePost = () => {
         closeAndReset();
       },
       onSettled: async () => {
-        await trpcUtils.post.getInfinitePosts.invalidate();
+        await trpcUtils.user.getUserPosts.invalidate();
       },
     });
 
@@ -189,8 +189,6 @@ const useCreatePost = () => {
       setUploadProgress(100);
       toast.success('Post uploaded!');
       closeAndReset();
-
-      await trpcUtils.post.getInfinitePosts.invalidate();
     } catch (error: any) {
       setIsUploading(false);
       toast.error('Upload failed');

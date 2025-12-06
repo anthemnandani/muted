@@ -42,6 +42,21 @@ const UserPostCard = ({
   const videoId = postId;
   const isCarousel = media?.length > 1;
   const mediaItem = media?.[0];
+
+  const [stableTokens, setStableTokens] = useState({
+    videoToken: mediaItem?.videoToken,
+    thumbnailToken: mediaItem?.thumbnailToken,
+  });
+
+  useEffect(() => {
+    if (mediaItem?.playbackId) {
+      setStableTokens({
+        videoToken: mediaItem.videoToken,
+        thumbnailToken: mediaItem.thumbnailToken,
+      });
+    }
+  }, [mediaItem?.playbackId]);
+
   if (!mediaItem) return null;
 
   const isVideo = mediaItem.fileType === 'video';
@@ -91,8 +106,8 @@ const UserPostCard = ({
           <div className='w-full h-full pointer-events-none'>
             <ProfileVideoPlayer
               playbackId={mediaItem.playbackId!}
-              videoToken={mediaItem.videoToken!}
-              thumbnailToken={mediaItem.thumbnailToken!}
+              videoToken={stableTokens.videoToken!}
+              thumbnailToken={stableTokens.thumbnailToken!}
               onPlayerReady={setPlayer}
             />
           </div>
