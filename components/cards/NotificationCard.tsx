@@ -163,6 +163,7 @@ const NotificationCard = ({
               alt='Thumbnail'
               width={42}
               height={56}
+              unoptimized={media.fileType === 'video'}
               className='flex-[0_0_48px] rounded-md self-center object-cover'
             />
           </Link>
