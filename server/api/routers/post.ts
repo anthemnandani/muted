@@ -1,7 +1,6 @@
 import { DownloadableData, type PostMedia } from '@/lib/types';
 import {
   capitalizeFirstLetter,
-  enrichPostsWithTokens,
   enrichPostWithTokens,
   extractHashtags,
   formatDateAndTime,
@@ -346,30 +345,33 @@ export const postRouter = createTRPCRouter({
           },
         });
 
-        const formattedPosts = posts.map((post) => ({
-          ...post,
-          likesCount: post.likes.length,
-          repostsCount: post.reposts.length,
-          repliesCount: getTotalRepliesCount(post) as number,
-          bookmarksCount: new Set(
-            post.bookmarks.map((bookmark) => bookmark.userId)
-          ).size,
-        }));
-
-        const postsWithTokens = await enrichPostsWithTokens(formattedPosts);
+        const formattedPosts = await Promise.all(
+          posts.map(async (post) => {
+            const postWithTokens = await enrichPostWithTokens(post);
+            return {
+              ...postWithTokens,
+              likesCount: post.likes.length,
+              repostsCount: post.reposts.length,
+              repliesCount: getTotalRepliesCount(post) as number,
+              bookmarksCount: new Set(
+                post.bookmarks.map((bookmark) => bookmark.userId)
+              ).size,
+            };
+          })
+        );
 
         let nextCursor: typeof cursor | undefined;
-        if (postsWithTokens.length > limit) {
-          const nextItem = postsWithTokens[limit];
+        if (formattedPosts.length > limit) {
+          const nextItem = formattedPosts[limit];
           nextCursor = {
             id: nextItem.id,
             createdAt: nextItem.createdAt,
           };
-          postsWithTokens.length = limit;
+          formattedPosts.length = limit;
         }
 
         return {
-          posts: postsWithTokens,
+          posts: formattedPosts,
           nextCursor,
         };
       }
@@ -849,12 +851,11 @@ export const postRouter = createTRPCRouter({
         });
       }
 
-      const mediaWithTokens = await enrichPostWithTokens(post);
+      const postWithTokens = await enrichPostWithTokens(post);
 
       return {
         post: {
-          ...post,
-          media: mediaWithTokens,
+          ...postWithTokens,
           likesCount: post.likes.length,
           repostsCount: post.reposts.length,
           repliesCount: getTotalRepliesCount(post) as number,
@@ -1343,17 +1344,23 @@ export const postRouter = createTRPCRouter({
         likedPosts.length = limit;
       }
 
+      const formattedPosts = await Promise.all(
+        likedPosts.map(async (likedPost) => {
+          const postWithTokens = await enrichPostWithTokens(likedPost.post);
+          return {
+            ...postWithTokens,
+            likesCount: likedPost.post.likes.length,
+            repostsCount: likedPost.post.reposts.length,
+            repliesCount: likedPost.post.replies.length,
+            bookmarksCount: new Set(
+              likedPost.post.bookmarks.map((bookmark) => bookmark.userId)
+            ).size,
+          };
+        })
+      );
+
       return {
-        posts: likedPosts.map(async (likedPost) => ({
-          ...likedPost.post,
-          media: await enrichPostWithTokens(likedPost.post),
-          likesCount: likedPost.post.likes.length,
-          repostsCount: likedPost.post.reposts.length,
-          repliesCount: likedPost.post.replies.length,
-          bookmarksCount: new Set(
-            likedPost.post.bookmarks.map((bookmark) => bookmark.userId)
-          ).size,
-        })),
+        posts: formattedPosts,
         nextCursor,
       };
     }),
@@ -1508,25 +1515,28 @@ export const postRouter = createTRPCRouter({
         followingPosts.pop();
       }
 
-      const formattedPosts = followingPosts.map((post) => {
-        const followedUserRepost = post.reposts.find((repost) =>
-          repost.user.followers.some((follow) => follow.followerId === userId)
-        );
+      const formattedPosts = await Promise.all(
+        followingPosts.map(async (post) => {
+          const followedUserRepost = post.reposts.find((repost) =>
+            repost.user.followers.some((follow) => follow.followerId === userId)
+          );
 
-        return {
-          ...post,
-          media: post.media,
-          likesCount: post.likes.length,
-          repostsCount: post.reposts.length,
-          repliesCount: getTotalRepliesCount(post) as number,
-          bookmarksCount: new Set(
-            post.bookmarks.map((bookmark) => bookmark.userId)
-          ).size,
-          type: followedUserRepost ? ('repost' as const) : ('post' as const),
-          repostedBy: followedUserRepost?.user,
-          repostedAt: followedUserRepost?.createdAt,
-        };
-      });
+          const postWithTokens = await enrichPostWithTokens(post);
+
+          return {
+            ...postWithTokens,
+            likesCount: post.likes.length,
+            repostsCount: post.reposts.length,
+            repliesCount: getTotalRepliesCount(post) as number,
+            bookmarksCount: new Set(
+              post.bookmarks.map((bookmark) => bookmark.userId)
+            ).size,
+            type: followedUserRepost ? ('repost' as const) : ('post' as const),
+            repostedBy: followedUserRepost?.user,
+            repostedAt: followedUserRepost?.createdAt,
+          };
+        })
+      );
 
       const sortedPosts = formattedPosts.sort((a, b) => {
         const aTime =
@@ -1536,10 +1546,8 @@ export const postRouter = createTRPCRouter({
         return bTime - aTime;
       });
 
-      const postsWithTokens = await enrichPostsWithTokens(sortedPosts);
-
       return {
-        posts: postsWithTokens,
+        posts: formattedPosts,
         nextCursor,
       };
     }),
@@ -1643,18 +1651,20 @@ export const postRouter = createTRPCRouter({
         },
       });
 
-      const formattedPosts = posts.map((post) => ({
-        ...post,
-        media: post.media,
-        likesCount: post.likes.length,
-        repostsCount: post.reposts.length,
-        repliesCount: getTotalRepliesCount(post) as number,
-        bookmarksCount: new Set(
-          post.bookmarks.map((bookmark) => bookmark.userId)
-        ).size,
-      }));
-
-      const postsWithTokens = await enrichPostsWithTokens(formattedPosts);
+      const formattedPosts = await Promise.all(
+        posts.map(async (post) => {
+          const postWithTokens = await enrichPostWithTokens(post);
+          return {
+            ...postWithTokens,
+            likesCount: post.likes.length,
+            repostsCount: post.reposts.length,
+            repliesCount: getTotalRepliesCount(post) as number,
+            bookmarksCount: new Set(
+              post.bookmarks.map((bookmark) => bookmark.userId)
+            ).size,
+          };
+        })
+      );
 
       let nextCursor: typeof cursor | undefined;
 
@@ -1668,7 +1678,7 @@ export const postRouter = createTRPCRouter({
       }
 
       return {
-        posts: postsWithTokens,
+        posts: formattedPosts,
         nextCursor,
       };
     }),

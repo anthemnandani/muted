@@ -1,6 +1,7 @@
 import { PostMedia } from '@/lib/types';
 import {
   enrichMediaTokens,
+  enrichPostWithTokens,
   enrichThumbnailToken,
   getTotalRepliesCount,
 } from '@/lib/utils';
@@ -688,17 +689,21 @@ export const collectionRouter = createTRPCRouter({
         throw new TRPCError({ code: 'FORBIDDEN' });
       }
 
-      const posts = collection.bookmarks.map((bookmark) => ({
-        ...bookmark.post,
-        media: bookmark.post.media as PostMedia[],
-        likesCount: bookmark.post.likes.length,
-        repostsCount: bookmark.post.reposts.length,
-        repliesCount: getTotalRepliesCount(bookmark.post) as number,
-        bookmarksCount: new Set(
-          bookmark.post.bookmarks.map((bookmark) => bookmark.userId)
-        ).size,
-        type: 'post' as const,
-      }));
+      const posts = await Promise.all(
+        collection.bookmarks.map(async (bookmark) => {
+          const postWithTokens = await enrichPostWithTokens(bookmark.post);
+
+          return {
+            ...postWithTokens,
+            likesCount: bookmark.post.likes.length,
+            repostsCount: bookmark.post.reposts.length,
+            repliesCount: getTotalRepliesCount(bookmark.post) as number,
+            bookmarksCount: new Set(
+              bookmark.post.bookmarks.map((bookmark) => bookmark.userId)
+            ).size,
+          };
+        })
+      );
 
       return posts;
     }),

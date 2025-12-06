@@ -1,6 +1,11 @@
 import { inngest } from '@/inngest/client';
 import { PostMedia } from '@/lib/types';
-import { getChartDataTemplate, getTotalRepliesCount } from '@/lib/utils';
+import {
+  enrichPostWithTokens,
+  enrichThumbnailToken,
+  getChartDataTemplate,
+  getTotalRepliesCount,
+} from '@/lib/utils';
 import {
   GET_MENTIONS,
   GET_USER,
@@ -343,12 +348,16 @@ export const adminRouter = createTRPCRouter({
           },
         });
 
-        const formattedPosts = posts.map((post) => ({
-          ...post,
-          media: post.media as PostMedia[],
-          likesCount: post.likes.length,
-          repliesCount: getTotalRepliesCount(post) as number,
-        }));
+        const formattedPosts = await Promise.all(
+          posts.map(async (post) => {
+            const postWithTokens = await enrichPostWithTokens(post);
+            return {
+              ...postWithTokens,
+              likesCount: post.likes.length,
+              repliesCount: getTotalRepliesCount(post) as number,
+            };
+          })
+        );
 
         let nextCursor: typeof cursor | undefined;
         if (formattedPosts.length > limit) {
@@ -635,21 +644,25 @@ export const adminRouter = createTRPCRouter({
         reports.length = limit;
       }
 
-      const formattedReports = reports.map((report) => {
-        if (report.post) {
+      const formattedReports = await Promise.all(
+        reports.map(async (report) => {
+          if (report.post) {
+            return {
+              ...report,
+              post: {
+                ...report.post,
+                media: await enrichThumbnailToken(
+                  report.post.media as PostMedia[]
+                ),
+              },
+            };
+          }
           return {
             ...report,
-            post: {
-              ...report.post,
-              media: report.post.media as PostMedia[],
-            },
+            post: null,
           };
-        }
-        return {
-          ...report,
-          post: null,
-        };
-      });
+        })
+      );
 
       return {
         reports: formattedReports,

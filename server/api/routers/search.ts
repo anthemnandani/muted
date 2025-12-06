@@ -1,5 +1,11 @@
 import { PostMedia } from '@/lib/types';
-import { extractSuggestions, getTotalRepliesCount } from '@/lib/utils';
+import {
+  enrichMediaTokens,
+  enrichPostWithTokens,
+  enrichThumbnailToken,
+  extractSuggestions,
+  getTotalRepliesCount,
+} from '@/lib/utils';
 import {
   GET_MENTIONS,
   GET_REPOSTS,
@@ -9,9 +15,9 @@ import {
   getPostRepliesCount,
   getPrivacyFilter,
 } from '@/server/constants';
+import { PostStatus, Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure, publicProcedure } from '../trpc';
-import { PostStatus, Prisma } from '@prisma/client';
 
 export const searchRouter = createTRPCRouter({
   trackSearch: publicProcedure
@@ -285,17 +291,18 @@ export const searchRouter = createTRPCRouter({
         },
       });
 
-      const formattedPosts = posts.map((post) => ({
-        ...post,
-        media: post.media as PostMedia[],
-        likesCount: post.likes.length,
-        repostsCount: post.reposts.length,
-        repliesCount: getTotalRepliesCount(post) as number,
-        bookmarksCount: new Set(
-          post.bookmarks.map((bookmark) => bookmark.userId)
-        ).size,
-        type: 'post' as const,
-      }));
+      const formattedPosts = await Promise.all(
+        posts.map(async (post) => ({
+          ...post,
+          media: await enrichThumbnailToken(post.media as PostMedia[]),
+          likesCount: post.likes.length,
+          repostsCount: post.reposts.length,
+          repliesCount: getTotalRepliesCount(post) as number,
+          bookmarksCount: new Set(
+            post.bookmarks.map((bookmark) => bookmark.userId)
+          ).size,
+        }))
+      );
 
       let nextCursor: typeof cursor | undefined;
       if (formattedPosts.length > limit) {
@@ -427,17 +434,21 @@ export const searchRouter = createTRPCRouter({
         },
       });
 
-      const formattedPosts = posts.map((post) => ({
-        ...post,
-        media: post.media as PostMedia[],
-        likesCount: post.likes.length,
-        repostsCount: post.reposts.length,
-        repliesCount: getTotalRepliesCount(post) as number,
-        bookmarksCount: new Set(
-          post.bookmarks.map((bookmark) => bookmark.userId)
-        ).size,
-        type: 'post' as const,
-      }));
+      const formattedPosts = await Promise.all(
+        posts.map(async (post) => {
+          const postWithTokens = await enrichPostWithTokens(post);
+
+          return {
+            ...postWithTokens,
+            likesCount: post.likes.length,
+            repostsCount: post.reposts.length,
+            repliesCount: getTotalRepliesCount(post) as number,
+            bookmarksCount: new Set(
+              post.bookmarks.map((bookmark) => bookmark.userId)
+            ).size,
+          };
+        })
+      );
 
       return formattedPosts;
     }),
@@ -638,34 +649,39 @@ export const searchRouter = createTRPCRouter({
         },
       });
 
-      const formattedPosts = posts
-        .map((post) => ({
-          ...post,
-          media: post.media as PostMedia[],
-          likesCount: post.likes.length,
-          repostsCount: post.reposts.length,
-          repliesCount: getTotalRepliesCount(post) as number,
-          bookmarksCount: new Set(
-            post.bookmarks.map((bookmark) => bookmark.userId)
-          ).size,
-          type: 'post' as const,
-        }))
-        .filter((post) =>
-          post.media.some((media) => media.fileType === 'video')
-        );
+      const videoPosts = posts.filter((post) =>
+        (post.media as PostMedia[]).some((m) => m.fileType === 'video')
+      );
+
+      const postsWithTokens = await Promise.all(
+        videoPosts.map(async (post) => {
+          const media = post.media as PostMedia[];
+
+          return {
+            ...post,
+            media: await enrichMediaTokens(media),
+            likesCount: post.likes.length,
+            repostsCount: post.reposts.length,
+            repliesCount: getTotalRepliesCount(post) as number,
+            bookmarksCount: new Set(
+              post.bookmarks.map((bookmark) => bookmark.userId)
+            ).size,
+          };
+        })
+      );
 
       let nextCursor: typeof cursor | undefined;
-      if (formattedPosts.length > limit) {
-        const nextItem = formattedPosts[limit];
+      if (postsWithTokens.length > limit) {
+        const nextItem = postsWithTokens[limit];
         nextCursor = {
           id: nextItem.id,
           createdAt: nextItem.createdAt,
         };
-        formattedPosts.length = limit;
+        postsWithTokens.length = limit;
       }
 
       return {
-        posts: formattedPosts,
+        posts: postsWithTokens,
         nextCursor,
       };
     }),
@@ -784,22 +800,26 @@ export const searchRouter = createTRPCRouter({
         },
       });
 
-      const formattedPosts = posts
-        .map((post) => ({
-          ...post,
-          media: post.media as PostMedia[],
-          likesCount: post.likes.length,
-          repostsCount: post.reposts.length,
-          repliesCount: getTotalRepliesCount(post) as number,
-          bookmarksCount: new Set(
-            post.bookmarks.map((bookmark) => bookmark.userId)
-          ).size,
-          type: 'post' as const,
-        }))
-        .filter((post) =>
-          post.media.some((media) => media.fileType === 'video')
-        );
+      const videoPosts = posts.filter((post) =>
+        (post.media as PostMedia[]).some((m) => m.fileType === 'video')
+      );
 
-      return formattedPosts;
+      const postsWithTokens = await Promise.all(
+        videoPosts.map(async (post) => {
+          const postWithTokens = await enrichPostWithTokens(post);
+
+          return {
+            ...postWithTokens,
+            likesCount: post.likes.length,
+            repostsCount: post.reposts.length,
+            repliesCount: getTotalRepliesCount(post) as number,
+            bookmarksCount: new Set(
+              post.bookmarks.map((bookmark) => bookmark.userId)
+            ).size,
+          };
+        })
+      );
+
+      return postsWithTokens;
     }),
 });

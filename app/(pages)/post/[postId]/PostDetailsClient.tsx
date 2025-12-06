@@ -119,8 +119,6 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
 
           hasScrolledRef.current = true;
           setInitialized(true);
-        } else {
-          console.log('Post not found in user posts:', postId);
         }
       }
     }

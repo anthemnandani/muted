@@ -1,4 +1,5 @@
 import { type PostMedia } from '@/lib/types';
+import { enrichThumbnailToken } from '@/lib/utils';
 import { GET_USER } from '@/server/constants';
 import { FollowRequestStatus, NotificationType } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
@@ -72,11 +73,15 @@ export const notificationRouter = createTRPCRouter({
       }
 
       return {
-        notifications: notifications.map((notification) => ({
-          ...notification,
-          media: notification.post?.media as Array<PostMedia>,
-          postId: notification.post?.id!,
-        })),
+        notifications: await Promise.all(
+          notifications.map(async (notification) => ({
+            ...notification,
+            media: await enrichThumbnailToken(
+              notification.post?.media as PostMedia[]
+            ),
+            postId: notification.post?.id!,
+          }))
+        ),
         nextCursor,
       };
     }),
@@ -189,11 +194,15 @@ export const notificationRouter = createTRPCRouter({
       }
 
       return {
-        notifications: notifications.map((notification) => ({
-          ...notification,
-          media: notification.post?.media as Array<PostMedia>,
-          postId: notification.post?.id!,
-        })),
+        notifications: await Promise.all(
+          notifications.map(async (notification) => ({
+            ...notification,
+            media: await enrichThumbnailToken(
+              notification.post?.media as PostMedia[]
+            ),
+            postId: notification.post?.id!,
+          }))
+        ),
         nextCursor,
       };
     }),
@@ -263,11 +272,15 @@ export const notificationRouter = createTRPCRouter({
       }
 
       return {
-        notifications: notifications.map((notification) => ({
-          ...notification,
-          media: notification.post?.media as Array<PostMedia>,
-          postId: notification.post?.id!,
-        })),
+        notifications: await Promise.all(
+          notifications.map(async (notification) => ({
+            ...notification,
+            media: await enrichThumbnailToken(
+              notification.post?.media as PostMedia[]
+            ),
+            postId: notification.post?.id!,
+          }))
+        ),
         nextCursor,
       };
     }),
@@ -337,11 +350,15 @@ export const notificationRouter = createTRPCRouter({
       }
 
       return {
-        notifications: notifications.map((notification) => ({
-          ...notification,
-          media: notification.post?.media as Array<PostMedia>,
-          postId: notification.post?.id!,
-        })),
+        notifications: await Promise.all(
+          notifications.map(async (notification) => ({
+            ...notification,
+            media: await enrichThumbnailToken(
+              notification.post?.media as PostMedia[]
+            ),
+            postId: notification.post?.id!,
+          }))
+        ),
         nextCursor,
       };
     }),
