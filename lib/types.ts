@@ -22,6 +22,7 @@ import type { inferRouterOutputs } from '@trpc/server';
 import { LucideIcon } from 'lucide-react';
 import { ElementRef, ReactNode, RefObject } from 'react';
 import { DropzoneInputProps, DropzoneRootProps } from 'react-dropzone';
+import { type Area } from 'react-easy-crop';
 import Player from 'video.js/dist/types/player';
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
@@ -357,6 +358,9 @@ export type MediaFile = {
   originalWidth?: number;
   originalHeight?: number;
   poster?: string;
+  cropData?: Area;
+  userCrop?: { x: number; y: number };
+  userZoom?: number;
 };
 
 export type GiphyMedia = {
@@ -538,6 +542,12 @@ export interface FilterButtonProps {
   value: ProfileFilter;
   isSelected: boolean;
   onClick: (value: ProfileFilter) => void;
+}
+
+export interface UseDeletePostProps {
+  postId: string;
+  closeMenu?: () => void;
+  isAdmin?: boolean;
 }
 
 export interface ProfileFiltersProps {

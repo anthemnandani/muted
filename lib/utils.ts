@@ -349,20 +349,10 @@ export const getImageObjectFit = (
   }
 };
 
-export const getTargetRatio = (
-  aspectRatio: AspectRatio,
-  originalDimensions?: { width: number; height: number }
-) => {
-  let targetRatio: number;
+export const getTargetRatio = (aspectRatio: AspectRatio) => {
+  let targetRatio: number | undefined;
 
   switch (aspectRatio) {
-    case 'original':
-      if (originalDimensions) {
-        targetRatio = originalDimensions.width / originalDimensions.height;
-      } else {
-        targetRatio = 1;
-      }
-      break;
     case '1:1':
       targetRatio = 1;
       break;
@@ -375,8 +365,9 @@ export const getTargetRatio = (
     case '16:9':
       targetRatio = 16 / 9;
       break;
+    case 'original':
     default:
-      targetRatio = 1;
+      targetRatio = undefined;
   }
 
   return targetRatio;

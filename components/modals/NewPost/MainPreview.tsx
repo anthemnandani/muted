@@ -1,214 +1,138 @@
 'use client';
 
-import { VideoPlayer } from '@/components/shared/VideoPlayer';
 import { Button } from '@/components/ui/button';
-import type { AspectRatio, MediaFile } from '@/lib/types';
-import { getTargetRatio, getVideoObjectFit } from '@/lib/utils';
+import { getTargetRatio } from '@/lib/utils';
+import useFileStore from '@/store/fileStore';
 import usePostDialog from '@/store/postDialog';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import Image from 'next/image';
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import Cropper, { Area } from 'react-easy-crop';
 
-const MainPreview = ({
-  mediaFiles,
-  editPostId,
-}: {
-  mediaFiles: MediaFile[];
-  editPostId: string | null;
-}) => {
-  const { currentMediaIndex, setCurrentMediaIndex } = usePostDialog();
+const MainPreview = ({ editPostId }: { editPostId: string | null }) => {
+  const { currentMediaIndex, setCurrentMediaIndex, step } = usePostDialog();
+  const { mediaFiles, updateMediaFile } = useFileStore();
+  const [mediaDims, setMediaDims] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [imageDimensions, setImageDimensions] = useState<
-    | {
-        width: number;
-        height: number;
-      }
-    | undefined
-  >(undefined);
-  const [videoDimensions, setVideoDimensions] = useState<
-    | {
-        width: number;
-        height: number;
-      }
-    | undefined
-  >(undefined);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [isInteracting, setIsInteracting] = useState(false);
   const currentFile = mediaFiles[currentMediaIndex];
 
-  useEffect(() => {
-    if (currentFile?.type === 'video' && videoRef.current) {
-      videoRef.current.currentTime = 0;
-      videoRef.current.play().catch(console.error);
+  const selectedRatio = currentFile?.aspectRatio || 'original';
 
-      const handleLoadedMetadata = () => {
-        if (videoRef.current) {
-          setVideoDimensions({
-            width: videoRef.current.videoWidth,
-            height: videoRef.current.videoHeight,
-          });
-        }
-      };
+  let activeAspectRatio: number | undefined = undefined;
 
-      videoRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
-
-      return () => {
-        if (videoRef.current) {
-          videoRef.current.removeEventListener(
-            'loadedmetadata',
-            handleLoadedMetadata
-          );
-        }
-      };
-    }
-  }, [currentFile?.type]);
+  if (selectedRatio !== 'original') {
+    activeAspectRatio = getTargetRatio(selectedRatio);
+  } else if (mediaDims) {
+    activeAspectRatio = mediaDims.width / mediaDims.height;
+  }
 
   useEffect(() => {
-    if (currentFile?.type === 'image' && currentFile.preview) {
-      const img = new window.Image();
-      img.onload = () => {
-        setImageDimensions({ width: img.width, height: img.height });
-      };
-      img.src = currentFile.preview;
-    }
-  }, [currentFile?.type]);
-
-  const getPreviewDimensions = (aspectRatio: AspectRatio) => {
-    const maxWidth = 500;
-    const maxHeight = 500;
-
-    const originalDimensions =
-      currentFile?.type === 'video' ? videoDimensions : imageDimensions;
-
-    if (!originalDimensions && aspectRatio === 'original') {
-      return { width: maxWidth, height: maxHeight };
-    }
-
-    const targetRatio = getTargetRatio(aspectRatio, originalDimensions);
-
-    if (currentFile?.type === 'video' && originalDimensions) {
-      const originalRatio =
-        originalDimensions.width / originalDimensions.height;
-
-      if (originalRatio > 1 && aspectRatio === '9:16') {
-        return { width: maxWidth, height: maxWidth / targetRatio };
+    if (currentFile) {
+      if (currentFile.userCrop && currentFile.userZoom) {
+        setCrop(currentFile.userCrop);
+        setZoom(currentFile.userZoom);
+      } else {
+        setCrop({ x: 0, y: 0 });
+        setZoom(1);
       }
+      setMediaDims(null);
+      setIsInteracting(false);
+    }
+  }, [currentFile?.id]);
 
-      if (originalRatio < 1 && aspectRatio === '16:9') {
-        return { width: maxHeight * targetRatio, height: maxHeight };
+  const onCropComplete = useCallback(
+    (_: Area, croppedAreaPixels: Area) => {
+      if (currentFile && currentFile.type === 'image') {
+        updateMediaFile(currentFile.id, {
+          cropData: croppedAreaPixels,
+          userCrop: crop,
+          userZoom: zoom,
+        });
       }
-    }
-
-    let width, height;
-
-    if (targetRatio > 1) {
-      width = Math.min(maxWidth, maxHeight * targetRatio);
-      height = width / targetRatio;
-    } else {
-      height = Math.min(maxHeight, maxWidth / targetRatio);
-      width = height * targetRatio;
-    }
-
-    return { width: Math.round(width), height: Math.round(height) };
-  };
-
-  const aspectRatio = currentFile?.aspectRatio || '1:1';
-  const dimensions = getPreviewDimensions(aspectRatio);
-
-  const objectFit = getVideoObjectFit(aspectRatio, videoDimensions);
-
-  const isSafari = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  }, []);
-
-  const sourceType = useMemo(() => {
-    if (isSafari) {
-      return 'application/vnd.apple.mpegurl';
-    }
-    return 'application/x-mpegURL';
-  }, [isSafari]);
-
-  const playerOptions = useMemo(
-    () => ({
-      controls: true,
-      loop: true,
-      muted: true,
-      playsinline: true,
-      preload: 'metadata',
-      autoplay: true,
-      disablePictureInPicture: true,
-      userActions: { hotkeys: true, doubleClick: false },
-      controlBar: {
-        pictureInPictureToggle: false,
-        fullscreenToggle: false,
-        volumePanel: false,
-        progressControl: {
-          seekBar: true,
-        },
-        children: ['progressControl'],
-      },
-      sources: [{ src: currentFile.preview, type: sourceType }],
-      html5: {
-        vhs: {
-          overrideNative: !isSafari,
-          withCredentials: false,
-        },
-        nativeTextTracks: isSafari,
-        nativeAudioTracks: isSafari,
-        nativeVideoTracks: isSafari,
-      },
-      hls: {
-        debug: false,
-        enableLowInitialPlaylist: true,
-        manifestLoadingTimeOut: 10000,
-      },
-    }),
-    [currentFile.preview]
+    },
+    [currentFile, updateMediaFile, crop, zoom]
   );
 
+  const isPostStep = step === 'post';
+
+  if (!currentFile) return null;
+
   return (
-    <div className='relative flex-center size-[500px]'>
-      {currentFile && (
-        <Fragment>
-          {currentFile.type === 'image' ? (
-            <div
-              className='relative overflow-hidden'
-              style={{
-                width: dimensions.width,
-                height: dimensions.height,
-              }}
-            >
-              <Image
-                src={currentFile.preview}
-                alt={`Preview ${currentMediaIndex + 1}`}
-                width={dimensions.width}
-                height={dimensions.height}
-                className='object-cover w-full h-full'
+    <div className='relative flex-center size-[500px] bg-black/5 overflow-hidden'>
+      <Fragment>
+        {currentFile.type === 'image' ? (
+          <div className='w-full h-full flex-center relative'>
+            {isPostStep ? (
+              <img
+                alt='Post'
                 loading='lazy'
+                src={currentFile.preview}
+                className='object-cover'
+                style={{
+                  objectPosition: 'center',
+                  aspectRatio: activeAspectRatio
+                    ? `${activeAspectRatio}`
+                    : 'auto',
+                }}
               />
-            </div>
-          ) : (
-            // ) : editPostId ? (
-            //   <VideoPlayer
-            //     poster={currentFile.poster}
-            //     options={playerOptions}
-            //     aspectRatio={aspectRatio}
-            //   />)
+            ) : (
+              <Cropper
+                image={currentFile.preview}
+                crop={crop}
+                zoom={zoom}
+                aspect={activeAspectRatio}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={onCropComplete}
+                onInteractionStart={() => setIsInteracting(true)}
+                onInteractionEnd={() => setIsInteracting(false)}
+                showGrid={isInteracting}
+                onMediaLoaded={(mediaSize) => {
+                  setMediaDims({
+                    width: mediaSize.naturalWidth,
+                    height: mediaSize.naturalHeight,
+                  });
+                }}
+                objectFit='contain'
+              />
+            )}
+          </div>
+        ) : (
+          <div
+            className='relative flex-center overflow-hidden'
+            style={{
+              aspectRatio: activeAspectRatio ? `${activeAspectRatio}` : 'auto',
+              width:
+                activeAspectRatio && activeAspectRatio >= 1 ? '100%' : 'auto',
+              height:
+                activeAspectRatio && activeAspectRatio < 1 ? '100%' : 'auto',
+              maxWidth: '100%',
+              maxHeight: '100%',
+            }}
+          >
             <video
               ref={videoRef}
               src={currentFile.preview}
-              className={`${objectFit}`}
-              style={{
-                width: dimensions.width,
-                height: dimensions.height,
-              }}
+              className='w-full h-full object-cover'
               playsInline
               loop
               muted
               autoPlay
+              onLoadedMetadata={(e) => {
+                setMediaDims({
+                  width: e.currentTarget.videoWidth,
+                  height: e.currentTarget.videoHeight,
+                });
+              }}
             />
-          )}
-        </Fragment>
-      )}
+          </div>
+        )}
+      </Fragment>
 
       {mediaFiles.length > 1 && (
         <Fragment>
@@ -216,9 +140,10 @@ const MainPreview = ({
             variant='ghost'
             size='icon'
             className='absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-zinc-800 hover:bg-zinc-800/75 z-10'
-            onClick={() =>
-              setCurrentMediaIndex(Math.max(0, currentMediaIndex - 1))
-            }
+            onClick={(e) => {
+              e.preventDefault();
+              setCurrentMediaIndex(Math.max(0, currentMediaIndex - 1));
+            }}
             disabled={currentMediaIndex === 0}
           >
             <ChevronLeft className='size-6' />
@@ -227,11 +152,12 @@ const MainPreview = ({
             variant='ghost'
             size='icon'
             className='absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-zinc-800 hover:bg-zinc-800/75 z-10'
-            onClick={() =>
+            onClick={(e) => {
+              e.preventDefault();
               setCurrentMediaIndex(
                 Math.min(mediaFiles.length - 1, currentMediaIndex + 1)
-              )
-            }
+              );
+            }}
             disabled={currentMediaIndex === mediaFiles.length - 1}
           >
             <ChevronRight className='size-6' />

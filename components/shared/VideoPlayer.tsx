@@ -1,7 +1,7 @@
 'use client';
 
 import { type MuxPlayerRef, VideoPlayerProps } from '@/lib/types';
-import { cn, getVideoThumbnailUrl } from '@/lib/utils';
+import { cn, getTargetRatio, getVideoThumbnailUrl } from '@/lib/utils';
 import MuxPlayer from '@mux/mux-player-react';
 import { Play } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -45,7 +45,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   );
 
   return (
-    <div className='relative h-full w-full group'>
+    <div className='relative h-full w-full flex-center group'>
       <MuxPlayer
         ref={playerRef}
         playbackId={status === 'encoded' ? playbackId : undefined}
@@ -69,9 +69,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           onVolumeChange?.(target.muted);
         }}
         style={{
-          height: '100%',
-          width: '100%',
-          aspectRatio: aspectRatio === '16:9' ? 16 / 9 : 9 / 16,
+          height: aspectRatio !== '16:9' ? '100%' : 'auto',
+          aspectRatio: getTargetRatio(aspectRatio),
           '--media-object-fit': aspectRatio === '16:9' ? 'cover' : 'contain',
           '--play-button': 'none',
           '--fullscreen-button': 'none',

@@ -29,10 +29,7 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
   }, [inView, setInView]);
 
   return (
-    <div
-      ref={ref}
-      className='relative h-full w-full overflow-hidden cursor-pointer bg-gray-6 rounded-2xl'
-    >
+    <div ref={ref} className='post-container-fitted'>
       {children}
       <Fragment>
         <div className='absolute top-5 left-4 z-50'>

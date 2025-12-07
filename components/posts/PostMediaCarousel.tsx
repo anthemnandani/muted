@@ -74,17 +74,18 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
         onSwiper={setSwiperRef}
         onSlideChange={handleSlideChange}
         noSwiping={true}
-        noSwipingClass='video-js'
+        noSwipingClass='swiper-no-swiping'
         preventInteractionOnTransition={true}
       >
         {media?.map((item, index) => (
-          <SwiperSlide key={`${postId}-${index}`} className='swiper-no-swiping'>
+          <SwiperSlide key={`${postId}-${index}`}>
             {item.fileType === 'video' ? (
               <PostVideoCard
                 playbackId={item.playbackId!}
                 encodingStatus={item.encodingStatus}
                 videoToken={item.videoToken}
                 thumbnailToken={item.thumbnailToken}
+                aspectRatio={item.aspectRatio}
                 postId={postId}
                 author={author}
                 createdAt={createdAt}

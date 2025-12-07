@@ -1,12 +1,7 @@
+import { UseDeletePostProps } from '@/lib/types';
 import useDeletePostStore from '@/store/deletePost';
 import { api } from '@/trpc/react';
 import { toast } from 'sonner';
-
-interface UseDeletePostProps {
-  postId: string;
-  closeMenu?: () => void;
-  isAdmin?: boolean;
-}
 
 const useDeletePost = ({
   postId,
@@ -16,11 +11,12 @@ const useDeletePost = ({
   const { setOpenDeleteDialog } = useDeletePostStore();
   const trpcUtils = api.useUtils();
 
-  const { mutateAsync: deletePost, isLoading } =
+  const { mutateAsync: deletePost, isPending } =
     api.post.deletePost.useMutation({
       onSettled: async () => {
         if (isAdmin) await trpcUtils.admin.getAllPosts.invalidate();
         else {
+          await trpcUtils.post.getInfinitePosts.invalidate();
           await trpcUtils.post.getComments.invalidate();
           await trpcUtils.post.getReplies.invalidate();
         }
@@ -41,7 +37,7 @@ const useDeletePost = ({
     });
   };
 
-  return { handleDeletePost, isDeleting: isLoading };
+  return { handleDeletePost, isDeleting: isPending };
 };
 
 export default useDeletePost;

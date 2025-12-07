@@ -43,7 +43,7 @@ const PreviewStep = ({
       )}
     >
       <div className='relative h-full'>
-        <MainPreview mediaFiles={mediaFiles} editPostId={editPostId} />
+        <MainPreview editPostId={editPostId} />
       </div>
 
       {step !== 'post' && (

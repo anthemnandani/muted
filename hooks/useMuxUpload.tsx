@@ -24,7 +24,8 @@ export const useMuxUpload = () => {
   const startMuxUpload = (
     file: File,
     uploadUrl: string,
-    onProgress?: (percent: number) => void
+    onProgress?: (percent: number) => void,
+    onUploadStart?: (upload: UpChunk.UpChunk) => void
   ) => {
     return new Promise<void>((resolve, reject) => {
       const upload = UpChunk.createUpload({
@@ -32,6 +33,10 @@ export const useMuxUpload = () => {
         file,
         chunkSize: 5120,
       });
+
+      if (onUploadStart) {
+        onUploadStart(upload);
+      }
 
       upload.on('error', (err) => reject(err.detail));
 

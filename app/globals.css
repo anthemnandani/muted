@@ -371,7 +371,7 @@
   }
 
   .post-container-fitted {
-    @apply relative w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(0px-2rem+100vh)] overflow-hidden flex-grow bg-gray-6 rounded-2xl flex-center;
+    @apply relative w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(0px-2rem+100vh)] overflow-hidden bg-gray-6 rounded-2xl flex-center;
   }
 
   @media (max-width: 768px) {

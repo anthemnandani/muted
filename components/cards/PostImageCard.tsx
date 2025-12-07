@@ -29,7 +29,7 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
           className='object-cover'
           style={{
             objectPosition: 'center',
-            aspectRatio: getTargetRatio(aspectRatio!, originalDimensions),
+            aspectRatio: getTargetRatio(aspectRatio!),
           }}
         />
       </div>

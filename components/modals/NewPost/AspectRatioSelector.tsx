@@ -3,21 +3,26 @@
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
 import { type AspectRatio, AspectRatioSelectorProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import usePostDialog from '@/store/postDialog';
 import useFileStore from '@/store/fileStore';
+import usePostDialog from '@/store/postDialog';
 import { Image } from 'lucide-react';
 
 const AspectRatioSelector = ({
   selectedRatio,
   onChange,
 }: AspectRatioSelectorProps) => {
-  const { currentMediaIndex } = usePostDialog();
+  const {
+    currentMediaIndex,
+    showRatioSelector,
+    setShowRatioSelector,
+    showGallery,
+  } = usePostDialog();
   const { mediaFiles } = useFileStore();
 
   const currentFile = mediaFiles[currentMediaIndex];
@@ -44,9 +49,9 @@ const AspectRatioSelector = ({
       icon: <Icons.portrait className='size-6' />,
     },
     {
-      value: '9:16',
-      label: '9:16',
-      icon: <Icons.portrait className='size-6' />,
+      value: '16:9',
+      label: '16:9',
+      icon: <Icons.landscape className='size-6' />,
     },
   ];
 
@@ -79,12 +84,9 @@ const AspectRatioSelector = ({
 
   const ratios = isVideo ? videoRatios : imageRatios;
 
-  const { showRatioSelector, setShowRatioSelector, showGallery } =
-    usePostDialog();
-
   return (
-    <DropdownMenu open={showRatioSelector} onOpenChange={setShowRatioSelector}>
-      <DropdownMenuTrigger asChild>
+    <HoverCard open={showRatioSelector} onOpenChange={setShowRatioSelector}>
+      <HoverCardTrigger asChild>
         <Button
           variant='ghost'
           size='icon'
@@ -94,8 +96,8 @@ const AspectRatioSelector = ({
         >
           <Icons.crop className='size-4' />
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
+      </HoverCardTrigger>
+      <HoverCardContent
         side='top'
         align='start'
         sideOffset={8}
@@ -142,8 +144,8 @@ const AspectRatioSelector = ({
             ))}
           </div>
         </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </HoverCardContent>
+    </HoverCard>
   );
 };
 
