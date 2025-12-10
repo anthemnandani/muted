@@ -105,32 +105,6 @@ const useCreatePost = () => {
     });
   };
 
-  // const handleGiphyGifUpload = async (gif: IGif): Promise<PostMedia> => {
-  //   try {
-  //     const response = await fetch(gif.images.original.url);
-  //     const blob = await response.blob();
-  //     const gifFile = new File([blob], `${gif.id}.gif`, {
-  //       type: 'image/gif',
-  //     });
-
-  //     const fileUrl = await uploadToStorage(gifFile);
-
-  //     const dimensions = {
-  //       width: gif.images.original.width,
-  //       height: gif.images.original.height,
-  //     };
-
-  //     return {
-  //       fileType: 'gif',
-  //       fileUrl,
-  //       originalDimensions: dimensions,
-  //     };
-  //   } catch (error) {
-  //     console.error('Error processing Giphy GIF:', error);
-  //     throw new Error('Failed to process Giphy GIF');
-  //   }
-  // };
-
   const processImage = async (fileObj: MediaFile): Promise<PostMedia> => {
     let fileToUpload = fileObj.file;
     let finalDimensions = { width: 0, height: 0 };
@@ -158,10 +132,15 @@ const useCreatePost = () => {
 
     const url = await uploadToStorage(fileToUpload);
 
+    const resolvedAspectRatio =
+      fileObj.aspectRatio === 'original'
+        ? `${finalDimensions.width}/${finalDimensions.height}`
+        : fileObj.aspectRatio;
+
     return {
       fileType: 'image',
       fileUrl: url,
-      aspectRatio: fileObj.aspectRatio,
+      aspectRatio: resolvedAspectRatio,
       originalDimensions: finalDimensions,
     };
   };

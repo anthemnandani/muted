@@ -1,17 +1,14 @@
 'use client';
 
 import useMediaControls from '@/hooks/useMediaControls';
-import { AspectRatio, PostMediaCarouselProps } from '@/lib/types';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Fragment, useState } from 'react';
-import { type Swiper as SwiperType } from 'swiper';
-import 'swiper/css';
-import 'swiper/css/pagination';
-import { Swiper, SwiperSlide } from 'swiper/react';
+import { PostMediaCarouselProps } from '@/lib/types';
+import { getTargetRatio } from '@/lib/utils';
+import useEmblaCarousel from 'embla-carousel-react';
+import { useCallback, useEffect, useState } from 'react';
 import PostImageCard from '../cards/PostImageCard';
 import PostVideoCard from '../cards/PostVideoCard';
 import PostActionMenu from '../menus/PostActionMenu';
-import { Button } from '../ui/button';
+import CarouselNavigation from '../shared/CarouselNavigation';
 
 const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
   media,
@@ -27,8 +24,13 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
   turnOffComments,
   isAdminPanel = false,
 }) => {
-  const [swiperRef, setSwiperRef] = useState<SwiperType>();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop: false,
+    duration: 20,
+  });
+
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
   const {
     showControls,
     setShowControls,
@@ -36,12 +38,44 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
     controlsTimeoutRef,
   } = useMediaControls();
 
-  const handleSlideChange = (swiper: SwiperType) => {
-    setCurrentIndex(swiper.activeIndex);
-  };
+  const scrollPrev = useCallback(
+    () => emblaApi && emblaApi.scrollPrev(),
+    [emblaApi]
+  );
+  const scrollNext = useCallback(
+    () => emblaApi && emblaApi.scrollNext(),
+    [emblaApi]
+  );
+
+  const onSelect = useCallback((api: any) => {
+    setSelectedIndex(api.selectedScrollSnap());
+  }, []);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect(emblaApi);
+    emblaApi.on('select', onSelect);
+    emblaApi.on('reInit', onSelect);
+  }, [emblaApi, onSelect]);
+
+  const firstMedia = media?.[0];
+  const numericRatio = getTargetRatio(firstMedia?.aspectRatio);
+
+  let containerClass = 'post-container-portrait';
+
+  if (!isAdminPanel) {
+    if (numericRatio === 1) {
+      containerClass = 'post-container-square';
+    } else if (numericRatio > 1) {
+      containerClass = 'post-container-landscape';
+    }
+  } else {
+    containerClass = 'relative h-full w-full';
+  }
+
   return (
     <div
-      className={isAdminPanel ? 'relative h-full w-full' : 'post-container'}
+      className={containerClass}
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => {
         setShowControls(false);
@@ -68,76 +102,57 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
           />
         </div>
       )}
-      <Swiper
-        pagination={{ clickable: true }}
-        className='h-full w-full'
-        onSwiper={setSwiperRef}
-        onSlideChange={handleSlideChange}
-        noSwiping={true}
-        noSwipingClass='swiper-no-swiping'
-        preventInteractionOnTransition={true}
+      <div
+        className='overflow-hidden w-full h-full rounded-2xl bg-black'
+        ref={emblaRef}
       >
-        {media?.map((item, index) => (
-          <SwiperSlide key={`${postId}-${index}`}>
-            {item.fileType === 'video' ? (
-              <PostVideoCard
-                playbackId={item.playbackId!}
-                encodingStatus={item.encodingStatus}
-                videoToken={item.videoToken}
-                thumbnailToken={item.thumbnailToken}
-                aspectRatio={item.aspectRatio}
-                postId={postId}
-                author={author}
-                createdAt={createdAt}
-                mentions={mentions}
-                text={text}
-                reposts={reposts}
-                repostedBy={repostedBy}
-                showControls={showControls}
-              />
-            ) : (
-              <PostImageCard
-                image={item.fileUrl!}
-                originalDimensions={item.originalDimensions}
-                aspectRatio={item.aspectRatio as AspectRatio}
-                author={author}
-                createdAt={createdAt}
-                mentions={mentions}
-                id={postId}
-                text={text}
-                reposts={reposts}
-                repostedBy={repostedBy}
-                isAdminPanel={isAdminPanel}
-              />
-            )}
-          </SwiperSlide>
-        ))}
-      </Swiper>
+        <div className='flex w-full h-full touch-pan-y'>
+          {media?.map((item, index) => (
+            <div
+              key={`${postId}-${index}`}
+              className='flex-[0_0_100%] min-w-0 relative w-full h-full'
+            >
+              {item.fileType === 'video' ? (
+                <PostVideoCard
+                  playbackId={item.playbackId!}
+                  encodingStatus={item.encodingStatus}
+                  videoToken={item.videoToken}
+                  thumbnailToken={item.thumbnailToken}
+                  aspectRatio={item.aspectRatio}
+                  postId={postId}
+                  author={author}
+                  createdAt={createdAt}
+                  mentions={mentions}
+                  text={text}
+                  reposts={reposts}
+                  repostedBy={repostedBy}
+                  showControls={showControls}
+                />
+              ) : (
+                <PostImageCard
+                  image={item.fileUrl!}
+                  aspectRatio={item.aspectRatio}
+                  author={author}
+                  createdAt={createdAt}
+                  mentions={mentions}
+                  id={postId}
+                  text={text}
+                  reposts={reposts}
+                  repostedBy={repostedBy}
+                  isAdminPanel={isAdminPanel}
+                />
+              )}
+            </div>
+          ))}
+        </div>
 
-      {media?.length > 1 && (
-        <Fragment>
-          {currentIndex > 0 && (
-            <Button
-              variant='ghost'
-              size='icon'
-              className='absolute size-8 left-2 top-1/2 -translate-y-1/2 rounded-full bg-zinc-800 hover:bg-zinc-800/75 z-50'
-              onClick={() => swiperRef?.slidePrev()}
-            >
-              <ChevronLeft className='size-4' />
-            </Button>
-          )}
-          {currentIndex < media?.length - 1 && (
-            <Button
-              variant='ghost'
-              size='icon'
-              className='absolute size-8 right-2 top-1/2 -translate-y-1/2 rounded-full bg-zinc-800 hover:bg-zinc-800/75 z-50'
-              onClick={() => swiperRef?.slideNext()}
-            >
-              <ChevronRight className='size-4' />
-            </Button>
-          )}
-        </Fragment>
-      )}
+        <CarouselNavigation
+          selectedIndex={selectedIndex}
+          totalCount={media?.length || 0}
+          onPrev={scrollPrev}
+          onNext={scrollNext}
+        />
+      </div>
     </div>
   );
 };

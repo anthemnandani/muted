@@ -1,6 +1,6 @@
 'use client';
 
-import { type AspectRatio, PreviewStepProps } from '@/lib/types';
+import { PreviewStepProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
 import usePostDialog from '@/store/postDialog';
@@ -31,7 +31,7 @@ const PreviewStep = ({
     setMediaFiles(newFiles);
   };
 
-  const handleAspectRatioChange = (ratio: AspectRatio) => {
+  const handleAspectRatioChange = (ratio: string) => {
     updateMediaFile(currentFile.id, { aspectRatio: ratio });
   };
 

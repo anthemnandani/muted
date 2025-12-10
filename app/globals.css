@@ -277,6 +277,10 @@
   .custom-separator {
     @apply relative h-[17px] after:absolute after:left-0 after:top-4 after:block after:h-px after:w-[200%] after:origin-left after:scale-50 after:bg-white/20 after:content-[""];
   }
+
+  .carousel-btn {
+    @apply absolute top-1/2 -translate-y-1/2 !rounded-full bg-zinc-800 hover:bg-zinc-800/75 z-50 backdrop-blur-sm text-white/90 disabled:opacity-0 transition-opacity duration-200;
+  }
 }
 
 @layer utilities {
@@ -367,11 +371,23 @@
   }
 
   .post-container {
-    @apply w-full max-w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(100vh-2rem)] relative snap-center snap-always;
+    @apply relative w-full snap-center snap-always flex-grow self-center;
+  }
+
+  .post-container-portrait {
+    @apply post-container max-w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(100vh-2rem)];
+  }
+
+  .post-container-square {
+    @apply post-container h-full aspect-square max-w-[600px];
+  }
+
+  .post-container-landscape {
+    @apply post-container h-full aspect-video max-w-[900px];
   }
 
   .post-container-fitted {
-    @apply relative w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(0px-2rem+100vh)] overflow-hidden bg-gray-6 rounded-2xl flex-center;
+    @apply relative w-full h-full;
   }
 
   @media (max-width: 768px) {

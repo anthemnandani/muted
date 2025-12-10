@@ -39,7 +39,7 @@ export type PostProps = ArrayElement<
 export type PostMedia = {
   fileType: string;
   fileUrl?: string;
-  aspectRatio?: AspectRatio;
+  aspectRatio?: string;
   videoToken?: string;
   thumbnailToken?: string;
   originalDimensions: {
@@ -343,14 +343,12 @@ export type Collection = {
   isDefault: boolean;
 };
 
-export type AspectRatio = 'original' | '1:1' | '4:5' | '16:9' | '9:16';
-
 export type MediaFile = {
   file: File;
   preview: string;
   id: string;
   type: 'image' | 'video';
-  aspectRatio?: AspectRatio;
+  aspectRatio?: string;
   originalDimensions?: {
     width: number;
     height: number;
@@ -453,8 +451,7 @@ export interface MediaControlsProps {
 
 export interface PostImageCardProps {
   image: string;
-  originalDimensions?: { width: number; height: number };
-  aspectRatio?: AspectRatio;
+  aspectRatio?: string;
   createdAt: Date;
   author: AuthorInfoProps;
   id: string;
@@ -475,7 +472,7 @@ export interface PostVideoCardProps {
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
   mentions?: Mention[];
-  aspectRatio?: AspectRatio;
+  aspectRatio?: string;
   videoToken?: string;
   thumbnailToken?: string;
   showControls: boolean;
@@ -520,7 +517,6 @@ export interface VideoPlayerProps {
   onPlayerReady?: (player: Player) => void;
   poster?: string;
   onTimeUpdate?: () => void;
-  aspectRatio: AspectRatio;
   playbackId: string;
   status: EncodingStatus;
   isMuted: boolean;
@@ -529,6 +525,7 @@ export interface VideoPlayerProps {
   onVolumeChange?: (muted: boolean) => void;
   videoToken?: string;
   thumbnailToken?: string;
+  aspectRatio?: string;
 }
 
 export interface MediaTypeIndicatorProps {
@@ -913,8 +910,8 @@ export type UserSuggestion = {
 };
 
 export interface AspectRatioSelectorProps {
-  selectedRatio: AspectRatio;
-  onChange: (ratio: AspectRatio) => void;
+  selectedRatio: string;
+  onChange: (ratio: string) => void;
 }
 
 export interface DiscardPostProps {
@@ -1311,6 +1308,14 @@ export interface AdminItemsTableProps<T> {
   emptyStateMessage: string;
   colSpan: number;
   children?: React.ReactNode;
+}
+
+export interface CarouselNavigationProps {
+  selectedIndex: number;
+  totalCount: number;
+  onPrev: () => void;
+  onNext: () => void;
+  className?: string;
 }
 
 export type ContentType = 'ALL' | 'IMAGE' | 'VIDEO';

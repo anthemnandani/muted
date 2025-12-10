@@ -25,7 +25,6 @@ import {
 import {
   type AdminPost,
   type AdminReport,
-  type AspectRatio,
   type ContentType,
   Message,
   ParentPostProps,
@@ -301,7 +300,7 @@ export const getMediaAspectRatio = (dimensions: {
 };
 
 export const getVideoObjectFit = (
-  aspectRatio: AspectRatio | string,
+  aspectRatio: string,
   originalDimensions?: { width: number; height: number }
 ): 'object-cover' | 'object-contain' => {
   if (!originalDimensions) return 'object-cover';
@@ -330,7 +329,7 @@ export const getVideoThumbnailUrl = (
 };
 
 export const getImageObjectFit = (
-  aspectRatio: AspectRatio,
+  aspectRatio: string,
   originalDimensions?: { width: number; height: number }
 ): 'object-cover' | 'object-contain' => {
   if (!originalDimensions) return 'object-cover';
@@ -349,28 +348,15 @@ export const getImageObjectFit = (
   }
 };
 
-export const getTargetRatio = (aspectRatio: AspectRatio) => {
-  let targetRatio: number | undefined;
+export const getTargetRatio = (ratio?: string | null) => {
+  if (!ratio || ratio === 'original') return 9 / 16;
 
-  switch (aspectRatio) {
-    case '1:1':
-      targetRatio = 1;
-      break;
-    case '4:5':
-      targetRatio = 4 / 5;
-      break;
-    case '9:16':
-      targetRatio = 9 / 16;
-      break;
-    case '16:9':
-      targetRatio = 16 / 9;
-      break;
-    case 'original':
-    default:
-      targetRatio = undefined;
-  }
+  const separator = ratio.includes(':') ? ':' : '/';
+  const [width, height] = ratio.split(separator).map(Number);
 
-  return targetRatio;
+  if (isNaN(width) || isNaN(height) || height === 0) return 9 / 16;
+
+  return width / height;
 };
 
 export function highlightTextContent(text: string) {

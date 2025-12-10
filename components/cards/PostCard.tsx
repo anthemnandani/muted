@@ -84,28 +84,12 @@ const PostCard: React.FC<PostCardProps> = ({
       ) : (
         <div
           className={cn(
-            'flex justify-center items-end gap-4',
+            'flex justify-center gap-4',
             'transform transition-transform duration-300 ease-in-out',
             'relative z-10',
             isPanelOpen ? 'translate-x-[-200px]' : 'translate-x-0'
           )}
         >
-          {/* {isThreadPost ? (
-            <ThreadPostContent
-              media={media}
-              author={author}
-              mentions={mentions}
-              createdAt={createdAt}
-              postId={id!}
-              threadText={threadText}
-              pinned={pinned}
-              linkPreview={linkPreview}
-              reposts={reposts}
-              repostedBy={repostedBy}
-              hideLikes={hideLikes}
-              turnOffComments={turnOffComments}
-            />
-          ) : ( */}
           <PostMediaCarousel
             media={media}
             author={author}

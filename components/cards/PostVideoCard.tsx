@@ -118,7 +118,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
         onPlayerReady={setPlayer}
         onTimeUpdate={handleTimeUpdate}
         onVolumeChange={handleVolumeSync}
-        aspectRatio={aspectRatio!}
+        aspectRatio={aspectRatio}
       />
     </VideoContainer>
   );

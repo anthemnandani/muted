@@ -206,7 +206,7 @@ export const postRouter = createTRPCRouter({
       })
     )
     .query(
-      async ({ input: { limit = 15, cursor, searchQuery, sortBy }, ctx }) => {
+      async ({ input: { limit = 10, cursor, searchQuery, sortBy }, ctx }) => {
         const { userId, db } = ctx;
 
         const userFilteredKeywords = await db.filteredKeyword.findMany({

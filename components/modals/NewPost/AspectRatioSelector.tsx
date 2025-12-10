@@ -7,7 +7,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
-import { type AspectRatio, AspectRatioSelectorProps } from '@/lib/types';
+import { AspectRatioSelectorProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
 import usePostDialog from '@/store/postDialog';
@@ -29,7 +29,7 @@ const AspectRatioSelector = ({
   const isVideo = currentFile?.type === 'video';
 
   const imageRatios: {
-    value: AspectRatio;
+    value: string;
     label: string;
     icon: React.ReactNode;
   }[] = [
@@ -56,7 +56,7 @@ const AspectRatioSelector = ({
   ];
 
   const videoRatios: {
-    value: AspectRatio;
+    value: string;
     label: string;
     icon: React.ReactNode;
   }[] = [

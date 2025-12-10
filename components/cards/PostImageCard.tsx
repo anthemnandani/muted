@@ -4,7 +4,6 @@ import PostFooter from '../posts/PostFooter';
 
 const PostImageCard: React.FC<PostImageCardProps> = ({
   image,
-  originalDimensions,
   aspectRatio,
   author,
   createdAt,
@@ -21,15 +20,14 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
         'post-container-fitted': !isAdminPanel,
       })}
     >
-      <div className='relative w-full h-full flex-center'>
+      <div className='relative w-full h-full'>
         <img
           alt='Post'
           loading='lazy'
           src={image}
           className='object-cover'
           style={{
-            objectPosition: 'center',
-            aspectRatio: getTargetRatio(aspectRatio!),
+            aspectRatio: getTargetRatio(aspectRatio),
           }}
         />
       </div>

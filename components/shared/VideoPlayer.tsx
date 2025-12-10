@@ -11,13 +11,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onPlayerReady,
   status,
   onTimeUpdate,
-  aspectRatio,
   isMuted,
   inView,
   startTime,
   onVolumeChange,
   videoToken,
   thumbnailToken,
+  aspectRatio,
 }) => {
   const playerRef = useRef<MuxPlayerRef>(null);
   const [isPaused, setIsPaused] = useState(false);
@@ -44,8 +44,12 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     [videoToken, thumbnailToken]
   );
 
+  const numericRatio = getTargetRatio(aspectRatio);
+
+  const objectFit = numericRatio >= 1 ? 'cover' : 'contain';
+
   return (
-    <div className='relative h-full w-full flex-center group'>
+    <div className='relative h-full w-full group'>
       <MuxPlayer
         ref={playerRef}
         playbackId={status === 'encoded' ? playbackId : undefined}
@@ -69,9 +73,12 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           onVolumeChange?.(target.muted);
         }}
         style={{
-          height: aspectRatio !== '16:9' ? '100%' : 'auto',
-          aspectRatio: getTargetRatio(aspectRatio),
-          '--media-object-fit': aspectRatio === '16:9' ? 'cover' : 'contain',
+          height: '100%',
+          width: '100%',
+          maxWidth: '100%',
+          maxHeight: '100%',
+          '--media-object-fit': objectFit,
+          aspectRatio: numericRatio < 1 ? `${numericRatio}` : undefined,
           '--play-button': 'none',
           '--fullscreen-button': 'none',
           '--volume-range': 'none',
@@ -83,6 +90,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           '--pip-button': 'none',
           '--seek-backward-button': 'none',
           '--seek-forward-button': 'none',
+          '--duration-display': 'none',
+          '--time-display': 'none',
         }}
       />
       {isPaused && inView && (
