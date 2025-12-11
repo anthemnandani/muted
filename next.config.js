@@ -45,6 +45,10 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'muted-main.b-cdn.net',
+      },
+      {
+        protocol: 'https',
         hostname: process.env.NEXT_PUBLIC_BUNNY_STREAM_CDN_HOSTNAME,
       },
       {
