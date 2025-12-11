@@ -84,7 +84,7 @@ const PostCard: React.FC<PostCardProps> = ({
       ) : (
         <div
           className={cn(
-            'flex justify-center gap-4',
+            'flex justify-center w-full gap-4',
             'transform transition-transform duration-300 ease-in-out',
             'relative z-10',
             isPanelOpen ? 'translate-x-[-200px]' : 'translate-x-0'

@@ -26,7 +26,8 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
 }) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: false,
-    duration: 20,
+    align: 'start',
+    containScroll: 'trimSnaps',
   });
 
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -110,7 +111,8 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
           {media?.map((item, index) => (
             <div
               key={`${postId}-${index}`}
-              className='flex-[0_0_100%] min-w-0 relative w-full h-full'
+              className='flex-[0_0_100%] min-w-0 relative w-full h-full transform-gpu'
+              style={{ backfaceVisibility: 'hidden' }}
             >
               {item.fileType === 'video' ? (
                 <PostVideoCard

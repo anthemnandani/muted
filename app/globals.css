@@ -371,7 +371,7 @@
   }
 
   .post-container {
-    @apply relative w-full snap-center snap-always flex-grow self-center;
+    @apply relative w-full snap-center snap-always flex-grow self-center flex-center;
   }
 
   .post-container-portrait {
@@ -379,11 +379,11 @@
   }
 
   .post-container-square {
-    @apply post-container h-full aspect-square max-w-[600px];
+    @apply post-container max-w-[700px] h-[calc(100vh-2rem)];
   }
 
   .post-container-landscape {
-    @apply post-container h-full aspect-video max-w-[900px];
+    @apply post-container max-w-[950px] h-[70vh];
   }
 
   .post-container-fitted {

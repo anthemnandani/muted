@@ -4,7 +4,7 @@ import { type MuxPlayerRef, VideoPlayerProps } from '@/lib/types';
 import { cn, getTargetRatio, getVideoThumbnailUrl } from '@/lib/utils';
 import MuxPlayer from '@mux/mux-player-react';
 import { Play } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   playbackId,
@@ -49,7 +49,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const objectFit = numericRatio >= 1 ? 'cover' : 'contain';
 
   return (
-    <div className='relative h-full w-full group'>
+    <Fragment>
       <MuxPlayer
         ref={playerRef}
         playbackId={status === 'encoded' ? playbackId : undefined}
@@ -60,7 +60,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         startTime={startTime}
         playsInline
         loop
-        preload='metadata'
+        preload='auto'
         streamType='on-demand'
         onTimeUpdate={onTimeUpdate}
         onPlay={() => setIsPaused(false)}
@@ -73,12 +73,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           onVolumeChange?.(target.muted);
         }}
         style={{
-          height: '100%',
           width: '100%',
-          maxWidth: '100%',
-          maxHeight: '100%',
+          height: '100%',
+          aspectRatio: numericRatio,
           '--media-object-fit': objectFit,
-          aspectRatio: numericRatio < 1 ? `${numericRatio}` : undefined,
           '--play-button': 'none',
           '--fullscreen-button': 'none',
           '--volume-range': 'none',
@@ -107,6 +105,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           </button>
         </div>
       )}
-    </div>
+    </Fragment>
   );
 };

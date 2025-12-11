@@ -14,7 +14,7 @@ const MainPreview = ({ editPostId }: { editPostId: string | null }) => {
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: false,
-    duration: 20,
+    skipSnaps: false,
     watchDrag: false,
   });
 
@@ -147,7 +147,7 @@ const MainPreview = ({ editPostId }: { editPostId: string | null }) => {
                     <video
                       ref={isActive ? videoRef : null}
                       src={file.preview}
-                      className='w-full h-full object-cover'
+                      className='w-full h-full object-cover object-center'
                       playsInline
                       loop
                       muted
