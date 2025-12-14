@@ -2,7 +2,8 @@
 
 import useMediaControls from '@/hooks/useMediaControls';
 import { PostMediaCarouselProps } from '@/lib/types';
-import { getTargetRatio } from '@/lib/utils';
+import { cn, getTargetRatio } from '@/lib/utils';
+import useCommentPanelStore from '@/store/commentPanel';
 import { useState } from 'react';
 import { type Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
@@ -38,7 +39,10 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
 
   const firstMedia = media?.[0];
   let containerClass = 'post-container-portrait';
-  const numericRatio = getTargetRatio(firstMedia?.aspectRatio);
+  const numericRatio = getTargetRatio(
+    firstMedia?.aspectRatio,
+    firstMedia?.originalDimensions
+  );
 
   if (!isAdminPanel) {
     if (media.length > 1) {
@@ -60,9 +64,21 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
     setCurrentIndex(swiper.activeIndex);
   };
 
+  const shouldAnimate = numericRatio >= 0.9;
+  const isShrunkView =
+    useCommentPanelStore.getState().isPanelOpen &&
+    !isAdminPanel &&
+    shouldAnimate &&
+    media.length === 1;
+
   return (
     <div
-      className={containerClass}
+      className={cn(
+        containerClass,
+        shouldAnimate &&
+          'transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]',
+        isShrunkView && 'xl:max-w-[45vw]'
+      )}
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => {
         setShowControls(false);
@@ -106,6 +122,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                 videoToken={item.videoToken}
                 thumbnailToken={item.thumbnailToken}
                 aspectRatio={item.aspectRatio}
+                originalDimensions={item.originalDimensions}
                 postId={postId}
                 author={author}
                 createdAt={createdAt}

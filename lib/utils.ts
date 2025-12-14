@@ -349,8 +349,16 @@ export const getImageObjectFit = (
   }
 };
 
-export const getTargetRatio = (ratio?: string | null) => {
-  if (!ratio || ratio === 'original') return 9 / 16;
+export const getTargetRatio = (
+  ratio?: string | null,
+  originalDimensions?: { width: number; height: number }
+) => {
+  if (!ratio || ratio === 'original') {
+    if (originalDimensions) {
+      const { width, height } = originalDimensions;
+      return width / height;
+    } else return 9 / 16;
+  }
 
   const separator = ratio.includes(':') ? ':' : '/';
   const [width, height] = ratio.split(separator).map(Number);

@@ -481,6 +481,7 @@ export interface PostVideoCardProps {
   repostedBy?: AuthorInfoProps;
   mentions?: Mention[];
   aspectRatio?: string;
+  originalDimensions?: { width: number; height: number };
   videoToken?: string;
   thumbnailToken?: string;
   showControls: boolean;
@@ -534,6 +535,7 @@ export interface VideoPlayerProps {
   videoToken?: string;
   thumbnailToken?: string;
   aspectRatio?: string;
+  originalDimensions?: { width: number; height: number };
 }
 
 export interface MediaTypeIndicatorProps {

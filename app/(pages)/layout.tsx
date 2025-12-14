@@ -33,11 +33,7 @@ export default async function PagesLayout({
     <div className='flex justify-between w-screen max-w-full flex-auto self-center'>
       <TopBar />
       <LeftSideBar />
-      <PostNavigatorProvider>
-        <main className='relative mx-auto my-0 w-full min-w-[420px] flex-shrink flex-stretch'>
-          {children}
-        </main>
-      </PostNavigatorProvider>
+      <PostNavigatorProvider>{children}</PostNavigatorProvider>
       {/* <BottomBar /> */}
       <Report />
     </div>

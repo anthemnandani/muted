@@ -60,18 +60,10 @@ const PostCard: React.FC<PostCardProps> = ({
   const toggleComments = () => {
     if (isShowingPost(id)) {
       closePanel();
-      document.body.style.overflow = '';
     } else {
       openPanel(id);
-      document.body.style.overflow = 'hidden';
     }
   };
-
-  useEffect(() => {
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, []);
 
   const isCommentPanelOpen = isPanelOpen && currentPostId === id;
 
@@ -87,8 +79,8 @@ const PostCard: React.FC<PostCardProps> = ({
       ) : (
         <div
           className={cn(
-            'h-max flex-end grow gap-4 w-full transform transition-transform duration-300 ease-in-out',
-            isPanelOpen ? 'translate-x-[-200px]' : 'translate-x-0'
+            'h-max flex-end grow gap-4 w-full transition-transform duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]',
+            isPanelOpen ? 'translate-x-[-180px]' : 'translate-x-0'
           )}
         >
           <PostMediaCarousel
@@ -124,19 +116,16 @@ const PostCard: React.FC<PostCardProps> = ({
       )}
 
       {isCommentPanelOpen && (
-        <div
+        <aside
           className={cn(
-            'fixed top-1/2 right-20 w-[480px] h-[calc(100vh-2rem)] z-50',
-            'transform -translate-y-1/2',
+            'fixed top-1/2 right-0 w-[480px] h-screen z-50',
+            '-translate-y-1/2',
             'shadow-lg'
           )}
         >
           <CommentsPanel
             postId={id}
-            onClose={() => {
-              closePanel();
-              document.body.style.overflow = '';
-            }}
+            onClose={() => closePanel()}
             authorId={author.id}
             isOpen={isPanelOpen}
             repliesCount={repliesCount ?? 0}
@@ -146,7 +135,7 @@ const PostCard: React.FC<PostCardProps> = ({
             reposts={reposts}
             repostedBy={repostedBy}
           />
-        </div>
+        </aside>
       )}
     </article>
   );

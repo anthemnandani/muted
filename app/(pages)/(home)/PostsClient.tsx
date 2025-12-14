@@ -48,18 +48,20 @@ const PostsClient = () => {
   if (isError) return <Error />;
 
   return (
-    <ScrollContainer ref={mainContainerRef}>
-      <PostsList
-        posts={allPosts}
-        fetchNextPage={fetchNextPage}
-        hasNextPage={hasNextPage}
-        isLoading={isLoading || isRefreshing}
-        emptyStateMessage='No posts found.'
-        resetToFirst={resetToFirst}
-        onResetComplete={() => setResetToFirst(false)}
-        containerRef={mainContainerRef}
-      />
-    </ScrollContainer>
+    <main className='relative mx-auto my-0 w-full min-w-[420px]'>
+      <ScrollContainer ref={mainContainerRef}>
+        <PostsList
+          posts={allPosts}
+          fetchNextPage={fetchNextPage}
+          hasNextPage={hasNextPage}
+          isLoading={isLoading || isRefreshing}
+          emptyStateMessage='No posts found.'
+          resetToFirst={resetToFirst}
+          onResetComplete={() => setResetToFirst(false)}
+          containerRef={mainContainerRef}
+        />
+      </ScrollContainer>
+    </main>
   );
 };
 

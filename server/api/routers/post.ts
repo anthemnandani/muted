@@ -114,7 +114,7 @@ export const postRouter = createTRPCRouter({
 
           const mediaWithDetails = media?.map((item) => ({
             ...item,
-            aspectRatio: item.aspectRatio || '1:1',
+            aspectRatio: item.aspectRatio || 'original',
             videoId: item.videoId,
             encodingStatus: item.encodingStatus,
           }));
