@@ -54,36 +54,18 @@ const PreviewStep = ({
 
   useEffect(() => {
     if (mediaFiles.length > 0) {
-      let nextFiles = [...mediaFiles];
-      let hasChanges = false;
-
-      if (isMixedMedia) {
-        const hasInvalidRatio = nextFiles.some((f) => f.aspectRatio === '9:16');
-
-        if (hasInvalidRatio) {
-          nextFiles = nextFiles.map((file) => {
-            if (file.aspectRatio === '9:16') {
-              return {
-                ...file,
-                aspectRatio: 'original',
-                userCrop: { x: 0, y: 0 },
-                userZoom: 1,
-              };
-            }
-            return file;
-          });
-          hasChanges = true;
-        }
-      }
-
-      nextFiles.sort((a, b) => {
+      const sortedFiles = [...mediaFiles].sort((a, b) => {
         if (a.type === 'image' && b.type === 'video') return -1;
         if (a.type === 'video' && b.type === 'image') return 1;
         return 0;
       });
 
-      if (hasChanges) {
-        setMediaFiles(nextFiles);
+      const isOrderChanged = sortedFiles.some(
+        (file, index) => file.id !== mediaFiles[index]?.id
+      );
+
+      if (isOrderChanged) {
+        setMediaFiles(sortedFiles);
       }
     }
   }, [mediaFiles, setMediaFiles]);

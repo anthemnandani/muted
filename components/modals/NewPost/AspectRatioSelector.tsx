@@ -38,6 +38,11 @@ const AspectRatioSelector = ({
     {
       value: '4:5',
       label: '4:5',
+      icon: <Icons.portrait45 className='size-6' />,
+    },
+    {
+      value: '9:16',
+      label: '9:16',
       icon: <Icons.portrait className='size-6' />,
     },
     {

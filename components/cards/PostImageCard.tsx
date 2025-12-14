@@ -14,7 +14,12 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
 }) => {
   return (
     <div className={isAdminPanel ? '' : 'post-container-fitted'}>
-      <img alt='Post' loading='lazy' src={image} className='object-cover' />
+      <img
+        alt='Post'
+        loading='lazy'
+        src={image}
+        className='object-cover w-full'
+      />
 
       <div className='absolute z-10 inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none' />
       <PostFooter

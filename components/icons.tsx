@@ -325,6 +325,20 @@ export const Icons = {
       <path d='M16 23H8a4.004 4.004 0 0 1-4-4V5a4.004 4.004 0 0 1 4-4h8a4.004 4.004 0 0 1 4 4v14a4.004 4.004 0 0 1-4 4ZM8 3a2.002 2.002 0 0 0-2 2v14a2.002 2.002 0 0 0 2 2h8a2.002 2.002 0 0 0 2-2V5a2.002 2.002 0 0 0-2-2Z'></path>
     </svg>
   ),
+  portrait45: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
+    <svg
+      aria-label='Crop 4:5 portrait icon'
+      fill='currentColor'
+      height='24'
+      role='img'
+      viewBox='0 0 24 24'
+      width='24'
+      {...props}
+    >
+      <title>Crop 4:5 portrait icon</title>
+      <path d='M18 23H6a4.004 4.004 0 0 1-4-4V5a4.004 4.004 0 0 1 4-4h12a4.004 4.004 0 0 1 4 4v14a4.004 4.004 0 0 1-4 4ZM6 3a2.002 2.002 0 0 0-2 2v14a2.002 2.002 0 0 0 2 2h12a2.002 2.002 0 0 0 2-2V5a2.002 2.002 0 0 0-2-2Z'></path>
+    </svg>
+  ),
   landscape: (props: IconProps | React.SVGProps<SVGSVGElement>) => (
     <svg
       aria-label='Crop landscape icon'

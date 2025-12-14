@@ -1,7 +1,7 @@
 'use client';
 
 import { MediaLayerProps } from '@/lib/types';
-import { getTargetRatio } from '@/lib/utils';
+import { cn, getTargetRatio } from '@/lib/utils';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Cropper, { Area } from 'react-easy-crop';
 
@@ -58,6 +58,12 @@ const MediaLayer = ({
     [file.id, file.type, updateMediaFile, crop, zoom]
   );
 
+  const styles = {
+    aspectRatio: activeAspectRatio ? `${activeAspectRatio}` : 'auto',
+    width: activeAspectRatio && activeAspectRatio >= 1 ? '100%' : 'auto',
+    height: activeAspectRatio && activeAspectRatio < 1 ? '100%' : 'auto',
+  };
+
   return (
     <div
       className={`absolute inset-0 w-full h-full transition-opacity duration-300 ease-in-out ${
@@ -66,20 +72,22 @@ const MediaLayer = ({
           : 'opacity-0 z-0 pointer-events-none'
       }`}
     >
-      <div className='relative w-full h-full flex-center'>
+      <div
+        className={cn('relative w-full h-full', isPostStep && 'flex-center')}
+      >
         {file.type === 'image' ? (
           isPostStep ? (
-            <img
-              alt='Post'
-              loading='lazy'
-              src={file.preview}
-              className='object-cover w-full h-full object-center'
-              style={{
-                aspectRatio: activeAspectRatio
-                  ? `${activeAspectRatio}`
-                  : 'auto',
-              }}
-            />
+            <div
+              className='relative w-full max-h-full max-w-full'
+              style={styles}
+            >
+              <img
+                alt='Post'
+                loading='lazy'
+                src={file.preview}
+                className='object-cover w-full h-full object-center'
+              />
+            </div>
           ) : (
             <Cropper
               image={file.preview}
@@ -104,14 +112,8 @@ const MediaLayer = ({
           )
         ) : (
           <div
-            className='relative max-h-full max-w-full overflow-hidden'
-            style={{
-              aspectRatio: activeAspectRatio ? `${activeAspectRatio}` : 'auto',
-              width:
-                activeAspectRatio && activeAspectRatio >= 1 ? '100%' : 'auto',
-              height:
-                activeAspectRatio && activeAspectRatio < 1 ? '100%' : 'auto',
-            }}
+            className='relative w-full max-h-full max-w-full flex-center'
+            style={styles}
           >
             <video
               ref={videoRef}
