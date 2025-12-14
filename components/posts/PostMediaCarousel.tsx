@@ -139,7 +139,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
       </Swiper>
 
       <div
-        className='absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 
+        className='absolute inset-0 bg-gradient-to-t from-black/30 via-black/20 
       to-transparent z-10 pointer-events-none'
       />
 
