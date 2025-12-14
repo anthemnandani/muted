@@ -73,7 +73,10 @@ const MediaLayer = ({
       }`}
     >
       <div
-        className={cn('relative w-full h-full', isPostStep && 'flex-center')}
+        className={cn(
+          'relative w-full h-full',
+          (isPostStep || file.type === 'video') && 'flex-center'
+        )}
       >
         {file.type === 'image' ? (
           isPostStep ? (
