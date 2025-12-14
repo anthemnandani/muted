@@ -4,6 +4,7 @@ import { PreviewStepProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
 import usePostDialog from '@/store/postDialog';
+import { useEffect, useMemo } from 'react';
 import AspectRatioSelector from './AspectRatioSelector';
 import Gallery from './Gallery';
 import MainPreview from './MainPreview';
@@ -13,7 +14,7 @@ const PreviewStep = ({
   getInputProps,
   isDragActive,
 }: PreviewStepProps) => {
-  const { mediaFiles, setMediaFiles, updateMediaFile } = useFileStore();
+  const { mediaFiles, setMediaFiles } = useFileStore();
   const { setStep, currentMediaIndex, setCurrentMediaIndex, step, editPostId } =
     usePostDialog();
 
@@ -32,8 +33,60 @@ const PreviewStep = ({
   };
 
   const handleAspectRatioChange = (ratio: string) => {
-    updateMediaFile(currentFile.id, { aspectRatio: ratio });
+    const updatedFiles = mediaFiles.map((file) => ({
+      ...file,
+      aspectRatio: ratio,
+      userCrop: { x: 0, y: 0 },
+      userZoom: 1,
+    }));
+    setMediaFiles(updatedFiles);
   };
+
+  const isVideoOnly = useMemo(() => {
+    return mediaFiles.length > 0 && mediaFiles.every((f) => f.type === 'video');
+  }, [mediaFiles]);
+
+  const isMixedMedia = useMemo(() => {
+    const hasImage = mediaFiles.some((f) => f.type === 'image');
+    const hasVideo = mediaFiles.some((f) => f.type === 'video');
+    return hasImage && hasVideo;
+  }, [mediaFiles]);
+
+  useEffect(() => {
+    if (mediaFiles.length > 0) {
+      let nextFiles = [...mediaFiles];
+      let hasChanges = false;
+
+      if (isMixedMedia) {
+        const hasInvalidRatio = nextFiles.some((f) => f.aspectRatio === '9:16');
+
+        if (hasInvalidRatio) {
+          nextFiles = nextFiles.map((file) => {
+            if (file.aspectRatio === '9:16') {
+              return {
+                ...file,
+                aspectRatio: 'original',
+                userCrop: { x: 0, y: 0 },
+                userZoom: 1,
+              };
+            }
+            return file;
+          });
+          hasChanges = true;
+        }
+      }
+
+      nextFiles.sort((a, b) => {
+        if (a.type === 'image' && b.type === 'video') return -1;
+        if (a.type === 'video' && b.type === 'image') return 1;
+        return 0;
+      });
+
+      if (hasChanges) {
+        setMediaFiles(nextFiles);
+      }
+    }
+  }, [mediaFiles, setMediaFiles]);
 
   return (
     <div
@@ -47,10 +100,11 @@ const PreviewStep = ({
       </div>
 
       {step !== 'post' && (
-        <div className='absolute bottom-5 left-4 right-4 flex-between'>
+        <div className='absolute z-[999] bottom-5 left-4 right-4 flex-between'>
           <AspectRatioSelector
             selectedRatio={selectedRatio}
             onChange={handleAspectRatioChange}
+            isVideoOnly={isVideoOnly}
           />
 
           <Gallery
@@ -60,6 +114,7 @@ const PreviewStep = ({
             getInputProps={getInputProps}
             isDragActive={isDragActive}
             onRemove={handleRemoveMedia}
+            isMixedMedia={isMixedMedia}
           />
         </div>
       )}

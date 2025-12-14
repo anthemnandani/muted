@@ -10,16 +10,14 @@ interface ScrollContainerProps {
 const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
   ({ children }, ref) => {
     return (
-      <main
+      <div
         id='main-scroll-container'
         ref={ref}
-        className='relative h-screen overflow-y-scroll snap-y snap-mandatory smooth-scroll hide-scrollbar'
+        className='relative w-full max-h-screen self-center overflow-y-scroll snap-y snap-mandatory smooth-scroll hide-scrollbar'
       >
-        <div className='grid place-items-center min-h-screen'>
-          <div className='h-full'>{children}</div>
-        </div>
+        {children}
         <NewCollection />
-      </main>
+      </div>
     );
   }
 );

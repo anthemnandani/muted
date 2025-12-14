@@ -76,7 +76,10 @@ const PostCard: React.FC<PostCardProps> = ({
   const isCommentPanelOpen = isPanelOpen && currentPostId === id;
 
   return (
-    <div className='h-screen flex-center relative' ref={postRef}>
+    <article
+      className='relative flex-center gap-4 snap-center snap-always mx-auto my-0 min-h-screen'
+      ref={postRef}
+    >
       {isHidden ? (
         <HiddenPost postId={id} />
       ) : isMuted ? (
@@ -84,9 +87,7 @@ const PostCard: React.FC<PostCardProps> = ({
       ) : (
         <div
           className={cn(
-            'flex justify-center w-full gap-4',
-            'transform transition-transform duration-300 ease-in-out',
-            'relative z-10',
+            'h-max flex-end grow gap-4 w-full transform transition-transform duration-300 ease-in-out',
             isPanelOpen ? 'translate-x-[-200px]' : 'translate-x-0'
           )}
         >
@@ -147,7 +148,7 @@ const PostCard: React.FC<PostCardProps> = ({
           />
         </div>
       )}
-    </div>
+    </article>
   );
 };
 

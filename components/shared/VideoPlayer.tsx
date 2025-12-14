@@ -75,7 +75,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         style={{
           width: '100%',
           height: '100%',
-          aspectRatio: numericRatio,
           '--media-object-fit': objectFit,
           '--play-button': 'none',
           '--fullscreen-button': 'none',

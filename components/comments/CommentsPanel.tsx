@@ -107,7 +107,7 @@ const CommentsPanel: React.FC<CommentsProps> = ({
   };
 
   return (
-    <div className='h-full flex flex-col bg-[#101010D9] border border-border-light overflow-hidden rounded-2xl'>
+    <div className='h-full flex flex-col bg-[#101010D9] border border-border-light overflow-hidden rounded-2xl z-[9999]'>
       <div
         ref={scrollRef}
         id='scrollableDiv'

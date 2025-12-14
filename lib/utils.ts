@@ -26,6 +26,7 @@ import {
   type AdminPost,
   type AdminReport,
   type ContentType,
+  type MediaFile,
   Message,
   ParentPostProps,
   type PostMedia,
@@ -357,6 +358,21 @@ export const getTargetRatio = (ratio?: string | null) => {
   if (isNaN(width) || isNaN(height) || height === 0) return 9 / 16;
 
   return width / height;
+};
+
+export const getAspectRatio = (
+  file: MediaFile,
+  dims: { width: number; height: number }
+) => {
+  const selectedRatio = file?.aspectRatio || 'original';
+  let ratio: number | undefined = undefined;
+
+  if (selectedRatio !== 'original') {
+    ratio = getTargetRatio(selectedRatio);
+  } else if (dims) {
+    ratio = dims.width / dims.height;
+  }
+  return ratio;
 };
 
 export function highlightTextContent(text: string) {

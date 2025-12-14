@@ -136,6 +136,10 @@
     @apply flex justify-between items-stretch;
   }
 
+  .flex-end {
+    @apply flex justify-center items-end;
+  }
+
   .flex-col-center {
     @apply flex flex-col items-center justify-center;
   }
@@ -371,23 +375,40 @@
   }
 
   .post-container {
-    @apply relative w-full snap-center snap-always flex-grow self-center flex-center;
+    @apply relative bg-gray-6 overflow-hidden rounded-2xl box-border bg-cover cursor-pointer self-center grow w-full min-w-[calc(500px_-_9.5rem)] max-h-[calc(100vh-2rem)];
   }
 
   .post-container-portrait {
-    @apply post-container max-w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(100vh-2rem)];
+    @apply post-container aspect-[9/16] min-h-[calc(888.889px-16.8889rem)] max-w-[calc((2rem+100vh)*0.5625)];
+  }
+
+  .post-container-four-five {
+    @apply post-container aspect-[4/5] min-h-[435px] max-w-[calc((100vh-2rem)*0.8)];
   }
 
   .post-container-square {
-    @apply post-container max-w-[700px] h-[calc(100vh-2rem)];
+    @apply post-container aspect-square min-h-[calc(375px-7.125rem)] max-w-[60vw];
+  }
+
+  .post-container-four-three {
+    @apply post-container aspect-[4/3] min-h-[282px] max-w-[60vw];
   }
 
   .post-container-landscape {
-    @apply post-container max-w-[950px] h-[70vh];
+    @apply post-container aspect-video min-h-[calc(281.25px_-_5.34375rem)] max-w-[60vw];
   }
 
   .post-container-fitted {
-    @apply relative w-full h-full;
+    @apply absolute inset-0 max-h-full w-full h-full flex-center;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 
   @media (max-width: 768px) {
@@ -416,15 +437,6 @@
     scroll-behavior: smooth;
     overscroll-behavior-y: contain;
     touch-action: pan-y;
-  }
-
-  /* Hide scrollbar but keep functionality */
-  .hide-scrollbar {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    &::-webkit-scrollbar {
-      display: none;
-    }
   }
 }
 

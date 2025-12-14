@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Play, X } from 'lucide-react';
-import React from 'react';
+import { Fragment } from 'react';
 
 const SortableMedia = ({
   file,
@@ -13,9 +13,10 @@ const SortableMedia = ({
   isActive,
   onClick,
   onRemove,
+  disabled,
 }: SortableMediaProps) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: file.id });
+    useSortable({ id: file.id, disabled });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -34,21 +35,27 @@ const SortableMedia = ({
       style={style}
       className={cn(
         'relative aspect-square w-18 h-18 cursor-pointer rounded-md overflow-hidden group',
-        isActive && 'ring-2 ring-neutral-100'
+        isActive && 'ring-2 ring-neutral-100',
+        disabled && 'cursor-default'
       )}
       onClick={onClick}
     >
-      <div
-        {...attributes}
-        {...listeners}
-        className='absolute top-1 left-1 z-10 size-4 rounded-full bg-black/60 hover:bg-black/80 flex-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab'
-      >
-        <GripVertical className='size-3 text-neutral-100' />
-      </div>
+      {!disabled && (
+        <div
+          {...attributes}
+          {...listeners}
+          className='absolute top-1 left-1 z-10 size-4 rounded-full bg-black/60 hover:bg-black/80 flex-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab'
+        >
+          <GripVertical className='size-3 text-neutral-100' />
+        </div>
+      )}
 
       <button
         onClick={handleRemove}
-        className='absolute top-1 right-1 z-10 size-4 rounded-full bg-black/60 hover:bg-black/80 flex-center opacity-0 group-hover:opacity-100 transition-opacity'
+        className={cn(
+          'absolute top-1 right-1 z-10 size-4 rounded-full bg-black/60 hover:bg-black/80',
+          'flex-center opacity-0 group-hover:opacity-100 transition-opacity'
+        )}
         aria-label='Remove media'
         type='button'
       >
@@ -62,7 +69,7 @@ const SortableMedia = ({
           alt={`Preview ${index + 1}`}
         />
       ) : (
-        <React.Fragment>
+        <Fragment>
           <div className='relative h-full w-full'>
             <video
               src={file.preview}
@@ -76,7 +83,7 @@ const SortableMedia = ({
               </div>
             </div>
           </div>
-        </React.Fragment>
+        </Fragment>
       )}
     </div>
   );

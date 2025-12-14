@@ -3,8 +3,10 @@
 import useMediaControls from '@/hooks/useMediaControls';
 import { PostMediaCarouselProps } from '@/lib/types';
 import { getTargetRatio } from '@/lib/utils';
-import useEmblaCarousel from 'embla-carousel-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
+import { type Swiper as SwiperType } from 'swiper';
+import 'swiper/css';
+import { Swiper, SwiperSlide } from 'swiper/react';
 import PostImageCard from '../cards/PostImageCard';
 import PostVideoCard from '../cards/PostVideoCard';
 import PostActionMenu from '../menus/PostActionMenu';
@@ -24,13 +26,8 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
   turnOffComments,
   isAdminPanel = false,
 }) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    loop: false,
-    align: 'start',
-    containScroll: 'trimSnaps',
-  });
-
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [swiperRef, setSwiperRef] = useState<SwiperType>();
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const {
     showControls,
@@ -39,40 +36,29 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
     controlsTimeoutRef,
   } = useMediaControls();
 
-  const scrollPrev = useCallback(
-    () => emblaApi && emblaApi.scrollPrev(),
-    [emblaApi]
-  );
-  const scrollNext = useCallback(
-    () => emblaApi && emblaApi.scrollNext(),
-    [emblaApi]
-  );
-
-  const onSelect = useCallback((api: any) => {
-    setSelectedIndex(api.selectedScrollSnap());
-  }, []);
-
-  useEffect(() => {
-    if (!emblaApi) return;
-    onSelect(emblaApi);
-    emblaApi.on('select', onSelect);
-    emblaApi.on('reInit', onSelect);
-  }, [emblaApi, onSelect]);
-
   const firstMedia = media?.[0];
+  let containerClass = 'post-container-portrait';
   const numericRatio = getTargetRatio(firstMedia?.aspectRatio);
 
-  let containerClass = 'post-container-portrait';
-
   if (!isAdminPanel) {
-    if (numericRatio === 1) {
-      containerClass = 'post-container-square';
-    } else if (numericRatio > 1) {
+    if (media.length > 1) {
+      containerClass = 'post-container-portrait';
+    } else if (numericRatio > 1.5) {
       containerClass = 'post-container-landscape';
+    } else if (numericRatio > 1.1) {
+      containerClass = 'post-container-four-three';
+    } else if (numericRatio >= 0.9) {
+      containerClass = 'post-container-square';
+    } else if (numericRatio >= 0.7) {
+      containerClass = 'post-container-four-five';
     }
   } else {
     containerClass = 'relative h-full w-full';
   }
+
+  const handleSlideChange = (swiper: SwiperType) => {
+    setCurrentIndex(swiper.activeIndex);
+  };
 
   return (
     <div
@@ -103,58 +89,55 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
           />
         </div>
       )}
-      <div
-        className='overflow-hidden w-full h-full rounded-2xl bg-black'
-        ref={emblaRef}
+      <Swiper
+        className='h-full w-full'
+        onSwiper={setSwiperRef}
+        onSlideChange={handleSlideChange}
+        noSwiping={true}
+        noSwipingClass='swiper-no-swiping'
+        preventInteractionOnTransition={true}
       >
-        <div className='flex w-full h-full touch-pan-y'>
-          {media?.map((item, index) => (
-            <div
-              key={`${postId}-${index}`}
-              className='flex-[0_0_100%] min-w-0 relative w-full h-full transform-gpu'
-              style={{ backfaceVisibility: 'hidden' }}
-            >
-              {item.fileType === 'video' ? (
-                <PostVideoCard
-                  playbackId={item.playbackId!}
-                  encodingStatus={item.encodingStatus}
-                  videoToken={item.videoToken}
-                  thumbnailToken={item.thumbnailToken}
-                  aspectRatio={item.aspectRatio}
-                  postId={postId}
-                  author={author}
-                  createdAt={createdAt}
-                  mentions={mentions}
-                  text={text}
-                  reposts={reposts}
-                  repostedBy={repostedBy}
-                  showControls={showControls}
-                />
-              ) : (
-                <PostImageCard
-                  image={item.fileUrl!}
-                  aspectRatio={item.aspectRatio}
-                  author={author}
-                  createdAt={createdAt}
-                  mentions={mentions}
-                  id={postId}
-                  text={text}
-                  reposts={reposts}
-                  repostedBy={repostedBy}
-                  isAdminPanel={isAdminPanel}
-                />
-              )}
-            </div>
-          ))}
-        </div>
+        {media?.map((item, index) => (
+          <SwiperSlide key={`${postId}-${index}`}>
+            {item.fileType === 'video' ? (
+              <PostVideoCard
+                playbackId={item.playbackId!}
+                encodingStatus={item.encodingStatus}
+                videoToken={item.videoToken}
+                thumbnailToken={item.thumbnailToken}
+                aspectRatio={item.aspectRatio}
+                postId={postId}
+                author={author}
+                createdAt={createdAt}
+                mentions={mentions}
+                text={text}
+                reposts={reposts}
+                repostedBy={repostedBy}
+                showControls={showControls}
+              />
+            ) : (
+              <PostImageCard
+                image={item.fileUrl!}
+                author={author}
+                createdAt={createdAt}
+                mentions={mentions}
+                id={postId}
+                text={text}
+                reposts={reposts}
+                repostedBy={repostedBy}
+                isAdminPanel={isAdminPanel}
+              />
+            )}
+          </SwiperSlide>
+        ))}
+      </Swiper>
 
-        <CarouselNavigation
-          selectedIndex={selectedIndex}
-          totalCount={media?.length || 0}
-          onPrev={scrollPrev}
-          onNext={scrollNext}
-        />
-      </div>
+      <CarouselNavigation
+        selectedIndex={currentIndex}
+        totalCount={media?.length || 0}
+        onPrev={() => swiperRef?.slidePrev()}
+        onNext={() => swiperRef?.slideNext()}
+      />
     </div>
   );
 };

@@ -30,12 +30,16 @@ export default async function PagesLayout({
   if ((dbUser && !dbUser.verified) || !dbUser) redirect('/account?origin=/');
 
   return (
-    <React.Fragment>
+    <div className='flex justify-between w-screen max-w-full flex-auto self-center'>
       <TopBar />
       <LeftSideBar />
-      <PostNavigatorProvider>{children}</PostNavigatorProvider>
+      <PostNavigatorProvider>
+        <main className='relative mx-auto my-0 w-full min-w-[420px] flex-shrink flex-stretch'>
+          {children}
+        </main>
+      </PostNavigatorProvider>
       {/* <BottomBar /> */}
       <Report />
-    </React.Fragment>
+    </div>
   );
 }

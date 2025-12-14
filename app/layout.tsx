@@ -156,7 +156,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             >
               <SocketProvider>
                 <ChatProvider>
-                  {children}
+                  <div className='min-h-screen flex flex-col'>{children}</div>
                   <Toaster />
                 </ChatProvider>
               </SocketProvider>
