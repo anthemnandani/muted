@@ -426,15 +426,7 @@ export interface PostFooterProps {
 export interface VideoContainerProps {
   player: MuxPlayerRef | null;
   children: React.ReactNode;
-  author: AuthorInfoProps;
-  createdAt: Date;
-  id: string;
-  text: string | null;
   setInView: (inView: boolean) => void;
-  reposts: Repost[];
-  repostedBy?: AuthorInfoProps;
-  mentions?: Mention[];
-  isThreadView?: boolean;
   showControls: boolean;
 }
 
@@ -460,13 +452,6 @@ export interface MediaLayerProps {
 
 export interface PostImageCardProps {
   image: string;
-  createdAt: Date;
-  author: AuthorInfoProps;
-  id: string;
-  text: string | null;
-  reposts: Repost[];
-  repostedBy?: AuthorInfoProps;
-  mentions?: Mention[];
   isAdminPanel?: boolean;
 }
 
@@ -474,12 +459,6 @@ export interface PostVideoCardProps {
   playbackId: string;
   postId: string;
   encodingStatus?: EncodingStatus;
-  author: AuthorInfoProps;
-  createdAt: Date;
-  text?: string | null;
-  reposts: Repost[];
-  repostedBy?: AuthorInfoProps;
-  mentions?: Mention[];
   aspectRatio?: string;
   originalDimensions?: { width: number; height: number };
   videoToken?: string;

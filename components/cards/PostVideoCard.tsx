@@ -11,12 +11,6 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   postId,
   videoToken,
   thumbnailToken,
-  author,
-  createdAt,
-  text,
-  reposts,
-  repostedBy,
-  mentions,
   aspectRatio,
   showControls,
   encodingStatus,
@@ -97,14 +91,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   return (
     <VideoContainer
       player={player}
-      author={author}
-      createdAt={createdAt}
       setInView={setInView}
-      id={postId}
-      text={text ?? ''}
-      reposts={reposts}
-      repostedBy={repostedBy}
-      mentions={mentions}
       showControls={showControls}
     >
       <VideoPlayer

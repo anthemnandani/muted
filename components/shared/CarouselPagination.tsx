@@ -12,7 +12,7 @@ const CarouselPagination = ({
 
   return (
     <div
-      className='absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-50 pointer-events-auto'
+      className='absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 z-50 pointer-events-auto'
       onClick={(e) => e.stopPropagation()}
     >
       {Array.from({ length: totalCount }).map((_, index) => (

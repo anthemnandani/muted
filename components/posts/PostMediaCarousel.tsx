@@ -13,6 +13,7 @@ import PostVideoCard from '../cards/PostVideoCard';
 import PostActionMenu from '../menus/PostActionMenu';
 import CarouselNavigation from '../shared/CarouselNavigation';
 import CarouselPagination from '../shared/CarouselPagination';
+import PostFooter from './PostFooter';
 
 const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
   media,
@@ -125,30 +126,34 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                 aspectRatio={item.aspectRatio}
                 originalDimensions={item.originalDimensions}
                 postId={postId}
-                author={author}
-                createdAt={createdAt}
-                mentions={mentions}
-                text={text}
-                reposts={reposts}
-                repostedBy={repostedBy}
                 showControls={showControls}
               />
             ) : (
               <PostImageCard
                 image={item.fileUrl!}
-                author={author}
-                createdAt={createdAt}
-                mentions={mentions}
-                id={postId}
-                text={text}
-                reposts={reposts}
-                repostedBy={repostedBy}
                 isAdminPanel={isAdminPanel}
               />
             )}
           </SwiperSlide>
         ))}
       </Swiper>
+
+      <div
+        className='absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 
+      to-transparent z-10 pointer-events-none'
+      />
+
+      <div className='absolute bottom-0 left-0 right-0 z-20'>
+        <PostFooter
+          author={author}
+          createdAt={createdAt}
+          id={postId}
+          text={text}
+          reposts={reposts}
+          repostedBy={repostedBy}
+          mentions={mentions}
+        />
+      </div>
 
       <CarouselNavigation
         selectedIndex={currentIndex}
