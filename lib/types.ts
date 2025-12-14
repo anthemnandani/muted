@@ -1329,6 +1329,12 @@ export interface CarouselNavigationProps {
   className?: string;
 }
 
+export interface CarouselPaginationProps {
+  selectedIndex: number;
+  totalCount: number;
+  onSelect: (index: number) => void;
+}
+
 export type ContentType = 'ALL' | 'IMAGE' | 'VIDEO';
 export type PostStatusFilter = 'ALL' | PostStatus;
 export type UserStatusFilter = 'ALL' | UserStatus;

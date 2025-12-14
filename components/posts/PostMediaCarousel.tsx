@@ -12,6 +12,7 @@ import PostImageCard from '../cards/PostImageCard';
 import PostVideoCard from '../cards/PostVideoCard';
 import PostActionMenu from '../menus/PostActionMenu';
 import CarouselNavigation from '../shared/CarouselNavigation';
+import CarouselPagination from '../shared/CarouselPagination';
 
 const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
   media,
@@ -154,6 +155,12 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
         totalCount={media?.length || 0}
         onPrev={() => swiperRef?.slidePrev()}
         onNext={() => swiperRef?.slideNext()}
+      />
+
+      <CarouselPagination
+        selectedIndex={currentIndex}
+        totalCount={media?.length || 0}
+        onSelect={(index) => swiperRef?.slideTo(index)}
       />
     </div>
   );
