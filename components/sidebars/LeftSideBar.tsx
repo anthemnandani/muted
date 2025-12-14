@@ -11,32 +11,29 @@ import NotificationSidebar from './NotificationSidebar';
 import SearchSidebar from './SearchSidebar';
 
 const LeftSideBar = () => {
-  const { isMobile } = useDevice();
   const { handleHomeClick } = useHomeNavigation();
 
   return (
-    !isMobile && (
-      <Fragment>
-        <section className='hidden fixed left-0 top-0 z-[1000] w-[76px] h-screen md:flex-col-between'>
-          <Link href='/' className='logo' onClick={handleHomeClick}>
-            <Image
-              src={`/assets/muted-logo-white.svg`}
-              alt='Logo'
-              width={36}
-              height={36}
-              priority
-            />
-          </Link>
-          <Navigation />
+    <div className='z-[99] w-[76px] flex-shrink-0'>
+      <section className='hidden md:fixed left-0 top-0 w-[76px] overscroll-contain overflow-x-clip overflow-y-hidden h-screen md:flex-col-between'>
+        <Link href='/' className='logo' onClick={handleHomeClick}>
+          <Image
+            src={`/assets/muted-logo-white.svg`}
+            alt='Logo'
+            width={36}
+            height={36}
+            priority
+          />
+        </Link>
+        <Navigation />
 
-          <div className='flex flex-col items-center gap-8 mt-[15px] mb-10'>
-            <UserMenu />
-          </div>
-        </section>
-        <SearchSidebar />
-        <NotificationSidebar />
-      </Fragment>
-    )
+        <div className='flex flex-col items-center gap-8 mt-[15px] mb-10'>
+          <UserMenu />
+        </div>
+      </section>
+      <SearchSidebar />
+      <NotificationSidebar />
+    </div>
   );
 };
 

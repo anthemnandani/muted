@@ -1,10 +1,8 @@
 import { PostImageCardProps } from '@/lib/types';
-import { cn, getTargetRatio } from '@/lib/utils';
 import PostFooter from '../posts/PostFooter';
 
 const PostImageCard: React.FC<PostImageCardProps> = ({
   image,
-  aspectRatio,
   author,
   createdAt,
   id,
@@ -15,24 +13,10 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
   isAdminPanel = false,
 }) => {
   return (
-    <div
-      className={cn({
-        'post-container-fitted': !isAdminPanel,
-      })}
-    >
-      <div className='relative w-full h-full'>
-        <img
-          alt='Post'
-          loading='lazy'
-          src={image}
-          className='object-cover'
-          style={{
-            aspectRatio: getTargetRatio(aspectRatio),
-          }}
-        />
-      </div>
+    <div className={isAdminPanel ? '' : 'post-container-fitted'}>
+      <img alt='Post' loading='lazy' src={image} className='object-cover' />
 
-      <div className='absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none' />
+      <div className='absolute z-10 inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none' />
       <PostFooter
         author={author}
         createdAt={createdAt}

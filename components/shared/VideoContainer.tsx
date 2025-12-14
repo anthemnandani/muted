@@ -5,6 +5,7 @@ import { Fragment, useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import PostFooter from '../posts/PostFooter';
 import VolumeControls from './VolumeControls';
+import { cn } from '@/lib/utils';
 
 export const VideoContainer: React.FC<VideoContainerProps> = ({
   id,

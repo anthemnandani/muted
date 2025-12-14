@@ -20,6 +20,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   aspectRatio,
   showControls,
   encodingStatus,
+  originalDimensions,
 }) => {
   const [inView, setInView] = useState(false);
   const [player, setPlayer] = useState<MuxPlayerRef | null>(null);
@@ -119,6 +120,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
         onTimeUpdate={handleTimeUpdate}
         onVolumeChange={handleVolumeSync}
         aspectRatio={aspectRatio}
+        originalDimensions={originalDimensions}
       />
     </VideoContainer>
   );

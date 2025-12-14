@@ -18,6 +18,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   videoToken,
   thumbnailToken,
   aspectRatio,
+  originalDimensions,
 }) => {
   const playerRef = useRef<MuxPlayerRef>(null);
   const [isPaused, setIsPaused] = useState(false);
@@ -44,7 +45,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     [videoToken, thumbnailToken]
   );
 
-  const numericRatio = getTargetRatio(aspectRatio);
+  const numericRatio = getTargetRatio(aspectRatio, originalDimensions);
 
   const objectFit = numericRatio >= 1 ? 'cover' : 'contain';
 
@@ -75,7 +76,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         style={{
           width: '100%',
           height: '100%',
-          aspectRatio: numericRatio,
           '--media-object-fit': objectFit,
           '--play-button': 'none',
           '--fullscreen-button': 'none',

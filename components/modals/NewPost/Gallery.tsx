@@ -27,6 +27,7 @@ import {
 } from '@dnd-kit/sortable';
 import { Plus } from 'lucide-react';
 import SortableMedia from './SortableMedia';
+import { useMemo } from 'react';
 
 const Gallery = ({
   mediaFiles,
@@ -35,6 +36,7 @@ const Gallery = ({
   getInputProps,
   isDragActive,
   onRemove,
+  isMixedMedia,
 }: GalleryProps) => {
   const { currentMediaIndex, setCurrentMediaIndex } = usePostDialog();
   const sensors = useSensors(
@@ -93,6 +95,7 @@ const Gallery = ({
             <SortableContext
               items={mediaFiles.map((file) => file.id)}
               strategy={rectSortingStrategy}
+              disabled={isMixedMedia}
             >
               <div className='grid grid-cols-3 gap-2 max-w-[240px]'>
                 {mediaFiles.map((file, index) => (
@@ -103,6 +106,7 @@ const Gallery = ({
                     isActive={currentMediaIndex === index}
                     onClick={() => setCurrentMediaIndex(index)}
                     onRemove={onRemove}
+                    disabled={isMixedMedia}
                   />
                 ))}
                 {mediaFiles.length < UPLOAD_CONSTRAINTS.MAX_ITEMS && (

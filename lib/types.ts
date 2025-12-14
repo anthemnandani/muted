@@ -381,6 +381,7 @@ export interface SortableMediaProps {
   isActive: boolean;
   onClick: () => void;
   onRemove: (id: string) => void;
+  disabled?: boolean;
 }
 
 export interface UploadStepProps {
@@ -409,6 +410,7 @@ export interface GalleryProps {
   getInputProps: any;
   isDragActive: boolean;
   onRemove: (id: string) => void;
+  isMixedMedia: boolean;
 }
 
 export interface PostFooterProps {
@@ -449,9 +451,15 @@ export interface MediaControlsProps {
   media?: PostMedia[];
 }
 
+export interface MediaLayerProps {
+  file: MediaFile;
+  isActive: boolean;
+  isPostStep: boolean;
+  updateMediaFile: any;
+}
+
 export interface PostImageCardProps {
   image: string;
-  aspectRatio?: string;
   createdAt: Date;
   author: AuthorInfoProps;
   id: string;
@@ -473,6 +481,7 @@ export interface PostVideoCardProps {
   repostedBy?: AuthorInfoProps;
   mentions?: Mention[];
   aspectRatio?: string;
+  originalDimensions?: { width: number; height: number };
   videoToken?: string;
   thumbnailToken?: string;
   showControls: boolean;
@@ -526,6 +535,7 @@ export interface VideoPlayerProps {
   videoToken?: string;
   thumbnailToken?: string;
   aspectRatio?: string;
+  originalDimensions?: { width: number; height: number };
 }
 
 export interface MediaTypeIndicatorProps {
@@ -912,6 +922,7 @@ export type UserSuggestion = {
 export interface AspectRatioSelectorProps {
   selectedRatio: string;
   onChange: (ratio: string) => void;
+  isVideoOnly: boolean;
 }
 
 export interface DiscardPostProps {

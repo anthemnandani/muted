@@ -60,7 +60,7 @@ const usePostDialog = create<ToggleState>((set, get) => ({
         file: new File([], m.fileUrl?.split('/').pop() ?? 'mediafile', {
           type: m.fileType === 'video' ? 'video/mp4' : 'image/jpeg',
         }),
-        aspectRatio: m.aspectRatio ?? '1:1',
+        aspectRatio: m.aspectRatio ?? 'original',
       }));
       setMediaFiles(mediaFilesForStore);
     } else {

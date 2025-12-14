@@ -9,24 +9,16 @@ import {
 } from '@/components/ui/hover-card';
 import { AspectRatioSelectorProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import useFileStore from '@/store/fileStore';
 import usePostDialog from '@/store/postDialog';
 import { Image } from 'lucide-react';
 
 const AspectRatioSelector = ({
   selectedRatio,
   onChange,
+  isVideoOnly,
 }: AspectRatioSelectorProps) => {
-  const {
-    currentMediaIndex,
-    showRatioSelector,
-    setShowRatioSelector,
-    showGallery,
-  } = usePostDialog();
-  const { mediaFiles } = useFileStore();
-
-  const currentFile = mediaFiles[currentMediaIndex];
-  const isVideo = currentFile?.type === 'video';
+  const { showRatioSelector, setShowRatioSelector, showGallery } =
+    usePostDialog();
 
   const imageRatios: {
     value: string;
@@ -82,7 +74,7 @@ const AspectRatioSelector = ({
     },
   ];
 
-  const ratios = isVideo ? videoRatios : imageRatios;
+  const ratios = isVideoOnly ? videoRatios : imageRatios;
 
   return (
     <HoverCard open={showRatioSelector} onOpenChange={setShowRatioSelector}>
@@ -91,7 +83,7 @@ const AspectRatioSelector = ({
           variant='ghost'
           size='icon'
           className='rounded-full opacity-100 bg-[#1A1A1ACC] hover:opacity-70 transition-all duration-200 size-8'
-          title={isVideo ? 'Crop video' : 'Crop image'}
+          title='Change aspect ratio'
           disabled={showGallery}
         >
           <Icons.crop className='size-4' />

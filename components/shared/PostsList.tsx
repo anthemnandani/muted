@@ -1,7 +1,7 @@
 'use client';
 
 import { PostsListProps } from '@/lib/types';
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef, Fragment, useMemo } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import PostCard from '../cards/PostCard';
 import { Icons } from '../icons';
@@ -20,7 +20,7 @@ const PostsList: React.FC<PostsListProps> = ({
 }) => {
   const firstPostRef = useRef<HTMLDivElement>(null);
 
-  const uniquePosts = React.useMemo(() => {
+  const uniquePosts = useMemo(() => {
     if (!posts) return [];
     const seenPosts = new Set();
     return posts.filter((post) => {
@@ -57,7 +57,7 @@ const PostsList: React.FC<PostsListProps> = ({
   ]);
 
   return (
-    <React.Fragment>
+    <Fragment>
       {!isLoading && uniquePosts.length === 0 && (
         <div className='flex-center w-full h-screen'>
           <p className='text-gray-3'>{emptyStateMessage || 'No posts found'}</p>
@@ -90,7 +90,6 @@ const PostsList: React.FC<PostsListProps> = ({
                   : `post-${post.id}`
               }
               ref={index === 0 ? firstPostRef : null}
-              className='post-card-item'
             >
               <PostCard
                 {...post}
@@ -102,7 +101,7 @@ const PostsList: React.FC<PostsListProps> = ({
           ))}
         </InfiniteScroll>
       )}
-    </React.Fragment>
+    </Fragment>
   );
 };
 
