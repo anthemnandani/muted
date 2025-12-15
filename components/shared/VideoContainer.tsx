@@ -21,7 +21,7 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
   }, [inView, setInView]);
 
   return (
-    <div ref={ref} className='post-container-fitted'>
+    <div ref={ref} className='post-container-fitted swiper-no-swiping'>
       {children}
       <Fragment>
         <div className='absolute top-5 left-4 z-50'>
