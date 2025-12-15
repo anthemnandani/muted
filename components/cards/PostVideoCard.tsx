@@ -15,6 +15,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   showControls,
   encodingStatus,
   originalDimensions,
+  isCarousel,
 }) => {
   const [inView, setInView] = useState(false);
   const [player, setPlayer] = useState<MuxPlayerRef | null>(null);
@@ -108,6 +109,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
         onVolumeChange={handleVolumeSync}
         aspectRatio={aspectRatio}
         originalDimensions={originalDimensions}
+        isCarousel={isCarousel}
       />
     </VideoContainer>
   );

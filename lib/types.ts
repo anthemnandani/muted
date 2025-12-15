@@ -464,6 +464,7 @@ export interface PostVideoCardProps {
   videoToken?: string;
   thumbnailToken?: string;
   showControls: boolean;
+  isCarousel?: boolean;
 }
 
 export interface PostActionMenuProps {
@@ -515,6 +516,7 @@ export interface VideoPlayerProps {
   thumbnailToken?: string;
   aspectRatio?: string;
   originalDimensions?: { width: number; height: number };
+  isCarousel?: boolean;
 }
 
 export interface MediaTypeIndicatorProps {

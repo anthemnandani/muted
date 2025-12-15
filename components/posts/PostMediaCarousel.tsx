@@ -127,6 +127,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                 originalDimensions={item.originalDimensions}
                 postId={postId}
                 showControls={showControls}
+                isCarousel={media?.length > 1}
               />
             ) : (
               <PostImageCard

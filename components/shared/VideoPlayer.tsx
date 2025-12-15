@@ -19,6 +19,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   thumbnailToken,
   aspectRatio,
   originalDimensions,
+  isCarousel,
 }) => {
   const playerRef = useRef<MuxPlayerRef>(null);
   const [isPaused, setIsPaused] = useState(false);
@@ -47,7 +48,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   const numericRatio = getTargetRatio(aspectRatio, originalDimensions);
 
-  const objectFit = numericRatio >= 1 ? 'cover' : 'contain';
+  const objectFit = numericRatio >= 0.9 ? 'cover' : 'contain';
 
   return (
     <Fragment>
@@ -75,8 +76,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         }}
         style={{
           width: '100%',
-          height: '100%',
-          '--media-object-fit': objectFit,
+          height: numericRatio <= 9 / 16 || !isCarousel ? '100%' : 'auto',
+          '--media-object-fit': 'cover',
+          aspectRatio: numericRatio,
           '--play-button': 'none',
           '--fullscreen-button': 'none',
           '--volume-range': 'none',
