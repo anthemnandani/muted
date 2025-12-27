@@ -4,18 +4,18 @@ import useGetComments from '@/hooks/useGetComments';
 import { CommentsProps } from '@/lib/types';
 import useAddCommentStore from '@/store/addComment';
 import useCommentPanelStore from '@/store/commentPanel';
+import useSortByComments from '@/store/sortByComments';
 import { motion, useAnimation } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useInView } from 'react-intersection-observer';
+import CommentCard from '../cards/CommentCard';
 import PostInfoCard from '../cards/PostInfoCard';
 import { Icons } from '../icons';
 import CommentCardSkeleton from '../skeletons/CommentCardSkeleton';
 import AddComment from './AddComment';
-import CommentCard from '../cards/CommentCard';
 import CommentsPanelHeader from './CommentsPanelHeader';
 import LinkShare from './LinkShare';
-import useSortByComments from '@/store/sortByComments';
 
 const CommentsPanel: React.FC<CommentsProps> = ({
   postId,
@@ -29,8 +29,6 @@ const CommentsPanel: React.FC<CommentsProps> = ({
   reposts,
   repostedBy,
 }) => {
-  const [isSwitchingPost, setIsSwitchingPost] = useState(false);
-  const prevPostIdRef = useRef(postId);
   const { reset } = useAddCommentStore();
   const { setScrollPosition, getScrollPosition } = useCommentPanelStore();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -64,20 +62,6 @@ const CommentsPanel: React.FC<CommentsProps> = ({
   }, [isInfoCardVisible, headerControls]);
 
   useEffect(() => {
-    if (prevPostIdRef.current !== postId) {
-      setIsSwitchingPost(true);
-      prevPostIdRef.current = postId;
-      if (scrollRef.current) scrollRef.current.scrollTop = 0;
-    }
-  }, [postId]);
-
-  useEffect(() => {
-    if (!isLoading && isSwitchingPost) {
-      setIsSwitchingPost(false);
-    }
-  }, [isLoading, isSwitchingPost]);
-
-  useEffect(() => {
     if (!isOpen) reset();
   }, [isOpen, reset]);
 
@@ -90,15 +74,13 @@ const CommentsPanel: React.FC<CommentsProps> = ({
   }, [postId, setScrollPosition]);
 
   useEffect(() => {
-    if (scrollRef.current && postId && !isLoading && !isSwitchingPost) {
+    if (scrollRef.current && postId && !isLoading) {
       const savedPosition = getScrollPosition(postId);
       if (savedPosition > 0) {
         scrollRef.current.scrollTop = savedPosition;
       }
     }
-  }, [postId, isLoading, isSwitchingPost, getScrollPosition]);
-
-  const showLoader = isLoading || isSwitchingPost;
+  }, [postId, isLoading, getScrollPosition]);
 
   const renderSkeletons = () => {
     return Array(7)
@@ -139,7 +121,7 @@ const CommentsPanel: React.FC<CommentsProps> = ({
         </motion.div>
 
         <div className='flex-1'>
-          {showLoader ? (
+          {isLoading ? (
             <div className='w-full'>{renderSkeletons()}</div>
           ) : (
             <InfiniteScroll

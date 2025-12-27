@@ -1,18 +1,15 @@
 'use client';
 
-import type { MuxPlayerRef } from '@/lib/types';
+import { VolumeControlsProps } from '@/lib/types';
+import { cn } from '@/lib/utils';
 import useVideoPlayer from '@/store/videoPlayer';
 import { Volume2, VolumeX } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-interface VolumeControlsProps {
-  player: MuxPlayerRef | null;
-  showControls: boolean;
-}
-
 const VolumeControls: React.FC<VolumeControlsProps> = ({
   player,
   showControls,
+  isVertical,
 }) => {
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const { isMuted, setIsMuted } = useVideoPlayer();
@@ -39,11 +36,15 @@ const VolumeControls: React.FC<VolumeControlsProps> = ({
     }
   }, [player]);
 
+  if (!player) return null;
+
   return (
     <div
-      className={`flex items-center transition-opacity duration-200 ${
-        showControls ? 'opacity-100' : 'opacity-0'
-      }`}
+      className={cn(
+        'flex items-center transition-opacity duration-200 relative z-50',
+        showControls ? 'opacity-100' : 'opacity-0',
+        isVertical ? 'flex-col-reverse absolute bottom-2 right-2' : 'flex-row'
+      )}
       onMouseEnter={() => setShowVolumeSlider(true)}
       onMouseLeave={() => setShowVolumeSlider(false)}
       onTouchStart={(e) => {
@@ -52,23 +53,42 @@ const VolumeControls: React.FC<VolumeControlsProps> = ({
       }}
     >
       <button
-        className='text-white drop-shadow-lg focus:outline-none focus-visible:outline-none select-none'
+        className={cn(
+          isVertical
+            ? 'post-detail-btn group'
+            : 'text-white drop-shadow-lg focus:outline-none focus-visible:outline-none select-none p-2'
+        )}
         onClick={(e) => {
           e.stopPropagation();
           setIsMuted(!isMuted);
         }}
       >
         {isMuted ? (
-          <VolumeX className='size-6 stroke-[2.5px]' />
+          <VolumeX
+            className={cn(
+              'size-6 stroke-[2.5px]',
+              isVertical && 'group-hover:opacity-50'
+            )}
+          />
         ) : (
-          <Volume2 className='size-6 stroke-[2.5px]' />
+          <Volume2
+            className={cn(
+              'size-6 stroke-[2.5px]',
+              isVertical && 'group-hover:opacity-50'
+            )}
+          />
         )}
       </button>
 
       <div
-        className={`h-6 w-20 bg-black/40 rounded-full px-2 flex items-center drop-shadow-lg backdrop-blur-sm ml-2 transition-opacity duration-200 ${
-          showVolumeSlider ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+        className={cn(
+          'bg-white/10 hover:bg-white/5 rounded-full flex-center drop-shadow-lg backdrop-blur-sm transition-all duration-200',
+          showVolumeSlider
+            ? 'opacity-100 visible'
+            : 'opacity-0 invisible pointer-events-none',
+
+          isVertical ? 'h-28 w-8 mb-2 flex-col' : 'h-8 w-24 ml-2 px-2'
+        )}
         onTouchStart={(e) => e.stopPropagation()}
       >
         <input
@@ -79,7 +99,18 @@ const VolumeControls: React.FC<VolumeControlsProps> = ({
           step='0.1'
           value={isMuted ? 0 : volume}
           onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-          className='w-full h-1 bg-white/30 rounded-full accent-white cursor-pointer'
+          className={cn(
+            'bg-white/50 rounded-full cursor-pointer appearance-none',
+            '[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:!bg-white',
+            '[&::-webkit-slider-thumb]:!rounded-full [&::-webkit-slider-thumb]:!size-4',
+            '[&::-webkit-slider-thumb]:!-mt-1 [&::-webkit-slider-runnable-track]:!h-full',
+            '[&::-moz-range-track]:!h-full [&::-moz-range-track]:!bg-white/50 [&::-moz-range-track]:!rounded-full',
+            '[&::-moz-range-thumb]:!bg-white [&::-moz-range-thumb]:!rounded-full',
+            '[&::-moz-range-thumb]:!size-4 [&::-moz-range-thumb]:border-none',
+            isVertical
+              ? 'h-2 w-24 -rotate-90 origin-center my-auto'
+              : 'w-full h-2'
+          )}
         />
       </div>
     </div>

@@ -124,6 +124,7 @@ const PostCard: React.FC<PostCardProps> = ({
           )}
         >
           <CommentsPanel
+            key={`comments-${id}`}
             postId={id}
             onClose={() => closePanel()}
             authorId={author.id}

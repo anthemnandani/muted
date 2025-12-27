@@ -23,6 +23,7 @@ import { LucideIcon } from 'lucide-react';
 import { ElementRef, ReactNode, RefObject } from 'react';
 import { DropzoneInputProps, DropzoneRootProps } from 'react-dropzone';
 import { type Area } from 'react-easy-crop';
+import { type Swiper } from 'swiper';
 import Player from 'video.js/dist/types/player';
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number];
@@ -428,6 +429,7 @@ export interface VideoContainerProps {
   children: React.ReactNode;
   setInView: (inView: boolean) => void;
   showControls: boolean;
+  isModal?: boolean;
 }
 
 export interface MediaControlsProps {
@@ -452,7 +454,14 @@ export interface MediaLayerProps {
 
 export interface PostImageCardProps {
   image: string;
+  aspectRatio?: string;
+  originalDimensions?: { width: number; height: number };
   isAdminPanel?: boolean;
+  totalCount?: number;
+  currentIndex: number;
+  swiperRef?: Swiper;
+  isCarousel?: boolean;
+  isModal?: boolean;
 }
 
 export interface PostVideoCardProps {
@@ -465,6 +474,17 @@ export interface PostVideoCardProps {
   thumbnailToken?: string;
   showControls: boolean;
   isCarousel?: boolean;
+  currentIndex: number;
+  totalCount?: number;
+  swiperRef?: Swiper;
+  onPlayerRegister?: (player: MuxPlayerRef | null) => void;
+  isModal?: boolean;
+}
+
+export interface VolumeControlsProps {
+  player: MuxPlayerRef | null;
+  showControls: boolean;
+  isVertical?: boolean;
 }
 
 export interface PostActionMenuProps {
@@ -476,7 +496,7 @@ export interface PostActionMenuProps {
   hideLikes: boolean;
   showControls: boolean;
   pinned?: boolean;
-  isThread?: boolean;
+  isModal?: boolean;
   media?: PostMedia[];
 }
 
@@ -493,6 +513,11 @@ export interface PostMediaCarouselProps {
   hideLikes?: boolean;
   turnOffComments?: boolean;
   isAdminPanel?: boolean;
+  isModal?: boolean;
+  onNavigate?: (direction: 'up' | 'down') => void;
+  isFirstPost?: boolean;
+  isLastPost?: boolean;
+  isFetchingMore?: boolean;
 }
 
 export interface ProfileVideoPlayerProps {
@@ -515,8 +540,12 @@ export interface VideoPlayerProps {
   videoToken?: string;
   thumbnailToken?: string;
   aspectRatio?: string;
+  currentIndex: number;
+  totalCount?: number;
+  swiperRef?: Swiper;
   originalDimensions?: { width: number; height: number };
   isCarousel?: boolean;
+  isModal?: boolean;
 }
 
 export interface MediaTypeIndicatorProps {

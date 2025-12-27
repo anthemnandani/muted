@@ -3,8 +3,8 @@
 import { MuxPlayerRef, PostVideoCardProps } from '@/lib/types';
 import useVideoPlayer from '@/store/videoPlayer';
 import { useCallback, useEffect, useState } from 'react';
-import { VideoContainer } from '../shared/VideoContainer';
-import { VideoPlayer } from '../shared/VideoPlayer';
+import VideoContainer from '../shared/VideoContainer';
+import VideoPlayer from '../shared/VideoPlayer';
 
 const PostVideoCard: React.FC<PostVideoCardProps> = ({
   playbackId,
@@ -14,8 +14,13 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   aspectRatio,
   showControls,
   encodingStatus,
+  onPlayerRegister,
   originalDimensions,
   isCarousel,
+  totalCount,
+  currentIndex,
+  swiperRef,
+  isModal,
 }) => {
   const [inView, setInView] = useState(false);
   const [player, setPlayer] = useState<MuxPlayerRef | null>(null);
@@ -24,6 +29,12 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
     videoToken,
     thumbnailToken,
   });
+
+  useEffect(() => {
+    if (onPlayerRegister) {
+      onPlayerRegister(player);
+    }
+  }, [player, onPlayerRegister]);
 
   useEffect(() => {
     setStableTokens({ videoToken, thumbnailToken });
@@ -94,6 +105,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
       player={player}
       setInView={setInView}
       showControls={showControls}
+      isModal={isModal}
     >
       <VideoPlayer
         playbackId={playbackId}
@@ -110,6 +122,10 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
         aspectRatio={aspectRatio}
         originalDimensions={originalDimensions}
         isCarousel={isCarousel}
+        totalCount={totalCount}
+        currentIndex={currentIndex}
+        swiperRef={swiperRef}
+        isModal={isModal}
       />
     </VideoContainer>
   );

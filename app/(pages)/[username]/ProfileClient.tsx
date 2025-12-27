@@ -1,6 +1,7 @@
 'use client';
 
 import NotFound from '@/app/not-found';
+import PostDetailDialog from '@/components/modals/PostDetailDialog';
 import BlockedUserContent from '@/components/profile/BlockedUserContent';
 import DeletedUserContent from '@/components/profile/DeletedUserContent';
 import UserProfile from '@/components/profile/UserProfile';
@@ -104,6 +105,7 @@ const ProfileClient = ({ username }: { username: string }) => {
           isBlocked={isBlockedByMe ?? false}
         />
       </div>
+      <PostDetailDialog />
     </div>
   );
 };

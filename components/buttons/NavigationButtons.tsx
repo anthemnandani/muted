@@ -9,7 +9,7 @@ const NavigationButtons = ({
   handleNavigation,
 }: NavigationButtonsProps) => {
   return (
-    <div className='fixed right-4 top-1/2 -translate-y-1/2 flex flex-col justify-center gap-4 w-fit'>
+    <div className='absolute z-50 right-4 top-1/2 -translate-y-1/2 flex flex-col justify-center gap-4 w-fit'>
       <button
         type='button'
         title='Up'

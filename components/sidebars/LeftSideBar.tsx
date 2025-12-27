@@ -22,6 +22,7 @@ const LeftSideBar = () => {
             alt='Logo'
             width={36}
             height={36}
+            unoptimized
             priority
           />
         </Link>

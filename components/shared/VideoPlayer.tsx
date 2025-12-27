@@ -4,9 +4,10 @@ import { type MuxPlayerRef, VideoPlayerProps } from '@/lib/types';
 import { cn, getTargetRatio, getVideoThumbnailUrl } from '@/lib/utils';
 import MuxPlayer from '@mux/mux-player-react';
 import { Play } from 'lucide-react';
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import CarouselNavigation from './CarouselNavigation';
 
-export const VideoPlayer: React.FC<VideoPlayerProps> = ({
+const VideoPlayer: React.FC<VideoPlayerProps> = ({
   playbackId,
   onPlayerReady,
   status,
@@ -20,6 +21,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   aspectRatio,
   originalDimensions,
   isCarousel,
+  currentIndex,
+  totalCount,
+  swiperRef,
+  isModal = false,
 }) => {
   const playerRef = useRef<MuxPlayerRef>(null);
   const [isPaused, setIsPaused] = useState(false);
@@ -47,11 +52,22 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   );
 
   const numericRatio = getTargetRatio(aspectRatio, originalDimensions);
+  const isLandscape = numericRatio > 1;
+  const isPortrait = numericRatio <= 1;
 
-  const objectFit = numericRatio >= 0.9 ? 'cover' : 'contain';
+  const shouldUseAutoHeight = isModal && isLandscape;
+  const shouldUseAutoWidth = isModal && isPortrait;
 
   return (
-    <Fragment>
+    <div
+      className='relative flex-center'
+      style={{
+        aspectRatio: numericRatio,
+        width: shouldUseAutoWidth ? 'auto' : '100%',
+        height:
+          (isCarousel && !isModal) || shouldUseAutoHeight ? 'auto' : '100%',
+      }}
+    >
       <MuxPlayer
         ref={playerRef}
         playbackId={status === 'encoded' ? playbackId : undefined}
@@ -76,9 +92,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         }}
         style={{
           width: '100%',
-          height: numericRatio <= 9 / 16 || !isCarousel ? '100%' : 'auto',
+          height: '100%',
           '--media-object-fit': 'cover',
-          aspectRatio: numericRatio,
           '--play-button': 'none',
           '--fullscreen-button': 'none',
           '--volume-range': 'none',
@@ -107,6 +122,16 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           </button>
         </div>
       )}
-    </Fragment>
+      {!isModal && (
+        <CarouselNavigation
+          selectedIndex={currentIndex}
+          totalCount={totalCount || 0}
+          onPrev={() => swiperRef?.slidePrev()}
+          onNext={() => swiperRef?.slideNext()}
+        />
+      )}
+    </div>
   );
 };
+
+export default VideoPlayer;

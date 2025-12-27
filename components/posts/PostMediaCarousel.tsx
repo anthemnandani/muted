@@ -1,18 +1,19 @@
 'use client';
 
 import useMediaControls from '@/hooks/useMediaControls';
-import { PostMediaCarouselProps } from '@/lib/types';
+import { type MuxPlayerRef, PostMediaCarouselProps } from '@/lib/types';
 import { cn, getTargetRatio } from '@/lib/utils';
 import useCommentPanelStore from '@/store/commentPanel';
-import { useState } from 'react';
+import { Fragment, useRef, useState } from 'react';
 import { type Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
 import { Swiper, SwiperSlide } from 'swiper/react';
+import NavigationButtons from '../buttons/NavigationButtons';
 import PostImageCard from '../cards/PostImageCard';
 import PostVideoCard from '../cards/PostVideoCard';
 import PostActionMenu from '../menus/PostActionMenu';
-import CarouselNavigation from '../shared/CarouselNavigation';
 import CarouselPagination from '../shared/CarouselPagination';
+import VolumeControls from '../shared/VolumeControls';
 import PostFooter from './PostFooter';
 
 const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
@@ -27,10 +28,17 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
   mentions,
   hideLikes,
   turnOffComments,
+  onNavigate,
+  isFirstPost,
+  isLastPost,
+  isFetchingMore,
   isAdminPanel = false,
+  isModal = false,
 }) => {
   const [swiperRef, setSwiperRef] = useState<SwiperType>();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [activePlayer, setActivePlayer] = useState<MuxPlayerRef | null>(null);
+  const playersRegistry = useRef<Record<number, MuxPlayerRef | null>>({});
 
   const {
     showControls,
@@ -46,7 +54,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
     firstMedia?.originalDimensions
   );
 
-  if (!isAdminPanel) {
+  if (!isAdminPanel && !isModal) {
     if (media.length > 1) {
       containerClass = 'post-container-portrait';
     } else if (numericRatio > 1.5) {
@@ -59,23 +67,36 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
       containerClass = 'post-container-four-five';
     }
   } else {
-    containerClass = 'relative h-full w-full';
+    containerClass = 'relative h-full w-full flex-center';
   }
 
   const handleSlideChange = (swiper: SwiperType) => {
-    setCurrentIndex(swiper.activeIndex);
+    const index = swiper.activeIndex;
+    setCurrentIndex(index);
+    setActivePlayer(playersRegistry.current[index] || null);
+  };
+
+  const handlePlayerRegister = (index: number, player: MuxPlayerRef | null) => {
+    playersRegistry.current[index] = player;
+    if (index === currentIndex) {
+      setActivePlayer(player);
+    }
   };
 
   const shouldAnimate = numericRatio >= 0.9;
   const isShrunkView =
     useCommentPanelStore.getState().isPanelOpen &&
     !isAdminPanel &&
+    !isModal &&
     shouldAnimate &&
     media.length === 1;
+
+  const effectiveShowControls = isModal ? true : showControls;
 
   return (
     <div
       className={cn(
+        !isModal && 'relative rounded-2xl',
         containerClass,
         shouldAnimate &&
           'transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]',
@@ -93,22 +114,40 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
       }}
     >
       {!isAdminPanel && (
-        <div className='absolute top-2 right-4 z-50'>
+        <div className='absolute top-4 right-4 z-50'>
           <PostActionMenu
             author={author}
             postId={postId}
             createdAt={createdAt}
             caption={text}
-            showControls={showControls}
+            showControls={effectiveShowControls}
             turnOffComments={turnOffComments ?? false}
             hideLikes={hideLikes ?? false}
             pinned={pinned}
             media={media}
+            isModal={isModal}
           />
         </div>
       )}
+      {isModal && activePlayer && (
+        <div className='absolute bottom-4 right-4 z-50'>
+          <VolumeControls
+            player={activePlayer}
+            showControls={effectiveShowControls}
+            isVertical
+          />
+        </div>
+      )}
+      {onNavigate && (
+        <NavigationButtons
+          isFirstPost={isFirstPost!}
+          isLastPost={isLastPost!}
+          isLoading={isFetchingMore}
+          handleNavigation={onNavigate}
+        />
+      )}
       <Swiper
-        className='h-full w-full'
+        className='h-full w-full z-10'
         onSwiper={setSwiperRef}
         onSlideChange={handleSlideChange}
         noSwiping={true}
@@ -127,47 +166,57 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                 originalDimensions={item.originalDimensions}
                 postId={postId}
                 showControls={showControls}
+                totalCount={media?.length}
+                currentIndex={currentIndex}
+                swiperRef={swiperRef}
                 isCarousel={media?.length > 1}
+                onPlayerRegister={(player) =>
+                  handlePlayerRegister(index, player)
+                }
+                isModal={isModal}
               />
             ) : (
               <PostImageCard
                 image={item.fileUrl!}
                 isAdminPanel={isAdminPanel}
+                aspectRatio={item.aspectRatio}
+                originalDimensions={item.originalDimensions}
+                isModal={isModal}
+                totalCount={media?.length}
+                currentIndex={currentIndex}
+                swiperRef={swiperRef}
+                isCarousel={media?.length > 1}
               />
             )}
           </SwiperSlide>
         ))}
       </Swiper>
 
-      <div
-        className='absolute inset-0 bg-gradient-to-t from-black/30 via-black/20 
-      to-transparent z-10 pointer-events-none'
-      />
-
-      <div className='absolute bottom-0 left-0 right-0 z-20'>
-        <PostFooter
-          author={author}
-          createdAt={createdAt}
-          id={postId}
-          text={text}
-          reposts={reposts}
-          repostedBy={repostedBy}
-          mentions={mentions}
-        />
-      </div>
-
-      <CarouselNavigation
-        selectedIndex={currentIndex}
-        totalCount={media?.length || 0}
-        onPrev={() => swiperRef?.slidePrev()}
-        onNext={() => swiperRef?.slideNext()}
-      />
-
       <CarouselPagination
         selectedIndex={currentIndex}
         totalCount={media?.length || 0}
         onSelect={(index) => swiperRef?.slideTo(index)}
       />
+
+      {!isModal && (
+        <Fragment>
+          <div
+            className='absolute inset-0 bg-gradient-to-t from-black/30 via-black/20 
+      to-transparent z-10 pointer-events-none'
+          />
+          <div className='absolute bottom-0 left-0 right-0 z-20'>
+            <PostFooter
+              author={author}
+              createdAt={createdAt}
+              id={postId}
+              text={text}
+              reposts={reposts}
+              repostedBy={repostedBy}
+              mentions={mentions}
+            />
+          </div>
+        </Fragment>
+      )}
     </div>
   );
 };

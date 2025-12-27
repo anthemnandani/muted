@@ -36,7 +36,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
   pinned,
   showControls,
   media,
-  isThread,
+  isModal,
 }) => {
   const { user } = useUser();
   const { timeLeft } = useTimeLeft({ createdAt });
@@ -84,21 +84,19 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
       <DropdownMenuTrigger asChild>
         <div
           className={cn(
-            'relative h-12 flex-center cursor-pointer transition-all duration-200 drop-shadow-lg group',
-            'before:content-[""] before:absolute before:size-10 before:rounded-full before:bg-white-13',
-            'hover:before:scale-100 before:scale-0 before:transition-transform before:duration-200',
+            isModal ? 'post-detail-btn' : 'group dropdown-btn',
             showControls ? 'opacity-100' : 'opacity-0'
           )}
         >
-          <MoreHorizontal className='aspect-square object-cover object-center size-6 overflow-hidden flex-1 text-white z-10' />
+          <MoreHorizontal className='size-6 text-white stroke-[2.5px]' />
         </div>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         align='end'
         className={cn(
-          'w-[200px] p-2 border-none rounded-xl',
-          isThread ? 'bg-black/85' : 'bg-black/95'
+          'w-[200px] p-2 border-none rounded-xl bg-black/95 z-[3001]',
+          isModal && 'bg-gray-6'
         )}
       >
         {user?.id !== author.id ? (

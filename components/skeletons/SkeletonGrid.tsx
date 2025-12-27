@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { SkeletonGridProps } from '@/lib/types';
 
 const SkeletonGrid = ({
-  count = 8,
+  count = 16,
   className = '',
   skeletonClassName = 'aspect-[3/4]',
 }: SkeletonGridProps) => {

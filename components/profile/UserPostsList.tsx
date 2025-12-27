@@ -1,4 +1,6 @@
 import { UserPostsListProps } from '@/lib/types';
+import usePostStore from '@/store/postStore';
+import { useEffect, useMemo } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { Icons } from '../icons';
 import EmptyState from '../shared/EmptyState';
@@ -12,6 +14,17 @@ const UserPostsList = ({
   type = 'post',
   collectionId = null,
 }: UserPostsListProps) => {
+  const { setPostList, setPagination } = usePostStore();
+
+  const postsHash = useMemo(() => {
+    return posts.map((p) => p.id).join(',');
+  }, [posts]);
+
+  useEffect(() => {
+    setPostList(posts);
+    setPagination(!!hasNextPage, fetchNextPage);
+  }, [postsHash, hasNextPage, setPostList, setPagination]);
+
   const EMPTY_STATE_CONFIG: Record<
     string,
     { title: string; description: string }

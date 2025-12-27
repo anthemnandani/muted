@@ -1,15 +1,16 @@
 'use client';
 
 import { VideoContainerProps } from '@/lib/types';
-import { Fragment, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import VolumeControls from './VolumeControls';
 
-export const VideoContainer: React.FC<VideoContainerProps> = ({
+const VideoContainer: React.FC<VideoContainerProps> = ({
   children,
   player,
   setInView,
   showControls,
+  isModal,
 }) => {
   const { ref, inView } = useInView({
     threshold: 0.5,
@@ -23,11 +24,13 @@ export const VideoContainer: React.FC<VideoContainerProps> = ({
   return (
     <div ref={ref} className='post-container-fitted swiper-no-swiping'>
       {children}
-      <Fragment>
-        <div className='absolute top-5 left-4 z-50'>
+      {!isModal && (
+        <div className='absolute z-50 top-5 left-4'>
           <VolumeControls player={player} showControls={showControls} />
         </div>
-      </Fragment>
+      )}
     </div>
   );
 };
+
+export default VideoContainer;

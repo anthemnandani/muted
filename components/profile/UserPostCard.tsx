@@ -6,7 +6,6 @@ import usePostStore from '@/store/postStore';
 import { useProfileVideoPlayer } from '@/store/profileVideoPlayer';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Icons } from '../icons';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -30,12 +29,12 @@ const UserPostCard = ({
   isSearch = false,
 }: UserPostCardProps) => {
   const [player, setPlayer] = useState<MuxPlayerRef | null>(null);
-  const router = useRouter();
   const { playingVideoId, setPlayingVideoId } = useProfileVideoPlayer();
   const {
     setCurrentPostId,
     setCurrentIndex,
     setCollectionId,
+    setIsOpen,
     setProfileUsername,
     setPostType,
   } = usePostStore();
@@ -92,7 +91,9 @@ const UserPostCard = ({
       ? `/post/${postId}?q=${query}`
       : `/post/${postId}`;
 
-    router.push(postLink, { scroll: false });
+    setIsOpen(true);
+
+    window.history.pushState(null, '', postLink);
   };
 
   return (
