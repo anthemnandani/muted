@@ -88,7 +88,6 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
             ) : (
               <UserPostsList
                 posts={posts}
-                username={username}
                 fetchNextPage={fetchNextPage}
                 hasNextPage={hasNextPage}
               />

@@ -49,9 +49,6 @@ const useCreatePost = () => {
       onMutate: () => {
         closeAndReset();
       },
-      onSettled: async () => {
-        await trpcUtils.user.getUserPosts.invalidate();
-      },
     });
 
   const { mutateAsync: deletePost } = api.post.deletePost.useMutation();

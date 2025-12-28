@@ -16,7 +16,7 @@ import {
   getBookmarksWithBlockFilter,
   getCommentRepliesCount,
   getLikesWithBlockFilter,
-  getPostRepliesCount,
+  getPostReplies,
   getPrivacyFilter,
 } from '@/server/constants';
 import { createId } from '@paralleldrive/cuid2';
@@ -315,7 +315,7 @@ export const postRouter = createTRPCRouter({
             },
             ...getLikesWithBlockFilter(userId),
             ...getBookmarksWithBlockFilter(userId),
-            ...getPostRepliesCount(userId),
+            ...getPostReplies(userId),
             ...GET_MENTIONS,
             reposts: {
               ...GET_REPOSTS,
@@ -808,7 +808,7 @@ export const postRouter = createTRPCRouter({
           },
           ...getLikesWithBlockFilter(userId),
           ...getBookmarksWithBlockFilter(userId),
-          ...getPostRepliesCount(userId),
+          ...getPostReplies(userId),
           ...GET_MENTIONS,
           reposts: {
             ...GET_REPOSTS,
@@ -1500,7 +1500,7 @@ export const postRouter = createTRPCRouter({
           },
           ...getLikesWithBlockFilter(userId),
           ...getBookmarksWithBlockFilter(userId),
-          ...getPostRepliesCount(userId),
+          ...getPostReplies(userId),
           ...GET_MENTIONS,
         },
       });
@@ -1635,7 +1635,7 @@ export const postRouter = createTRPCRouter({
           },
           ...getLikesWithBlockFilter(userId!),
           ...getBookmarksWithBlockFilter(userId!),
-          ...getPostRepliesCount(userId!),
+          ...getPostReplies(userId!),
           reposts: {
             where: {
               user: {

@@ -8,11 +8,9 @@ import UserPostCard from './UserPostCard';
 
 const UserPostsList = ({
   posts,
-  username,
   fetchNextPage,
   hasNextPage,
   type = 'post',
-  collectionId = null,
 }: UserPostsListProps) => {
   const { setPostList, setPagination } = usePostStore();
 
@@ -73,13 +71,10 @@ const UserPostsList = ({
         {posts.map((post, index) => (
           <UserPostCard
             key={post.id}
-            username={username}
             media={post.media}
             postId={post.id}
             pinned={post.pinned}
-            type={type}
             index={index}
-            collectionId={collectionId}
           />
         ))}
       </div>

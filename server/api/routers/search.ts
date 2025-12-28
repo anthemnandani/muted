@@ -12,7 +12,7 @@ import {
   GET_USER,
   getBookmarksWithBlockFilter,
   getLikesWithBlockFilter,
-  getPostRepliesCount,
+  getPostReplies,
   getPrivacyFilter,
 } from '@/server/constants';
 import { PostStatus, Prisma } from '@prisma/client';
@@ -262,7 +262,7 @@ export const searchRouter = createTRPCRouter({
           },
           ...getLikesWithBlockFilter(userId),
           ...getBookmarksWithBlockFilter(userId),
-          ...getPostRepliesCount(userId),
+          ...getPostReplies(userId),
           ...GET_MENTIONS,
           reposts: {
             ...GET_REPOSTS,
@@ -405,7 +405,7 @@ export const searchRouter = createTRPCRouter({
           },
           ...getLikesWithBlockFilter(userId),
           ...getBookmarksWithBlockFilter(userId),
-          ...getPostRepliesCount(userId),
+          ...getPostReplies(userId),
           ...GET_MENTIONS,
           reposts: {
             ...GET_REPOSTS,
@@ -620,7 +620,7 @@ export const searchRouter = createTRPCRouter({
           },
           ...getLikesWithBlockFilter(userId),
           ...getBookmarksWithBlockFilter(userId),
-          ...getPostRepliesCount(userId),
+          ...getPostReplies(userId),
           ...GET_MENTIONS,
           reposts: {
             ...GET_REPOSTS,
@@ -771,7 +771,7 @@ export const searchRouter = createTRPCRouter({
           },
           ...getLikesWithBlockFilter(userId),
           ...getBookmarksWithBlockFilter(userId),
-          ...getPostRepliesCount(userId),
+          ...getPostReplies(userId),
           ...GET_MENTIONS,
           reposts: {
             ...GET_REPOSTS,

@@ -9,7 +9,6 @@ import { useCallback, useEffect } from 'react';
 const PostDetailDialog = () => {
   const {
     isOpen,
-    setIsOpen,
     postList,
     currentIndex,
     setCurrentIndex,
@@ -17,11 +16,15 @@ const PostDetailDialog = () => {
     loadMorePosts,
     isFetchingMore,
     setIsFetchingMore,
+    closeDialog,
   } = usePostStore();
 
   const handleClose = useCallback(() => {
-    setIsOpen(false);
-  }, [setIsOpen]);
+    closeDialog();
+    if (window.history.length > 1) {
+      window.history.back();
+    }
+  }, [closeDialog]);
 
   const handleNavigation = useCallback(
     async (direction: 'up' | 'down') => {
@@ -64,11 +67,9 @@ const PostDetailDialog = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleNavigation, isOpen]);
 
-  if (!isOpen) return null;
-
   const activePost = postList[currentIndex];
 
-  if (!activePost) return null;
+  if (!activePost || !isOpen) return null;
 
   return (
     <div className='fixed inset-0 z-[3000] flex w-full h-screen max-w-full bg-[#121212]'>

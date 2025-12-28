@@ -1,12 +1,13 @@
 'use client';
 
 import Error from '@/app/error';
+import PostDetailDialog from '@/components/modals/PostDetailDialog';
 import UserPostsList from '@/components/profile/UserPostsList';
 import TopHeader from '@/components/shared/TopHeader';
 import HeaderSkeleton from '@/components/skeletons/HeaderSkeleton';
 import SkeletonGrid from '@/components/skeletons/SkeletonGrid';
 import { api } from '@/trpc/react';
-import React from 'react';
+import { Fragment } from 'react';
 
 const CollectionDetails = ({ id }: { id: string }) => {
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
@@ -27,27 +28,26 @@ const CollectionDetails = ({ id }: { id: string }) => {
   return (
     <div className='main-container'>
       {isLoading ? (
-        <React.Fragment>
+        <Fragment>
           <HeaderSkeleton />
           <SkeletonGrid />
-        </React.Fragment>
+        </Fragment>
       ) : allPosts?.length === 0 ? (
         <div className='flex-center w-full h-screen'>
           <p className='text-gray-3'>No posts found in this collection</p>
         </div>
       ) : (
-        <React.Fragment>
+        <Fragment>
           <TopHeader title={collection?.name as string} />
           <UserPostsList
-            username={collection?.username as string}
             posts={allPosts!}
             fetchNextPage={fetchNextPage}
             hasNextPage={hasNextPage}
             type='collection'
-            collectionId={id}
           />
-        </React.Fragment>
+        </Fragment>
       )}
+      <PostDetailDialog />
     </div>
   );
 };

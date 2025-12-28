@@ -1,21 +1,12 @@
 import { Icons } from '@/components/icons';
 import UserPostCard from '@/components/profile/UserPostCard';
-import { type NavigationType, ParentPostProps } from '@/lib/types';
+import { PostsGridProps } from '@/lib/types';
 import InfiniteScroll from 'react-infinite-scroll-component';
-
-interface PostsGridProps {
-  posts: ParentPostProps[];
-  fetchNextPage: () => void;
-  hasNextPage?: boolean;
-  postType: NavigationType;
-  query: string;
-}
 
 const PostsGrid = ({
   posts,
   fetchNextPage,
   hasNextPage,
-  postType,
   query,
 }: PostsGridProps) => {
   return (
@@ -34,10 +25,8 @@ const PostsGrid = ({
         {posts?.map((post, index) => (
           <UserPostCard
             key={post.id}
-            username={post.author.username}
             media={post.media}
             postId={post.id}
-            type={postType}
             index={index}
             likesCount={post.likesCount}
             text={post.text ?? ''}

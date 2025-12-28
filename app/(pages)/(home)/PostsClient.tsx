@@ -48,7 +48,7 @@ const PostsClient = () => {
   if (isError) return <Error />;
 
   return (
-    <main className='relative mx-auto my-0 w-full min-w-[420px]'>
+    <main className='content-center min-w-[420px]'>
       <ScrollContainer ref={mainContainerRef}>
         <PostsList
           posts={allPosts}

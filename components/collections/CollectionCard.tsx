@@ -5,14 +5,12 @@ import { getVideoThumbnailUrl } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { Card, CardFooter, CardHeader } from '../ui/card';
 import CollectionActions from './CollectionActions';
 import DefaultCollectionCover from './DefaultCollectionCover';
 
 const CollectionCard = ({ collection, username }: CollectionCardProps) => {
   const { user } = useUser();
-  const path = usePathname();
 
   const isOwner = username === user?.username;
   const renderCover = () => {
@@ -53,7 +51,7 @@ const CollectionCard = ({ collection, username }: CollectionCardProps) => {
   return (
     <Card className='group overflow-hidden'>
       <CardHeader className='p-0'>
-        <Link href={`${path}/collections/${collection.id}`}>
+        <Link href={`@${username}/collections/${collection.id}`}>
           <div className='relative aspect-square w-full overflow-hidden bg-muted'>
             {renderCover()}
             <div className='absolute bottom-2 left-2 rounded-md bg-black/60 px-2 py-1 text-xs text-white'>
@@ -67,7 +65,7 @@ const CollectionCard = ({ collection, username }: CollectionCardProps) => {
       <CardFooter className='p-2 sm:p-3 bg-white-8'>
         <div className='flex-between w-full'>
           <div className='flex flex-col'>
-            <Link href={`${path}/${collection.id}`}>
+            <Link href={`@${username}/collections/${collection.id}`}>
               <h3 className='font-semibold text-xs sm:text-sm truncate max-w-[120px] sm:max-w-[180px]'>
                 {collection.name}
               </h3>

@@ -1,7 +1,6 @@
 import { PostMedia } from '@/lib/types';
 import {
   enrichMediaTokens,
-  enrichPostWithTokens,
   getTotalRepliesCount,
   getUserEmail,
 } from '@/lib/utils';
@@ -12,7 +11,7 @@ import {
   getAuthorAndHiddenSelect,
   getBookmarksWithBlockFilter,
   getLikesWithBlockFilter,
-  getPostRepliesCount,
+  getPostReplies,
 } from '@/server/constants';
 import { clerkClient } from '@clerk/nextjs/server';
 import {
@@ -35,7 +34,7 @@ export const userRouter = createTRPCRouter({
         cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
       })
     )
-    .query(async ({ input: { username, limit = 24, cursor, sortBy }, ctx }) => {
+    .query(async ({ input: { username, limit = 18, cursor, sortBy }, ctx }) => {
       const { userId, db } = ctx;
       const isUser = await db.user.findUnique({
         where: {
@@ -99,7 +98,6 @@ export const userRouter = createTRPCRouter({
               turnOffComments: true,
               pinned: true,
               privacy: true,
-              replies: true,
               author: {
                 select: {
                   ...GET_USER,
@@ -107,6 +105,7 @@ export const userRouter = createTRPCRouter({
               },
               ...getLikesWithBlockFilter(userId),
               ...getBookmarksWithBlockFilter(userId),
+              ...getPostReplies(userId),
               reposts: {
                 ...GET_REPOSTS,
                 orderBy: {
@@ -148,7 +147,7 @@ export const userRouter = createTRPCRouter({
           media: await enrichMediaTokens(post.media as PostMedia[]),
           likesCount: post.likes.length,
           repostsCount: post.reposts.length,
-          repliesCount: post.replies.length,
+          repliesCount: getTotalRepliesCount(post) as number,
           bookmarksCount: new Set(
             post.bookmarks.map((bookmark) => bookmark.userId)
           ).size,
@@ -179,244 +178,6 @@ export const userRouter = createTRPCRouter({
       };
     }),
 
-  getUserPosts: privateProcedure
-    .input(
-      z.object({
-        username: z.string(),
-        sortBy: z.enum(['LATEST', 'OLDEST']).optional().default('LATEST'),
-      })
-    )
-    .query(async ({ input: { username, sortBy }, ctx }) => {
-      const { userId, db } = ctx;
-      const user = await db.user.findUnique({
-        where: {
-          username,
-          deactivated: false,
-        },
-        select: {
-          blockedUsers: {
-            select: {
-              blockedUserId: true,
-            },
-          },
-          id: true,
-          privacy: true,
-          followers: { where: { followerId: userId } },
-        },
-      });
-
-      if (!user) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
-      }
-
-      const isPublic = user.privacy === Privacy.PUBLIC;
-      const isOwnProfile = user.id === userId;
-      const isFollowing = user.followers.length > 0;
-
-      if (!isPublic && !isOwnProfile && !isFollowing) {
-        return [];
-      }
-
-      const blockedUsers = user.blockedUsers.map(
-        (blockedUser) => blockedUser.blockedUserId
-      );
-
-      const isBlocked = blockedUsers.includes(userId);
-
-      if (isBlocked) {
-        throw new TRPCError({ code: 'FORBIDDEN' });
-      }
-
-      const posts = await db.post.findMany({
-        where: {
-          authorId: user.id,
-          parentPostId: null,
-          status: PostStatus.VISIBLE,
-          hiddenBy: {
-            none: {
-              userId,
-            },
-          },
-          author: {
-            mutedByUsers: {
-              none: {
-                mutedByUserId: userId,
-              },
-            },
-          },
-        },
-        orderBy:
-          sortBy === 'LATEST'
-            ? [{ pinned: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }]
-            : [{ createdAt: 'asc' }, { id: 'asc' }],
-        select: {
-          id: true,
-          createdAt: true,
-          text: true,
-          media: true,
-          parentPostId: true,
-          quoteId: true,
-          path: true,
-          hideLikes: true,
-          turnOffComments: true,
-          pinned: true,
-          privacy: true,
-          author: {
-            select: {
-              ...GET_USER,
-            },
-          },
-          ...getLikesWithBlockFilter(userId),
-          ...getBookmarksWithBlockFilter(userId),
-          ...getPostRepliesCount(userId),
-          reposts: {
-            ...GET_REPOSTS,
-            orderBy: {
-              createdAt: 'desc',
-            },
-          },
-          ...GET_MENTIONS,
-        },
-      });
-
-      const formattedPosts = await Promise.all(
-        posts.map(async (post) => {
-          const postWithTokens = await enrichPostWithTokens(post);
-
-          return {
-            ...postWithTokens,
-            likesCount: post.likes.length,
-            repostsCount: post.reposts.length,
-            repliesCount: getTotalRepliesCount(post) as number,
-            bookmarksCount: new Set(
-              post.bookmarks.map((bookmark) => bookmark.userId)
-            ).size,
-          };
-        })
-      );
-
-      return formattedPosts;
-    }),
-
-  getUserRepostsFeed: privateProcedure
-    .input(z.object({ username: z.string() }))
-    .query(async ({ input: { username }, ctx }) => {
-      const { userId, db } = ctx;
-      const user = await db.user.findUnique({
-        where: { username, deactivated: false },
-        include: {
-          blockedUsers: {
-            select: {
-              blockedUserId: true,
-            },
-          },
-        },
-      });
-
-      if (!user) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
-      }
-
-      const blockedUsers = user.blockedUsers.map(
-        (blockedUser) => blockedUser.blockedUserId
-      );
-
-      const isBlocked = blockedUsers.includes(userId);
-
-      if (isBlocked) {
-        throw new TRPCError({ code: 'FORBIDDEN' });
-      }
-
-      const reposts = await db.repost.findMany({
-        where: {
-          userId: user.id,
-          post: {
-            AND: [
-              { parentPostId: null },
-              { status: PostStatus.VISIBLE },
-              {
-                hiddenBy: {
-                  none: {
-                    userId,
-                  },
-                },
-              },
-              {
-                author: {
-                  mutedByUsers: {
-                    none: {
-                      mutedByUserId: userId,
-                    },
-                  },
-                  blockedByUsers: {
-                    none: {
-                      blockingUserId: userId,
-                    },
-                  },
-                  blockedUsers: {
-                    none: {
-                      blockedUserId: userId,
-                    },
-                  },
-                },
-              },
-            ],
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-        select: {
-          post: {
-            select: {
-              id: true,
-              createdAt: true,
-              text: true,
-              media: true,
-              parentPostId: true,
-              quoteId: true,
-              path: true,
-              hideLikes: true,
-              turnOffComments: true,
-              pinned: true,
-              privacy: true,
-              author: {
-                select: {
-                  ...GET_USER,
-                },
-              },
-              ...getLikesWithBlockFilter(userId),
-              ...getBookmarksWithBlockFilter(userId),
-              ...getPostRepliesCount(userId),
-              reposts: {
-                ...GET_REPOSTS,
-                orderBy: {
-                  createdAt: 'desc',
-                },
-              },
-              ...GET_MENTIONS,
-            },
-          },
-        },
-      });
-
-      const formattedReposts = await Promise.all(
-        reposts.map(async (repost) => {
-          const repostWithTokens = await enrichPostWithTokens(repost.post);
-
-          return {
-            ...repostWithTokens,
-            likesCount: repost.post.likes.length,
-            repostsCount: repost.post.reposts.length,
-            repliesCount: getTotalRepliesCount(repost.post) as number,
-            bookmarksCount: new Set(
-              repost.post.bookmarks.map((bookmark) => bookmark.userId)
-            ).size,
-          };
-        })
-      );
-
-      return formattedReposts;
-    }),
-
   getUserReposts: privateProcedure
     .input(
       z.object({
@@ -430,7 +191,7 @@ export const userRouter = createTRPCRouter({
           .optional(),
       })
     )
-    .query(async ({ input: { username, limit = 20, cursor }, ctx }) => {
+    .query(async ({ input: { username, limit = 18, cursor }, ctx }) => {
       const { userId, db } = ctx;
       const user = await db.user.findUnique({
         where: { username, deactivated: false },
@@ -557,125 +318,6 @@ export const userRouter = createTRPCRouter({
       };
     }),
 
-  getUserLikedPostsFeed: privateProcedure
-    .input(z.object({ username: z.string() }))
-    .query(async ({ input: { username }, ctx }) => {
-      const { userId, db } = ctx;
-      const user = await db.user.findUnique({
-        where: { username, deactivated: false },
-        include: {
-          blockedUsers: {
-            select: {
-              blockedUserId: true,
-            },
-          },
-        },
-      });
-      if (!user) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
-      }
-
-      const blockedUsers = user.blockedUsers.map(
-        (blockedUser) => blockedUser.blockedUserId
-      );
-
-      const isBlocked = blockedUsers.includes(userId);
-
-      if (isBlocked) {
-        throw new TRPCError({ code: 'FORBIDDEN' });
-      }
-
-      const likedPosts = await db.like.findMany({
-        where: {
-          userId: user.id,
-          post: {
-            AND: [
-              { parentPostId: null },
-              { status: PostStatus.VISIBLE },
-              {
-                hiddenBy: {
-                  none: {
-                    userId,
-                  },
-                },
-              },
-              {
-                author: {
-                  deactivated: false,
-                  mutedByUsers: {
-                    none: {
-                      mutedByUserId: userId,
-                    },
-                  },
-                  blockedByUsers: {
-                    none: {
-                      blockingUserId: userId,
-                    },
-                  },
-                  blockedUsers: {
-                    none: {
-                      blockedUserId: userId,
-                    },
-                  },
-                },
-              },
-            ],
-          },
-        },
-        select: {
-          post: {
-            select: {
-              id: true,
-              createdAt: true,
-              text: true,
-              media: true,
-              parentPostId: true,
-              quoteId: true,
-              path: true,
-              hideLikes: true,
-              turnOffComments: true,
-              pinned: true,
-              privacy: true,
-              author: {
-                select: {
-                  ...GET_USER,
-                },
-              },
-              ...getLikesWithBlockFilter(userId),
-              ...getBookmarksWithBlockFilter(userId),
-              ...getPostRepliesCount(userId),
-              reposts: {
-                ...GET_REPOSTS,
-                orderBy: {
-                  createdAt: 'desc',
-                },
-              },
-              ...GET_MENTIONS,
-            },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-      });
-
-      const formattedLikedPosts = await Promise.all(
-        likedPosts.map(async (likedPost) => {
-          const postWithTokens = await enrichPostWithTokens(likedPost.post);
-
-          return {
-            ...postWithTokens,
-            likesCount: likedPost.post.likes.length,
-            repostsCount: likedPost.post.reposts.length,
-            repliesCount: getTotalRepliesCount(likedPost.post) as number,
-            bookmarksCount: new Set(
-              likedPost.post.bookmarks.map((bookmark) => bookmark.userId)
-            ).size,
-          };
-        })
-      );
-
-      return formattedLikedPosts;
-    }),
-
   getUserLikedPosts: privateProcedure
     .input(
       z.object({
@@ -689,7 +331,7 @@ export const userRouter = createTRPCRouter({
           .optional(),
       })
     )
-    .query(async ({ input: { username, limit = 20, cursor }, ctx }) => {
+    .query(async ({ input: { username, limit = 18, cursor }, ctx }) => {
       const { userId, db } = ctx;
       const user = await db.user.findUnique({
         where: {
@@ -776,7 +418,7 @@ export const userRouter = createTRPCRouter({
               },
               ...getLikesWithBlockFilter(userId),
               ...getBookmarksWithBlockFilter(userId),
-              ...getPostRepliesCount(userId),
+              ...getPostReplies(userId),
               reposts: {
                 ...GET_REPOSTS,
                 orderBy: {

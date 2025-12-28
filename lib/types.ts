@@ -100,8 +100,13 @@ export interface UserPostsListProps {
   fetchNextPage: () => void;
   hasNextPage?: boolean;
   type?: NavigationType;
-  username: string;
-  collectionId?: string | null;
+}
+
+export interface PostsGridProps {
+  posts: ParentPostProps[];
+  fetchNextPage: () => void;
+  hasNextPage?: boolean;
+  query: string;
 }
 
 export type FollowRequest = {
@@ -456,6 +461,7 @@ export interface PostImageCardProps {
   image: string;
   aspectRatio?: string;
   originalDimensions?: { width: number; height: number };
+  text: string | null;
   isAdminPanel?: boolean;
   totalCount?: number;
   currentIndex: number;
@@ -576,10 +582,7 @@ export interface UserPostCardProps {
   media: PostMedia[];
   postId: string;
   pinned?: boolean;
-  username: string;
-  type: NavigationType;
   index: number;
-  collectionId?: string | null;
   isSearch?: boolean;
   likesCount?: number;
   text?: string;

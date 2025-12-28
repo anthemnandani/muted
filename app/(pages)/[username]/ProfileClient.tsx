@@ -16,7 +16,7 @@ import { useEffect, useMemo } from 'react';
 
 const ProfileClient = ({ username }: { username: string }) => {
   const { user } = useUser();
-  const { selectedFilter, setSelectedFilter } = usePostStore();
+  const { selectedFilter, setSelectedFilter, reset } = usePostStore();
   const { setCurrentlyPlaying } = useVideoPlayer();
   const { data, isLoading, isError, error, hasNextPage, fetchNextPage } =
     api.user.userInfo.useInfiniteQuery(
@@ -32,7 +32,10 @@ const ProfileClient = ({ username }: { username: string }) => {
 
   useEffect(() => {
     setCurrentlyPlaying(null);
-  }, []);
+    return () => {
+      reset();
+    };
+  }, [reset, setCurrentlyPlaying]);
 
   const allPosts = data?.pages.flatMap((page) => page.userDetails.posts);
 
@@ -80,7 +83,11 @@ const ProfileClient = ({ username }: { username: string }) => {
     if (error.data?.code === 'NOT_FOUND') {
       return <DeletedUserContent />;
     }
-    return <NotFound />;
+    return (
+      <div className='content-center'>
+        <NotFound />
+      </div>
+    );
   }
 
   const enhancedUserDetails = {

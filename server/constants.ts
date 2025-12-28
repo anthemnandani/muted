@@ -168,7 +168,7 @@ export const getCommentRepliesCount = (userId: string) => ({
   },
 });
 
-export const getPostRepliesCount = (userId: string) => ({
+export const getPostReplies = (userId: string) => ({
   _count: {
     select: {
       replies: {

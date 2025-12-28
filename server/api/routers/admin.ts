@@ -6,11 +6,7 @@ import {
   getChartDataTemplate,
   getTotalRepliesCount,
 } from '@/lib/utils';
-import {
-  GET_MENTIONS,
-  GET_USER,
-  getPostRepliesCount,
-} from '@/server/constants';
+import { GET_MENTIONS, GET_USER, getPostReplies } from '@/server/constants';
 import { clerkClient } from '@clerk/nextjs/server';
 import {
   AppealStatus,
@@ -344,7 +340,7 @@ export const adminRouter = createTRPCRouter({
                 ...GET_USER,
               },
             },
-            ...getPostRepliesCount(userId!),
+            ...getPostReplies(userId!),
           },
         });
 

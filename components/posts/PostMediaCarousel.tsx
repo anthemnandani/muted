@@ -181,6 +181,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                 isAdminPanel={isAdminPanel}
                 aspectRatio={item.aspectRatio}
                 originalDimensions={item.originalDimensions}
+                text={text}
                 isModal={isModal}
                 totalCount={media?.length}
                 currentIndex={currentIndex}

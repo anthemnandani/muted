@@ -96,7 +96,6 @@ const SearchHeader = ({ query }: { query: string }) => {
                 posts={topPosts!}
                 fetchNextPage={fetchNextPage}
                 hasNextPage={hasNextPage}
-                postType='topPosts'
                 query={query}
               />
             ) : (

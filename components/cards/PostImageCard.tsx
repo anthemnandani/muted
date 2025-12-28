@@ -1,7 +1,6 @@
 import { PostImageCardProps } from '@/lib/types';
 import { getTargetRatio } from '@/lib/utils';
 import CarouselNavigation from '../shared/CarouselNavigation';
-import CarouselPagination from '../shared/CarouselPagination';
 
 const PostImageCard: React.FC<PostImageCardProps> = ({
   image,
@@ -11,6 +10,7 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
   totalCount,
   currentIndex,
   swiperRef,
+  text,
   isAdminPanel = false,
   isModal = false,
 }) => {
@@ -35,7 +35,7 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
         }}
       >
         <img
-          alt='Post'
+          alt={text ?? ''}
           loading='lazy'
           src={image}
           className='object-cover w-full h-full'

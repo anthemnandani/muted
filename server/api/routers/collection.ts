@@ -12,7 +12,7 @@ import {
   GET_USER,
   getBookmarksWithBlockFilter,
   getLikesWithBlockFilter,
-  getPostRepliesCount,
+  getPostReplies,
 } from '@/server/constants';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
@@ -106,7 +106,7 @@ export const collectionRouter = createTRPCRouter({
       z.object({
         sortBy: z.enum(['LATEST', 'OLDEST']).default('LATEST'),
         username: z.string(),
-        limit: z.number().optional().default(21),
+        limit: z.number().optional().default(18),
         cursor: z
           .object({
             name: z.string(),
@@ -660,7 +660,7 @@ export const collectionRouter = createTRPCRouter({
                   },
                   ...getLikesWithBlockFilter(userId),
                   ...getBookmarksWithBlockFilter(userId),
-                  ...getPostRepliesCount(userId),
+                  ...getPostReplies(userId),
                   reposts: {
                     ...GET_REPOSTS,
                     orderBy: {
