@@ -1,5 +1,4 @@
 import { api } from '@/trpc/react';
-import React from 'react';
 import EmptyState from '../shared/EmptyState';
 import SkeletonGrid from '../skeletons/SkeletonGrid';
 import UserPostsList from './UserPostsList';
