@@ -17,9 +17,6 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   onPlayerRegister,
   originalDimensions,
   isCarousel,
-  totalCount,
-  currentIndex,
-  swiperRef,
   isModal,
 }) => {
   const [inView, setInView] = useState(false);
@@ -122,9 +119,6 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
         aspectRatio={aspectRatio}
         originalDimensions={originalDimensions}
         isCarousel={isCarousel}
-        totalCount={totalCount}
-        currentIndex={currentIndex}
-        swiperRef={swiperRef}
         isModal={isModal}
       />
     </VideoContainer>

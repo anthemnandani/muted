@@ -37,7 +37,7 @@ const PostText: React.FC<PostTextProps> = ({
     return (
       <div
         className={cn(
-          'relative text-white/90 font-medium text-sm antialiased whitespace-pre-line break-words',
+          'w-full overflow-hiddenrelative text-white/90 font-medium text-sm antialiased whitespace-pre-line break-words',
           className
         )}
       >
@@ -92,7 +92,7 @@ const PostText: React.FC<PostTextProps> = ({
   return (
     <div
       className={cn(
-        'relative text-white/90 font-medium text-sm antialiased whitespace-pre-line break-words',
+        'w-full overflow-hidden relative text-white/90 font-medium text-sm antialiased whitespace-pre-line break-words',
         className
       )}
     >

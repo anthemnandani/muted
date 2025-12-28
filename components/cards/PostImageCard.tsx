@@ -1,15 +1,11 @@
 import { PostImageCardProps } from '@/lib/types';
 import { getTargetRatio } from '@/lib/utils';
-import CarouselNavigation from '../shared/CarouselNavigation';
 
 const PostImageCard: React.FC<PostImageCardProps> = ({
   image,
   aspectRatio,
   originalDimensions,
   isCarousel,
-  totalCount,
-  currentIndex,
-  swiperRef,
   text,
   isAdminPanel = false,
   isModal = false,
@@ -40,15 +36,6 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
           src={image}
           className='object-cover w-full h-full'
         />
-
-        {!isModal && (
-          <CarouselNavigation
-            selectedIndex={currentIndex}
-            totalCount={totalCount || 0}
-            onPrev={() => swiperRef?.slidePrev()}
-            onNext={() => swiperRef?.slideNext()}
-          />
-        )}
       </div>
     </div>
   );

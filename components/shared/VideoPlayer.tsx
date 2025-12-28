@@ -5,7 +5,6 @@ import { cn, getTargetRatio, getVideoThumbnailUrl } from '@/lib/utils';
 import MuxPlayer from '@mux/mux-player-react';
 import { Play } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import CarouselNavigation from './CarouselNavigation';
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({
   playbackId,
@@ -21,9 +20,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   aspectRatio,
   originalDimensions,
   isCarousel,
-  currentIndex,
-  totalCount,
-  swiperRef,
   isModal = false,
 }) => {
   const playerRef = useRef<MuxPlayerRef>(null);
@@ -121,14 +117,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             <Play className='size-8 fill-current' />
           </button>
         </div>
-      )}
-      {!isModal && (
-        <CarouselNavigation
-          selectedIndex={currentIndex}
-          totalCount={totalCount || 0}
-          onPrev={() => swiperRef?.slidePrev()}
-          onNext={() => swiperRef?.slideNext()}
-        />
       )}
     </div>
   );

@@ -124,6 +124,12 @@ module.exports = {
         'border-dark': '#00000026',
         'border-light': '#f3f5f726',
         'hovered-background': 'rgba(255, 255, 255, 0.04)',
+        overlay: 'rgba(84, 84, 84, 0.5)',
+        'overlay-hover': '#252525b3',
+        neutral: '  #fafafa',
+        'neutral-2': '#ffffff52',
+        'neutral-3': '#ffffff30',
+        'neutral-4': '#ffffff21',
         glassmorphism: 'rgba(16, 16, 18, 0.60)',
       },
       fontSize: {

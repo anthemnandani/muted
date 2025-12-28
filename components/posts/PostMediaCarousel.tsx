@@ -166,9 +166,6 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                 originalDimensions={item.originalDimensions}
                 postId={postId}
                 showControls={showControls}
-                totalCount={media?.length}
-                currentIndex={currentIndex}
-                swiperRef={swiperRef}
                 isCarousel={media?.length > 1}
                 onPlayerRegister={(player) =>
                   handlePlayerRegister(index, player)
@@ -183,9 +180,6 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                 originalDimensions={item.originalDimensions}
                 text={text}
                 isModal={isModal}
-                totalCount={media?.length}
-                currentIndex={currentIndex}
-                swiperRef={swiperRef}
                 isCarousel={media?.length > 1}
               />
             )}
@@ -193,11 +187,15 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
         ))}
       </Swiper>
 
-      <CarouselPagination
-        selectedIndex={currentIndex}
-        totalCount={media?.length || 0}
-        onSelect={(index) => swiperRef?.slideTo(index)}
-      />
+      {isModal && (
+        <div className='flex absolute bottom-8 left-1/2 -translate-x-1/2 z-[100] pointer-events-auto'>
+          <CarouselPagination
+            selectedIndex={currentIndex}
+            totalCount={media?.length || 0}
+            onSelect={(index) => swiperRef?.slideTo(index)}
+          />
+        </div>
+      )}
 
       {!isModal && (
         <Fragment>
@@ -214,6 +212,9 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
               reposts={reposts}
               repostedBy={repostedBy}
               mentions={mentions}
+              totalCount={media?.length}
+              currentIndex={currentIndex}
+              swiperRef={swiperRef}
             />
           </div>
         </Fragment>

@@ -268,7 +268,7 @@
   }
 
   .repost-banner {
-    @apply inline-flex items-center gap-1.5 mb-1.5 px-2.5 py-1 rounded-full cursor-pointer bg-black/20 backdrop-blur-[2px] border border-white/20 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.3)];
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full cursor-pointer bg-overlay backdrop-blur-[2px] border border-white/20 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.3)];
   }
 
   .share-btn {
@@ -283,13 +283,9 @@
     @apply relative h-[17px] after:absolute after:left-0 after:top-4 after:block after:h-px after:w-[200%] after:origin-left after:scale-50 after:bg-white/20 after:content-[""];
   }
 
-  .carousel-btn {
-    @apply absolute top-1/2 -translate-y-1/2 !rounded-full bg-zinc-800 hover:bg-zinc-800/75 z-50 backdrop-blur-sm text-white/90 disabled:opacity-0 transition-opacity duration-200;
-  }
-
   .post-detail-btn,
   .navigator-btn {
-    @apply flex-center z-[100] size-10 !rounded-full duration-300 bg-[#54545480] hover:bg-[#252525b3] transition-opacity;
+    @apply flex-center z-[100] size-10 !rounded-full duration-300 bg-overlay hover:bg-overlay-hover transition-opacity;
   }
 
   .dropdown-btn {

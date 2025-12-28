@@ -427,6 +427,9 @@ export interface PostFooterProps {
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
   mentions?: Mention[];
+  totalCount?: number;
+  currentIndex: number;
+  swiperRef?: Swiper;
 }
 
 export interface VideoContainerProps {
@@ -463,9 +466,6 @@ export interface PostImageCardProps {
   originalDimensions?: { width: number; height: number };
   text: string | null;
   isAdminPanel?: boolean;
-  totalCount?: number;
-  currentIndex: number;
-  swiperRef?: Swiper;
   isCarousel?: boolean;
   isModal?: boolean;
 }
@@ -480,9 +480,6 @@ export interface PostVideoCardProps {
   thumbnailToken?: string;
   showControls: boolean;
   isCarousel?: boolean;
-  currentIndex: number;
-  totalCount?: number;
-  swiperRef?: Swiper;
   onPlayerRegister?: (player: MuxPlayerRef | null) => void;
   isModal?: boolean;
 }
@@ -546,9 +543,6 @@ export interface VideoPlayerProps {
   videoToken?: string;
   thumbnailToken?: string;
   aspectRatio?: string;
-  currentIndex: number;
-  totalCount?: number;
-  swiperRef?: Swiper;
   originalDimensions?: { width: number; height: number };
   isCarousel?: boolean;
   isModal?: boolean;

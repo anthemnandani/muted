@@ -11,7 +11,7 @@ const RepostBanner: React.FC<RepostBannerProps> = ({ repostedBy, reposts }) => {
   const pathname = usePathname();
 
   return (
-    <Fragment>
+    <div className='w-max'>
       {repostedBy && (
         <Link href={`/@${repostedBy.username}`} className='repost-banner'>
           <div className='size-4 rounded-full overflow-hidden'>
@@ -35,7 +35,7 @@ const RepostBanner: React.FC<RepostBannerProps> = ({ repostedBy, reposts }) => {
       {pathname !== '/following' && reposts.length > 0 && (
         <RepostersList reposts={reposts} />
       )}
-    </Fragment>
+    </div>
   );
 };
 
