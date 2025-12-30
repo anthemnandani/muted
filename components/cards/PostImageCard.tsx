@@ -30,9 +30,7 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
           aspectRatio: numericRatio,
           width: shouldUseAutoWidth ? 'auto' : '100%',
           height:
-            (isCarousel && !isModal && !isPortrait) || shouldUseAutoHeight
-              ? 'auto'
-              : '100%',
+            (isCarousel && !isModal) || shouldUseAutoHeight ? 'auto' : '100%',
         }}
       />
     </div>

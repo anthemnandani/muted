@@ -56,7 +56,7 @@ const SharePost: React.FC<SharePostProps> = ({
             <Icons.share className='size-6' />
           </button>
         </DialogTrigger>
-        <DialogContent className='!max-w-[512px] w-full p-0 border-none bg-gray-6 rounded-lg shadow-2xl'>
+        <DialogContent className='!max-w-[512px] w-full p-0 border-none bg-gray-6 rounded-2xl shadow-2xl'>
           <div className='relative w-full'>
             <div className='flex-between px-4 pt-4'>
               <div className='flex-1'></div>
