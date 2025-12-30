@@ -114,7 +114,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
       }}
     >
       {!isAdminPanel && (
-        <div className='absolute top-4 right-4 z-50'>
+        <div className={cn('absolute top-2 right-4 z-50', isModal && 'top-4')}>
           <PostActionMenu
             author={author}
             postId={postId}
@@ -198,26 +198,20 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
       )}
 
       {!isModal && (
-        <Fragment>
-          <div
-            className='absolute inset-0 bg-gradient-to-t from-black/30 via-black/20 
-      to-transparent z-10 pointer-events-none'
+        <div className='absolute bottom-0 left-0 right-0 z-30'>
+          <PostFooter
+            author={author}
+            createdAt={createdAt}
+            id={postId}
+            text={text}
+            reposts={reposts}
+            repostedBy={repostedBy}
+            mentions={mentions}
+            totalCount={media?.length}
+            currentIndex={currentIndex}
+            swiperRef={swiperRef}
           />
-          <div className='absolute bottom-0 left-0 right-0 z-20'>
-            <PostFooter
-              author={author}
-              createdAt={createdAt}
-              id={postId}
-              text={text}
-              reposts={reposts}
-              repostedBy={repostedBy}
-              mentions={mentions}
-              totalCount={media?.length}
-              currentIndex={currentIndex}
-              swiperRef={swiperRef}
-            />
-          </div>
-        </Fragment>
+        </div>
       )}
     </div>
   );

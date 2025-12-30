@@ -77,7 +77,7 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
                 className='size-10 bg-white-13 hover:bg-white/20 rounded-md transition-colors duration-200'
                 onClick={() => router.push('/setting')}
               >
-                <Settings className='size-5 text-neutral-50' />
+                <Settings className='size-5 text-white/90' />
               </Button>
             </Fragment>
           )}
@@ -118,7 +118,7 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
               className='size-10 bg-white-13 hover:bg-white/20 rounded-md transition-colors duration-200'
               onClick={handleCopyProfileLink}
             >
-              <Icons.share className='size-5 text-neutral-50' />
+              <Icons.share className='size-5 text-white/90' />
             </Button>
           )}
         </div>

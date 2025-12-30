@@ -25,7 +25,7 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
     <div ref={ref} className='post-container-fitted swiper-no-swiping'>
       {children}
       {!isModal && (
-        <div className='absolute z-50 top-5 left-4'>
+        <div className='absolute z-50 top-2 left-2'>
           <VolumeControls player={player} showControls={showControls} />
         </div>
       )}

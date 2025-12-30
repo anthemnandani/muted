@@ -4,7 +4,7 @@ import { type MuxPlayerRef, VideoPlayerProps } from '@/lib/types';
 import { cn, getTargetRatio, getVideoThumbnailUrl } from '@/lib/utils';
 import MuxPlayer from '@mux/mux-player-react';
 import { Play } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({
   playbackId,
@@ -55,15 +55,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const shouldUseAutoWidth = isModal && isPortrait;
 
   return (
-    <div
-      className='relative flex-center'
-      style={{
-        aspectRatio: numericRatio,
-        width: shouldUseAutoWidth ? 'auto' : '100%',
-        height:
-          (isCarousel && !isModal) || shouldUseAutoHeight ? 'auto' : '100%',
-      }}
-    >
+    <Fragment>
       <MuxPlayer
         ref={playerRef}
         playbackId={status === 'encoded' ? playbackId : undefined}
@@ -87,8 +79,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           onVolumeChange?.(target.muted);
         }}
         style={{
-          width: '100%',
-          height: '100%',
+          width: shouldUseAutoWidth ? 'auto' : '100%',
+          height:
+            (isCarousel && !isModal && !isPortrait) || shouldUseAutoHeight
+              ? 'auto'
+              : '100%',
+          aspectRatio: numericRatio,
           '--media-object-fit': 'cover',
           '--play-button': 'none',
           '--fullscreen-button': 'none',
@@ -118,7 +114,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           </button>
         </div>
       )}
-    </div>
+    </Fragment>
   );
 };
 

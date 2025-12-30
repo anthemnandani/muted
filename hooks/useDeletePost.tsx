@@ -16,9 +16,8 @@ const useDeletePost = ({
       onSettled: async () => {
         if (isAdmin) await trpcUtils.admin.getAllPosts.invalidate();
         else {
-          await trpcUtils.post.getInfinitePosts.invalidate();
-          await trpcUtils.post.getComments.invalidate();
-          await trpcUtils.post.getReplies.invalidate();
+          // Todo: Fix this
+          await trpcUtils.invalidate();
         }
       },
       retry: false,

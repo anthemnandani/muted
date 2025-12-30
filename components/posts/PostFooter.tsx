@@ -21,12 +21,13 @@ const PostFooter: React.FC<PostFooterProps> = ({
   mentions,
 }) => {
   return (
-    <div className='flex-grow flex-shrink h-max max-h-full min-w-0 p-3 flex flex-col align-start justify-end gap-3'>
+    <div className='absolute left-0 right-0 z-50 bottom-7 p-3 flex flex-col gap-3'>
       <CarouselPagination
         selectedIndex={currentIndex}
         totalCount={totalCount || 0}
         onSelect={(index) => swiperRef?.slideTo(index)}
       />
+
       <RepostBanner repostedBy={repostedBy} reposts={reposts} />
 
       <div className='flex items-center gap-1 w-full min-w-0'>
@@ -41,6 +42,7 @@ const PostFooter: React.FC<PostFooterProps> = ({
           {formatTimeAgo(createdAt)}
         </Link>
       </div>
+
       {text && <PostText text={text} mentions={mentions} />}
     </div>
   );

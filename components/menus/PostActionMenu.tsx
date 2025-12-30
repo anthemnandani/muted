@@ -84,6 +84,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
       <DropdownMenuTrigger asChild>
         <div
           className={cn(
+            'cursor-pointer',
             isModal ? 'post-detail-btn' : 'group dropdown-btn',
             showControls ? 'opacity-100' : 'opacity-0'
           )}

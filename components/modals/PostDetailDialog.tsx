@@ -72,7 +72,7 @@ const PostDetailDialog = () => {
   if (!activePost || !isOpen) return null;
 
   return (
-    <div className='fixed inset-0 z-[3000] flex w-full h-screen max-w-full bg-[#121212]'>
+    <div className='fixed inset-0 z-[999] flex w-full h-screen max-w-full bg-[#121212]'>
       <button
         type='button'
         className='post-detail-btn absolute top-4 left-4 z-[3001]'

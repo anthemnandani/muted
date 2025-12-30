@@ -21,22 +21,20 @@ const PostImageCard: React.FC<PostImageCardProps> = ({
     <div
       className={isAdminPanel ? '' : 'post-container-fitted swiper-no-swiping'}
     >
-      <div
-        className='relative flex-center'
+      <img
+        alt={text ?? ''}
+        loading='lazy'
+        src={image}
+        className='object-cover'
         style={{
           aspectRatio: numericRatio,
           width: shouldUseAutoWidth ? 'auto' : '100%',
           height:
-            (isCarousel && !isModal) || shouldUseAutoHeight ? 'auto' : '100%',
+            (isCarousel && !isModal && !isPortrait) || shouldUseAutoHeight
+              ? 'auto'
+              : '100%',
         }}
-      >
-        <img
-          alt={text ?? ''}
-          loading='lazy'
-          src={image}
-          className='object-cover w-full h-full'
-        />
-      </div>
+      />
     </div>
   );
 };
