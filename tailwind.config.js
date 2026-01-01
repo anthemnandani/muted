@@ -187,5 +187,6 @@ module.exports = {
     require('tailwindcss-animate'),
     require('tailwind-scrollbar'),
     require('@tailwindcss/container-queries'),
+    require('tailwind-scrollbar-hide'),
   ],
 };

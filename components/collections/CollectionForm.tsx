@@ -2,7 +2,7 @@
 
 import { CollectionFormProps } from '@/lib/types';
 import { CollectionData } from '@/store/addCollection';
-import React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Icons } from '../icons';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -22,10 +22,10 @@ const CollectionForm = ({
   onSubmit,
   onError,
 }: CollectionFormProps) => {
-  const inputRef = React.useRef<HTMLInputElement>(null);
-  const [formData, setFormData] = React.useState<CollectionData>(initialData);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [formData, setFormData] = useState<CollectionData>(initialData);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
     }

@@ -27,8 +27,8 @@ const PostActions: React.FC<PostActionsProps> = ({
       <LikeButton
         likeInfo={{
           id,
-          likesCount: likesCount!,
-          likes: likes!,
+          likesCount,
+          likes,
         }}
         hideLikes={hideLikes}
         authorId={author?.id}
@@ -44,7 +44,7 @@ const PostActions: React.FC<PostActionsProps> = ({
       <BookmarkButton
         bookmarkInfo={{
           id,
-          bookmarksCount: bookmarksCount!,
+          bookmarksCount,
           bookmarks,
         }}
       />

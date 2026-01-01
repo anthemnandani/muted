@@ -28,10 +28,10 @@ const useBookmark = (
     );
   }, [bookmarks, loggedUser?.id]);
 
-  const { mutateAsync: toggleBookmark, isLoading } =
+  const { mutateAsync: toggleBookmark, isPending } =
     api.collection.toggleBookmark.useMutation({
-      onSettled: async () => {
-        await trpcUtils.invalidate();
+      onSettled: () => {
+        trpcUtils.invalidate();
       },
       retry: false,
     });
@@ -41,7 +41,7 @@ const useBookmark = (
     isBookmarkedByMe,
     bookmarksCount: bookmarksCount ?? 0,
     hasNonDefaultBookmarks,
-    isLoading,
+    isLoading: isPending,
   };
 };
 

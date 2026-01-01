@@ -1,3 +1,4 @@
+import { useRepost } from '@/hooks/useRepost';
 import { SharePostProps } from '@/lib/types';
 import { useUser } from '@clerk/nextjs';
 import { X } from 'lucide-react';
@@ -10,7 +11,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../ui/dialog';
-import { useRepost } from '@/hooks/useRepost';
 
 const SharePost: React.FC<SharePostProps> = ({
   id,
@@ -50,7 +50,7 @@ const SharePost: React.FC<SharePostProps> = ({
         <DialogTrigger asChild>
           <button
             type='button'
-            title='Share'
+            aria-label='Share'
             className='btn-action mt-2 mb-1.5'
           >
             <Icons.share className='size-6' />
@@ -79,12 +79,16 @@ const SharePost: React.FC<SharePostProps> = ({
                   <button
                     type='button'
                     onClick={handleRepost}
-                    title={isRepostedByMe ? 'Remove Repost' : 'Repost'}
+                    aria-label={isRepostedByMe ? 'Remove Repost' : 'Repost'}
                     className='share-btn'
                     disabled={isLoading}
                   >
                     <div className='flex'>
-                      {isRepostedByMe ? <Icons.reposted /> : <Icons.repost />}
+                      {isRepostedByMe ? (
+                        <Icons.reposted width={56} height={56} />
+                      ) : (
+                        <Icons.repost width={56} height={56} />
+                      )}
                     </div>
                     <p className='text-neutral-100 antialiased font-medium text-sm'>
                       {isRepostedByMe ? 'Reposted' : 'Repost'}
@@ -96,11 +100,11 @@ const SharePost: React.FC<SharePostProps> = ({
                 <button
                   type='button'
                   onClick={handleCopy}
-                  title='Copy Link'
+                  aria-label='Copy Link'
                   className='share-btn'
                 >
                   <div className='flex'>
-                    <Icons.copy />
+                    <Icons.copy width={56} height={56} />
                   </div>
                   <p className='text-neutral-100 antialiased font-medium text-sm'>
                     Copy

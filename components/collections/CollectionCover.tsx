@@ -5,22 +5,21 @@ import type { Collection } from '@/lib/types';
 import { cn, getVideoThumbnailUrl } from '@/lib/utils';
 import { Check } from 'lucide-react';
 import Image from 'next/image';
-import React from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import DefaultCollectionCover from './DefaultCollectionCover';
 
-interface CollectionCoverProps {
+const CollectionCover = ({
+  collection,
+  postId,
+}: {
   collection: Collection;
   postId: string;
-}
-
-const CollectionCover = ({ collection, postId }: CollectionCoverProps) => {
-  const [isSaving, setIsSaving] = React.useState(false);
+}) => {
+  const [isSaving, setIsSaving] = useState(false);
   const { bookmarks, name } = collection;
 
-  const isBookmarked = bookmarks.some((bookmark) => bookmark.id === postId);
-
-  const { toggleBookmark } = useBookmark();
+  const { toggleBookmark, isBookmarkedByMe } = useBookmark();
 
   const handleCollectionClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -79,7 +78,7 @@ const CollectionCover = ({ collection, postId }: CollectionCoverProps) => {
         </h2>
       </button>
 
-      {isBookmarked && <Check className='size-4 text-primary-blue' />}
+      {isBookmarkedByMe && <Check className='size-4 text-primary-blue' />}
     </div>
   );
 

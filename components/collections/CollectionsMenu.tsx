@@ -5,11 +5,11 @@ import { CollectionsMenuProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import useAddCollection from '@/store/addCollection';
 import { Plus } from 'lucide-react';
-import React from 'react';
+import { useEffect, useRef } from 'react';
 import CollectionsList from './CollectionsList';
 
 const CollectionsMenu = ({ postId, isOpen, onClose }: CollectionsMenuProps) => {
-  const menuRef = React.useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const {
     setIsOpen,
     isOpen: isAddCollectionOpen,
@@ -25,7 +25,7 @@ const CollectionsMenu = ({ postId, isOpen, onClose }: CollectionsMenuProps) => {
     onClose();
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleScroll = () => {
       onClose();
     };

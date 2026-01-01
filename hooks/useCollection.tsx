@@ -17,15 +17,15 @@ export const useCollection = () => {
       onMutate: () => {
         resetCollectionData();
       },
-      onSettled: async () => {
-        await trpcUtils.collection.invalidate();
+      onSettled: () => {
+        trpcUtils.collection.getUserCollections.invalidate();
       },
     });
 
   const { mutateAsync: editCollection } =
     api.collection.editCollection.useMutation({
-      onSettled: async () => {
-        await trpcUtils.collection.invalidate();
+      onSettled: () => {
+        trpcUtils.collection.getUserCollections.invalidate();
         setIsOpen(false);
       },
     });

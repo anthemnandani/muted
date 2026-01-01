@@ -296,6 +296,12 @@ export interface LikeButtonProps {
   likeInfo: Pick<PostProps, 'id' | 'likes' | 'likesCount'>;
   authorId: string;
   hideLikes?: boolean;
+  isPanel?: boolean;
+}
+
+export interface BookmarkButtonProps {
+  bookmarkInfo: Pick<PostProps, 'id' | 'bookmarks' | 'bookmarksCount'>;
+  isPanel?: boolean;
 }
 
 export interface RepostersDialogProps {
@@ -656,7 +662,7 @@ export interface NavigationButtonsProps {
   isLoading?: boolean;
 }
 
-export interface CommentsProps {
+export interface CommentsPanelProps {
   postId: string;
   onClose: () => void;
   authorId: string;
@@ -667,6 +673,13 @@ export interface CommentsProps {
   author: AuthorInfoProps;
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
+  repostsCount: number;
+  likesCount: number;
+  likes: { userId: string }[];
+  bookmarks: { userId: string; collection: { isDefault: boolean } }[];
+  hideLikes?: boolean;
+  bookmarksCount: number;
+  isModal?: boolean;
 }
 
 export type Comment = {

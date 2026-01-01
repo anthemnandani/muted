@@ -31,7 +31,7 @@ const ReplyButton: React.FC<ReplyButtonProps> = ({
         onKeyDown={handleKeyDown}
         disabled={turnOffComments}
       >
-        <Icons.comment className='size-5' fill='#fff' />
+        <Icons.message className='size-5' fill='#fff' />
       </button>
 
       {!turnOffComments && (

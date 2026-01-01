@@ -104,6 +104,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       {isPaused && inView && (
         <div className='absolute inset-0 flex-center bg-black/10 transition-all duration-200 pointer-events-none'>
           <button
+            aria-label='Play'
             onClick={() => playerRef.current?.play()}
             className={cn(
               'rounded-full bg-black/40 p-4 text-white hover:bg-black/60',
