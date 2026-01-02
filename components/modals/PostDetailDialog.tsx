@@ -5,6 +5,7 @@ import PostMediaCarousel from '@/components/posts/PostMediaCarousel';
 import usePostStore from '@/store/postStore';
 import { X } from 'lucide-react';
 import { useCallback, useEffect } from 'react';
+import NewCollection from './NewCollection';
 
 const PostDetailDialog = () => {
   const {
@@ -83,6 +84,7 @@ const PostDetailDialog = () => {
     text,
     likesCount,
     bookmarksCount,
+    repostsCount,
     repliesCount,
     likes,
     bookmarks,
@@ -134,6 +136,7 @@ const PostDetailDialog = () => {
           author={author}
           reposts={reposts}
           likesCount={likesCount ?? 0}
+          repostsCount={repostsCount ?? 0}
           likes={likes}
           hideLikes={hideLikes}
           bookmarksCount={bookmarksCount ?? 0}
@@ -141,6 +144,7 @@ const PostDetailDialog = () => {
           isModal
         />
       </div>
+      <NewCollection />
     </div>
   );
 };

@@ -31,11 +31,9 @@ type RouterOutput = inferRouterOutputs<AppRouter>;
 
 export type PostProps = ArrayElement<
   RouterOutput['post']['getInfinitePosts']['posts']
-> & {
-  isLastThread?: boolean;
-  showSeparator?: boolean;
-  showLine?: boolean;
-};
+>;
+
+export type Post = RouterOutputs['post']['getInfinitePosts']['posts'][number];
 
 export type PostMedia = {
   fileType: string;
@@ -53,12 +51,12 @@ export type PostMedia = {
 };
 
 export type ParentPostInfo = Pick<
-  PostProps,
+  Post,
   'id' | 'text' | 'media' | 'author' | 'mentions'
 > & { createdAt?: Date };
 
 export type ReplyPostInfo = Pick<
-  PostProps,
+  Post,
   'id' | 'text' | 'author' | 'media' | 'mentions' | 'privacy' | 'createdAt'
 >;
 
@@ -141,7 +139,7 @@ export type IconProps =
   | React.HTMLAttributes<SVGElement>
   | React.SVGProps<SVGSVGElement>;
 
-export type AuthorInfoProps = PostProps['author'] & {
+export type AuthorInfoProps = Post['author'] & {
   receivedFollowRequests?: FollowRequest[];
 };
 
@@ -293,14 +291,14 @@ export interface RepostIndicatorProps {
 }
 
 export interface LikeButtonProps {
-  likeInfo: Pick<PostProps, 'id' | 'likes' | 'likesCount'>;
+  likeInfo: Pick<Post, 'id' | 'likes' | 'likesCount'>;
   authorId: string;
   hideLikes?: boolean;
   isPanel?: boolean;
 }
 
 export interface BookmarkButtonProps {
-  bookmarkInfo: Pick<PostProps, 'id' | 'bookmarks' | 'bookmarksCount'>;
+  bookmarkInfo: Pick<Post, 'id' | 'bookmarks' | 'bookmarksCount'>;
   isPanel?: boolean;
 }
 

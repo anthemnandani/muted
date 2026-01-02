@@ -1,10 +1,5 @@
 import { PostMedia } from '@/lib/types';
-import {
-  enrichMediaTokens,
-  enrichPostWithTokens,
-  enrichThumbnailToken,
-  getTotalRepliesCount,
-} from '@/lib/utils';
+import { enrichMediaTokens, enrichThumbnailToken } from '@/lib/utils';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
 import {
   GET_MENTIONS,
@@ -12,7 +7,6 @@ import {
   GET_USER,
   getBookmarksWithBlockFilter,
   getLikesWithBlockFilter,
-  getPostReplies,
 } from '@/server/constants';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
@@ -434,7 +428,7 @@ export const collectionRouter = createTRPCRouter({
   getCollection: privateProcedure
     .input(
       z.object({
-        id: z.string(),
+        id: z.string().optional(),
         limit: z.number().optional().default(20),
         cursor: z
           .object({
@@ -445,6 +439,12 @@ export const collectionRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { id, limit, cursor }, ctx }) => {
+      if (!id) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Collection ID is required',
+        });
+      }
       const { userId, db } = ctx;
 
       const collection = await db.collection.findUnique({
@@ -575,136 +575,5 @@ export const collectionRouter = createTRPCRouter({
         posts,
         nextCursor,
       };
-    }),
-
-  getCollectionPosts: privateProcedure
-    .input(
-      z.object({
-        id: z.string().nullable(),
-      })
-    )
-    .query(async ({ ctx, input }) => {
-      const { userId, db } = ctx;
-
-      if (!input.id) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Collection ID is required',
-        });
-      }
-
-      const collection = await db.collection.findUnique({
-        where: {
-          id: input.id,
-        },
-        select: {
-          id: true,
-          user: {
-            select: {
-              username: true,
-            },
-          },
-          bookmarks: {
-            where: {
-              post: {
-                hiddenBy: {
-                  none: {
-                    userId,
-                  },
-                },
-                author: {
-                  mutedByUsers: {
-                    none: {
-                      mutedByUserId: userId,
-                    },
-                  },
-                  blockedByUsers: {
-                    none: {
-                      blockingUserId: userId,
-                    },
-                  },
-                  blockedUsers: {
-                    none: {
-                      blockedUserId: userId,
-                    },
-                  },
-                },
-              },
-            },
-            orderBy: {
-              createdAt: 'desc',
-            },
-            select: {
-              post: {
-                select: {
-                  id: true,
-                  createdAt: true,
-                  text: true,
-                  media: true,
-                  parentPostId: true,
-                  quoteId: true,
-                  path: true,
-                  repliesCount: true,
-                  hideLikes: true,
-                  turnOffComments: true,
-                  privacy: true,
-                  author: {
-                    select: {
-                      ...GET_USER,
-                      blockedUsers: {
-                        select: {
-                          blockedUserId: true,
-                        },
-                      },
-                    },
-                  },
-                  ...getLikesWithBlockFilter(userId),
-                  ...getBookmarksWithBlockFilter(userId),
-                  ...getPostReplies(userId),
-                  reposts: {
-                    ...GET_REPOSTS,
-                    orderBy: {
-                      createdAt: 'desc',
-                    },
-                  },
-                  ...GET_MENTIONS,
-                },
-              },
-            },
-          },
-        },
-      });
-
-      if (!collection) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
-      }
-
-      const blockedUsers = collection.bookmarks[0].post.author.blockedUsers.map(
-        (blockedUser) => blockedUser.blockedUserId
-      );
-
-      const isBlocked = blockedUsers.includes(userId);
-
-      if (isBlocked) {
-        throw new TRPCError({ code: 'FORBIDDEN' });
-      }
-
-      const posts = await Promise.all(
-        collection.bookmarks.map(async (bookmark) => {
-          const postWithTokens = await enrichPostWithTokens(bookmark.post);
-
-          return {
-            ...postWithTokens,
-            likesCount: bookmark.post.likes.length,
-            repostsCount: bookmark.post.reposts.length,
-            repliesCount: getTotalRepliesCount(bookmark.post) as number,
-            bookmarksCount: new Set(
-              bookmark.post.bookmarks.map((bookmark) => bookmark.userId)
-            ).size,
-          };
-        })
-      );
-
-      return posts;
     }),
 });

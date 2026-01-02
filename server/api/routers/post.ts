@@ -1245,126 +1245,6 @@ export const postRouter = createTRPCRouter({
       return { success: true };
     }),
 
-  getLikedPosts: privateProcedure
-    .input(
-      z.object({
-        limit: z.number().optional(),
-        cursor: z
-          .object({
-            postId: z.string(),
-            userId: z.string(),
-          })
-          .optional(),
-      })
-    )
-    .query(async ({ input: { limit = 20, cursor }, ctx }) => {
-      const { userId, db } = ctx;
-      const likedPosts = await db.like.findMany({
-        where: {
-          userId,
-          post: {
-            AND: [
-              {
-                hiddenBy: {
-                  none: {
-                    userId,
-                  },
-                },
-              },
-              {
-                author: {
-                  mutedByUsers: {
-                    none: {
-                      mutedByUserId: userId,
-                    },
-                  },
-                },
-              },
-            ],
-          },
-        },
-        take: limit + 1,
-        cursor: cursor
-          ? { postId_userId: { postId: cursor.postId, userId } }
-          : undefined,
-        select: {
-          post: {
-            select: {
-              id: true,
-              text: true,
-              createdAt: true,
-              media: true,
-              parentPostId: true,
-              parentPost: {
-                select: {
-                  id: true,
-                  author: {
-                    select: {
-                      ...GET_USER,
-                    },
-                  },
-                },
-              },
-              quoteId: true,
-              path: true,
-              hideLikes: true,
-              turnOffComments: true,
-              pinned: true,
-              privacy: true,
-              replies: true,
-              author: {
-                select: {
-                  ...GET_USER,
-                },
-              },
-              ...getLikesWithBlockFilter(userId),
-              reposts: {
-                ...GET_REPOSTS,
-                orderBy: {
-                  createdAt: 'desc',
-                },
-              },
-              ...getBookmarksWithBlockFilter(userId),
-              ...GET_MENTIONS,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      });
-
-      let nextCursor: typeof cursor | undefined;
-      if (likedPosts.length > limit) {
-        const nextItem = likedPosts[limit];
-        nextCursor = {
-          postId: nextItem.post.id,
-          userId,
-        };
-        likedPosts.length = limit;
-      }
-
-      const formattedPosts = await Promise.all(
-        likedPosts.map(async (likedPost) => {
-          const postWithTokens = await enrichPostWithTokens(likedPost.post);
-          return {
-            ...postWithTokens,
-            likesCount: likedPost.post.likes.length,
-            repostsCount: likedPost.post.reposts.length,
-            repliesCount: likedPost.post.replies.length,
-            bookmarksCount: new Set(
-              likedPost.post.bookmarks.map((bookmark) => bookmark.userId)
-            ).size,
-          };
-        })
-      );
-
-      return {
-        posts: formattedPosts,
-        nextCursor,
-      };
-    }),
-
   getFollowingPosts: privateProcedure
     .input(
       z.object({
@@ -1538,14 +1418,6 @@ export const postRouter = createTRPCRouter({
         })
       );
 
-      const sortedPosts = formattedPosts.sort((a, b) => {
-        const aTime =
-          a.type === 'repost' ? a.repostedAt!.getTime() : a.createdAt.getTime();
-        const bTime =
-          b.type === 'repost' ? b.repostedAt!.getTime() : b.createdAt.getTime();
-        return bTime - aTime;
-      });
-
       return {
         posts: formattedPosts,
         nextCursor,
@@ -1555,7 +1427,7 @@ export const postRouter = createTRPCRouter({
   getPostsByTag: publicProcedure
     .input(
       z.object({
-        tag: z.string(),
+        tag: z.string().optional(),
         limit: z.number().optional(),
         cursor: z
           .object({
@@ -1566,6 +1438,12 @@ export const postRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { tag, limit = 20, cursor }, ctx }) => {
+      if (!tag) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Tag is required',
+        });
+      }
       const { userId, db } = ctx;
       const whereClause: Prisma.PostWhereInput = {
         hashtags: {

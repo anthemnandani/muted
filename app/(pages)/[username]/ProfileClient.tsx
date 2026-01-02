@@ -25,6 +25,7 @@ const ProfileClient = ({ username }: { username: string }) => {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         trpc: { abortOnUnmount: true },
         staleTime: 10 * 60 * 1000,
+        cacheTime: 10 * 60 * 1000,
         retry: false,
         refetchOnWindowFocus: false,
       }
@@ -38,6 +39,8 @@ const ProfileClient = ({ username }: { username: string }) => {
   }, [reset, setCurrentlyPlaying]);
 
   const allPosts = data?.pages.flatMap((page) => page.userDetails.posts);
+
+  console.log('All Posts: ', allPosts);
 
   const userDetails = data?.pages.flatMap((page) => page.userDetails);
 

@@ -104,7 +104,7 @@ const Navigation = () => {
           addFill
         />
         {totalUnreadMsgsAndRequests > 0 && (
-          <span className='absolute -top-1 -right-1 bg-red-500 text-white/90 text-xs rounded-full px-1.5 py-0.5 min-w-[18px] h-[18px] flex-center font-medium'>
+          <span className='absolute -top-1 -right-1 bg-primary-red text-white/90 text-xs rounded-full px-1.5 py-0.5 min-w-[18px] h-[18px] flex-center font-medium'>
             {totalUnreadMsgsAndRequests > 99
               ? '99+'
               : totalUnreadMsgsAndRequests}

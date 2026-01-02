@@ -29,18 +29,22 @@ export function useRepost({
   useEffect(() => {
     setIsRepostedByMe(isRepostedByMeInitial);
     setRepostsCount(initialRepostsCount || 0);
-  }, [isRepostedByMeInitial, initialRepostsCount]);
+  }, [postId]);
 
-  const { mutateAsync: toggleRepost, isLoading } =
+  const { mutateAsync: toggleRepost, isPending } =
     api.post.toggleRepost.useMutation({
       onError: (error) => {
         toast.error('RepostError: Something went wrong!');
+        setIsRepostedByMe(isRepostedByMeInitial);
+        setRepostsCount(initialRepostsCount);
       },
-      onSettled: async () => {
-        await Promise.all([
-          trpcUtils.user.getUserReposts.invalidate(),
-          trpcUtils.post.getInfinitePosts.invalidate(),
-        ]);
+      onMutate: () => {
+        const newIsReposted = !isRepostedByMe;
+        setIsRepostedByMe(newIsReposted);
+        setRepostsCount((prev) => (newIsReposted ? prev + 1 : prev - 1));
+      },
+      onSettled: () => {
+        trpcUtils.invalidate();
       },
     });
 
@@ -71,7 +75,7 @@ export function useRepost({
   return {
     isRepostedByMe,
     repostsCount,
-    isLoading,
+    isLoading: isPending,
     handleToggleRepost,
   };
 }

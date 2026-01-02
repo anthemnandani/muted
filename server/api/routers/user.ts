@@ -1,4 +1,3 @@
-import { PostMedia } from '@/lib/types';
 import {
   enrichPostWithTokens,
   getTotalRepliesCount,
@@ -8,7 +7,6 @@ import {
   GET_MENTIONS,
   GET_REPOSTS,
   GET_USER,
-  getAuthorAndHiddenSelect,
   getBookmarksWithBlockFilter,
   getLikesWithBlockFilter,
   getPostReplies,
@@ -183,7 +181,7 @@ export const userRouter = createTRPCRouter({
   getUserReposts: privateProcedure
     .input(
       z.object({
-        username: z.string(),
+        username: z.string().optional(),
         limit: z.number().optional(),
         cursor: z
           .object({
@@ -194,6 +192,12 @@ export const userRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { username, limit = 18, cursor }, ctx }) => {
+      if (!username) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Username is required',
+        });
+      }
       const { userId, db } = ctx;
       const user = await db.user.findUnique({
         where: { username, deactivated: false },
@@ -325,7 +329,7 @@ export const userRouter = createTRPCRouter({
   getUserLikedPosts: privateProcedure
     .input(
       z.object({
-        username: z.string(),
+        username: z.string().optional(),
         limit: z.number().optional(),
         cursor: z
           .object({
@@ -336,6 +340,12 @@ export const userRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { username, limit = 18, cursor }, ctx }) => {
+      if (!username) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Username is required',
+        });
+      }
       const { userId, db } = ctx;
       const user = await db.user.findUnique({
         where: {
@@ -467,208 +477,6 @@ export const userRouter = createTRPCRouter({
       };
     }),
 
-  postInfo: privateProcedure
-    .input(
-      z.object({
-        username: z.string(),
-        filters: z
-          .array(z.enum(['ALL', 'TEXT', 'REPLIES', 'REPOSTS']))
-          .default(['ALL']),
-        limit: z.number().optional(),
-        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
-      })
-    )
-    .query(
-      async ({ input: { username, filters, limit = 21, cursor }, ctx }) => {
-        if (filters.includes('ALL') || filters.length === 0) {
-          filters = ['ALL'];
-        }
-        const { userId, db } = ctx;
-        const user = await db.user.findUnique({
-          where: {
-            username,
-          },
-          select: {
-            id: true,
-          },
-        });
-
-        if (!user) {
-          throw new TRPCError({ code: 'NOT_FOUND' });
-        }
-
-        let whereCondition = {};
-
-        if (filters.includes('ALL')) {
-          whereCondition = {
-            authorId: user.id,
-            parentPostId: null,
-            NOT: {
-              reposts: {
-                some: {
-                  userId: user.id,
-                },
-              },
-            },
-          };
-        } else {
-          const conditions = [];
-
-          if (filters.includes('TEXT')) {
-            conditions.push({
-              authorId: user.id,
-              parentPostId: null,
-            });
-          }
-
-          if (filters.includes('REPLIES')) {
-            conditions.push({
-              authorId: user.id,
-              parentPostId: { not: null },
-            });
-          }
-
-          if (filters.includes('REPOSTS')) {
-            conditions.push({
-              reposts: {
-                some: { userId: user.id },
-              },
-            });
-          }
-
-          whereCondition = { OR: conditions };
-        }
-
-        const posts = await db.post.findMany({
-          where: whereCondition,
-          take: limit + 1,
-          cursor: cursor ? { createdAt_id: cursor } : undefined,
-          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-          select: {
-            id: true,
-            createdAt: true,
-            text: true,
-            media: true,
-            parentPostId: true,
-            parentPost: {
-              select: {
-                id: true,
-                createdAt: true,
-                text: true,
-                media: true,
-                parentPostId: true,
-                quoteId: true,
-                path: true,
-                parentPost: {
-                  select: {
-                    id: true,
-                    ...getAuthorAndHiddenSelect(userId),
-                  },
-                },
-                repliesCount: true,
-                hideLikes: true,
-                turnOffComments: true,
-                pinned: true,
-                privacy: true,
-                replies: true,
-                ...getAuthorAndHiddenSelect(userId),
-                ...getLikesWithBlockFilter(userId),
-                ...getBookmarksWithBlockFilter(userId),
-                reposts: {
-                  ...GET_REPOSTS,
-                  orderBy: {
-                    createdAt: 'desc',
-                  },
-                },
-                ...GET_MENTIONS,
-              },
-            },
-            quoteId: true,
-            path: true,
-            hideLikes: true,
-            turnOffComments: true,
-            pinned: true,
-            privacy: true,
-            replies: true,
-            ...getAuthorAndHiddenSelect(userId),
-            ...getLikesWithBlockFilter(userId),
-            ...getBookmarksWithBlockFilter(userId),
-            ...GET_MENTIONS,
-            reposts: {
-              ...GET_REPOSTS,
-              orderBy: {
-                createdAt: 'desc',
-              },
-            },
-          },
-        });
-
-        let nextCursor: typeof cursor | undefined;
-
-        if (posts.length > limit) {
-          const nextItem = posts.pop();
-          if (nextItem != null) {
-            nextCursor = { id: nextItem.id, createdAt: nextItem.createdAt };
-          }
-        }
-
-        return {
-          posts: posts.map((post) => {
-            const userRepost = post.reposts.find(
-              (repost) => repost.user.id === user.id
-            );
-            return {
-              id: post.id,
-              createdAt: post.createdAt,
-              text: post.text,
-              parentPostId: post.parentPostId,
-              parentPost: post.parentPost
-                ? {
-                    ...post.parentPost,
-                    media: post.parentPost.media as PostMedia[],
-                    likesCount: post.parentPost.likes.length,
-                    repliesCount: post.parentPost.replies.length,
-                    bookmarksCount: new Set(
-                      post.parentPost.bookmarks.map(
-                        (bookmark) => bookmark.userId
-                      )
-                    ).size,
-                    repostsCount: post.parentPost.reposts.length,
-                    isMuted: post.parentPost.author.mutedByUsers.length > 0,
-                    isHidden: post.parentPost.hiddenBy.length > 0,
-                  }
-                : null,
-              author: post.author,
-              likesCount: post.likes.length,
-              likes: post.likes,
-              path: post.path,
-              repliesCount: post.replies.length,
-              hideLikes: post.hideLikes,
-              turnOffComments: post.turnOffComments,
-              pinned: post.pinned,
-              quoteId: post.quoteId,
-              media: post.media as PostMedia[],
-              reposts: post.reposts,
-              mentions: post.mentions,
-              bookmarks: post.bookmarks,
-              bookmarksCount: new Set(
-                post.bookmarks.map((bookmark) => bookmark.userId)
-              ).size,
-              privacy: post.privacy,
-              isHidden: post.hiddenBy.length > 0,
-              isMuted: post.author.mutedByUsers.length > 0,
-              repostsCount: post.reposts.length,
-              ...(userRepost && {
-                repostedBy: userRepost.user,
-                repostedAt: userRepost.createdAt,
-              }),
-            };
-          }),
-          nextCursor,
-        };
-      }
-    ),
-
   updateProfile: privateProcedure
     .input(
       z.object({
@@ -733,277 +541,6 @@ export const userRouter = createTRPCRouter({
       return {
         updatedUser,
         success: true,
-      };
-    }),
-
-  repliesInfo: privateProcedure
-    .input(
-      z.object({
-        username: z.string(),
-        limit: z.number().optional(),
-        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
-      })
-    )
-    .query(async ({ input: { username, limit = 20, cursor }, ctx }) => {
-      const { userId, db } = ctx;
-      const isUser = await db.user.findUnique({
-        where: {
-          username,
-        },
-      });
-
-      if (!isUser) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
-      }
-
-      const userProfileInfo = await db.post.findMany({
-        where: {
-          author: {
-            username,
-          },
-          parentPostId: {
-            not: null,
-          },
-        },
-        take: limit + 1,
-        cursor: cursor ? { createdAt_id: cursor } : undefined,
-        orderBy: {
-          createdAt: 'desc',
-        },
-        select: {
-          id: true,
-          createdAt: true,
-          text: true,
-          media: true,
-          parentPostId: true,
-          parentPost: {
-            select: {
-              id: true,
-              createdAt: true,
-              text: true,
-              media: true,
-              parentPostId: true,
-              quoteId: true,
-              path: true,
-              parentPost: {
-                select: {
-                  id: true,
-                  ...getAuthorAndHiddenSelect(userId),
-                },
-              },
-              repliesCount: true,
-              hideLikes: true,
-              turnOffComments: true,
-              pinned: true,
-              privacy: true,
-              replies: true,
-              ...getAuthorAndHiddenSelect(userId),
-              ...getLikesWithBlockFilter(userId),
-              ...getBookmarksWithBlockFilter(userId),
-              reposts: {
-                ...GET_REPOSTS,
-                orderBy: {
-                  createdAt: 'desc',
-                },
-              },
-              ...GET_MENTIONS,
-            },
-          },
-          quoteId: true,
-          path: true,
-          repliesCount: true,
-          hideLikes: true,
-          turnOffComments: true,
-          pinned: true,
-          privacy: true,
-          ...getAuthorAndHiddenSelect(userId),
-          ...getLikesWithBlockFilter(userId),
-          ...getBookmarksWithBlockFilter(userId),
-          replies: true,
-          reposts: {
-            ...GET_REPOSTS,
-            orderBy: {
-              createdAt: 'desc',
-            },
-          },
-          ...GET_MENTIONS,
-        },
-      });
-
-      if (!userProfileInfo) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
-      }
-
-      let nextCursor: typeof cursor | undefined;
-
-      if (userProfileInfo.length > limit) {
-        const nextItem = userProfileInfo.pop();
-        if (nextItem != null) {
-          nextCursor = { id: nextItem.id, createdAt: nextItem.createdAt };
-        }
-      }
-
-      return {
-        replies: userProfileInfo.map((post) => ({
-          id: post.id,
-          createdAt: post.createdAt,
-          text: post.text,
-          media: post.media as PostMedia[],
-          parentPostId: post.parentPostId,
-          parentPost: post.parentPost
-            ? {
-                ...post.parentPost,
-                media: post.parentPost.media as PostMedia[],
-                likesCount: post.parentPost.likes.length,
-                bookmarksCount: new Set(
-                  post.parentPost.bookmarks.map((bookmark) => bookmark.userId)
-                ).size,
-                repostsCount: post.parentPost.reposts.length,
-                isMuted: post.parentPost.author.mutedByUsers.length > 0,
-                isHidden: post.parentPost.hiddenBy.length > 0,
-              }
-            : null,
-          author: post.author,
-          likesCount: post.likes.length,
-          likes: post.likes,
-          reposts: post.reposts,
-          repostsCount: post.reposts.length,
-          bookmarks: post.bookmarks,
-          bookmarksCount: new Set(
-            post.bookmarks.map((bookmark) => bookmark.userId)
-          ).size,
-          mentions: post.mentions,
-          quoteId: post.quoteId,
-          hideLikes: post.hideLikes,
-          turnOffComments: post.turnOffComments,
-          pinned: post.pinned,
-          path: post.path,
-          repliesCount: post.repliesCount,
-          privacy: post.privacy,
-          isMuted: post.author.mutedByUsers.length > 0,
-          isHidden: post.hiddenBy.length > 0,
-        })),
-        nextCursor,
-      };
-    }),
-
-  repostsInfo: privateProcedure
-    .input(
-      z.object({
-        username: z.string(),
-        limit: z.number().optional(),
-        cursor: z
-          .object({ postId: z.string(), createdAt: z.date() })
-          .optional(),
-      })
-    )
-    .query(async ({ input: { username, limit = 20, cursor }, ctx }) => {
-      const { userId, db } = ctx;
-      const isUser = await db.user.findUnique({
-        where: {
-          username,
-        },
-      });
-
-      if (!isUser) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
-      }
-
-      const userReposts = await db.repost.findMany({
-        where: {
-          userId: isUser.id,
-        },
-        take: limit + 1,
-        cursor: cursor
-          ? {
-              postId_userId: { postId: cursor.postId, userId: isUser.id },
-              createdAt: cursor.createdAt,
-            }
-          : undefined,
-        orderBy: {
-          createdAt: 'desc',
-        },
-        select: {
-          createdAt: true,
-          userId: true,
-          postId: true,
-          user: {
-            select: {
-              ...GET_USER,
-            },
-          },
-          post: {
-            select: {
-              id: true,
-              createdAt: true,
-              text: true,
-              media: true,
-              parentPostId: true,
-              quoteId: true,
-              path: true,
-              repliesCount: true,
-              hideLikes: true,
-              turnOffComments: true,
-              pinned: true,
-              privacy: true,
-              ...getAuthorAndHiddenSelect(userId),
-              ...getLikesWithBlockFilter(userId),
-              replies: true,
-              reposts: {
-                ...GET_REPOSTS,
-                orderBy: {
-                  createdAt: 'desc',
-                },
-              },
-              ...getBookmarksWithBlockFilter(userId),
-              ...GET_MENTIONS,
-            },
-          },
-        },
-      });
-
-      let nextCursor: typeof cursor | undefined;
-
-      if (userReposts.length > limit) {
-        const nextItem = userReposts.pop();
-        if (nextItem != null) {
-          nextCursor = {
-            postId: nextItem.postId,
-            createdAt: nextItem.createdAt,
-          };
-        }
-      }
-
-      return {
-        reposts: userReposts.map((repost) => ({
-          id: repost.post.id,
-          createdAt: repost.post.createdAt,
-          text: repost.post.text,
-          media: repost.post.media as PostMedia[],
-          parentPostId: repost.post.parentPostId,
-          author: repost.post.author,
-          likesCount: repost.post.likes.length,
-          likes: repost.post.likes,
-          reposts: repost.post.reposts,
-          mentions: repost.post.mentions,
-          bookmarks: repost.post.bookmarks,
-          bookmarksCount: new Set(
-            repost.post.bookmarks.map((bookmark) => bookmark.userId)
-          ).size,
-          quoteId: repost.post.quoteId,
-          path: repost.post.path,
-          repliesCount: repost.post.repliesCount,
-          hideLikes: repost.post.hideLikes,
-          turnOffComments: repost.post.turnOffComments,
-          pinned: repost.post.pinned,
-          repostsCount: repost.post.reposts.length,
-          repostedBy: repost.user,
-          repostedAt: repost.createdAt,
-          privacy: repost.post.privacy,
-          isMuted: repost.post.author.mutedByUsers.length > 0,
-          isHidden: repost.post.hiddenBy.length > 0,
-        })),
-        nextCursor,
       };
     }),
 

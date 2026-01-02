@@ -18,7 +18,7 @@ export const useCollection = () => {
         resetCollectionData();
       },
       onSettled: () => {
-        trpcUtils.collection.getUserCollections.invalidate();
+        trpcUtils.invalidate();
       },
     });
 

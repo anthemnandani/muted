@@ -1,7 +1,7 @@
 'use client';
 
 import { PostsListProps } from '@/lib/types';
-import { useEffect, useRef, Fragment, useMemo } from 'react';
+import { Fragment, useEffect, useRef } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import PostCard from '../cards/PostCard';
 import { Icons } from '../icons';
@@ -20,21 +20,8 @@ const PostsList: React.FC<PostsListProps> = ({
 }) => {
   const firstPostRef = useRef<HTMLDivElement>(null);
 
-  const uniquePosts = useMemo(() => {
-    if (!posts) return [];
-    const seenPosts = new Set();
-    return posts.filter((post) => {
-      const key = post.repostedBy
-        ? `repost-${post.repostedBy.id}-${post.id}`
-        : `post-${post.id}`;
-      if (seenPosts.has(key)) return false;
-      seenPosts.add(key);
-      return true;
-    });
-  }, [posts]);
-
   useEffect(() => {
-    if (resetToFirst && !isLoading && uniquePosts.length > 0) {
+    if (resetToFirst && !isLoading && posts && posts.length > 0) {
       containerRef?.current?.scrollTo({ top: 0, behavior: 'instant' });
 
       if (firstPostRef.current) {
@@ -48,17 +35,11 @@ const PostsList: React.FC<PostsListProps> = ({
         onResetComplete();
       }
     }
-  }, [
-    resetToFirst,
-    isLoading,
-    uniquePosts.length,
-    onResetComplete,
-    containerRef,
-  ]);
+  }, [resetToFirst, isLoading, posts, onResetComplete, containerRef]);
 
   return (
     <Fragment>
-      {!isLoading && uniquePosts.length === 0 && (
+      {!isLoading && posts?.length === 0 && (
         <div className='flex-center w-full h-screen'>
           <p className='text-gray-3'>{emptyStateMessage || 'No posts found'}</p>
         </div>
@@ -71,7 +52,7 @@ const PostsList: React.FC<PostsListProps> = ({
         </div>
       ) : (
         <InfiniteScroll
-          dataLength={uniquePosts.length}
+          dataLength={posts?.length ?? 0}
           next={fetchNextPage}
           hasMore={hasNextPage ?? false}
           className='h-screen'
@@ -82,20 +63,16 @@ const PostsList: React.FC<PostsListProps> = ({
             </div>
           }
         >
-          {uniquePosts.map((post, index) => (
+          {posts?.map((post, index) => (
             <div
-              key={
-                post.repostedBy
-                  ? `repost-${post.repostedBy.id}-${post.id}`
-                  : `post-${post.id}`
-              }
+              key={`post-${post.id}`}
               ref={index === 0 ? firstPostRef : null}
             >
               <PostCard
                 {...post}
                 showMuted={showMuted}
                 index={index}
-                totalPosts={uniquePosts.length}
+                totalPosts={posts.length}
               />
             </div>
           ))}

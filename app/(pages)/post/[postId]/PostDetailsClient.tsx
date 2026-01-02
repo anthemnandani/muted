@@ -11,6 +11,8 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
     { id: postId },
     {
       staleTime: 10 * 60 * 1000,
+      cacheTime: 10 * 60 * 1000,
+      trpc: { abortOnUnmount: true },
       retry: false,
       refetchOnWindowFocus: false,
     }

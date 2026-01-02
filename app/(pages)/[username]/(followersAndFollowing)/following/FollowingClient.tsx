@@ -14,6 +14,9 @@ const FollowingClient = ({ username }: { username: string }) => {
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         trpc: { abortOnUnmount: true },
+        cacheTime: 10 * 60 * 1000,
+        staleTime: 10 * 60 * 1000,
+        retry: false,
       }
     );
 

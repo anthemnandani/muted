@@ -17,6 +17,8 @@ const CollectionDetails = ({ id }: { id: string }) => {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         trpc: { abortOnUnmount: true },
         staleTime: 10 * 60 * 1000,
+        cacheTime: 10 * 60 * 1000,
+        retry: false,
       }
     );
 
