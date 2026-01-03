@@ -1001,3 +1001,16 @@ export const SUSPENSION_REASONS = [
   'Your account posted content that was misleading, spam, or fraudulent.',
   'Your account was suspected of impersonating another person or entity.',
 ];
+
+export enum QUERY_TYPE {
+  FEED = 'FEED',
+  POST_DETAILS = 'POST_DETAILS',
+  COMMENTS = 'COMMENT',
+  REPLIES = 'REPLIES',
+  FOLLOWING_FEED = 'FOLLOWING_FEED',
+  TAG_FEED = 'TAG_FEED',
+  USER_POSTS = 'USER_POSTS',
+  USER_REPOSTS = 'USER_REPOSTS',
+  USER_LIKED = 'USER_LIKED',
+  COLLECTION_POSTS = 'COLLECTION_POSTS',
+}

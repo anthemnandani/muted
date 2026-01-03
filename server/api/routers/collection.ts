@@ -428,7 +428,7 @@ export const collectionRouter = createTRPCRouter({
   getCollection: privateProcedure
     .input(
       z.object({
-        id: z.string().optional(),
+        id: z.string(),
         limit: z.number().optional().default(20),
         cursor: z
           .object({

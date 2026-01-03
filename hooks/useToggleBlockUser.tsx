@@ -37,7 +37,7 @@ const useToggleBlockUser = ({
         setIsLoading(false);
       },
       onSettled: async () => {
-        await trpcUtils.user.userInfo.invalidate();
+        await trpcUtils.user.getUserProfile.invalidate();
         await trpcUtils.user.getBlockedUsers.invalidate();
       },
       onError: (error) => {

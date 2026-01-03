@@ -1,19 +1,15 @@
+import { useOptimisticLikeStrategy } from '@/contexts/OptimisticLikeContext';
+import { UseLikeProps } from '@/lib/types';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-const useLike = ({
-  initialLikesCount,
-  likes,
-  postId,
-}: {
-  initialLikesCount: number;
-  likes: { userId: string }[];
-  postId: string;
-}) => {
+const useLike = ({ initialLikesCount, likes, postId }: UseLikeProps) => {
   const { user: loggedUser } = useUser();
-  const utils = api.useUtils();
+
+  const performOptimisticUpdate = useOptimisticLikeStrategy();
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const isLikedByMeInitial = useMemo(
     () => likes?.some((like) => like.userId === loggedUser?.id) || false,
@@ -23,85 +19,47 @@ const useLike = ({
   const [isLikedByMe, setIsLikedByMe] = useState(isLikedByMeInitial);
   const [likesCount, setLikesCount] = useState(initialLikesCount || 0);
 
+  const { mutate: serverToggleLike } = api.like.toggleLike.useMutation();
+
   useEffect(() => {
-    setIsLikedByMe(isLikedByMeInitial);
-    setLikesCount(initialLikesCount || 0);
-  }, [isLikedByMeInitial, initialLikesCount]);
-
-  const { mutate: toggleLike, isPending } = api.like.toggleLike.useMutation({
-    onMutate: async () => {
-      const previousIsLikedByMe = isLikedByMe;
-      const previousLikesCount = likesCount;
-
-      setIsLikedByMe((prev) => !prev);
-      setLikesCount((prev) => (isLikedByMe ? prev - 1 : prev + 1));
-
-      // await utils.post.getFollowingPosts.cancel();
-      // const previousFollowingPosts =
-      //   utils.post.getFollowingPosts.getInfiniteData();
-      await utils.user.getUserReposts.cancel();
-      const previousUserReposts = utils.user.getUserReposts.getInfiniteData();
-
-      if (loggedUser?.id) {
-        utils.user.getUserReposts.setInfiniteData(
-          { username: loggedUser?.username! },
-          (oldData) => {
-            if (!oldData) return oldData;
-
-            return {
-              ...oldData,
-              pages: oldData.pages.map((page) => ({
-                ...page,
-                posts: page.posts.map((post) => {
-                  if (post.id !== postId) return post;
-
-                  const willBeLiked = !previousIsLikedByMe;
-
-                  return {
-                    ...post,
-                    likesCount: willBeLiked
-                      ? post.likesCount + 1
-                      : Math.max(0, post.likesCount - 1),
-                    likes: willBeLiked
-                      ? [...post.likes, { userId: loggedUser.id }]
-                      : post.likes.filter((l) => l.userId !== loggedUser.id),
-                  };
-                }),
-              })),
-            };
-          }
-        );
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
       }
+    };
+  }, []);
 
-      return {
-        previousIsLikedByMe,
-        previousLikesCount,
-        previousUserReposts,
-      };
-    },
-    onError: (error, variables, context) => {
-      if (context?.previousIsLikedByMe !== undefined) {
-        setIsLikedByMe(context.previousIsLikedByMe);
-        setLikesCount(context.previousLikesCount);
-      }
+  const toggleLike = async () => {
+    if (!loggedUser) {
+      toast.error('You must be logged in to like posts');
+      return;
+    }
 
-      if (context?.previousUserReposts) {
-        utils.user.getUserReposts.setInfiniteData(
-          { username: loggedUser?.username! },
-          context.previousUserReposts
-        );
-      }
+    const willBeLiked = !isLikedByMe;
 
-      toast.error('Something went wrong!');
-    },
-    retry: false,
-  });
+    setIsLikedByMe(willBeLiked);
+    setLikesCount((prev) => (willBeLiked ? prev + 1 : Math.max(0, prev - 1)));
+
+    if (performOptimisticUpdate) {
+      performOptimisticUpdate(postId, willBeLiked);
+    }
+
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    debounceTimeoutRef.current = setTimeout(() => {
+      serverToggleLike({
+        id: postId,
+        intent: willBeLiked,
+      });
+    }, 1000);
+  };
 
   return {
     isLikedByMe,
     likesCount,
     toggleLike,
-    isLoading: isPending,
   };
 };
 

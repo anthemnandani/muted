@@ -13,7 +13,7 @@ const LikeButton: React.FC<LikeButtonProps> = ({
   hideLikes,
   isPanel,
 }) => {
-  const { isLikedByMe, likesCount, isLoading, toggleLike } = useLike({
+  const { isLikedByMe, likesCount, toggleLike } = useLike({
     initialLikesCount: likeInfo.likesCount,
     likes: likeInfo.likes,
     postId: likeInfo.id,
@@ -25,9 +25,8 @@ const LikeButton: React.FC<LikeButtonProps> = ({
     <div className={cn('flex flex-col items-center', isPanel && 'flex-row')}>
       <button
         type='button'
-        // disabled={isLoading}
         aria-label={isLikedByMe ? 'Unlike' : 'Like'}
-        onClick={() => toggleLike({ id: likeInfo.id })}
+        onClick={toggleLike}
         className={cn(
           'btn-action mt-2 mb-1.5',
           isPanel && 'mt-0 mb-0 size-9 mr-1.5'

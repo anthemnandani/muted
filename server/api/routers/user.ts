@@ -23,33 +23,17 @@ import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '../trpc';
 
 export const userRouter = createTRPCRouter({
-  userInfo: privateProcedure
-    .input(
-      z.object({
-        username: z.string(),
-        sortBy: z.enum(['LATEST', 'OLDEST']).optional(),
-        limit: z.number().optional(),
-        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
-      })
-    )
-    .query(async ({ input: { username, limit = 18, cursor, sortBy }, ctx }) => {
+  getUserProfile: privateProcedure
+    .input(z.object({ username: z.string() }))
+    .query(async ({ input: { username }, ctx }) => {
       const { userId, db } = ctx;
-      const isUser = await db.user.findUnique({
-        where: {
-          username,
-          deactivated: false,
-        },
-      });
 
-      if (!isUser) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
-      }
-
-      const userProfileInfo = await db.user.findUnique({
-        where: {
-          username,
-        },
+      const userProfile = await db.user.findUnique({
+        where: { username, deactivated: false },
         include: {
+          _count: {
+            select: { followers: true, following: true },
+          },
           followers: true,
           following: true,
           receivedFollowRequests: {
@@ -75,6 +59,77 @@ export const userRouter = createTRPCRouter({
           },
           posts: {
             where: {
+              status: PostStatus.VISIBLE,
+            },
+            select: {
+              likes: { select: { userId: true } },
+            },
+          },
+        },
+      });
+
+      if (!userProfile) throw new TRPCError({ code: 'NOT_FOUND' });
+
+      const totalLikes = userProfile.posts.reduce(
+        (acc, post) => acc + post.likes.length,
+        0
+      );
+
+      const isMuted = userProfile.mutedByUsers.some(
+        (mutedUser) => mutedUser.mutedByUserId === userId
+      );
+
+      const isBlockedByMe = userProfile.blockedByUsers.some(
+        (blockedUser) => blockedUser.blockingUserId === userId
+      );
+
+      const hasBlockedMe = userProfile.blockedUsers.some(
+        (blockedUser) => blockedUser.blockedUserId === userId
+      );
+
+      const isFollower = userProfile.followers.some(
+        (follower) => follower.followerId === userId
+      );
+
+      return {
+        id: userProfile.id,
+        image: userProfile.image,
+        fullName: userProfile.fullName,
+        username: userProfile.username,
+        bio: userProfile.bio,
+        link: userProfile.link,
+        privacy: userProfile.privacy,
+        createdAt: userProfile.createdAt,
+        isAdmin: userProfile.isAdmin,
+        followers: userProfile.followers,
+        following: userProfile.following,
+        receivedFollowRequests: userProfile.receivedFollowRequests,
+        isBlockedByMe,
+        hasBlockedMe,
+        isFollower,
+        totalLikes,
+        isMuted,
+      };
+    }),
+
+  getUserPosts: privateProcedure
+    .input(
+      z.object({
+        username: z.string(),
+        sortBy: z.enum(['LATEST', 'OLDEST']).optional(),
+        limit: z.number().min(1).max(100).default(18),
+        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const { username, limit, cursor, sortBy } = input;
+      const { userId, db } = ctx;
+
+      const userWithPosts = await db.user.findUnique({
+        where: { username },
+        select: {
+          posts: {
+            where: {
               parentPostId: null,
               status: PostStatus.VISIBLE,
             },
@@ -96,6 +151,8 @@ export const userRouter = createTRPCRouter({
               turnOffComments: true,
               pinned: true,
               privacy: true,
+              repliesCount: true,
+              status: true,
               author: {
                 select: {
                   ...GET_USER,
@@ -104,40 +161,27 @@ export const userRouter = createTRPCRouter({
               ...getLikesWithBlockFilter(userId),
               ...getBookmarksWithBlockFilter(userId),
               ...getPostReplies(userId),
+              ...GET_MENTIONS,
               reposts: {
                 ...GET_REPOSTS,
-                orderBy: {
-                  createdAt: 'desc',
-                },
+                orderBy: { createdAt: 'desc' },
               },
-              ...GET_MENTIONS,
             },
           },
         },
       });
 
-      if (!userProfileInfo) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
-      }
+      if (!userWithPosts) throw new TRPCError({ code: 'NOT_FOUND' });
 
       let nextCursor: typeof cursor | undefined;
-      const rawPosts = userProfileInfo.posts;
+      const rawPosts = userWithPosts.posts;
 
       if (rawPosts.length > limit) {
         const nextItem = rawPosts.pop();
-        if (nextItem != null) {
+        if (nextItem) {
           nextCursor = { id: nextItem.id, createdAt: nextItem.createdAt };
         }
       }
-
-      const totalLikes = rawPosts.reduce(
-        (sum, post) => sum + post.likes.length,
-        0
-      );
-
-      const isMuted = userProfileInfo.mutedByUsers.some(
-        (mutedUser) => mutedUser.mutedByUserId === userId
-      );
 
       const formattedPosts = await Promise.all(
         rawPosts.map(async (post) => {
@@ -147,33 +191,13 @@ export const userRouter = createTRPCRouter({
             likesCount: post.likes.length,
             repostsCount: post.reposts.length,
             repliesCount: getTotalRepliesCount(post) as number,
-            bookmarksCount: new Set(
-              post.bookmarks.map((bookmark) => bookmark.userId)
-            ).size,
+            bookmarksCount: new Set(post.bookmarks.map((b) => b.userId)).size,
           };
         })
       );
 
       return {
-        userDetails: {
-          id: userProfileInfo.id,
-          image: userProfileInfo.image,
-          fullName: userProfileInfo.fullName,
-          username: userProfileInfo.username,
-          bio: userProfileInfo.bio,
-          link: userProfileInfo.link,
-          privacy: userProfileInfo.privacy,
-          createdAt: userProfileInfo.createdAt,
-          isAdmin: userProfileInfo.isAdmin,
-          followers: userProfileInfo.followers,
-          following: userProfileInfo.following,
-          blockedByUsers: userProfileInfo.blockedByUsers,
-          blockedUsers: userProfileInfo.blockedUsers,
-          receivedFollowRequests: userProfileInfo.receivedFollowRequests,
-          isMuted,
-          posts: formattedPosts,
-          totalLikes,
-        },
+        posts: formattedPosts,
         nextCursor,
       };
     }),
@@ -181,7 +205,7 @@ export const userRouter = createTRPCRouter({
   getUserReposts: privateProcedure
     .input(
       z.object({
-        username: z.string().optional(),
+        username: z.string(),
         limit: z.number().optional(),
         cursor: z
           .object({
@@ -329,7 +353,7 @@ export const userRouter = createTRPCRouter({
   getUserLikedPosts: privateProcedure
     .input(
       z.object({
-        username: z.string().optional(),
+        username: z.string(),
         limit: z.number().optional(),
         cursor: z
           .object({

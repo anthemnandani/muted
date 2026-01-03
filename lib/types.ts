@@ -60,30 +60,8 @@ export type ReplyPostInfo = Pick<
   'id' | 'text' | 'author' | 'media' | 'mentions' | 'privacy' | 'createdAt'
 >;
 
-export type UserProfileInfoProps = {
-  id: string;
-  image: string | null;
-  fullName: string | null;
-  username: string;
-  bio: string | null;
-  link: string | null;
-  privacy: Privacy;
-  createdAt: Date;
-  isAdmin: boolean | null;
-  receivedFollowRequests: FollowRequest[];
-  followers: {
-    followerId: string;
-  }[];
-  following: {
-    followingId: string;
-  }[];
-  posts: {
-    id: string;
-    media: PostMedia[];
-  }[];
-  totalLikes: number;
+export type UserProfileInfoProps = RouterOutputs['user']['getUserProfile'] & {
   isBlocked: boolean;
-  isMuted: boolean;
 };
 
 export type UserProfilePostsProps = {
@@ -97,7 +75,6 @@ export interface UserPostsListProps {
   posts: ParentPostProps[];
   fetchNextPage: () => void;
   hasNextPage?: boolean;
-  type?: NavigationType;
 }
 
 export interface PostsGridProps {
@@ -116,13 +93,11 @@ export type FollowRequest = {
   updatedAt: Date;
 };
 
-export interface UserProfileContentProps extends UserPostsListProps {
+export interface UserProfileContentProps {
   userId: string;
   username: string;
   isFollower?: boolean;
   privacy?: Privacy;
-  selectedFilter: ProfileFilter;
-  setSelectedFilter: (filter: ProfileFilter) => void;
   isBlocked: boolean;
 }
 
@@ -288,6 +263,12 @@ export interface RepostIndicatorProps {
   };
   isRepostedByMe?: Repost;
   reposts: Repost[];
+}
+
+export interface UseLikeProps {
+  initialLikesCount: number;
+  likes: { userId: string }[];
+  postId: string;
 }
 
 export interface LikeButtonProps {
@@ -671,13 +652,28 @@ export interface CommentsPanelProps {
   author: AuthorInfoProps;
   reposts: Repost[];
   repostedBy?: AuthorInfoProps;
-  repostsCount: number;
-  likesCount: number;
-  likes: { userId: string }[];
-  bookmarks: { userId: string; collection: { isDefault: boolean } }[];
+  repostsCount?: number;
+  likesCount?: number;
+  likes?: { userId: string }[];
+  bookmarks?: { userId: string; collection: { isDefault: boolean } }[];
   hideLikes?: boolean;
-  bookmarksCount: number;
+  bookmarksCount?: number;
   isModal?: boolean;
+}
+
+export interface ActionsBarProps {
+  postId: string;
+  authorId?: string;
+  stats: {
+    likesCount?: number;
+    likes?: { userId: string }[];
+    hideLikes?: boolean;
+    repliesCount?: number;
+    bookmarksCount?: number;
+    bookmarks?: { userId: string; collection: { isDefault: boolean } }[];
+    repostsCount?: number;
+    reposts?: Repost[];
+  };
 }
 
 export type Comment = {

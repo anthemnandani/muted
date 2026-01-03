@@ -1,7 +1,7 @@
 'use client';
 
 import { useRepost } from '@/hooks/useRepost';
-import type { Repost } from '@/lib/types';
+import type { ActionsBarProps, Repost } from '@/lib/types';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import BookmarkButton from '../buttons/BookmarkButton';
@@ -9,29 +9,14 @@ import LikeButton from '../buttons/LikeButton';
 import { Icons } from '../icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 
-interface ActionsBarProps {
-  postId: string;
-  authorId?: string;
-  stats: {
-    likesCount: number;
-    likes: { userId: string }[];
-    hideLikes?: boolean;
-    repliesCount: number;
-    bookmarksCount: number;
-    bookmarks: { userId: string; collection: { isDefault: boolean } }[];
-    repostsCount: number;
-    reposts: Repost[];
-  };
-}
-
 const ActionsBar = ({ postId, authorId, stats }: ActionsBarProps) => {
   const {
     isRepostedByMe,
     isLoading: isRepostLoading,
     handleToggleRepost,
   } = useRepost({
-    reposts: stats.reposts,
-    initialRepostsCount: stats.repostsCount,
+    reposts: stats.reposts ?? [],
+    initialRepostsCount: stats.repostsCount ?? 0,
     postId,
   });
 
@@ -49,8 +34,8 @@ const ActionsBar = ({ postId, authorId, stats }: ActionsBarProps) => {
           <LikeButton
             likeInfo={{
               id: postId,
-              likesCount: stats.likesCount,
-              likes: stats.likes,
+              likesCount: stats.likesCount ?? 0,
+              likes: stats.likes ?? [],
             }}
             hideLikes={stats.hideLikes}
             authorId={authorId!}
@@ -73,8 +58,8 @@ const ActionsBar = ({ postId, authorId, stats }: ActionsBarProps) => {
           <BookmarkButton
             bookmarkInfo={{
               id: postId,
-              bookmarksCount: stats.bookmarksCount,
-              bookmarks: stats.bookmarks,
+              bookmarksCount: stats.bookmarksCount ?? 0,
+              bookmarks: stats.bookmarks ?? [],
             }}
             isPanel
           />

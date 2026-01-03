@@ -1,15 +1,25 @@
 'use client';
 
 import Error from '@/app/error';
+import { Icons } from '@/components/icons';
 import PostDetailDialog from '@/components/modals/PostDetailDialog';
-import UserPostsList from '@/components/profile/UserPostsList';
+import UserPostCard from '@/components/profile/UserPostCard';
 import TopHeader from '@/components/shared/TopHeader';
 import HeaderSkeleton from '@/components/skeletons/HeaderSkeleton';
 import SkeletonGrid from '@/components/skeletons/SkeletonGrid';
+import {
+  OptimisticLikeProvider,
+  type TargetType,
+} from '@/contexts/OptimisticLikeContext';
+import { QUERY_TYPE } from '@/lib/constants';
+import usePostStore from '@/store/postStore';
 import { api } from '@/trpc/react';
-import { Fragment } from 'react';
+import { Fragment, useEffect, useMemo } from 'react';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 const CollectionDetails = ({ id }: { id: string }) => {
+  const { setPostList, setPagination } = usePostStore();
+
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
     api.collection.getCollection.useInfiniteQuery(
       { id },
@@ -22,8 +32,23 @@ const CollectionDetails = ({ id }: { id: string }) => {
       }
     );
 
-  const allPosts = data?.pages.flatMap((page) => page.posts);
+  const posts = data?.pages.flatMap((page) => page.posts);
   const collection = data?.pages[0].collection;
+
+  const postsHash = useMemo(() => {
+    return posts?.map((p) => `${p.id}-${p.likesCount}`).join('|');
+  }, [posts]);
+
+  const target = useMemo(() => {
+    return { type: QUERY_TYPE.COLLECTION_POSTS, variables: { id } };
+  }, [id]);
+
+  useEffect(() => {
+    if (!posts) return;
+
+    setPostList(posts);
+    setPagination(!!hasNextPage, fetchNextPage);
+  }, [postsHash, hasNextPage, fetchNextPage]);
 
   if (isError) return <Error />;
 
@@ -34,20 +59,36 @@ const CollectionDetails = ({ id }: { id: string }) => {
           <HeaderSkeleton />
           <SkeletonGrid />
         </Fragment>
-      ) : allPosts?.length === 0 ? (
+      ) : posts?.length === 0 ? (
         <div className='flex-center w-full h-screen'>
           <p className='text-gray-3'>No posts found in this collection</p>
         </div>
       ) : (
-        <Fragment>
+        <OptimisticLikeProvider target={target as TargetType}>
           <TopHeader title={collection?.name as string} />
-          <UserPostsList
-            posts={allPosts!}
-            fetchNextPage={fetchNextPage}
-            hasNextPage={hasNextPage}
-            type='collection'
-          />
-        </Fragment>
+          <InfiniteScroll
+            dataLength={posts?.length ?? 0}
+            next={fetchNextPage}
+            hasMore={hasNextPage ?? false}
+            className='w-full mt-6'
+            loader={
+              <div className='col-span-full flex-center py-10'>
+                <Icons.loading className='size-11' />
+              </div>
+            }
+          >
+            <div className='main-grid'>
+              {posts?.map((post, index) => (
+                <UserPostCard
+                  key={post.id}
+                  media={post.media}
+                  postId={post.id}
+                  index={index}
+                />
+              ))}
+            </div>
+          </InfiniteScroll>
+        </OptimisticLikeProvider>
       )}
       <PostDetailDialog />
     </div>

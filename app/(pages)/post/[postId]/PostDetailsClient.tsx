@@ -3,6 +3,8 @@
 import PostCard from '@/components/cards/PostCard';
 import EmptyState from '@/components/shared/EmptyState';
 import PostCardSkeleton from '@/components/skeletons/PostCardSkeleton';
+import { OptimisticLikeProvider } from '@/contexts/OptimisticLikeContext';
+import { QUERY_TYPE } from '@/lib/constants';
 import { api } from '@/trpc/react';
 import { Video } from 'lucide-react';
 
@@ -34,7 +36,11 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
 
   return (
     <div className='relative mx-auto my-0 w-full'>
-      {isLoading ? <PostCardSkeleton /> : <PostCard {...data.post} />}
+      <OptimisticLikeProvider
+        target={{ type: QUERY_TYPE.POST_DETAILS, variables: { id: postId } }}
+      >
+        {isLoading ? <PostCardSkeleton /> : <PostCard {...data.post} />}
+      </OptimisticLikeProvider>
     </div>
   );
 };

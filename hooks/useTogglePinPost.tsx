@@ -10,14 +10,14 @@ const useTogglePinPost = ({
   isPinned: boolean;
 }) => {
   const trpcUtils = api.useUtils();
-  const { mutateAsync: togglePinPost, isLoading } =
+  const { mutateAsync: togglePinPost, isPending } =
     api.post.togglePinPost.useMutation({
       onError: (error, variables, context) => {
         toast.error('Something went wrong!');
       },
       onSettled: async () => {
         await trpcUtils.post.getInfinitePosts.invalidate();
-        await trpcUtils.user.userInfo.invalidate();
+        await trpcUtils.user.getUserProfile.invalidate();
       },
     });
 
@@ -41,7 +41,7 @@ const useTogglePinPost = ({
     });
   };
 
-  return { handleTogglePinPost, isLoading };
+  return { handleTogglePinPost, isLoading: isPending };
 };
 
 export default useTogglePinPost;

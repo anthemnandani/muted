@@ -28,7 +28,18 @@ const UserCollectionsList = ({ username }: { username: string }) => {
     );
 
   const allCollections = data?.pages.flatMap((page) => page.collections);
-  return (
+
+  return allCollections?.length === 0 ? (
+    <EmptyState
+      icon={
+        <div className='size-[92px] rounded-full flex-center bg-zinc-800'>
+          <Icons.emptyPost className='size-11 text-white/90' />
+        </div>
+      }
+      title='No collections found'
+      description='Collections you created will appear here'
+    />
+  ) : (
     <InfiniteScroll
       dataLength={allCollections?.length ?? 0}
       next={fetchNextPage}

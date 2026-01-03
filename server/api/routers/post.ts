@@ -1257,7 +1257,7 @@ export const postRouter = createTRPCRouter({
           .optional(),
       })
     )
-    .query(async ({ input: { limit = 20, cursor }, ctx }) => {
+    .query(async ({ input: { limit = 10, cursor }, ctx }) => {
       const { userId, db } = ctx;
 
       const userFilteredKeywords = await db.filteredKeyword.findMany({
@@ -1437,7 +1437,7 @@ export const postRouter = createTRPCRouter({
           .optional(),
       })
     )
-    .query(async ({ input: { tag, limit = 20, cursor }, ctx }) => {
+    .query(async ({ input: { tag, limit = 10, cursor }, ctx }) => {
       if (!tag) {
         throw new TRPCError({
           code: 'BAD_REQUEST',

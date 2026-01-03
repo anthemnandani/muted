@@ -8,7 +8,6 @@ import { dark } from '@clerk/themes';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { headers } from 'next/headers';
-import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -164,7 +163,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </ClerkProvider>
           </ThemeProvider>
         </TRPCReactProvider>
-        <Analytics />
       </body>
     </html>
   );

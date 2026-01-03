@@ -1,70 +1,64 @@
 import { InfiniteData } from '@tanstack/react-query';
 
-export const updatePostLikeStatus = (
-  post: any,
-  currentUserId: string,
-  isLiking: boolean
-) => {
-  const isCurrentlyLiked = post.likes.some(
-    (l: any) => l.userId === currentUserId
-  );
-  if (isLiking === isCurrentlyLiked) return post;
-
-  let newLikes = [...post.likes];
-  if (isLiking) {
-    newLikes.push({ userId: currentUserId });
-  } else {
-    newLikes = newLikes.filter((l: any) => l.userId !== currentUserId);
-  }
-
-  return {
-    ...post,
-    likes: newLikes,
-    likesCount: isLiking
-      ? (post.likesCount || 0) + 1
-      : (post.likesCount || 0) - 1,
-  };
+type LikeableItem = {
+  id: string;
+  likesCount: number;
+  likes: { userId: string }[];
+  [key: string]: any;
 };
 
-export const updateInfiniteData = (
-  oldData: InfiniteData<any> | undefined,
-  postId: string,
-  currentUserId: string,
-  isLiking: boolean,
-  arrayKey: string = 'posts'
-) => {
-  if (!oldData) return oldData;
+type PageWithList<TItem extends LikeableItem, K extends string> = {
+  [key in K]: TItem[];
+} & {
+  [key: string]: any;
+};
+
+export const updateListInCache = <
+  TItem extends LikeableItem,
+  K extends string,
+  TPage extends PageWithList<TItem, K>
+>(
+  oldData: InfiniteData<TPage> | undefined,
+  listKey: K,
+  targetId: string,
+  userId: string,
+  willBeLiked: boolean
+): InfiniteData<TPage> | undefined => {
+  if (!oldData) return undefined;
 
   return {
     ...oldData,
-    pages: oldData.pages.map((page) => {
-      if (arrayKey.includes('.')) {
-        const [parentKey, childKey] = arrayKey.split('.');
-        if (!page[parentKey]) return page;
+    pages: oldData.pages.map((page) => ({
+      ...page,
+      [listKey]: page[listKey].map((item: any) => {
+        if (item.id !== targetId) return item;
+        return applyLikeUpdate(item, userId, willBeLiked);
+      }),
+    })),
+  };
+};
 
-        return {
-          ...page,
-          [parentKey]: {
-            ...page[parentKey],
-            [childKey]: page[parentKey][childKey].map((post: any) =>
-              post.id === postId
-                ? updatePostLikeStatus(post, currentUserId, isLiking)
-                : post
-            ),
-          },
-        };
-      }
+export const updateSingleItemInCache = <T extends LikeableItem>(
+  oldData: T | undefined | null,
+  userId: string,
+  willBeLiked: boolean
+): T | undefined | null => {
+  if (!oldData) return oldData;
+  return applyLikeUpdate(oldData, userId, willBeLiked);
+};
 
-      if (!page[arrayKey]) return page;
-
-      return {
-        ...page,
-        [arrayKey]: page[arrayKey].map((post: any) =>
-          post.id === postId
-            ? updatePostLikeStatus(post, currentUserId, isLiking)
-            : post
-        ),
-      };
-    }),
+const applyLikeUpdate = <T extends LikeableItem>(
+  item: T,
+  userId: string,
+  willBeLiked: boolean
+): T => {
+  return {
+    ...item,
+    likesCount: willBeLiked
+      ? item.likesCount + 1
+      : Math.max(0, item.likesCount - 1),
+    likes: willBeLiked
+      ? [...item.likes, { userId }]
+      : item.likes.filter((l) => l.userId !== userId),
   };
 };

@@ -14,7 +14,7 @@ const BlockedUserCard = ({
     useBlockedUsers();
   const trpcUtils = api.useUtils();
 
-  const { mutate: toggleBlockUser, isLoading } =
+  const { mutate: toggleBlockUser, isPending } =
     api.user.toggleBlockUser.useMutation({
       onMutate: async ({ targetUserId }) => {
         const wasBlocked = isUserBlocked(targetUserId);
@@ -47,7 +47,7 @@ const BlockedUserCard = ({
             richColors: true,
           });
         }
-        trpcUtils.user.userInfo.invalidate();
+        trpcUtils.user.getUserProfile.invalidate();
       },
     });
 
@@ -55,7 +55,7 @@ const BlockedUserCard = ({
     <UserAccountCard
       {...otherUserData}
       username={username}
-      isLoading={isLoading}
+      isLoading={isPending}
       onClick={() => toggleBlockUser({ targetUserId: id! })}
       btnTitle={isUserBlocked(id!) ? 'Unblock' : 'Block'}
     />

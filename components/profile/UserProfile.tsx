@@ -42,9 +42,7 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
     try {
       await getOrCreateChat(id);
       router.push('/messages');
-    } catch (error) {
-      console.error('Error starting chat:', error);
-    }
+    } catch (error) {}
   };
 
   return (

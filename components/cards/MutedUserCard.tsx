@@ -10,7 +10,7 @@ const MutedUserCard = ({ mutedUser }: { mutedUser: BlockedOrMutedUser }) => {
   const { isMutedUser, muteUser, unmuteUser } = useMutedUsers();
   const trpcUtils = api.useUtils();
 
-  const { mutate: toggleMuteUser, isLoading } =
+  const { mutate: toggleMuteUser, isPending } =
     api.user.toggleMuteUser.useMutation({
       onMutate: async ({ userId }) => {
         const wasMuted = isMutedUser(userId);
@@ -43,7 +43,7 @@ const MutedUserCard = ({ mutedUser }: { mutedUser: BlockedOrMutedUser }) => {
             richColors: true,
           });
         }
-        trpcUtils.user.userInfo.invalidate();
+        trpcUtils.user.getUserProfile.invalidate();
       },
     });
 
@@ -51,7 +51,7 @@ const MutedUserCard = ({ mutedUser }: { mutedUser: BlockedOrMutedUser }) => {
     <UserAccountCard
       {...otherUserData}
       username={username}
-      isLoading={isLoading}
+      isLoading={isPending}
       onClick={() => toggleMuteUser({ userId: id! })}
       btnTitle={isMutedUser(id!) ? 'Unmute' : 'Mute'}
     />

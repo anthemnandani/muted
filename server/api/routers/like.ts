@@ -8,56 +8,33 @@ export const likeRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
+        intent: z.boolean().optional(),
       })
     )
-    .mutation(async ({ input: { id }, ctx }) => {
+    .mutation(async ({ input: { id, intent }, ctx }) => {
       const { userId, db } = ctx;
-
       const data = { postId: id, userId };
 
       const existingLike = await db.like.findUnique({
-        where: {
-          postId_userId: data,
-        },
+        where: { postId_userId: data },
       });
 
-      if (existingLike == null) {
+      const shouldCreate = intent !== undefined ? intent : existingLike == null;
+      const shouldDelete =
+        intent !== undefined ? !intent : existingLike != null;
+
+      if (shouldCreate) {
+        if (existingLike) return { addedLike: true };
+
         const transactionResult = await db.$transaction(async (prisma) => {
           const createdLike = await prisma.like.create({
             data,
             select: {
-              post: {
-                select: {
-                  text: true,
-                  author: true,
-                },
-              },
+              post: { select: { text: true, author: true } },
             },
           });
 
-          if (createdLike.post.author.id === userId) {
-            return {
-              createdLike,
-            };
-          }
-
-          const existingNotification = await prisma.notification.findFirst({
-            where: {
-              senderUserId: userId,
-              postId: data.postId,
-              type: NotificationType.LIKE,
-            },
-            select: { id: true },
-          });
-
-          if (existingNotification) {
-            await prisma.notification.update({
-              where: { id: existingNotification.id },
-              data: {
-                createdAt: new Date(),
-              },
-            });
-          } else {
+          if (createdLike.post.author.id !== userId) {
             await prisma.notification.create({
               data: {
                 type: NotificationType.LIKE,
@@ -68,65 +45,24 @@ export const likeRouter = createTRPCRouter({
               },
             });
           }
-
-          return {
-            createdLike,
-          };
+          return { createdLike };
         });
 
-        if (!transactionResult) {
+        if (!transactionResult)
           throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
-        }
-
         return { addedLike: true };
-      } else {
-        const transactionResult = await db.$transaction(async (prisma) => {
-          const removeLike = await prisma.like.delete({
-            where: {
-              postId_userId: data,
-            },
-            select: {
-              post: {
-                select: {
-                  author: true,
-                },
-              },
-            },
-          });
+      }
 
-          // if (removeLike.post.author.id !== userId) {
-          //   const notification = await prisma.notification.findUnique({
-          //     where: {
-          //       unique_like_notification: {
-          //         senderUserId: userId,
-          //         postId: data.postId,
-          //         type: NotificationType.LIKE,
-          //       },
-          //     },
-          //     select: {
-          //       id: true,
-          //     },
-          //   });
+      if (shouldDelete) {
+        if (!existingLike) return { addedLike: false };
 
-          //   if (notification) {
-          //     await prisma.notification.delete({
-          //       where: {
-          //         id: notification.id,
-          //       },
-          //     });
-          //   }
-          // }
-
-          return {
-            removeLike,
-          };
+        await db.like.delete({
+          where: { postId_userId: data },
         });
-
-        if (!transactionResult) {
-          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
-        }
 
         return { addedLike: false };
       }
+
+      return { addedLike: !!existingLike };
     }),
 });

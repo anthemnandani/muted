@@ -67,11 +67,10 @@ const EditProfile = ({ userBio, userImage }: EditProfileProps) => {
   );
   const trpcUtils = api.useUtils();
 
-  const { isLoading, mutateAsync: updateProfile } =
+  const { isPending, mutateAsync: updateProfile } =
     api.user.updateProfile.useMutation({
       onSuccess: async () => {
-        await trpcUtils.user.postInfo.invalidate();
-        await trpcUtils.user.userInfo.invalidate();
+        await trpcUtils.user.getUserProfile.invalidate();
         await trpcUtils.post.getInfinitePosts.invalidate();
         setOpenDialog(false);
         toast.success('Profile updated successfully!');
@@ -162,9 +161,9 @@ const EditProfile = ({ userBio, userImage }: EditProfileProps) => {
             <Button
               className='w-full h-[52px] flex-center px-4 mt-4 rounded-xl bg-foreground hover:bg-foreground select-none text-white dark:text-black dark:hover:bg-slate-50 disabled:cursor-not-allowed disabled:pointer-events-auto disabled:opacity-100'
               onClick={handleUpdateProfile}
-              disabled={isLoading || isUploading}
+              disabled={isPending || isUploading}
             >
-              {isLoading || isUploading ? (
+              {isPending || isUploading ? (
                 <Icons.loading className='size-8' />
               ) : (
                 <span>Done</span>

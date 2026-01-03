@@ -19,7 +19,7 @@ export const usePostInteraction = ({
 }: UsePostInteractionProps) => {
   const { user: loggedUser } = useUser();
 
-  const { data: userInfo, isLoading } = api.user.userInfo.useQuery(
+  const { data: userInfo, isLoading } = api.user.getUserProfile.useQuery(
     { username: loggedUser?.username! },
     {
       enabled:
@@ -35,13 +35,9 @@ export const usePostInteraction = ({
 
     switch (privacy) {
       case 'FOLLOWERS':
-        return userInfo.userDetails.following.some(
-          (user) => user.followingId === authorId
-        );
+        return userInfo.following.some((user) => user.followingId === authorId);
       case 'FOLLOWED':
-        return userInfo.userDetails.followers.some(
-          (user) => user.followerId === authorId
-        );
+        return userInfo.followers.some((user) => user.followerId === authorId);
       case 'MENTIONED':
         return mentions.some((mention) => mention.user.id === loggedUser.id);
       default:

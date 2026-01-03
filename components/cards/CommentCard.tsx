@@ -1,13 +1,18 @@
 'use client';
 
+import {
+  OptimisticLikeProvider,
+  type TargetType,
+} from '@/contexts/OptimisticLikeContext';
 import useGetReplies from '@/hooks/useGetReplies';
 import useLike from '@/hooks/useLike';
+import { QUERY_TYPE } from '@/lib/constants';
 import { CommentCardProps } from '@/lib/types';
 import { cn, formatCount, formatTimeAgo } from '@/lib/utils';
 import useAddCommentStore from '@/store/addComment';
 import { ChevronDown, ChevronUp, Heart, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { Fragment, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import CommentActions from '../comments/CommentActions';
 import CommentText from '../comments/CommentText';
 import ReplyInput from '../inputs/ReplyInput';
@@ -45,11 +50,11 @@ const CommentCard = ({
   const {
     isLikedByMe,
     likesCount: updatedLikesCount,
-    isLoading,
     toggleLike,
   } = useLike({
     initialLikesCount: likesCount,
     likes,
+    postId: id,
   });
 
   const {
@@ -81,6 +86,14 @@ const CommentCard = ({
 
   const isActiveReplyInput =
     isReply && activeReplyCommentId === id && !replyToUsername;
+
+  const repliesTarget = useMemo(
+    () => ({
+      type: QUERY_TYPE.REPLIES,
+      variables: { parentCommentId: id },
+    }),
+    [id]
+  );
 
   return (
     <div className={cn('px-4 py-3', { 'mb-10': isLast })}>
@@ -114,9 +127,8 @@ const CommentCard = ({
               <button
                 className='text-gray-400 hover:text-gray-300'
                 type='button'
-                disabled={isLoading}
-                title={isLikedByMe ? 'Unlike' : 'Like'}
-                onClick={() => toggleLike({ id })}
+                aria-label={isLikedByMe ? 'Unlike' : 'Like'}
+                onClick={toggleLike}
               >
                 <Heart
                   fill={isLikedByMe ? '#ff3040' : ''}
@@ -187,16 +199,17 @@ const CommentCard = ({
           ) : (
             allReplies.length > 0 && (
               <Fragment>
-                {allReplies.map((reply, index) => (
-                  <ReplyCard
-                    key={reply.id}
-                    reply={reply}
-                    isLast={index === allReplies.length - 1}
-                    originalPostId={id}
-                    postAuthorId={postAuthorId}
-                  />
-                ))}
-
+                <OptimisticLikeProvider target={repliesTarget as TargetType}>
+                  {allReplies.map((reply, index) => (
+                    <ReplyCard
+                      key={reply.id}
+                      reply={reply}
+                      isLast={index === allReplies.length - 1}
+                      originalPostId={id}
+                      postAuthorId={postAuthorId}
+                    />
+                  ))}
+                </OptimisticLikeProvider>
                 {hasNextPage && (
                   <div className='mt-2'>
                     {isFetchingMore ? (

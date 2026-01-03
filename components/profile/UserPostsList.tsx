@@ -1,63 +1,69 @@
-import { UserPostsListProps } from '@/lib/types';
+import type { ProfileFilter } from '@/lib/types';
 import usePostStore from '@/store/postStore';
+import { api } from '@/trpc/react';
 import { useEffect, useMemo } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { Icons } from '../icons';
 import EmptyState from '../shared/EmptyState';
+import SkeletonGrid from '../skeletons/SkeletonGrid';
 import UserPostCard from './UserPostCard';
 
 const UserPostsList = ({
-  posts,
-  fetchNextPage,
-  hasNextPage,
-  type = 'post',
-}: UserPostsListProps) => {
+  username,
+  filter,
+}: {
+  username: string;
+  filter: ProfileFilter;
+}) => {
   const { setPostList, setPagination } = usePostStore();
 
+  const { data, isLoading, isError, hasNextPage, fetchNextPage } =
+    api.user.getUserPosts.useInfiniteQuery(
+      { username, sortBy: filter },
+      {
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+        trpc: { abortOnUnmount: true },
+        staleTime: 10 * 60 * 1000,
+        cacheTime: 10 * 60 * 1000,
+        retry: false,
+      }
+    );
+
+  if (isError)
+    return (
+      <EmptyState
+        title='Error loading posts'
+        description='Please try again later'
+      />
+    );
+
+  const posts = data?.pages.flatMap((page) => page.posts);
+
   const postsHash = useMemo(() => {
-    return posts.map((p) => p.id).join(',');
+    return posts?.map((p) => `${p.id}-${p.likesCount}`).join('|');
   }, [posts]);
 
   useEffect(() => {
+    if (!posts) return;
     setPostList(posts);
     setPagination(!!hasNextPage, fetchNextPage);
-  }, [postsHash, hasNextPage, setPostList, setPagination]);
+  }, [postsHash, hasNextPage, fetchNextPage]);
 
-  const EMPTY_STATE_CONFIG: Record<
-    string,
-    { title: string; description: string }
-  > = {
-    liked: {
-      title: 'No liked posts yet',
-      description: 'Posts you liked will appear here',
-    },
-    repost: {
-      title: 'No reposted posts yet',
-      description: 'Posts you reposted will appear here',
-    },
-    collection: {
-      title: 'No posts in the collection yet',
-      description: 'Add posts in the collection to see them here',
-    },
-    post: {
-      title: 'Upload your first post',
-      description: 'Upload your first post',
-    },
-  } as const;
+  if (isLoading) return <SkeletonGrid />;
 
-  return posts.length === 0 ? (
+  return posts?.length === 0 ? (
     <EmptyState
       icon={
         <div className='size-[92px] rounded-full flex-center bg-zinc-800'>
           <Icons.emptyPost className='size-11 text-white/90' />
         </div>
       }
-      title={EMPTY_STATE_CONFIG[type].title}
-      description={EMPTY_STATE_CONFIG[type].description}
+      title='Upload your first post'
+      description='Upload your first post'
     />
   ) : (
     <InfiniteScroll
-      dataLength={posts.length}
+      dataLength={posts?.length ?? 0}
       next={fetchNextPage}
       hasMore={hasNextPage ?? false}
       className='w-full mt-6'
@@ -68,7 +74,7 @@ const UserPostsList = ({
       }
     >
       <div className='main-grid'>
-        {posts.map((post, index) => (
+        {posts?.map((post, index) => (
           <UserPostCard
             key={post.id}
             media={post.media}

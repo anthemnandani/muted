@@ -1,9 +1,16 @@
 'use client';
 
 import { Tabs, TabsContent } from '@/components/ui/tabs';
+import {
+  OptimisticLikeProvider,
+  type TargetType,
+} from '@/contexts/OptimisticLikeContext';
+import { QUERY_TYPE } from '@/lib/constants';
 import { type Tab, UserProfileContentProps } from '@/lib/types';
+import usePostStore from '@/store/postStore';
 import { useTabStore } from '@/store/tabStore';
 import { useUser } from '@clerk/nextjs';
+import { useMemo } from 'react';
 import { Icons } from '../icons';
 import NewCollection from '../modals/NewCollection';
 import EmptyState from '../shared/EmptyState';
@@ -13,6 +20,7 @@ import UserCollectionsList from './UserCollectionsList';
 import UserLikedPostsList from './UserLikedPostsList';
 import UserPostsList from './UserPostsList';
 import UserRepostsList from './UserRepostsList';
+import PostDetailDialog from '../modals/PostDetailDialog';
 
 const BlockedContent = () => (
   <EmptyState
@@ -31,101 +39,110 @@ const PrivateContent = () => (
 );
 
 const UserProfileContent: React.FC<UserProfileContentProps> = ({
-  posts,
   userId,
   privacy,
   isFollower,
-  fetchNextPage,
-  selectedFilter,
-  setSelectedFilter,
-  hasNextPage,
   username,
   isBlocked,
 }) => {
   const { user } = useUser();
   const { activeTab, setActiveTab } = useTabStore();
-  const isOwner = user?.id === userId;
+  const { selectedFilter, setSelectedFilter } = usePostStore();
 
+  const isOwner = user?.id === userId;
   const shouldShowPrivateContent =
     privacy === 'PRIVATE' && !isOwner && !isFollower;
 
+  const target = useMemo(() => {
+    switch (activeTab) {
+      case 'posts':
+        return {
+          type: QUERY_TYPE.USER_POSTS,
+          variables: { username, sortBy: selectedFilter },
+        };
+      case 'reposts':
+        return { type: QUERY_TYPE.USER_REPOSTS, variables: { username } };
+      case 'liked':
+        return { type: QUERY_TYPE.USER_LIKED, variables: { username } };
+    }
+  }, [username, activeTab]);
+
   return (
-    <div className='flex flex-[1_1_auto] justify-start items-start min-h-[490px] h-full min-w-0 relative'>
-      <div className='w-full'>
-        <Tabs
-          defaultValue={activeTab}
-          className='w-full'
-          onValueChange={(value) => setActiveTab(value as Tab)}
-        >
-          <div className='flex-between w-full'>
-            <div>
-              <ProfileTabsHeader
-                isOwner={isOwner}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-              />
-            </div>
-            {activeTab === 'posts' && (
-              <div className='ml-4'>
-                <ProfileFilters
-                  selectedFilter={selectedFilter}
-                  setSelectedFilter={setSelectedFilter}
+    <OptimisticLikeProvider target={target as TargetType}>
+      <div className='flex flex-[1_1_auto] justify-start items-start min-h-[490px] h-full min-w-0 relative'>
+        <div className='w-full'>
+          <Tabs
+            defaultValue={activeTab}
+            className='w-full'
+            onValueChange={(value) => setActiveTab(value as Tab)}
+          >
+            <div className='flex-between w-full'>
+              <div>
+                <ProfileTabsHeader
+                  isOwner={isOwner}
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
                 />
               </div>
-            )}
-            {activeTab === 'collections' && (
-              <div className='ml-4'>
-                <NewCollection showTrigger />
-              </div>
-            )}
-          </div>
+              {activeTab === 'posts' && (
+                <div className='ml-4'>
+                  <ProfileFilters
+                    selectedFilter={selectedFilter}
+                    setSelectedFilter={setSelectedFilter}
+                  />
+                </div>
+              )}
+              {activeTab === 'collections' && (
+                <div className='ml-4'>
+                  <NewCollection showTrigger />
+                </div>
+              )}
+            </div>
 
-          <TabsContent value='posts' className='w-full'>
-            {isBlocked ? (
-              <BlockedContent />
-            ) : shouldShowPrivateContent ? (
-              <PrivateContent />
-            ) : (
-              <UserPostsList
-                posts={posts}
-                fetchNextPage={fetchNextPage}
-                hasNextPage={hasNextPage}
-              />
-            )}
-          </TabsContent>
+            <TabsContent value='posts' className='w-full'>
+              {isBlocked ? (
+                <BlockedContent />
+              ) : shouldShowPrivateContent ? (
+                <PrivateContent />
+              ) : (
+                <UserPostsList username={username} filter={selectedFilter} />
+              )}
+            </TabsContent>
 
-          <TabsContent value='reposts' className='w-full'>
-            {isBlocked ? (
-              <BlockedContent />
-            ) : shouldShowPrivateContent ? (
-              <PrivateContent />
-            ) : (
-              <UserRepostsList username={username} />
-            )}
-          </TabsContent>
+            <TabsContent value='reposts' className='w-full'>
+              {isBlocked ? (
+                <BlockedContent />
+              ) : shouldShowPrivateContent ? (
+                <PrivateContent />
+              ) : (
+                <UserRepostsList username={username} />
+              )}
+            </TabsContent>
 
-          <TabsContent value='liked' className='w-full'>
-            {isBlocked ? (
-              <BlockedContent />
-            ) : shouldShowPrivateContent ? (
-              <PrivateContent />
-            ) : (
-              <UserLikedPostsList username={username} />
-            )}
-          </TabsContent>
+            <TabsContent value='liked' className='w-full'>
+              {isBlocked ? (
+                <BlockedContent />
+              ) : shouldShowPrivateContent ? (
+                <PrivateContent />
+              ) : (
+                <UserLikedPostsList username={username} />
+              )}
+            </TabsContent>
 
-          <TabsContent value='collections' className='w-full'>
-            {isBlocked ? (
-              <BlockedContent />
-            ) : shouldShowPrivateContent ? (
-              <PrivateContent />
-            ) : (
-              <UserCollectionsList username={username} />
-            )}
-          </TabsContent>
-        </Tabs>
+            <TabsContent value='collections' className='w-full'>
+              {isBlocked ? (
+                <BlockedContent />
+              ) : shouldShowPrivateContent ? (
+                <PrivateContent />
+              ) : (
+                <UserCollectionsList username={username} />
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
-    </div>
+      <PostDetailDialog />
+    </OptimisticLikeProvider>
   );
 };
 

@@ -1,7 +1,6 @@
 'use client';
 
 import NotFound from '@/app/not-found';
-import PostDetailDialog from '@/components/modals/PostDetailDialog';
 import BlockedUserContent from '@/components/profile/BlockedUserContent';
 import DeletedUserContent from '@/components/profile/DeletedUserContent';
 import UserProfile from '@/components/profile/UserProfile';
@@ -11,66 +10,33 @@ import SkeletonGrid from '@/components/skeletons/SkeletonGrid';
 import usePostStore from '@/store/postStore';
 import useVideoPlayer from '@/store/videoPlayer';
 import { api } from '@/trpc/react';
-import { useUser } from '@clerk/nextjs';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 
 const ProfileClient = ({ username }: { username: string }) => {
-  const { user } = useUser();
-  const { selectedFilter, setSelectedFilter, reset } = usePostStore();
+  const { reset } = usePostStore();
   const { setCurrentlyPlaying } = useVideoPlayer();
-  const { data, isLoading, isError, error, hasNextPage, fetchNextPage } =
-    api.user.userInfo.useInfiniteQuery(
-      { username, sortBy: selectedFilter },
-      {
-        getNextPageParam: (lastPage) => lastPage.nextCursor,
-        trpc: { abortOnUnmount: true },
-        staleTime: 10 * 60 * 1000,
-        cacheTime: 10 * 60 * 1000,
-        retry: false,
-        refetchOnWindowFocus: false,
-      }
-    );
+
+  const {
+    data: profile,
+    isLoading,
+    isError,
+    error,
+  } = api.user.getUserProfile.useQuery(
+    { username },
+    {
+      retry: false,
+      cacheTime: 10 * 60 * 1000,
+      staleTime: 10 * 60 * 1000,
+      refetchOnWindowFocus: false,
+    }
+  );
 
   useEffect(() => {
     setCurrentlyPlaying(null);
-    return () => {
-      reset();
-    };
+    return () => reset();
   }, [reset, setCurrentlyPlaying]);
 
-  const allPosts = data?.pages.flatMap((page) => page.userDetails.posts);
-
-  console.log('All Posts: ', allPosts);
-
-  const userDetails = data?.pages.flatMap((page) => page.userDetails);
-
-  const profileDetails = useMemo(() => userDetails?.[0], [userDetails]);
-
-  const isBlockedByMe = useMemo(
-    () =>
-      profileDetails?.blockedByUsers?.some(
-        (blockedUser) => blockedUser.blockingUserId === user?.id
-      ),
-    [profileDetails, user]
-  );
-
-  const hasBlockedMe = useMemo(
-    () =>
-      profileDetails?.blockedUsers?.some(
-        (blockedUser) => blockedUser.blockedUserId === user?.id
-      ),
-    [profileDetails, user]
-  );
-
-  const isFollower = useMemo(
-    () =>
-      profileDetails?.followers?.some(
-        (follower) => follower.followerId === user?.id
-      ),
-    [profileDetails, user]
-  );
-
-  if (isLoading)
+  if (isLoading) {
     return (
       <div className='main-container'>
         <div className='flex flex-col flex-[1_1_auto]'>
@@ -79,13 +45,10 @@ const ProfileClient = ({ username }: { username: string }) => {
         </div>
       </div>
     );
-
-  if (hasBlockedMe) return <BlockedUserContent />;
+  }
 
   if (isError) {
-    if (error.data?.code === 'NOT_FOUND') {
-      return <DeletedUserContent />;
-    }
+    if (error.data?.code === 'NOT_FOUND') return <DeletedUserContent />;
     return (
       <div className='content-center'>
         <NotFound />
@@ -93,29 +56,21 @@ const ProfileClient = ({ username }: { username: string }) => {
     );
   }
 
-  const enhancedUserDetails = {
-    ...profileDetails!,
-    isBlocked: isBlockedByMe ?? false,
-  };
+  if (profile.hasBlockedMe) return <BlockedUserContent />;
 
   return (
     <div className='main-container'>
       <div className='flex flex-col flex-[1_1_auto]'>
-        <UserProfile {...enhancedUserDetails} />
+        <UserProfile {...profile} isBlocked={profile.isBlockedByMe} />
+
         <UserProfileContent
           username={username}
-          posts={allPosts!}
-          userId={profileDetails!.id}
-          privacy={profileDetails!.privacy}
-          isFollower={isFollower}
-          fetchNextPage={fetchNextPage}
-          hasNextPage={hasNextPage}
-          selectedFilter={selectedFilter}
-          setSelectedFilter={setSelectedFilter}
-          isBlocked={isBlockedByMe ?? false}
+          userId={profile.id}
+          privacy={profile.privacy}
+          isFollower={profile.isFollower}
+          isBlocked={profile.isBlockedByMe}
         />
       </div>
-      <PostDetailDialog />
     </div>
   );
 };

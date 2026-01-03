@@ -1,6 +1,7 @@
 'use client';
 
 import useLike from '@/hooks/useLike';
+import { ReplyCardProps } from '@/lib/types';
 import { cn, formatCount, formatTimeAgo } from '@/lib/utils';
 import useAddCommentStore from '@/store/addComment';
 import { Heart } from 'lucide-react';
@@ -10,7 +11,6 @@ import CommentText from '../comments/CommentText';
 import ReplyInput from '../inputs/ReplyInput';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import Username from '../user/Username';
-import { ReplyCardProps } from '@/lib/types';
 
 const ReplyCard = ({
   reply,
@@ -35,11 +35,11 @@ const ReplyCard = ({
   const {
     isLikedByMe,
     likesCount: updatedLikesCount,
-    isLoading,
     toggleLike,
   } = useLike({
     initialLikesCount: likesCount,
     likes,
+    postId: id,
   });
 
   const handleReplyClick = () => {
@@ -96,9 +96,8 @@ const ReplyCard = ({
               <button
                 className='text-gray-400 hover:text-gray-300'
                 type='button'
-                disabled={isLoading}
-                title={isLikedByMe ? 'Unlike' : 'Like'}
-                onClick={() => toggleLike({ id })}
+                aria-label={isLikedByMe ? 'Unlike' : 'Like'}
+                onClick={toggleLike}
               >
                 <Heart
                   fill={isLikedByMe ? '#ff3040' : ''}

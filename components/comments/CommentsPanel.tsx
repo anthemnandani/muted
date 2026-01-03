@@ -6,7 +6,7 @@ import useAddCommentStore from '@/store/addComment';
 import useCommentPanelStore from '@/store/commentPanel';
 import useSortByComments from '@/store/sortByComments';
 import { motion, useAnimation } from 'framer-motion';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useInView } from 'react-intersection-observer';
 import CommentCard from '../cards/CommentCard';
@@ -17,6 +17,11 @@ import ActionsBar from './ActionsBar';
 import AddComment from './AddComment';
 import CommentsPanelHeader from './CommentsPanelHeader';
 import LinkShare from './LinkShare';
+import { QUERY_TYPE } from '@/lib/constants';
+import {
+  OptimisticLikeProvider,
+  type TargetType,
+} from '@/contexts/OptimisticLikeContext';
 
 const CommentsPanel: React.FC<CommentsPanelProps> = ({
   postId,
@@ -96,6 +101,14 @@ const CommentsPanel: React.FC<CommentsPanelProps> = ({
       .map((_, index) => <CommentCardSkeleton key={`skeleton-${index}`} />);
   };
 
+  const commentsTarget = useMemo(
+    () => ({
+      type: QUERY_TYPE.COMMENTS,
+      variables: { id: postId, sortBy },
+    }),
+    [postId, sortBy]
+  );
+
   return (
     <div className='h-full flex flex-col bg-[#101010D9] border border-border-light'>
       <div
@@ -148,42 +161,44 @@ const CommentsPanel: React.FC<CommentsPanelProps> = ({
           {isLoading ? (
             <div className='w-full'>{renderSkeletons()}</div>
           ) : (
-            <InfiniteScroll
-              dataLength={allComments.length}
-              next={fetchNextPage}
-              hasMore={!!hasNextPage}
-              loader={
-                <div className='w-full flex-center py-4'>
-                  <Icons.loading className='size-8' />
-                </div>
-              }
-              scrollableTarget='scrollableDiv'
-            >
-              {allComments.length === 0 ? (
-                <p className='text-center text-gray-400 py-8'>
-                  No comments yet
-                </p>
-              ) : (
-                allComments.map((comment, index) => (
-                  <CommentCard
-                    key={comment.id}
-                    comment={{
-                      id: comment.id,
-                      text: comment.text,
-                      author: comment.author,
-                      createdAt: comment.createdAt,
-                      likesCount: comment.likesCount,
-                      likes: comment.likes,
-                      mentions: comment.mentions,
-                      repliesCount: comment.repliesCount || 0,
-                    }}
-                    postAuthorId={authorId}
-                    isLast={index === allComments.length - 1}
-                    originalPostId={postId}
-                  />
-                ))
-              )}
-            </InfiniteScroll>
+            <OptimisticLikeProvider target={commentsTarget as TargetType}>
+              <InfiniteScroll
+                dataLength={allComments.length}
+                next={fetchNextPage}
+                hasMore={!!hasNextPage}
+                loader={
+                  <div className='w-full flex-center py-4'>
+                    <Icons.loading className='size-8' />
+                  </div>
+                }
+                scrollableTarget='scrollableDiv'
+              >
+                {allComments.length === 0 ? (
+                  <p className='text-center text-gray-400 py-8'>
+                    No comments yet
+                  </p>
+                ) : (
+                  allComments.map((comment, index) => (
+                    <CommentCard
+                      key={comment.id}
+                      comment={{
+                        id: comment.id,
+                        text: comment.text,
+                        author: comment.author,
+                        createdAt: comment.createdAt,
+                        likesCount: comment.likesCount,
+                        likes: comment.likes,
+                        mentions: comment.mentions,
+                        repliesCount: comment.repliesCount || 0,
+                      }}
+                      postAuthorId={authorId}
+                      isLast={index === allComments.length - 1}
+                      originalPostId={postId}
+                    />
+                  ))
+                )}
+              </InfiniteScroll>
+            </OptimisticLikeProvider>
           )}
         </div>
       </div>

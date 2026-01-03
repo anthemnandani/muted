@@ -31,7 +31,9 @@ export default function FollowersAndFollowingLayout({
     params!.username
   );
 
-  const { data, isLoading, isError } = api.user.userInfo.useQuery({ username });
+  const { data, isLoading, isError } = api.user.getUserProfile.useQuery({
+    username,
+  });
 
   useEffect(() => {
     return () => {
@@ -54,11 +56,9 @@ export default function FollowersAndFollowingLayout({
                     <Icons.back className='size-6' />
                   </div>
                   <div className='flex flex-col'>
-                    <span className='text-lg font-medium'>
-                      {data.userDetails.fullName}
-                    </span>
+                    <span className='text-lg font-medium'>{data.fullName}</span>
                     <span className='text-sm text-muted-foreground'>
-                      @{data.userDetails.username}
+                      @{data.username}
                     </span>
                   </div>
                 </div>
