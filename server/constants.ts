@@ -101,6 +101,7 @@ export const getBookmarksWithBlockFilter = (userId: string) => ({
       userId: true,
       collection: {
         select: {
+          id: true,
           isDefault: true,
         },
       },

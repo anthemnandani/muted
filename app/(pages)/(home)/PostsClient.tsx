@@ -4,9 +4,9 @@ import Error from '@/app/error';
 import PostsList from '@/components/shared/PostsList';
 import ScrollContainer from '@/components/shared/ScrollContainer';
 import {
-  OptimisticLikeProvider,
+  OptimisticActionProvider,
   type TargetType,
-} from '@/contexts/OptimisticLikeContext';
+} from '@/contexts/OptimisticActionContext';
 import { QUERY_TYPE } from '@/lib/constants';
 import { api } from '@/trpc/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -61,7 +61,7 @@ const PostsClient = () => {
   return (
     <main className='content-center min-w-[420px]'>
       <ScrollContainer ref={mainContainerRef}>
-        <OptimisticLikeProvider target={optimisticTarget as TargetType}>
+        <OptimisticActionProvider target={optimisticTarget as TargetType}>
           <PostsList
             posts={allPosts}
             fetchNextPage={fetchNextPage}
@@ -72,7 +72,7 @@ const PostsClient = () => {
             onResetComplete={() => setResetToFirst(false)}
             containerRef={mainContainerRef}
           />
-        </OptimisticLikeProvider>
+        </OptimisticActionProvider>
       </ScrollContainer>
     </main>
   );

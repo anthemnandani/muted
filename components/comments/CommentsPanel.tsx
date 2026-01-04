@@ -1,6 +1,11 @@
 'use client';
 
+import {
+  OptimisticActionProvider,
+  type TargetType,
+} from '@/contexts/OptimisticActionContext';
 import useGetComments from '@/hooks/useGetComments';
+import { QUERY_TYPE } from '@/lib/constants';
 import { CommentsPanelProps } from '@/lib/types';
 import useAddCommentStore from '@/store/addComment';
 import useCommentPanelStore from '@/store/commentPanel';
@@ -17,11 +22,6 @@ import ActionsBar from './ActionsBar';
 import AddComment from './AddComment';
 import CommentsPanelHeader from './CommentsPanelHeader';
 import LinkShare from './LinkShare';
-import { QUERY_TYPE } from '@/lib/constants';
-import {
-  OptimisticLikeProvider,
-  type TargetType,
-} from '@/contexts/OptimisticLikeContext';
 
 const CommentsPanel: React.FC<CommentsPanelProps> = ({
   postId,
@@ -161,7 +161,7 @@ const CommentsPanel: React.FC<CommentsPanelProps> = ({
           {isLoading ? (
             <div className='w-full'>{renderSkeletons()}</div>
           ) : (
-            <OptimisticLikeProvider target={commentsTarget as TargetType}>
+            <OptimisticActionProvider target={commentsTarget as TargetType}>
               <InfiniteScroll
                 dataLength={allComments.length}
                 next={fetchNextPage}
@@ -198,7 +198,7 @@ const CommentsPanel: React.FC<CommentsPanelProps> = ({
                   ))
                 )}
               </InfiniteScroll>
-            </OptimisticLikeProvider>
+            </OptimisticActionProvider>
           )}
         </div>
       </div>

@@ -8,7 +8,13 @@ import { Plus } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import CollectionsList from './CollectionsList';
 
-const CollectionsMenu = ({ postId, isOpen, onClose }: CollectionsMenuProps) => {
+const CollectionsMenu = ({
+  postId,
+  isOpen,
+  onClose,
+  bookmarkInfo,
+  isPanel,
+}: CollectionsMenuProps) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const {
     setIsOpen,
@@ -40,10 +46,11 @@ const CollectionsMenu = ({ postId, isOpen, onClose }: CollectionsMenuProps) => {
     <div
       ref={menuRef}
       className={cn(
-        'absolute bottom-full left-1/2 -translate-x-1/2 z-50',
+        'absolute left-1/2 -translate-x-1/2 z-[3001]',
         'bg-black/95 border border-border-light rounded-lg shadow-lg',
         "after:content-[''] after:absolute after:top-full after:left-0 after:w-full after:h-[10px]",
-        isSmallMobile ? 'w-[175px]' : isMobile ? 'w-[200px]' : 'w-[250px]'
+        isSmallMobile ? 'w-[175px]' : isMobile ? 'w-[200px]' : 'w-[250px]',
+        isPanel ? 'top-full mt-2' : 'bottom-full'
       )}
     >
       <div className={cn('flex-between w-full', isMobile ? 'p-2.5' : 'p-3')}>
@@ -57,7 +64,7 @@ const CollectionsMenu = ({ postId, isOpen, onClose }: CollectionsMenuProps) => {
         </button>
       </div>
 
-      <CollectionsList postId={postId} />
+      <CollectionsList bookmarkInfo={bookmarkInfo} />
     </div>
   );
 };

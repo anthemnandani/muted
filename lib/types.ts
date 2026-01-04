@@ -173,7 +173,7 @@ export type ParentPostProps = {
   likes: {
     userId: string;
   }[];
-  bookmarks: { userId: string; collection: { isDefault: boolean } }[];
+  bookmarks: Bookmark[];
   quoteId: string | null;
   reposts: Repost[];
   parentPostId: string | null;
@@ -247,7 +247,7 @@ export interface PostActionsProps {
   repliesCount: number;
   reposts: Repost[];
   repostsCount: number;
-  bookmarks: { userId: string; collection: { isDefault: boolean } }[];
+  bookmarks: Bookmark[];
   bookmarksCount: number;
   mentions: Mention[];
   hideLikes: boolean;
@@ -279,7 +279,7 @@ export interface LikeButtonProps {
 }
 
 export interface BookmarkButtonProps {
-  bookmarkInfo: Pick<Post, 'id' | 'bookmarks' | 'bookmarksCount'>;
+  bookmarkInfo: BookmarkInfo;
   isPanel?: boolean;
 }
 
@@ -583,6 +583,12 @@ export interface CollectionCardProps {
   username: string;
 }
 
+export interface CollectionCoverProps {
+  collection: Collection;
+  postId: string;
+  bookmarks: Bookmark[];
+}
+
 export interface CollectionData {
   id?: string;
   name: string;
@@ -605,6 +611,8 @@ export interface CollectionsMenuProps {
   postId: string;
   isOpen: boolean;
   onClose: () => void;
+  bookmarkInfo: BookmarkInfo;
+  isPanel?: boolean;
 }
 
 export interface SkeletonGridProps {
@@ -655,11 +663,18 @@ export interface CommentsPanelProps {
   repostsCount?: number;
   likesCount?: number;
   likes?: { userId: string }[];
-  bookmarks?: { userId: string; collection: { isDefault: boolean } }[];
+  bookmarks?: Bookmark[];
   hideLikes?: boolean;
   bookmarksCount?: number;
   isModal?: boolean;
 }
+
+export type Bookmark = {
+  userId: string;
+  collection: { id: string; isDefault: boolean };
+};
+
+export type BookmarkInfo = Pick<Post, 'id' | 'bookmarks' | 'bookmarksCount'>;
 
 export interface ActionsBarProps {
   postId: string;
@@ -670,7 +685,7 @@ export interface ActionsBarProps {
     hideLikes?: boolean;
     repliesCount?: number;
     bookmarksCount?: number;
-    bookmarks?: { userId: string; collection: { isDefault: boolean } }[];
+    bookmarks?: Bookmark[];
     repostsCount?: number;
     reposts?: Repost[];
   };

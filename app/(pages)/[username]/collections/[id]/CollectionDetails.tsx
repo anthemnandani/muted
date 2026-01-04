@@ -8,9 +8,9 @@ import TopHeader from '@/components/shared/TopHeader';
 import HeaderSkeleton from '@/components/skeletons/HeaderSkeleton';
 import SkeletonGrid from '@/components/skeletons/SkeletonGrid';
 import {
-  OptimisticLikeProvider,
+  OptimisticActionProvider,
   type TargetType,
-} from '@/contexts/OptimisticLikeContext';
+} from '@/contexts/OptimisticActionContext';
 import { QUERY_TYPE } from '@/lib/constants';
 import usePostStore from '@/store/postStore';
 import { api } from '@/trpc/react';
@@ -64,7 +64,7 @@ const CollectionDetails = ({ id }: { id: string }) => {
           <p className='text-gray-3'>No posts found in this collection</p>
         </div>
       ) : (
-        <OptimisticLikeProvider target={target as TargetType}>
+        <OptimisticActionProvider target={target as TargetType}>
           <TopHeader title={collection?.name as string} />
           <InfiniteScroll
             dataLength={posts?.length ?? 0}
@@ -88,7 +88,7 @@ const CollectionDetails = ({ id }: { id: string }) => {
               ))}
             </div>
           </InfiniteScroll>
-        </OptimisticLikeProvider>
+        </OptimisticActionProvider>
       )}
       <PostDetailDialog />
     </div>

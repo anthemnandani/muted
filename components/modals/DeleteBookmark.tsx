@@ -4,27 +4,22 @@ import useBookmark from '@/hooks/useBookmark';
 import useDeleteBookmark from '@/store/deleteBookmark';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
-import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Dialog, DialogContent, DialogHeader } from '../ui/dialog';
 
 const DeleteBookmark = ({ postId }: { postId: string }) => {
   const { openDeleteDialog, setOpenDeleteDialog } = useDeleteBookmark();
-  const { toggleBookmark, isLoading } = useBookmark();
+  const { toggleBookmark } = useBookmark({ postId });
 
   const isOpen = openDeleteDialog === postId;
 
-  const handleDeleteBookmark = async (
+  const handleDeleteBookmark = (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
-    try {
-      e.stopPropagation();
-      await toggleBookmark({ postId, removeFromAll: true });
-      setOpenDeleteDialog(null);
-    } catch (error) {
-      toast.error('Failed to delete bookmark');
-    }
+    e.stopPropagation();
+    toggleBookmark(true);
+    setOpenDeleteDialog(null);
   };
 
   return (
@@ -61,7 +56,6 @@ const DeleteBookmark = ({ postId }: { postId: string }) => {
             <Button
               variant='ghost'
               className='flex-1 text-base text-primary-red hover:text-primary-red font-bold rounded-none rounded-r-2xl h-[54px] ring-0 hover:bg-transparent disabled:opacity-50 disabled:cursor-not-allowed'
-              disabled={isLoading}
               onClick={handleDeleteBookmark}
             >
               Remove

@@ -5,7 +5,6 @@ import { BookmarkButtonProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import useDeleteBookmark from '@/store/deleteBookmark';
 import { useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
 import CollectionsMenu from '../collections/CollectionsMenu';
 import { Icons } from '../icons';
 import DeleteBookmark from '../modals/DeleteBookmark';
@@ -15,33 +14,31 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
   isPanel,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
-  const { setOpenDeleteDialog } = useDeleteBookmark();
-  const { id: postId } = bookmarkInfo;
+  const { setOpenDeleteDialog, openDeleteDialog } = useDeleteBookmark();
+  const { id: postId, bookmarksCount: initialCount, bookmarks } = bookmarkInfo;
   const timeoutRef = useRef<NodeJS.Timeout>();
   const showTimeoutRef = useRef<NodeJS.Timeout>();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const {
     isBookmarkedByMe,
-    isLoading,
     toggleBookmark,
     bookmarksCount,
     hasNonDefaultBookmarks,
-  } = useBookmark(bookmarkInfo);
+  } = useBookmark({ bookmarksCount: initialCount, bookmarks, postId });
 
-  const handleClick = async () => {
-    try {
-      if (hasNonDefaultBookmarks) {
-        setShowMenu(false);
-        setOpenDeleteDialog(postId);
-      } else {
-        await toggleBookmark({ postId, isDefault: true });
-      }
-    } catch (error) {
-      toast.error('Error: Something went wrong!');
+  const handleClick = () => {
+    if (showTimeoutRef.current) clearTimeout(showTimeoutRef.current);
+
+    if (hasNonDefaultBookmarks) {
+      setShowMenu(false);
+      setOpenDeleteDialog(postId);
+    } else {
+      toggleBookmark();
     }
   };
 
   const handleMouseEnter = () => {
+    if (openDeleteDialog === postId) return;
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
@@ -58,6 +55,13 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
       setShowMenu(false);
     }, 300);
   };
+
+  useEffect(() => {
+    if (openDeleteDialog === postId) {
+      setShowMenu(false);
+      if (showTimeoutRef.current) clearTimeout(showTimeoutRef.current);
+    }
+  }, [openDeleteDialog, postId]);
 
   useEffect(() => {
     return () => {
@@ -89,7 +93,6 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
           fill={isBookmarkedByMe ? 'currentColor' : '#fff'}
           className={cn(
             'size-5 transition-colors',
-            isLoading && 'opacity-50',
             isBookmarkedByMe && 'text-primary-blue'
           )}
         />
@@ -104,6 +107,8 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
           postId={postId}
           isOpen={showMenu}
           onClose={() => setShowMenu(false)}
+          bookmarkInfo={bookmarkInfo}
+          isPanel={isPanel}
         />
       )}
 

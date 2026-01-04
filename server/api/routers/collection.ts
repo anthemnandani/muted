@@ -247,16 +247,16 @@ export const collectionRouter = createTRPCRouter({
         collectionId: z.string().optional(),
         isDefault: z.boolean().optional(),
         removeFromAll: z.boolean().optional(),
+        intent: z.boolean().optional(),
       })
     )
     .mutation(
       async ({
-        input: { postId, collectionId, isDefault, removeFromAll },
+        input: { postId, collectionId, isDefault, removeFromAll, intent },
         ctx,
       }) => {
         const { userId, db } = ctx;
 
-        // Get default collection
         const defaultCollection = await db.collection.findFirst({
           where: { userId, isDefault: true },
         });
@@ -268,7 +268,6 @@ export const collectionRouter = createTRPCRouter({
           });
         }
 
-        // Case 1: Remove from all collections
         if (removeFromAll) {
           await db.bookmark.deleteMany({
             where: { postId, userId },
@@ -276,7 +275,6 @@ export const collectionRouter = createTRPCRouter({
           return { addedBookmark: false };
         }
 
-        // Case 2: Default collection operation (bookmark button click)
         if (isDefault) {
           const existingBookmark = await db.bookmark.findUnique({
             where: {
@@ -288,8 +286,14 @@ export const collectionRouter = createTRPCRouter({
             },
           });
 
-          if (!existingBookmark) {
-            // Add to default collection
+          const shouldBookmark =
+            intent !== undefined ? intent : existingBookmark == null;
+          const shouldRemove =
+            intent !== undefined ? !intent : existingBookmark != null;
+
+          if (shouldBookmark) {
+            if (existingBookmark) return { addedBookmark: true };
+
             await db.bookmark.create({
               data: {
                 postId,
@@ -298,8 +302,10 @@ export const collectionRouter = createTRPCRouter({
               },
             });
             return { addedBookmark: true };
-          } else {
-            // Remove from default collection
+          }
+          if (shouldRemove) {
+            if (!existingBookmark) return { addedBookmark: false };
+
             await db.bookmark.delete({
               where: {
                 postId_userId_collectionId: {
@@ -313,7 +319,6 @@ export const collectionRouter = createTRPCRouter({
           }
         }
 
-        // Case 3: Non-default collection operation
         if (!collectionId) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
@@ -331,9 +336,15 @@ export const collectionRouter = createTRPCRouter({
           },
         });
 
-        if (!existingBookmark) {
+        const shouldBookmarkCustom =
+          intent !== undefined ? intent : existingBookmark == null;
+        const shouldRemoveCustom =
+          intent !== undefined ? !intent : existingBookmark != null;
+
+        if (shouldBookmarkCustom) {
+          if (existingBookmark) return { addedBookmark: true };
+
           await db.$transaction(async (tx) => {
-            // Add to selected collection
             await tx.bookmark.create({
               data: {
                 postId,
@@ -342,7 +353,6 @@ export const collectionRouter = createTRPCRouter({
               },
             });
 
-            // Add to default collection if not already there
             await tx.bookmark.upsert({
               where: {
                 postId_userId_collectionId: {
@@ -356,12 +366,15 @@ export const collectionRouter = createTRPCRouter({
                 userId,
                 collectionId: defaultCollection.id,
               },
-              update: {}, // Do nothing if exists
+              update: {},
             });
           });
           return { addedBookmark: true };
-        } else {
-          // Remove from selected collection only
+        }
+
+        if (shouldRemoveCustom) {
+          if (!existingBookmark) return { addedBookmark: false };
+
           await db.bookmark.delete({
             where: {
               postId_userId_collectionId: {
@@ -373,6 +386,8 @@ export const collectionRouter = createTRPCRouter({
           });
           return { addedBookmark: false };
         }
+
+        return { addedBookmark: !!existingBookmark };
       }
     ),
 

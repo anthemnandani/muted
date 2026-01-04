@@ -30,17 +30,16 @@ const UserRepostsList = ({ username }: { username: string }) => {
       />
     );
 
-  const posts = data?.pages.flatMap((page) => page.posts);
-
-  const postsHash = useMemo(() => {
-    return posts?.map((p) => `${p.id}-${p.likesCount}`).join('|');
-  }, [posts]);
+  const posts = useMemo(() => {
+    return data?.pages.flatMap((page) => page.posts) ?? [];
+  }, [data]);
 
   useEffect(() => {
-    if (!posts) return;
+    if (posts.length === 0) return;
+
     setPostList(posts);
     setPagination(!!hasNextPage, fetchNextPage);
-  }, [postsHash, hasNextPage, fetchNextPage]);
+  }, [posts, hasNextPage, fetchNextPage]);
 
   if (isLoading) return <SkeletonGrid />;
 

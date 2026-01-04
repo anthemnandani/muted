@@ -4,9 +4,9 @@ import Error from '@/app/error';
 import PostsList from '@/components/shared/PostsList';
 import ScrollContainer from '@/components/shared/ScrollContainer';
 import {
-  OptimisticLikeProvider,
+  OptimisticActionProvider,
   type TargetType,
-} from '@/contexts/OptimisticLikeContext';
+} from '@/contexts/OptimisticActionContext';
 import { QUERY_TYPE } from '@/lib/constants';
 import { api } from '@/trpc/react';
 import { useMemo } from 'react';
@@ -34,7 +34,7 @@ const TopicFeedClient = ({ tag }: { tag: string }) => {
 
   return (
     <ScrollContainer>
-      <OptimisticLikeProvider target={target as TargetType}>
+      <OptimisticActionProvider target={target as TargetType}>
         <PostsList
           posts={allPosts}
           fetchNextPage={fetchNextPage}
@@ -42,7 +42,7 @@ const TopicFeedClient = ({ tag }: { tag: string }) => {
           isLoading={isLoading}
           emptyStateMessage='No posts found.'
         />
-      </OptimisticLikeProvider>
+      </OptimisticActionProvider>
     </ScrollContainer>
   );
 };

@@ -1,4 +1,4 @@
-import { useOptimisticLikeStrategy } from '@/contexts/OptimisticLikeContext';
+import { useOptimisticAction } from '@/contexts/OptimisticActionContext';
 import { UseLikeProps } from '@/lib/types';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 const useLike = ({ initialLikesCount, likes, postId }: UseLikeProps) => {
   const { user: loggedUser } = useUser();
 
-  const performOptimisticUpdate = useOptimisticLikeStrategy();
+  const performAction = useOptimisticAction();
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const isLikedByMeInitial = useMemo(
@@ -40,8 +40,8 @@ const useLike = ({ initialLikesCount, likes, postId }: UseLikeProps) => {
     setIsLikedByMe(willBeLiked);
     setLikesCount((prev) => (willBeLiked ? prev + 1 : Math.max(0, prev - 1)));
 
-    if (performOptimisticUpdate) {
-      performOptimisticUpdate(postId, willBeLiked);
+    if (performAction) {
+      performAction(postId, 'LIKE', willBeLiked);
     }
 
     if (debounceTimeoutRef.current) {

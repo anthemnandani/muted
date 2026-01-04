@@ -1,9 +1,9 @@
 'use client';
 
 import {
-  OptimisticLikeProvider,
+  OptimisticActionProvider,
   type TargetType,
-} from '@/contexts/OptimisticLikeContext';
+} from '@/contexts/OptimisticActionContext';
 import useGetReplies from '@/hooks/useGetReplies';
 import useLike from '@/hooks/useLike';
 import { QUERY_TYPE } from '@/lib/constants';
@@ -199,7 +199,7 @@ const CommentCard = ({
           ) : (
             allReplies.length > 0 && (
               <Fragment>
-                <OptimisticLikeProvider target={repliesTarget as TargetType}>
+                <OptimisticActionProvider target={repliesTarget as TargetType}>
                   {allReplies.map((reply, index) => (
                     <ReplyCard
                       key={reply.id}
@@ -209,7 +209,7 @@ const CommentCard = ({
                       postAuthorId={postAuthorId}
                     />
                   ))}
-                </OptimisticLikeProvider>
+                </OptimisticActionProvider>
                 {hasNextPage && (
                   <div className='mt-2'>
                     {isFetchingMore ? (

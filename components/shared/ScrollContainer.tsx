@@ -1,7 +1,7 @@
 'use client';
 
 import NewCollection from '@/components/modals/NewCollection';
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 
 interface ScrollContainerProps {
   children: React.ReactNode;

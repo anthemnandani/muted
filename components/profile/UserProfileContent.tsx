@@ -2,9 +2,9 @@
 
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import {
-  OptimisticLikeProvider,
+  OptimisticActionProvider,
   type TargetType,
-} from '@/contexts/OptimisticLikeContext';
+} from '@/contexts/OptimisticActionContext';
 import { QUERY_TYPE } from '@/lib/constants';
 import { type Tab, UserProfileContentProps } from '@/lib/types';
 import usePostStore from '@/store/postStore';
@@ -13,6 +13,7 @@ import { useUser } from '@clerk/nextjs';
 import { useMemo } from 'react';
 import { Icons } from '../icons';
 import NewCollection from '../modals/NewCollection';
+import PostDetailDialog from '../modals/PostDetailDialog';
 import EmptyState from '../shared/EmptyState';
 import ProfileFilters from './ProfileFilters';
 import ProfileTabsHeader from './ProfileTabsHeader';
@@ -20,7 +21,6 @@ import UserCollectionsList from './UserCollectionsList';
 import UserLikedPostsList from './UserLikedPostsList';
 import UserPostsList from './UserPostsList';
 import UserRepostsList from './UserRepostsList';
-import PostDetailDialog from '../modals/PostDetailDialog';
 
 const BlockedContent = () => (
   <EmptyState
@@ -68,7 +68,7 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
   }, [username, activeTab]);
 
   return (
-    <OptimisticLikeProvider target={target as TargetType}>
+    <OptimisticActionProvider target={target as TargetType}>
       <div className='flex flex-[1_1_auto] justify-start items-start min-h-[490px] h-full min-w-0 relative'>
         <div className='w-full'>
           <Tabs
@@ -142,7 +142,7 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
         </div>
       </div>
       <PostDetailDialog />
-    </OptimisticLikeProvider>
+    </OptimisticActionProvider>
   );
 };
 

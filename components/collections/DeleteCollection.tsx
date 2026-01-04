@@ -6,7 +6,6 @@ import { DialogTitle } from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { toast } from 'sonner';
 import { Icons } from '../icons';
-import MenuItem from '../shared/MenuItem';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import {
@@ -23,7 +22,7 @@ const DeleteCollection = ({ collectionId }: { collectionId: string }) => {
 
   const isOpen = openDeleteDialog === collectionId;
 
-  const { mutateAsync: deleteCollection, isLoading } =
+  const { mutateAsync: deleteCollection, isPending } =
     api.collection.deleteCollection.useMutation({
       onSettled: async () => {
         await trpcUtils.invalidate();
@@ -86,7 +85,7 @@ const DeleteCollection = ({ collectionId }: { collectionId: string }) => {
               variant='ghost'
               className='flex-1 text-base font-bold rounded-none rounded-r-2xl h-[54px] ring-0 hover:bg-transparent text-primary-red hover:text-primary-red disabled:opacity-50 disabled:cursor-not-allowed'
               onClick={handleDeleteCollection}
-              disabled={isLoading}
+              disabled={isPending}
             >
               Delete
             </Button>

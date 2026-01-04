@@ -1,59 +1,41 @@
 'use client';
 
 import useBookmark from '@/hooks/useBookmark';
-import type { Collection } from '@/lib/types';
-import { cn, getVideoThumbnailUrl } from '@/lib/utils';
+import type { CollectionCoverProps } from '@/lib/types';
+import { getVideoThumbnailUrl } from '@/lib/utils';
 import { Check } from 'lucide-react';
 import Image from 'next/image';
-import { useState } from 'react';
-import { toast } from 'sonner';
 import DefaultCollectionCover from './DefaultCollectionCover';
 
 const CollectionCover = ({
   collection,
   postId,
-}: {
-  collection: Collection;
-  postId: string;
-}) => {
-  const [isSaving, setIsSaving] = useState(false);
-  const { bookmarks, name } = collection;
+  bookmarks,
+}: CollectionCoverProps) => {
+  const { bookmarks: collectionBookmarks, name } = collection;
 
-  const { toggleBookmark, isBookmarkedByMe } = useBookmark();
+  const { toggleBookmark, isBookmarkedInTarget } = useBookmark({
+    bookmarks,
+    postId,
+    collectionId: collection?.id,
+  });
 
-  const handleCollectionClick = async (e: React.MouseEvent) => {
+  const handleCollectionClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    setIsSaving(true);
-    try {
-      await toggleBookmark({ postId, collectionId: collection.id });
-    } catch (error) {
-      toast.error('Something went wrong');
-    } finally {
-      setTimeout(() => {
-        setIsSaving(false);
-      }, 500);
-    }
+    toggleBookmark();
   };
 
-  const firstMedia = bookmarks[0]?.media[0];
+  const firstMedia = collectionBookmarks[0]?.media[0];
   const isVideo = firstMedia?.fileType === 'video';
 
   const renderContent = () => (
     <div className='flex-between w-full mb-3'>
       <button
         type='button'
-        className={cn(
-          'flex items-center gap-3 w-full transition-opacity duration-200',
-          isSaving && 'opacity-50'
-        )}
+        className='flex items-center gap-3 w-full transition-opacity duration-200'
       >
-        <div
-          className={cn(
-            'aspect-square relative inline-block size-10 rounded-md bg-zinc-800',
-            !isSaving && 'cursor-pointer'
-          )}
-        >
-          {bookmarks.length === 0 ? (
+        <div className='aspect-square relative inline-block size-10 rounded-md bg-zinc-800'>
+          {collectionBookmarks.length === 0 ? (
             <DefaultCollectionCover className='text-black' />
           ) : (
             <Image
@@ -78,20 +60,12 @@ const CollectionCover = ({
         </h2>
       </button>
 
-      {isBookmarkedByMe && <Check className='size-4 text-primary-blue' />}
+      {isBookmarkedInTarget && <Check className='size-4 text-primary-blue' />}
     </div>
   );
 
   return (
-    <button
-      className={cn(
-        'w-full relative',
-        !isSaving && 'cursor-pointer',
-        isSaving && 'cursor-wait'
-      )}
-      onClick={handleCollectionClick}
-      disabled={isSaving}
-    >
+    <button className='w-full relative' onClick={handleCollectionClick}>
       {renderContent()}
     </button>
   );

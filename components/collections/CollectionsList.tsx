@@ -9,8 +9,9 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import { Icons } from '../icons';
 import { ScrollArea } from '../ui/scroll-area';
 import CollectionCover from './CollectionCover';
+import type { BookmarkInfo } from '@/lib/types';
 
-const CollectionsList = ({ postId }: { postId: string }) => {
+const CollectionsList = ({ bookmarkInfo }: { bookmarkInfo: BookmarkInfo }) => {
   const { isMobile } = useDevice();
   const { user } = useUser();
   const { data, isLoading, hasNextPage, fetchNextPage } =
@@ -63,7 +64,8 @@ const CollectionsList = ({ postId }: { postId: string }) => {
             <CollectionCover
               key={collection.id}
               collection={collection}
-              postId={postId}
+              postId={bookmarkInfo.id}
+              bookmarks={bookmarkInfo.bookmarks}
             />
           ))}
       </InfiniteScroll>
