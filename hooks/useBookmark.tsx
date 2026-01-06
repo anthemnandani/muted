@@ -23,6 +23,7 @@ const useBookmark = ({
   const performAction = useOptimisticAction();
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { user: loggedUser } = useUser();
+  const utils = api.useUtils();
 
   const isBookmarkedInitial = useMemo(() => {
     return (
@@ -66,7 +67,16 @@ const useBookmark = ({
   }, [isBookmarkedInTargetInitial]);
 
   const { mutate: serverToggleBookmark } =
-    api.collection.toggleBookmark.useMutation();
+    api.collection.toggleBookmark.useMutation({
+      onSettled: () => {
+        utils.collection.getUserCollections.invalidate({
+          username: loggedUser?.username as string,
+        });
+        utils.collection.getCollection.invalidate({
+          id: collectionId,
+        });
+      },
+    });
 
   useEffect(() => {
     return () => {

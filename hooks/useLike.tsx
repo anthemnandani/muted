@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 
 const useLike = ({ initialLikesCount, likes, postId }: UseLikeProps) => {
   const { user: loggedUser } = useUser();
+  const utils = api.useUtils();
 
   const performAction = useOptimisticAction();
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -19,7 +20,16 @@ const useLike = ({ initialLikesCount, likes, postId }: UseLikeProps) => {
   const [isLikedByMe, setIsLikedByMe] = useState(isLikedByMeInitial);
   const [likesCount, setLikesCount] = useState(initialLikesCount || 0);
 
-  const { mutate: serverToggleLike } = api.like.toggleLike.useMutation();
+  const { mutate: serverToggleLike } = api.like.toggleLike.useMutation({
+    onSettled: () => {
+      utils.user.getUserProfile.invalidate({
+        username: loggedUser?.username as string,
+      });
+      utils.user.getUserLikedPosts.invalidate({
+        username: loggedUser?.username as string,
+      });
+    },
+  });
 
   useEffect(() => {
     return () => {
