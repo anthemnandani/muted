@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
   // directUrl = env("DIRECT_URL")
 }
 
@@ -67,6 +67,7 @@ model User {
   sender                   Chat[]            @relation("Sender")
   receiver                 Chat[]            @relation("Receiver")
   chatDeletions            ChatDeletion[]
+  threads                  Thread[]
   reactions                MessageReaction[]
   messageDeletions         MessageDeletion[]
   mutedChats               MutedChat[]
@@ -101,11 +102,12 @@ model Post {
   text            String?
   // threadText      String?
   media           Json?
+  // media        Media[]
   likes           Like[]
   parentPostId    String?
   parentPost      Post?          @relation("rootPost", fields: [parentPostId], references: [id], onDelete: Cascade)
   replies         Post[]         @relation("rootPost")
-  notification    Notification[]
+  notifications   Notification[]
   reposts         Repost[]
   quoteId         String?
   privacy         PostPrivacy    @default(ANYONE)
@@ -123,12 +125,98 @@ model Post {
   // linkPreviewUrl  String?
   // linkPreview     LinkPreview?   @relation(fields: [linkPreviewUrl], references: [url])
   pinned          Boolean        @default(false)
+  Media           Media[]
+  LinkPreview     LinkPreview?   @relation(fields: [linkPreviewId], references: [id])
+  linkPreviewId   String?
 
   @@unique([createdAt, id])
   // @@index([linkPreviewUrl])
   @@index([authorId])
   @@index([parentPostId])
   @@index([path])
+}
+
+model Thread {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  text String  @db.Text
+  path String?
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  media Media[]
+
+  parentId        String?
+  parent          Thread?  @relation("ThreadReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies         Thread[] @relation("ThreadReplies")
+  repliesCount    Int      @default(0)
+  hideLikes       Boolean  @default(false)
+  turnOffComments Boolean  @default(false)
+
+  quoteId  String?
+  quote    Thread?  @relation("ThreadQuotes", fields: [quoteId], references: [id], onDelete: SetNull)
+  quotedBy Thread[] @relation("ThreadQuotes")
+
+  likes         Like[]
+  reposts       Repost[]
+  mentions      Mention[]
+  bookmarks     Bookmark[]
+  hashtags      Hashtag[]      @relation("ThreadHashtags")
+  reports       Report[]
+  notifications Notification[]
+  hiddenBy      HiddenPost[]
+  lastEditedAt  DateTime?
+
+  privacy PostPrivacy @default(ANYONE)
+  status  PostStatus  @default(VISIBLE)
+
+  @@unique([createdAt, id])
+  @@index([authorId])
+  @@index([parentId])
+  @@index([quoteId])
+}
+
+enum FileType {
+  IMAGE
+  VIDEO
+}
+
+enum EncodingStatus {
+  PROCESSING
+  ENCODED
+  FAILED
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  fileUrl  String
+  fileType FileType
+  altText  String?
+
+  width       Int
+  height      Int
+  aspectRatio String?
+
+  videoId        String?
+  playbackId     String?
+  thumbnailUrl   String?
+  videoToken     String?
+  thumbnailToken String?
+  encodingStatus EncodingStatus?
+
+  postId String?
+  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  threadId String?
+  thread   Thread? @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([threadId])
 }
 
 model Follow {
@@ -147,51 +235,75 @@ model Follow {
 model Mention {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId    String
+  post      Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String?
+  threadId  String?
+  thread    Thread?  @relation(fields: [threadId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   index     Int
 
   @@index([postId])
+  @@index([threadId])
   @@index([userId])
 }
 
 model Like {
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now())
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
 
-  @@id([postId, userId])
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  postId String?
+  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  threadId String?
+  thread   Thread? @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@unique([userId, threadId])
   @@index([userId])
   @@index([postId])
+  @@index([threadId])
 }
 
 model Repost {
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now())
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
 
-  @@id([postId, userId])
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  postId String?
+  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  threadId String?
+  thread   Thread? @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@unique([userId, threadId])
   @@index([userId])
 }
 
 model Bookmark {
-  createdAt    DateTime   @default(now())
-  post         Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId       String
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
   userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   collectionId String
   collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
 
-  @@id([postId, userId, collectionId])
+  postId String?
+  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  threadId String?
+  thread   Thread? @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId, collectionId])
+  @@unique([userId, threadId, collectionId])
   @@index([userId])
-  @@index([postId])
   @@index([collectionId])
 }
 
@@ -244,6 +356,9 @@ model Notification {
   postId String?
   post   Post?   @relation(fields: [postId], references: [id])
 
+  threadId String?
+  thread   Thread? @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
   @@index([receiverUserId])
   @@index([senderUserId])
   @@index([type])
@@ -253,32 +368,35 @@ model Hashtag {
   id        String   @id @default(cuid())
   name      String   @unique
   posts     Post[]   @relation("PostHashtags")
+  threads   Thread[] @relation("ThreadHashtags")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([name])
 }
 
-// model LinkPreview {
-//   id          String   @id @default(cuid())
-//   url         String   @unique
-//   title       String?
-//   description String?
-//   image       String?
-//   createdAt   DateTime @default(now())
-//   posts       Post[]
+model LinkPreview {
+  id          String   @id @default(cuid())
+  url         String   @unique
+  title       String?
+  description String?
+  image       String?
+  createdAt   DateTime @default(now())
+  posts       Post[]
 
-//   @@index([url])
-// }
+  @@index([url])
+}
 
 model HiddenPost {
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now())
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId    String
+  post      Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String?
+  thread    Thread?  @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  threadId  String?
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
 
-  @@id([postId, userId])
   @@index([userId])
 }
 
@@ -309,10 +427,12 @@ model Report {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  postId String?
-  post   Post?   @relation(fields: [postId], references: [id], onDelete: SetNull)
-  userId String?
-  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  postId   String?
+  post     Post?   @relation(fields: [postId], references: [id], onDelete: SetNull)
+  threadId String?
+  thread   Thread? @relation(fields: [threadId], references: [id], onDelete: SetNull)
+  userId   String?
+  user     User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   reporterId String
   reporter   User   @relation("ReportSubmissions", fields: [reporterId], references: [id], onDelete: Cascade)
@@ -329,6 +449,7 @@ model Report {
 
   @@unique([createdAt, id])
   @@unique([reporterId, postId])
+  @@unique([reporterId, threadId])
   @@unique([reporterId, userId])
   @@index([status])
   @@index([createdAt])
