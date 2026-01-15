@@ -1071,7 +1071,7 @@ export const postRouter = createTRPCRouter({
 
       const existingRepost = await db.repost.findUnique({
         where: {
-          postId_userId: data,
+          userId_postId: data,
         },
       });
 
@@ -1114,7 +1114,7 @@ export const postRouter = createTRPCRouter({
         const transactionResult = await db.$transaction(async (prisma) => {
           const removeRepost = await prisma.repost.delete({
             where: {
-              postId_userId: data,
+              userId_postId: data,
             },
           });
 
@@ -1231,7 +1231,7 @@ export const postRouter = createTRPCRouter({
       const transactionResult = await db.$transaction(async (prisma) => {
         await prisma.repost.delete({
           where: {
-            postId_userId: data,
+            userId_postId: data,
           },
         });
 
@@ -1774,7 +1774,7 @@ export const postRouter = createTRPCRouter({
 
       const existingHiddenPost = await db.hiddenPost.findUnique({
         where: {
-          postId_userId: data,
+          userId_postId: data,
         },
       });
 
@@ -1786,7 +1786,7 @@ export const postRouter = createTRPCRouter({
       } else {
         await db.hiddenPost.delete({
           where: {
-            postId_userId: data,
+            userId_postId: data,
           },
         });
         return { hidden: false };
@@ -2052,13 +2052,13 @@ export const postRouter = createTRPCRouter({
             'Favorite Items': {
               FavoriteItemList: bookmarks.map((b) => ({
                 Date: formatDateAndTime(b.createdAt),
-                Link: `${baseUrl}/post/${b.post.id}`,
+                Link: `${baseUrl}/post/${b.post?.id}`,
               })),
             },
             'Like List': {
               ItemFavoriteList: likes.map((l) => ({
                 date: formatDateAndTime(l.createdAt),
-                link: `${baseUrl}/post/${l.post.id}`,
+                link: `${baseUrl}/post/${l.post?.id}`,
               })),
             },
           };

@@ -397,6 +397,8 @@ model HiddenPost {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
 
+  @@unique([userId, postId])
+  @@unique([userId, threadId])
   @@index([userId])
 }
 

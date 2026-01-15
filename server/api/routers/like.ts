@@ -16,7 +16,7 @@ export const likeRouter = createTRPCRouter({
       const data = { postId: id, userId };
 
       const existingLike = await db.like.findUnique({
-        where: { postId_userId: data },
+        where: { userId_postId: data },
       });
 
       const shouldCreate = intent !== undefined ? intent : existingLike == null;
@@ -34,12 +34,12 @@ export const likeRouter = createTRPCRouter({
             },
           });
 
-          if (createdLike.post.author.id !== userId) {
+          if (createdLike.post?.author.id !== userId) {
             await prisma.notification.create({
               data: {
                 type: NotificationType.LIKE,
                 senderUserId: userId,
-                receiverUserId: createdLike.post.author.id,
+                receiverUserId: createdLike.post?.author.id,
                 postId: data.postId,
                 message: 'liked your post',
               },
@@ -57,7 +57,7 @@ export const likeRouter = createTRPCRouter({
         if (!existingLike) return { addedLike: false };
 
         await db.like.delete({
-          where: { postId_userId: data },
+          where: { userId_postId: data },
         });
 
         return { addedLike: false };

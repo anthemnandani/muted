@@ -40,6 +40,12 @@ const Navigation = () => {
         isActive={pathname === '/' && !isSearchOpen}
         addFill
       />
+      <MenuLink
+        route='/threads'
+        icon={Icons.threads}
+        isActive={pathname === '/threads' && !isSearchOpen}
+        addFill
+      />
       <button
         type='button'
         title='Search'

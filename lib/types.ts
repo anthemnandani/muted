@@ -155,7 +155,7 @@ export interface MenuItemProps {
 }
 
 export type Repost = {
-  postId: string;
+  postId: string | null;
   user: AuthorInfoProps;
   createdAt: Date;
 };

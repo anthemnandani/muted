@@ -282,7 +282,7 @@ export const userRouter = createTRPCRouter({
           },
         },
         cursor: cursor
-          ? { postId_userId: { postId: cursor.postId, userId: user.id } }
+          ? { userId_postId: { postId: cursor.postId, userId: user.id } }
           : undefined,
         take: limit + 1,
         orderBy: { createdAt: 'desc' },
@@ -321,14 +321,14 @@ export const userRouter = createTRPCRouter({
 
       const formattedReposts = await Promise.all(
         reposts.map(async (repost) => {
-          const postWithTokens = await enrichPostWithTokens(repost.post);
+          const postWithTokens = await enrichPostWithTokens(repost.post!);
           return {
             ...postWithTokens,
-            likesCount: repost.post.likes.length,
-            repostsCount: repost.post.reposts.length,
-            repliesCount: repost.post.replies.length,
+            likesCount: repost.post!.likes.length,
+            repostsCount: repost.post!.reposts.length,
+            repliesCount: repost.post!.replies.length,
             bookmarksCount: new Set(
-              repost.post.bookmarks.map((bookmark) => bookmark.userId)
+              repost.post!.bookmarks.map((bookmark) => bookmark.userId)
             ).size,
           };
         })
@@ -434,7 +434,7 @@ export const userRouter = createTRPCRouter({
         },
         take: limit + 1,
         cursor: cursor
-          ? { postId_userId: { postId: cursor.postId, userId: user.id } }
+          ? { userId_postId: { postId: cursor.postId, userId: user.id } }
           : undefined,
         select: {
           post: {
@@ -472,15 +472,15 @@ export const userRouter = createTRPCRouter({
 
       const formattedLikedPosts = await Promise.all(
         likedPosts.map(async (likedPost) => {
-          const postWithTokens = await enrichPostWithTokens(likedPost.post);
+          const postWithTokens = await enrichPostWithTokens(likedPost.post!);
 
           return {
             ...postWithTokens,
-            likesCount: likedPost.post.likes.length,
-            repostsCount: likedPost.post.reposts.length,
+            likesCount: likedPost.post!.likes.length,
+            repostsCount: likedPost.post!.reposts.length,
             repliesCount: getTotalRepliesCount(likedPost.post) as number,
             bookmarksCount: new Set(
-              likedPost.post.bookmarks.map((bookmark) => bookmark.userId)
+              likedPost.post!.bookmarks.map((bookmark) => bookmark.userId)
             ).size,
           };
         })

@@ -71,7 +71,7 @@ export const collectionRouter = createTRPCRouter({
             // Add to default collection using upsert to prevent duplicates
             await tx.bookmark.upsert({
               where: {
-                postId_userId_collectionId: {
+                userId_postId_collectionId: {
                   postId,
                   userId,
                   collectionId: defaultCollection.id,
@@ -207,17 +207,17 @@ export const collectionRouter = createTRPCRouter({
 
           const bookmarks = await Promise.all(
             collection.bookmarks.map(async (bookmark, index) => {
-              let media = bookmark.post.media as PostMedia[];
+              let media = bookmark.post?.media as PostMedia[];
 
               if (index === coverIndex) {
                 media = await enrichThumbnailToken(media);
               }
 
               return {
-                id: bookmark.post.id,
+                id: bookmark.post!.id,
                 media,
-                author: bookmark.post.author,
-                text: bookmark.post.text,
+                author: bookmark.post!.author,
+                text: bookmark.post!.text,
               };
             })
           );
@@ -278,7 +278,7 @@ export const collectionRouter = createTRPCRouter({
         if (isDefault) {
           const existingBookmark = await db.bookmark.findUnique({
             where: {
-              postId_userId_collectionId: {
+              userId_postId_collectionId: {
                 postId,
                 userId,
                 collectionId: defaultCollection.id,
@@ -308,7 +308,7 @@ export const collectionRouter = createTRPCRouter({
 
             await db.bookmark.delete({
               where: {
-                postId_userId_collectionId: {
+                userId_postId_collectionId: {
                   postId,
                   userId,
                   collectionId: defaultCollection.id,
@@ -328,7 +328,7 @@ export const collectionRouter = createTRPCRouter({
 
         const existingBookmark = await db.bookmark.findUnique({
           where: {
-            postId_userId_collectionId: {
+            userId_postId_collectionId: {
               postId,
               userId,
               collectionId,
@@ -355,7 +355,7 @@ export const collectionRouter = createTRPCRouter({
 
             await tx.bookmark.upsert({
               where: {
-                postId_userId_collectionId: {
+                userId_postId_collectionId: {
                   postId,
                   userId,
                   collectionId: defaultCollection.id,
@@ -377,7 +377,7 @@ export const collectionRouter = createTRPCRouter({
 
           await db.bookmark.delete({
             where: {
-              postId_userId_collectionId: {
+              userId_postId_collectionId: {
                 postId,
                 userId,
                 collectionId,
@@ -500,7 +500,7 @@ export const collectionRouter = createTRPCRouter({
             take: limit + 1,
             cursor: cursor
               ? {
-                  postId_userId_collectionId: {
+                  userId_postId_collectionId: {
                     postId: cursor.id,
                     userId,
                     collectionId: id,
@@ -558,12 +558,12 @@ export const collectionRouter = createTRPCRouter({
 
       const posts = await Promise.all(
         collection?.bookmarks.map(async (bookmark) => ({
-          ...bookmark.post,
-          media: await enrichMediaTokens(bookmark.post.media as PostMedia[]),
-          likesCount: bookmark.post.likes.length,
-          repostsCount: bookmark.post.reposts.length,
+          ...bookmark.post!,
+          media: await enrichMediaTokens(bookmark.post?.media as PostMedia[]),
+          likesCount: bookmark.post?.likes.length,
+          repostsCount: bookmark.post?.reposts.length,
           bookmarksCount: new Set(
-            bookmark.post.bookmarks.map((bookmark) => bookmark.userId)
+            bookmark.post?.bookmarks.map((bookmark) => bookmark.userId)
           ).size,
         }))
       );

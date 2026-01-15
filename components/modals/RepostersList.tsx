@@ -38,7 +38,7 @@ const RepostersList = ({ reposts }: { reposts: Repost[] }) => {
   const { isRepostedByMe, isLoading, handleToggleRepost } = useRepost({
     reposts,
     initialRepostsCount: reposts.length,
-    postId: reposts[0]?.postId,
+    postId: reposts[0]?.postId!,
   });
 
   const getRepostText = () => {
