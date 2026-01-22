@@ -1,11 +1,14 @@
-import type { GiphyMedia, MediaFile } from '@/lib/types';
+import type { MediaFile } from '@/lib/types';
+import type { IGif } from '@giphy/js-types';
 import { create } from 'zustand';
+
+export type ThreadMedia = IGif | MediaFile | null;
 
 interface FileStoreState {
   mediaFiles: MediaFile[];
   setMediaFiles: (files: MediaFile[]) => void;
-  threadMedia: MediaFile | GiphyMedia | null;
-  setThreadMedia: (media: MediaFile | GiphyMedia | null) => void;
+  threadMedia: ThreadMedia;
+  setThreadMedia: (media: ThreadMedia) => void;
   updateMediaFile: (id: string, updates: Partial<MediaFile>) => void;
   profileFile: File | null;
   setProfileFile: (file: File | null) => void;
@@ -19,23 +22,11 @@ const useFileStore = create<FileStoreState>((set, get) => ({
   mediaFiles: [],
   setMediaFiles: (files) => set({ mediaFiles: files }),
   threadMedia: null,
-  setThreadMedia: (media) => {
-    set((state) => {
-      const oldMedia = state.threadMedia;
-      if (
-        oldMedia &&
-        'preview' in oldMedia &&
-        oldMedia.preview.startsWith('blob:')
-      ) {
-        URL.revokeObjectURL(oldMedia.preview);
-      }
-      return { threadMedia: media };
-    });
-  },
+  setThreadMedia: (file) => set({ threadMedia: file }),
   updateMediaFile: (id, updates) => {
     const { mediaFiles } = get();
     const updatedFiles = mediaFiles.map((file) =>
-      file.id === id ? { ...file, ...updates } : file
+      file.id === id ? { ...file, ...updates } : file,
     );
     set({ mediaFiles: updatedFiles });
   },

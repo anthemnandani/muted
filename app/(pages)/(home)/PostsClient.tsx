@@ -59,22 +59,20 @@ const PostsClient = () => {
   if (isError) return <Error />;
 
   return (
-    <main className='content-center min-w-[420px]'>
-      <ScrollContainer ref={mainContainerRef}>
-        <OptimisticActionProvider target={optimisticTarget as TargetType}>
-          <PostsList
-            posts={allPosts}
-            fetchNextPage={fetchNextPage}
-            hasNextPage={hasNextPage}
-            isLoading={isLoading || isRefreshing}
-            emptyStateMessage='No posts found.'
-            resetToFirst={resetToFirst}
-            onResetComplete={() => setResetToFirst(false)}
-            containerRef={mainContainerRef}
-          />
-        </OptimisticActionProvider>
-      </ScrollContainer>
-    </main>
+    <ScrollContainer ref={mainContainerRef}>
+      <OptimisticActionProvider target={optimisticTarget as TargetType}>
+        <PostsList
+          posts={allPosts}
+          fetchNextPage={fetchNextPage}
+          hasNextPage={hasNextPage}
+          isLoading={isLoading || isRefreshing}
+          emptyStateMessage='No posts found.'
+          resetToFirst={resetToFirst}
+          onResetComplete={() => setResetToFirst(false)}
+          containerRef={mainContainerRef}
+        />
+      </OptimisticActionProvider>
+    </ScrollContainer>
   );
 };
 

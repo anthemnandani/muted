@@ -9,6 +9,7 @@ import { notificationRouter } from './routers/notification';
 import { postRouter } from './routers/post';
 import { reportRouter } from './routers/report';
 import { searchRouter } from './routers/search';
+import { threadRouter } from './routers/thread';
 import { userRouter } from './routers/user';
 import { createTRPCRouter } from './trpc';
 
@@ -16,6 +17,7 @@ export const appRouter = createTRPCRouter({
   auth: authRouter,
   user: userRouter,
   post: postRouter,
+  thread: threadRouter,
   like: likeRouter,
   collection: collectionRouter,
   report: reportRouter,

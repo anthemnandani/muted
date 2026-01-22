@@ -18,9 +18,7 @@ const HeaderWrapper = ({ children }: { children: React.ReactNode }) => {
     <div
       className={cn(
         'sticky top-0 z-10 w-full',
-        isScrolled
-          ? 'dark:bg-[#101010D9] bg-background backdrop-blur-2xl'
-          : 'bg-transparent'
+        isScrolled ? 'bg-[#101010D9] backdrop-blur-2xl' : 'bg-transparent'
       )}
     >
       {children}

@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 import { useMuxUpload } from './useMuxUpload';
 
 const useCreatePost = () => {
-  const { mediaFiles, setMediaFiles, setThreadMedia } = useFileStore();
+  const { mediaFiles, setMediaFiles } = useFileStore();
   const { editPostId, resetPostState, setOpenDialog, postData, validMentions } =
     usePostDialog();
   const { uploadToStorage, prepareMuxUpload, startMuxUpload } = useMuxUpload();
@@ -25,13 +25,10 @@ const useCreatePost = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  const trpcUtils = api.useUtils();
-
   const closeAndReset = () => {
     setOpenDialog(false);
     setTimeout(() => {
       setMediaFiles([]);
-      setThreadMedia(null);
       resetPostState();
       setIsUploading(false);
       setUploadProgress(0);
@@ -110,7 +107,7 @@ const useCreatePost = () => {
       try {
         const croppedBlob = await getCroppedImg(
           fileObj.preview,
-          fileObj.cropData
+          fileObj.cropData,
         );
         fileToUpload = new File([croppedBlob], fileObj.file.name, {
           type: fileObj.file.type,
@@ -144,7 +141,7 @@ const useCreatePost = () => {
 
   const processVideo = async (
     fileObj: MediaFile,
-    postId: string
+    postId: string,
   ): Promise<{ media: PostMedia; uploadUrl: string }> => {
     const finalDimensions = await getVideoDimensions(fileObj.file);
     const { url, uploadId } = await prepareMuxUpload(postId);
@@ -157,7 +154,7 @@ const useCreatePost = () => {
         playbackId: localBlobUrl,
         aspectRatio: fileObj.aspectRatio,
         originalDimensions: finalDimensions,
-        encodingStatus: 'processing',
+        encodingStatus: 'PROCESSING',
       },
       uploadUrl: url,
     };
@@ -195,7 +192,7 @@ const useCreatePost = () => {
         if (fileObj.type === 'video') {
           const { media, uploadUrl } = await processVideo(
             fileObj,
-            generatedPostId
+            generatedPostId,
           );
           processedMedia.push(media);
 
@@ -206,7 +203,7 @@ const useCreatePost = () => {
               (pct) => updateOverallProgress(i, pct),
               (uploadInstance) => {
                 activeMuxUploads.current.push(uploadInstance);
-              }
+              },
             );
           });
         } else {

@@ -44,7 +44,6 @@ const Navigation = () => {
         route='/threads'
         icon={Icons.threads}
         isActive={pathname === '/threads' && !isSearchOpen}
-        addFill
       />
       <button
         type='button'
@@ -70,11 +69,11 @@ const Navigation = () => {
         icon={Icons.following}
         isActive={pathname === '/following' && !isSearchOpen}
       />
-      <MenuLink
+      {/* <MenuLink
         route='/friends'
         icon={Icons.friends}
         isActive={pathname === '/friends' && !isSearchOpen}
-      />
+      /> */}
       <button
         onClick={toggleNotificationSidebar}
         className={cn(

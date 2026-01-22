@@ -5,6 +5,7 @@ import MuxPlayer from '@mux/mux-player-react';
 import type {
   AppealStatus,
   CollectionPrivacy,
+  EncodingStatus,
   FilteredKeyword,
   FollowRequestStatus,
   MessageReportCategory,
@@ -35,18 +36,21 @@ export type PostProps = ArrayElement<
 
 export type Post = RouterOutputs['post']['getInfinitePosts']['posts'][number];
 
+export type Thread =
+  RouterOutputs['thread']['getInfiniteThreads']['threads'][number];
+
 export type PostMedia = {
   fileType: string;
   fileUrl?: string;
   aspectRatio?: string;
   videoToken?: string;
   thumbnailToken?: string;
-  originalDimensions: {
+  originalDimensions?: {
     width: number;
     height: number;
   };
   videoId?: string;
-  playbackId?: string | null;
+  playbackId?: string;
   encodingStatus?: EncodingStatus;
 };
 
@@ -57,7 +61,7 @@ export type ParentPostInfo = Pick<
 
 export type ReplyPostInfo = Pick<
   Post,
-  'id' | 'text' | 'author' | 'media' | 'mentions' | 'privacy' | 'createdAt'
+  'id' | 'text' | 'author' | 'mentions' | 'privacy' | 'createdAt'
 >;
 
 export type UserProfileInfoProps = RouterOutputs['user']['getUserProfile'] & {
@@ -338,7 +342,7 @@ export type MediaFile = {
   file: File;
   preview: string;
   id: string;
-  type: 'image' | 'video';
+  type: 'image' | 'video' | 'gif';
   aspectRatio?: string;
   originalDimensions?: {
     width: number;
@@ -358,7 +362,19 @@ export type GiphyMedia = {
   type: 'gif';
 };
 
-export type EncodingStatus = 'processing' | 'encoded' | 'failed';
+export type LinkPreview = {
+  url: string;
+  title: string | null;
+  description: string | null;
+  image: string | null;
+};
+
+export type ThreadData = {
+  privacy: Privacy;
+  text: string;
+  linkPreview: LinkPreview | null;
+  mentions: ValidMention[];
+};
 
 export interface PreviewStepProps {
   getRootProps: any;
@@ -1122,6 +1138,7 @@ export interface PostHeaderProps {
   id: string;
   currentText: string;
   pinned?: boolean;
+  hideLikes?: boolean;
 }
 
 export interface PostTextProps {
@@ -1192,8 +1209,7 @@ export interface SettingPanelProps {
 
 export type FollowStatus = 'FOLLOWING' | 'REQUESTED' | 'NOT_FOLLOWING';
 
-export interface FollowButtonProps
-  extends React.HTMLAttributes<HTMLDivElement> {
+export interface FollowButtonProps extends React.HTMLAttributes<HTMLDivElement> {
   variant: 'default' | 'outline' | 'destructive';
   author: AuthorInfoProps;
   size: 'default' | 'sm' | 'lg' | 'icon';

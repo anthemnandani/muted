@@ -33,7 +33,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   }, [onPlayerReady]);
 
   const securePoster = useMemo(() => {
-    if (status === 'encoded' && playbackId && thumbnailToken) {
+    if (status === 'ENCODED' && playbackId && thumbnailToken) {
       return getVideoThumbnailUrl(playbackId, thumbnailToken);
     }
     return undefined;
@@ -44,7 +44,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       playback: videoToken,
       thumbnail: thumbnailToken,
     }),
-    [videoToken, thumbnailToken]
+    [videoToken, thumbnailToken],
   );
 
   const numericRatio = getTargetRatio(aspectRatio, originalDimensions);
@@ -58,8 +58,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     <Fragment>
       <MuxPlayer
         ref={playerRef}
-        playbackId={status === 'encoded' ? playbackId : undefined}
-        src={status === 'processing' ? playbackId : undefined}
+        playbackId={status === 'ENCODED' ? playbackId : undefined}
+        src={status === 'PROCESSING' ? playbackId : undefined}
         tokens={tokens}
         poster={securePoster}
         muted={isMuted}
@@ -108,7 +108,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             onClick={() => playerRef.current?.play()}
             className={cn(
               'rounded-full bg-black/40 p-4 text-white hover:bg-black/60',
-              'hover:scale-110 transition-all pointer-events-auto backdrop-blur-sm'
+              'hover:scale-110 transition-all pointer-events-auto backdrop-blur-sm',
             )}
           >
             <Play className='size-8 fill-current' />

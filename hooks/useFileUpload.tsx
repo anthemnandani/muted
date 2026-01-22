@@ -28,7 +28,7 @@ const useFileUpload = ({ onSuccess }: { onSuccess?: () => void }) => {
       const totalFiles = files.length + mediaFiles.length;
       if (totalFiles > UPLOAD_CONSTRAINTS.MAX_ITEMS) {
         throw new Error(
-          `You can upload up to ${UPLOAD_CONSTRAINTS.MAX_ITEMS} photos and videos.`
+          `You can upload up to ${UPLOAD_CONSTRAINTS.MAX_ITEMS} photos and videos.`,
         );
       }
 
@@ -39,7 +39,7 @@ const useFileUpload = ({ onSuccess }: { onSuccess?: () => void }) => {
 
       if (oversizedImages.length > 0) {
         throw new Error(
-          `One or more photos were too large to be uploaded. Each photo must be less than 10MB.`
+          `One or more photos were too large to be uploaded. Each photo must be less than 10MB.`,
         );
       }
 
@@ -49,20 +49,19 @@ const useFileUpload = ({ onSuccess }: { onSuccess?: () => void }) => {
         .filter((media) => getMediaType(media.file) === 'video')
         .map((media) => media.file);
 
-      const existingDuration = await calculateTotalVideoDuration(
-        existingVideos
-      );
+      const existingDuration =
+        await calculateTotalVideoDuration(existingVideos);
       const newDuration = await calculateTotalVideoDuration(files);
       const totalDuration = existingDuration + newDuration;
 
       if (totalDuration > UPLOAD_CONSTRAINTS.MAX_VIDEO_DURATION) {
         const minutes = Math.floor(UPLOAD_CONSTRAINTS.MAX_VIDEO_DURATION / 60);
         throw new Error(
-          `One or more videos were too long to be uploaded. Videos must be less than ${minutes} minutes long in total.`
+          `One or more videos were too long to be uploaded. Videos must be less than ${minutes} minutes long in total.`,
         );
       }
     },
-    [mediaFiles]
+    [mediaFiles],
   );
 
   const onDrop = useCallback(
@@ -85,7 +84,7 @@ const useFileUpload = ({ onSuccess }: { onSuccess?: () => void }) => {
 
         const updatedFiles = [...mediaFiles, ...newFiles].slice(
           0,
-          UPLOAD_CONSTRAINTS.MAX_ITEMS
+          UPLOAD_CONSTRAINTS.MAX_ITEMS,
         );
         setMediaFiles(updatedFiles);
         onSuccess?.();
@@ -99,7 +98,7 @@ const useFileUpload = ({ onSuccess }: { onSuccess?: () => void }) => {
         setProgress(0);
       }
     },
-    [validateFiles, onSuccess, mediaFiles, setMediaFiles, setThreadMedia]
+    [validateFiles, onSuccess, mediaFiles, setMediaFiles, setThreadMedia],
   );
 
   const acceptedFileTypes = {
@@ -118,11 +117,11 @@ const useFileUpload = ({ onSuccess }: { onSuccess?: () => void }) => {
     mediaFiles.forEach((media) => {
       URL.revokeObjectURL(media.preview);
     });
-    if (threadMedia?.type !== 'gif' && threadMedia?.preview) {
+    if (!threadMedia) return;
+    if ('preview' in threadMedia) {
       URL.revokeObjectURL(threadMedia.preview);
-    }
-    if (threadMedia?.type === 'gif') {
-      URL.revokeObjectURL(threadMedia.gif.images.original.url);
+    } else if ('images' in threadMedia) {
+      URL.revokeObjectURL(threadMedia.images.original.url);
     }
   }, [mediaFiles, threadMedia]);
 

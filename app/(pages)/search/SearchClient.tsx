@@ -20,11 +20,13 @@ const SearchClient = () => {
   }, []);
 
   return (
-    <div className='main-container md:!pt-0 !max-w-[1200px]'>
-      <div className='flex flex-col flex-[1_1_auto]'>
-        <SearchHeader query={query} />
+    <main className='flex justify-between w-screen max-w-full flex-auto self-center'>
+      <div className='main-container md:!pt-0 !max-w-[1200px]'>
+        <div className='flex flex-col flex-[1_1_auto]'>
+          <SearchHeader query={query} />
+        </div>
       </div>
-    </div>
+    </main>
   );
 };
 

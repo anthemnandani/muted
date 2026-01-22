@@ -5,7 +5,6 @@ import { PostNavigatorProvider } from '@/contexts/PostNavigatorContext';
 import { db } from '@/server/db';
 import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import React from 'react';
 
 export default async function PagesLayout({
   children,
@@ -30,12 +29,12 @@ export default async function PagesLayout({
   if ((dbUser && !dbUser.verified) || !dbUser) redirect('/account?origin=/');
 
   return (
-    <div className='flex justify-between w-screen max-w-full flex-auto self-center'>
+    <>
       <TopBar />
       <LeftSideBar />
       <PostNavigatorProvider>{children}</PostNavigatorProvider>
       {/* <BottomBar /> */}
       <Report />
-    </div>
+    </>
   );
 }

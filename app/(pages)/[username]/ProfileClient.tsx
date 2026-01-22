@@ -59,19 +59,21 @@ const ProfileClient = ({ username }: { username: string }) => {
   if (profile.hasBlockedMe) return <BlockedUserContent />;
 
   return (
-    <div className='main-container'>
-      <div className='flex flex-col flex-[1_1_auto]'>
-        <UserProfile {...profile} isBlocked={profile.isBlockedByMe} />
+    <main className='flex justify-between w-screen max-w-full flex-auto self-center'>
+      <div className='main-container'>
+        <div className='flex flex-col flex-[1_1_auto]'>
+          <UserProfile {...profile} isBlocked={profile.isBlockedByMe} />
 
-        <UserProfileContent
-          username={username}
-          userId={profile.id}
-          privacy={profile.privacy}
-          isFollower={profile.isFollower}
-          isBlocked={profile.isBlockedByMe}
-        />
+          <UserProfileContent
+            username={username}
+            userId={profile.id}
+            privacy={profile.privacy}
+            isFollower={profile.isFollower}
+            isBlocked={profile.isBlockedByMe}
+          />
+        </div>
       </div>
-    </div>
+    </main>
   );
 };
 

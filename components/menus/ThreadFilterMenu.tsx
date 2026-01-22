@@ -3,10 +3,10 @@ import { ThreadFilter } from '@/lib/types';
 import { Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Icons } from '../icons';
-import MenuItem from '../shared/MenuItem';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 
@@ -27,31 +27,45 @@ const ThreadFilterMenu = ({
         </div>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className='dropdown-content-container p-2 w-[240px] rounded-2xl -mt-3'>
-        <MenuItem
-          icon={selectedFilter === ThreadFilter.FOR_YOU ? Check : null}
-          label={ThreadFilter.FOR_YOU}
-          className='flex-between focus:rounded-lg !py-4'
+      <DropdownMenuContent className='shadow-xl bg-gray-6 z-[1000] w-[240px] rounded-2xl -mt-3'>
+        <DropdownMenuItem
+          className='dropdown-menu-item'
           onClick={() => router.push('/')}
-        />
-        <MenuItem
-          icon={selectedFilter === ThreadFilter.FOLLOWING ? Check : null}
-          label={ThreadFilter.FOLLOWING}
-          className='flex-between focus:rounded-lg !py-4'
+        >
+          {ThreadFilter.FOR_YOU}
+          {selectedFilter === ThreadFilter.FOR_YOU && (
+            <Check className='size-5' />
+          )}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className='dropdown-menu-item'
           onClick={() => router.push('/following')}
-        />
-        <MenuItem
-          icon={selectedFilter === ThreadFilter.LIKED ? Check : null}
-          label={ThreadFilter.LIKED}
-          className='flex-between focus:rounded-lg !py-4'
+        >
+          {ThreadFilter.FOLLOWING}
+          {selectedFilter === ThreadFilter.FOLLOWING && (
+            <Check className='size-5' />
+          )}
+        </DropdownMenuItem>
+
+        <DropdownMenuItem
+          className='dropdown-menu-item'
           onClick={() => router.push('/liked')}
-        />
-        <MenuItem
-          icon={selectedFilter === ThreadFilter.SAVED ? Check : null}
-          label={ThreadFilter.SAVED}
-          className='flex-between focus:rounded-lg !py-4'
+        >
+          {ThreadFilter.LIKED}
+          {selectedFilter === ThreadFilter.LIKED && (
+            <Check className='size-5' />
+          )}
+        </DropdownMenuItem>
+
+        <DropdownMenuItem
+          className='dropdown-menu-item'
           onClick={() => router.push('/saved')}
-        />
+        >
+          {ThreadFilter.SAVED}
+          {selectedFilter === ThreadFilter.SAVED && (
+            <Check className='size-5' />
+          )}
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

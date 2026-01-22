@@ -35,13 +35,15 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
   }
 
   return (
-    <div className='relative mx-auto my-0 w-full'>
-      <OptimisticActionProvider
-        target={{ type: QUERY_TYPE.POST_DETAILS, variables: { id: postId } }}
-      >
-        {isLoading ? <PostCardSkeleton /> : <PostCard {...data.post} />}
-      </OptimisticActionProvider>
-    </div>
+    <main className='flex justify-between w-screen max-w-full flex-auto self-center'>
+      <div className='relative mx-auto my-0 w-full'>
+        <OptimisticActionProvider
+          target={{ type: QUERY_TYPE.POST_DETAILS, variables: { id: postId } }}
+        >
+          {isLoading ? <PostCardSkeleton /> : <PostCard {...data.post} />}
+        </OptimisticActionProvider>
+      </div>
+    </main>
   );
 };
 

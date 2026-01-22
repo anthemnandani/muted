@@ -51,13 +51,15 @@ export const postRouter = createTRPCRouter({
               thumbnailUrl: z.string().optional(),
               videoId: z.string().optional(),
               encodingStatus: z
-                .enum(['processing', 'encoded', 'failed'])
+                .enum(['PROCESSING', 'ENCODED', 'FAILED'])
                 .optional(),
-              originalDimensions: z.object({
-                width: z.number(),
-                height: z.number(),
-              }),
-            })
+              originalDimensions: z
+                .object({
+                  width: z.number(),
+                  height: z.number(),
+                })
+                .optional(),
+            }),
           )
           .optional(),
         mentions: z
@@ -65,7 +67,7 @@ export const postRouter = createTRPCRouter({
             z.object({
               mentionedUserId: z.string(),
               index: z.number(),
-            })
+            }),
           )
           .optional(),
         privacy: z.nativeEnum(PostPrivacy).default('ANYONE'),
@@ -73,7 +75,7 @@ export const postRouter = createTRPCRouter({
         hideLikes: z.boolean().optional(),
         turnOffComments: z.boolean().optional(),
         status: z.nativeEnum(PostStatus),
-      })
+      }),
     )
     .mutation(
       async ({
@@ -89,18 +91,9 @@ export const postRouter = createTRPCRouter({
           status,
         },
       }) => {
-        const { user, userId, db } = ctx;
-        const email = getUserEmail(user);
-        const dbUser = await db.user.findUnique({
-          where: {
-            email: email,
-          },
-          select: {
-            verified: true,
-          },
-        });
+        const { userId, db } = ctx;
 
-        if (!dbUser) {
+        if (!userId) {
           throw new TRPCError({ code: 'NOT_FOUND' });
         }
 
@@ -169,8 +162,8 @@ export const postRouter = createTRPCRouter({
                     postId: newpost.id,
                     message: filteredText,
                   },
-                })
-              )
+                }),
+              ),
             );
           }
 
@@ -188,7 +181,7 @@ export const postRouter = createTRPCRouter({
           success: true,
           isEdited: false,
         };
-      }
+      },
     ),
 
   getInfinitePosts: privateProcedure
@@ -203,7 +196,7 @@ export const postRouter = createTRPCRouter({
             createdAt: z.date(),
           })
           .optional(),
-      })
+      }),
     )
     .query(
       async ({ input: { limit = 10, cursor, searchQuery, sortBy }, ctx }) => {
@@ -354,10 +347,10 @@ export const postRouter = createTRPCRouter({
               repostsCount: post.reposts.length,
               repliesCount: getTotalRepliesCount(post) as number,
               bookmarksCount: new Set(
-                post.bookmarks.map((bookmark) => bookmark.userId)
+                post.bookmarks.map((bookmark) => bookmark.userId),
               ).size,
             };
-          })
+          }),
         );
 
         let nextCursor: typeof cursor | undefined;
@@ -374,7 +367,7 @@ export const postRouter = createTRPCRouter({
           posts: formattedPosts,
           nextCursor,
         };
-      }
+      },
     ),
 
   replyToPost: privateProcedure
@@ -390,10 +383,10 @@ export const postRouter = createTRPCRouter({
             z.object({
               username: z.string(),
               index: z.number(),
-            })
+            }),
           )
           .optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { userId, db } = ctx;
@@ -430,7 +423,7 @@ export const postRouter = createTRPCRouter({
           }
 
           const blockedUsers = parentPost.author.blockedUsers.map(
-            (blockedUser) => blockedUser.blockedUserId
+            (blockedUser) => blockedUser.blockedUserId,
           );
 
           const isBlocked = blockedUsers.includes(userId);
@@ -473,7 +466,7 @@ export const postRouter = createTRPCRouter({
 
           if (input.mentions && input.mentions.length > 0) {
             const uniqueUsernames = Array.from(
-              new Set(input.mentions.map((m) => m.username))
+              new Set(input.mentions.map((m) => m.username)),
             );
 
             const mentionedUsers = await prisma.user.findMany({
@@ -489,11 +482,11 @@ export const postRouter = createTRPCRouter({
             });
 
             const usernameToIdMap = new Map(
-              mentionedUsers.map((user) => [user.username, user.id])
+              mentionedUsers.map((user) => [user.username, user.id]),
             );
 
             const validMentions = input.mentions.filter((mention) =>
-              usernameToIdMap.has(mention.username)
+              usernameToIdMap.has(mention.username),
             );
 
             if (validMentions.length > 0) {
@@ -575,10 +568,10 @@ export const postRouter = createTRPCRouter({
             z.object({
               username: z.string(),
               index: z.number(),
-            })
+            }),
           )
           .optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { userId, db } = ctx;
@@ -614,7 +607,7 @@ export const postRouter = createTRPCRouter({
           }
 
           const blockedUsers = parentComment.author.blockedUsers.map(
-            (blockedUser) => blockedUser.blockedUserId
+            (blockedUser) => blockedUser.blockedUserId,
           );
 
           const isBlocked = blockedUsers.includes(userId);
@@ -657,7 +650,7 @@ export const postRouter = createTRPCRouter({
 
           if (input.mentions && input.mentions.length > 0) {
             const uniqueUsernames = Array.from(
-              new Set(input.mentions.map((m) => m.username))
+              new Set(input.mentions.map((m) => m.username)),
             );
 
             const mentionedUsers = await prisma.user.findMany({
@@ -673,11 +666,11 @@ export const postRouter = createTRPCRouter({
             });
 
             const usernameToIdMap = new Map(
-              mentionedUsers.map((user) => [user.username, user.id])
+              mentionedUsers.map((user) => [user.username, user.id]),
             );
 
             const validMentions = input.mentions.filter((mention) =>
-              usernameToIdMap.has(mention.username)
+              usernameToIdMap.has(mention.username),
             );
 
             if (validMentions.length > 0) {
@@ -860,7 +853,7 @@ export const postRouter = createTRPCRouter({
           repostsCount: post.reposts.length,
           repliesCount: getTotalRepliesCount(post) as number,
           bookmarksCount: new Set(
-            post.bookmarks.map((bookmark) => bookmark.userId)
+            post.bookmarks.map((bookmark) => bookmark.userId),
           ).size,
         },
       };
@@ -878,7 +871,7 @@ export const postRouter = createTRPCRouter({
             createdAt: z.date(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input, ctx }) => {
       const { id, limit, cursor, sortBy } = input;
@@ -952,7 +945,7 @@ export const postRouter = createTRPCRouter({
         repostsCount: comment.reposts.length,
         repliesCount: comment._count.replies,
         bookmarksCount: new Set(
-          comment.bookmarks.map((bookmark) => bookmark.userId)
+          comment.bookmarks.map((bookmark) => bookmark.userId),
         ).size,
         isHidden: comment.hiddenBy.length > 0,
         isMuted: comment.author.mutedByUsers?.length > 0,
@@ -975,7 +968,7 @@ export const postRouter = createTRPCRouter({
             createdAt: z.date(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input, ctx }) => {
       const { parentCommentId, limit, cursor } = input;
@@ -1046,7 +1039,7 @@ export const postRouter = createTRPCRouter({
         likesCount: reply.likes.length,
         repostsCount: reply.reposts.length,
         bookmarksCount: new Set(
-          reply.bookmarks.map((bookmark) => bookmark.userId)
+          reply.bookmarks.map((bookmark) => bookmark.userId),
         ).size,
         type: 'post' as const,
         isHidden: reply.hiddenBy.length > 0,
@@ -1063,7 +1056,7 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-      })
+      }),
     )
     .mutation(async ({ input: { id }, ctx }) => {
       const { userId, db } = ctx;
@@ -1155,7 +1148,7 @@ export const postRouter = createTRPCRouter({
       z.object({
         postId: z.string(),
         hide: z.boolean(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { userId, db } = ctx;
@@ -1180,7 +1173,7 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const { db } = ctx;
@@ -1222,7 +1215,7 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const { userId, db } = ctx;
@@ -1255,7 +1248,7 @@ export const postRouter = createTRPCRouter({
             createdAt: z.date(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input: { limit = 10, cursor }, ctx }) => {
       const { userId, db } = ctx;
@@ -1398,7 +1391,9 @@ export const postRouter = createTRPCRouter({
       const formattedPosts = await Promise.all(
         followingPosts.map(async (post) => {
           const followedUserRepost = post.reposts.find((repost) =>
-            repost.user.followers.some((follow) => follow.followerId === userId)
+            repost.user.followers.some(
+              (follow) => follow.followerId === userId,
+            ),
           );
 
           const postWithTokens = await enrichPostWithTokens(post);
@@ -1409,13 +1404,13 @@ export const postRouter = createTRPCRouter({
             repostsCount: post.reposts.length,
             repliesCount: getTotalRepliesCount(post) as number,
             bookmarksCount: new Set(
-              post.bookmarks.map((bookmark) => bookmark.userId)
+              post.bookmarks.map((bookmark) => bookmark.userId),
             ).size,
             type: followedUserRepost ? ('repost' as const) : ('post' as const),
             repostedBy: followedUserRepost?.user,
             repostedAt: followedUserRepost?.createdAt,
           };
-        })
+        }),
       );
 
       return {
@@ -1435,7 +1430,7 @@ export const postRouter = createTRPCRouter({
             createdAt: z.date(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input: { tag, limit = 10, cursor }, ctx }) => {
       if (!tag) {
@@ -1538,10 +1533,10 @@ export const postRouter = createTRPCRouter({
             repostsCount: post.reposts.length,
             repliesCount: getTotalRepliesCount(post) as number,
             bookmarksCount: new Set(
-              post.bookmarks.map((bookmark) => bookmark.userId)
+              post.bookmarks.map((bookmark) => bookmark.userId),
             ).size,
           };
-        })
+        }),
       );
 
       let nextCursor: typeof cursor | undefined;
@@ -1571,12 +1566,12 @@ export const postRouter = createTRPCRouter({
             z.object({
               username: z.string(),
               index: z.number(),
-            })
+            }),
           )
           .optional(),
         hideLikes: z.boolean().optional(),
         turnOffComments: z.boolean().optional(),
-      })
+      }),
     )
     .mutation(
       async ({
@@ -1628,7 +1623,7 @@ export const postRouter = createTRPCRouter({
           const hashtags = extractHashtags(filteredText);
 
           const existingMentionUserIds = new Set(
-            post.mentions.map((mention) => mention.userId)
+            post.mentions.map((mention) => mention.userId),
           );
 
           const transactionResult = await db.$transaction(async (prisma) => {
@@ -1653,7 +1648,7 @@ export const postRouter = createTRPCRouter({
 
             if (mentions && mentions.length > 0) {
               const uniqueUsernames = Array.from(
-                new Set(mentions.map((m) => m.username))
+                new Set(mentions.map((m) => m.username)),
               );
 
               const mentionedUsers = await prisma.user.findMany({
@@ -1669,11 +1664,11 @@ export const postRouter = createTRPCRouter({
               });
 
               const usernameToIdMap = new Map(
-                mentionedUsers.map((user) => [user.username, user.id])
+                mentionedUsers.map((user) => [user.username, user.id]),
               );
 
               const validMentions = mentions.filter((mention) =>
-                usernameToIdMap.has(mention.username)
+                usernameToIdMap.has(mention.username),
               );
 
               if (validMentions.length > 0) {
@@ -1690,8 +1685,8 @@ export const postRouter = createTRPCRouter({
                   mentionedUsers
                     .map((user) => user.id)
                     .filter(
-                      (id) => !existingMentionUserIds.has(id) && id !== userId
-                    )
+                      (id) => !existingMentionUserIds.has(id) && id !== userId,
+                    ),
                 );
 
                 if (newMentionUserIds.size > 0) {
@@ -1703,7 +1698,7 @@ export const postRouter = createTRPCRouter({
                         senderUserId: userId,
                         receiverUserId: mentionedUserId,
                         postId: id,
-                      })
+                      }),
                     ),
                   });
                 }
@@ -1758,14 +1753,14 @@ export const postRouter = createTRPCRouter({
             message: 'Failed to update post. Please try again.',
           });
         }
-      }
+      },
     ),
 
   toggleHidePost: privateProcedure
     .input(
       z.object({
         postId: z.string(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { userId, db } = ctx;
@@ -1797,7 +1792,7 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         postId: z.string(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { userId, db } = ctx;
@@ -1868,7 +1863,7 @@ export const postRouter = createTRPCRouter({
       z.object({
         options: z.array(z.nativeEnum(DownloadableData)),
         format: z.enum(['txt', 'json']).default('txt'),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { userId, db } = ctx;
@@ -1991,20 +1986,22 @@ export const postRouter = createTRPCRouter({
           },
         });
         if (format === 'json') {
-          const chatHistory = chats.reduce((acc, chat) => {
-            const partner =
-              chat.sender?.id === userId ? chat.receiver : chat.sender;
-            if (partner) {
-              acc[`Chat History with ${partner.username}:`] = chat.messages.map(
-                (msg) => ({
-                  Date: formatDateAndTime(msg.createdAt),
-                  From: msg.sender?.username ?? 'Unknown User',
-                  Content: msg.content,
-                })
-              );
-            }
-            return acc;
-          }, {} as Record<string, any>);
+          const chatHistory = chats.reduce(
+            (acc, chat) => {
+              const partner =
+                chat.sender?.id === userId ? chat.receiver : chat.sender;
+              if (partner) {
+                acc[`Chat History with ${partner.username}:`] =
+                  chat.messages.map((msg) => ({
+                    Date: formatDateAndTime(msg.createdAt),
+                    From: msg.sender?.username ?? 'Unknown User',
+                    Content: msg.content,
+                  }));
+              }
+              return acc;
+            },
+            {} as Record<string, any>,
+          );
 
           jsonData['Direct Message'] = {
             'Direct Messages': { ChatHistory: chatHistory },
@@ -2022,7 +2019,7 @@ export const postRouter = createTRPCRouter({
             for (const message of chat.messages) {
               const senderUsername = message.sender?.username ?? 'Unknown User';
               dmContent += `${formatUTCDate(
-                message.createdAt
+                message.createdAt,
               )} ${senderUsername}: ${message.content}\n`;
             }
             dmContent += '\n';
@@ -2068,25 +2065,25 @@ export const postRouter = createTRPCRouter({
           for (const bookmark of bookmarks) {
             if (bookmark.post) {
               favoritesContent += `Date: ${formatUTCDate(
-                bookmark.createdAt
+                bookmark.createdAt,
               )}\nLink: ${baseUrl}/post/${bookmark.post.id}\n\n`;
             }
           }
           likesAndFavoritesFolder?.file(
             'Favorite Items.txt',
-            favoritesContent.trim() || noDataMessage
+            favoritesContent.trim() || noDataMessage,
           );
           let likesContent = '';
           for (const like of likes) {
             if (like.post) {
               likesContent += `Date: ${formatUTCDate(
-                like.createdAt
+                like.createdAt,
               )}\nLink: ${baseUrl}/post/${like.post.id}\n\n`;
             }
           }
           likesAndFavoritesFolder?.file(
             'Like List.txt',
-            likesContent.trim() || noDataMessage
+            likesContent.trim() || noDataMessage,
           );
         }
       }
@@ -2218,12 +2215,12 @@ export const postRouter = createTRPCRouter({
           let blockContent = '';
           for (const user of blockedUsers) {
             blockContent += `Date: ${formatUTCDate(
-              user.createdAt
+              user.createdAt,
             )}\nUsername: ${user.blockedUser.username}\n\n`;
           }
           profileFolder?.file(
             'Block List.txt',
-            blockContent.trim() || noDataMessage
+            blockContent.trim() || noDataMessage,
           );
 
           let muteContent = '';
@@ -2234,29 +2231,29 @@ export const postRouter = createTRPCRouter({
           }
           profileFolder?.file(
             'Mute List.txt',
-            muteContent.trim() || noDataMessage
+            muteContent.trim() || noDataMessage,
           );
 
           let followContent = '';
           for (const user of followers) {
             followContent += `Date: ${formatUTCDate(
-              user.createdAt
+              user.createdAt,
             )}\nUsername: ${user.follower.username}\n\n`;
           }
           profileFolder?.file(
             'Follower.txt',
-            followContent.trim() || noDataMessage
+            followContent.trim() || noDataMessage,
           );
 
           let followingContent = '';
           for (const user of following) {
             followingContent += `Date: ${formatUTCDate(
-              user.createdAt
+              user.createdAt,
             )}\nUsername: ${user.following.username}\n\n`;
           }
           profileFolder?.file(
             'Following.txt',
-            followingContent.trim() || noDataMessage
+            followingContent.trim() || noDataMessage,
           );
 
           if (userProfile) {
@@ -2270,22 +2267,22 @@ export const postRouter = createTRPCRouter({
             const profileInfoContent = profileData.join('\n');
             profileFolder?.file(
               'Profile Information.txt',
-              profileInfoContent.trim() || noDataMessage
+              profileInfoContent.trim() || noDataMessage,
             );
 
             const settingsData = [
               `Private Account: ${privateAccountStatus}`,
               `Keyword filters for videos in For You feed: [${forYouKeywords.join(
-                ', '
+                ', ',
               )}]`,
               `Keyword filters for videos in Following feed: [${followingKeywords.join(
-                ', '
+                ', ',
               )}]`,
             ];
             const settingsContent = settingsData.join('\n');
             profileFolder?.file(
               'Settings.txt',
-              settingsContent.trim() || noDataMessage
+              settingsContent.trim() || noDataMessage,
             );
           }
         }

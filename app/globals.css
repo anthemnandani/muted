@@ -340,13 +340,8 @@
     @apply focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 !important;
   }
 
-  /* Dropdown */
-  .dropdown-content-container {
-    @apply shadow-xl bg-gray-6 z-[1000];
-  }
-
   .dropdown-menu-item {
-    @apply px-4 tracking-normal select-none font-semibold py-3 cursor-pointer text-[15px] rounded-none focus:bg-hovered-background;
+    @apply flex-between focus:rounded-lg py-3.5 px-4 tracking-normal select-none font-semibold cursor-pointer text-[15px] rounded-none focus:bg-hovered-background;
   }
 
   /* Account Profile  */

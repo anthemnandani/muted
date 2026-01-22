@@ -53,45 +53,47 @@ const CollectionDetails = ({ id }: { id: string }) => {
   if (isError) return <Error />;
 
   return (
-    <div className='main-container'>
-      {isLoading ? (
-        <Fragment>
-          <HeaderSkeleton />
-          <SkeletonGrid />
-        </Fragment>
-      ) : posts?.length === 0 ? (
-        <div className='flex-center w-full h-screen'>
-          <p className='text-gray-3'>No posts found in this collection</p>
-        </div>
-      ) : (
-        <OptimisticActionProvider target={target as TargetType}>
-          <TopHeader title={collection?.name as string} />
-          <InfiniteScroll
-            dataLength={posts?.length ?? 0}
-            next={fetchNextPage}
-            hasMore={hasNextPage ?? false}
-            className='w-full mt-6'
-            loader={
-              <div className='col-span-full flex-center py-10'>
-                <Icons.loading className='size-11' />
+    <main className='flex justify-between w-screen max-w-full flex-auto self-center'>
+      <div className='main-container'>
+        {isLoading ? (
+          <Fragment>
+            <HeaderSkeleton />
+            <SkeletonGrid />
+          </Fragment>
+        ) : posts?.length === 0 ? (
+          <div className='flex-center w-full h-screen'>
+            <p className='text-gray-3'>No posts found in this collection</p>
+          </div>
+        ) : (
+          <OptimisticActionProvider target={target as TargetType}>
+            <TopHeader title={collection?.name as string} />
+            <InfiniteScroll
+              dataLength={posts?.length ?? 0}
+              next={fetchNextPage}
+              hasMore={hasNextPage ?? false}
+              className='w-full mt-6'
+              loader={
+                <div className='col-span-full flex-center py-10'>
+                  <Icons.loading className='size-11' />
+                </div>
+              }
+            >
+              <div className='main-grid'>
+                {posts?.map((post, index) => (
+                  <UserPostCard
+                    key={post.id}
+                    media={post.media}
+                    postId={post.id}
+                    index={index}
+                  />
+                ))}
               </div>
-            }
-          >
-            <div className='main-grid'>
-              {posts?.map((post, index) => (
-                <UserPostCard
-                  key={post.id}
-                  media={post.media}
-                  postId={post.id}
-                  index={index}
-                />
-              ))}
-            </div>
-          </InfiniteScroll>
-        </OptimisticActionProvider>
-      )}
-      <PostDetailDialog />
-    </div>
+            </InfiniteScroll>
+          </OptimisticActionProvider>
+        )}
+        <PostDetailDialog />
+      </div>
+    </main>
   );
 };
 
