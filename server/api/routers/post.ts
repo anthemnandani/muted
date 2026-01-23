@@ -188,7 +188,6 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         searchQuery: z.string().optional(),
-        sortBy: z.enum(['LATEST', 'TOP']).optional().default('LATEST'),
         limit: z.number().optional(),
         cursor: z
           .object({
@@ -198,177 +197,176 @@ export const postRouter = createTRPCRouter({
           .optional(),
       }),
     )
-    .query(
-      async ({ input: { limit = 10, cursor, searchQuery, sortBy }, ctx }) => {
-        const { userId, db } = ctx;
+    .query(async ({ input: { limit = 10, cursor, searchQuery }, ctx }) => {
+      const { userId, db } = ctx;
 
-        const userFilteredKeywords = await db.filteredKeyword.findMany({
-          where: {
-            userId,
-            feeds: { has: FeedType.FOR_YOU },
-          },
-          select: {
-            keyword: true,
-          },
-        });
+      const userFilteredKeywords = await db.filteredKeyword.findMany({
+        where: {
+          userId,
+          feeds: { has: FeedType.FOR_YOU },
+        },
+        select: {
+          keyword: true,
+        },
+      });
 
-        const visibilityCondition: Prisma.PostWhereInput = {
+      const visibilityCondition: Prisma.PostWhereInput = {
+        OR: [
+          { status: PostStatus.VISIBLE },
+          {
+            AND: [{ status: PostStatus.HIDDEN }, { authorId: userId }],
+          },
+        ],
+      };
+
+      const baseConditions: Prisma.PostWhereInput[] = [
+        getPrivacyFilter(userId),
+        visibilityCondition,
+        { parentPostId: null },
+        { hiddenBy: { none: { userId } } },
+        {
+          author: {
+            deactivated: false,
+            mutedByUsers: { none: { mutedByUserId: userId } },
+            blockedByUsers: { none: { blockingUserId: userId } },
+            blockedUsers: { none: { blockedUserId: userId } },
+          },
+        },
+      ];
+
+      if (searchQuery) {
+        baseConditions.push({
           OR: [
-            { status: PostStatus.VISIBLE },
+            { text: { contains: searchQuery, mode: 'insensitive' } },
             {
-              AND: [{ status: PostStatus.HIDDEN }, { authorId: userId }],
+              hashtags: {
+                some: {
+                  name: { contains: searchQuery, mode: 'insensitive' },
+                },
+              },
             },
           ],
-        };
+        });
+      } else if (userFilteredKeywords.length > 0) {
+        const keywords = userFilteredKeywords.map((k) => k.keyword);
 
-        const baseConditions: Prisma.PostWhereInput[] = [
-          getPrivacyFilter(userId),
-          visibilityCondition,
-          { parentPostId: null },
-          { hiddenBy: { none: { userId } } },
-          {
-            author: {
-              deactivated: false,
-              mutedByUsers: { none: { mutedByUserId: userId } },
-              blockedByUsers: { none: { blockingUserId: userId } },
-              blockedUsers: { none: { blockedUserId: userId } },
-            },
-          },
-        ];
-
-        if (searchQuery) {
+        keywords.forEach((keyword) => {
           baseConditions.push({
-            OR: [
-              { text: { contains: searchQuery, mode: 'insensitive' } },
+            AND: [
+              {
+                OR: [
+                  {
+                    text: { not: { contains: keyword } },
+                  },
+                  { text: null },
+                ],
+              },
               {
                 hashtags: {
-                  some: {
-                    name: { contains: searchQuery, mode: 'insensitive' },
+                  none: {
+                    name: { equals: keyword, mode: 'insensitive' },
                   },
                 },
               },
             ],
           });
-        } else if (userFilteredKeywords.length > 0) {
-          const keywords = userFilteredKeywords.map((k) => k.keyword);
+        });
+      }
 
-          keywords.forEach((keyword) => {
-            baseConditions.push({
-              AND: [
-                {
-                  OR: [
-                    {
-                      text: { not: { contains: keyword } },
-                    },
-                    { text: null },
-                  ],
-                },
-                {
-                  hashtags: {
-                    none: {
-                      name: { equals: keyword, mode: 'insensitive' },
-                    },
-                  },
-                },
-              ],
-            });
-          });
-        }
+      const whereClause: Prisma.PostWhereInput = {
+        AND: baseConditions,
+      };
 
-        const whereClause: Prisma.PostWhereInput = {
-          AND: baseConditions,
-        };
-
-        const posts = await db.post.findMany({
-          where: whereClause,
-          take: limit + 1,
-          cursor: cursor ? { createdAt_id: cursor } : undefined,
-          orderBy:
-            sortBy === 'TOP'
-              ? [{ likes: { _count: 'desc' } }, { createdAt: 'desc' }]
-              : [{ createdAt: 'desc' }, { id: 'desc' }],
-          select: {
-            id: true,
-            createdAt: true,
-            text: true,
-            media: true,
-            parentPostId: true,
-            quoteId: true,
-            path: true,
-            hideLikes: true,
-            turnOffComments: true,
-            pinned: true,
-            privacy: true,
-            repliesCount: true,
-            status: true,
-            author: {
-              select: {
-                ...GET_USER,
-              },
-            },
-            ...getLikesWithBlockFilter(userId),
-            ...getBookmarksWithBlockFilter(userId),
-            ...getPostReplies(userId),
-            ...GET_MENTIONS,
-            reposts: {
-              ...GET_REPOSTS,
-              where: {
-                user: {
-                  deactivated: false,
-                  blockedByUsers: {
-                    none: {
-                      blockingUserId: {
-                        equals: userId,
-                      },
-                    },
-                  },
-                  blockedUsers: {
-                    none: {
-                      blockedUserId: {
-                        equals: userId,
-                      },
-                    },
-                  },
-                },
-              },
-              orderBy: {
-                createdAt: 'desc',
-              },
+      const posts = await db.post.findMany({
+        where: whereClause,
+        take: limit + 1,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        // orderBy:
+        //   sortBy === 'TOP'
+        //     ? [{ likes: { _count: 'desc' } }, { createdAt: 'desc' }]
+        //     : [{ createdAt: 'desc' }, { id: 'desc' }],
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        select: {
+          id: true,
+          createdAt: true,
+          text: true,
+          media: true,
+          parentPostId: true,
+          quoteId: true,
+          path: true,
+          hideLikes: true,
+          turnOffComments: true,
+          pinned: true,
+          privacy: true,
+          repliesCount: true,
+          status: true,
+          author: {
+            select: {
+              ...GET_USER,
             },
           },
-        });
+          ...getLikesWithBlockFilter(userId),
+          ...getBookmarksWithBlockFilter(userId),
+          ...getPostReplies(userId),
+          ...GET_MENTIONS,
+          reposts: {
+            ...GET_REPOSTS,
+            where: {
+              user: {
+                deactivated: false,
+                blockedByUsers: {
+                  none: {
+                    blockingUserId: {
+                      equals: userId,
+                    },
+                  },
+                },
+                blockedUsers: {
+                  none: {
+                    blockedUserId: {
+                      equals: userId,
+                    },
+                  },
+                },
+              },
+            },
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
+        },
+      });
 
-        const formattedPosts = await Promise.all(
-          posts.map(async (post) => {
-            const postWithTokens = await enrichPostWithTokens(post);
-            return {
-              ...postWithTokens,
-              likesCount: post.likes.length,
-              repostsCount: post.reposts.length,
-              repliesCount: getTotalRepliesCount(post) as number,
-              bookmarksCount: new Set(
-                post.bookmarks.map((bookmark) => bookmark.userId),
-              ).size,
-            };
-          }),
-        );
-
-        let nextCursor: typeof cursor | undefined;
-        if (formattedPosts.length > limit) {
-          const nextItem = formattedPosts[limit];
-          nextCursor = {
-            id: nextItem.id,
-            createdAt: nextItem.createdAt,
+      const formattedPosts = await Promise.all(
+        posts.map(async (post) => {
+          const postWithTokens = await enrichPostWithTokens(post);
+          return {
+            ...postWithTokens,
+            likesCount: post.likes.length,
+            repostsCount: post.reposts.length,
+            repliesCount: getTotalRepliesCount(post) as number,
+            bookmarksCount: new Set(
+              post.bookmarks.map((bookmark) => bookmark.userId),
+            ).size,
           };
-          formattedPosts.length = limit;
-        }
+        }),
+      );
 
-        return {
-          posts: formattedPosts,
-          nextCursor,
+      let nextCursor: typeof cursor | undefined;
+      if (formattedPosts.length > limit) {
+        const nextItem = formattedPosts[limit];
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
         };
-      },
-    ),
+        formattedPosts.length = limit;
+      }
+
+      return {
+        posts: formattedPosts,
+        nextCursor,
+      };
+    }),
 
   replyToPost: privateProcedure
     .input(

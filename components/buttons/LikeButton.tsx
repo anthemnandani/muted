@@ -16,7 +16,8 @@ const LikeButton: React.FC<LikeButtonProps> = ({
   const { isLikedByMe, likesCount, toggleLike } = useLike({
     initialLikesCount: likeInfo.likesCount,
     likes: likeInfo.likes,
-    postId: likeInfo.id,
+    id: likeInfo.id,
+    type: 'POST',
   });
 
   const { user } = useUser();
@@ -29,7 +30,7 @@ const LikeButton: React.FC<LikeButtonProps> = ({
         onClick={toggleLike}
         className={cn(
           'btn-action mt-2 mb-1.5',
-          isPanel && 'mt-0 mb-0 size-9 mr-1.5'
+          isPanel && 'mt-0 mb-0 size-9 mr-1.5',
         )}
       >
         <Icons.heart

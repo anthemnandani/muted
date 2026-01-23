@@ -7,39 +7,38 @@ import React from 'react';
 
 interface BookmarkButtonProps {
   bookmarkInfo: Pick<PostProps, 'id' | 'bookmarks' | 'bookmarksCount'>;
-  isParentPost?: boolean;
 }
 
 const ThreadBookmarkButton: React.FC<BookmarkButtonProps> = ({
   bookmarkInfo,
-  isParentPost,
 }) => {
-  //   const { toggleBookmark, isBookmarkedByMe, bookmarksCount, isLoading } =
-  //     useBookmark({ bookmarkInfo });
+  const { id, bookmarksCount: initialCount, bookmarks } = bookmarkInfo;
+
+  const { isBookmarkedByMe, toggleBookmark, bookmarksCount } = useBookmark({
+    bookmarksCount: initialCount,
+    bookmarks,
+    id,
+    type: 'THREAD',
+  });
 
   return (
-    <div className='icon-container-hover'>
+    <div className='icon-container-hover flex items-center gap-2'>
       <button
         type='button'
-        // disabled={isLoading}
-        // title={isBookmarkedByMe ? 'Unsave' : 'Save'}
-        title='Save'
-        // onClick={() => toggleBookmark({ id: bookmarkInfo.id })}
-        className='flex items-center gap-2 z-[2] relative'
+        aria-label={isBookmarkedByMe ? 'Bookmark' : 'Remove bookmark'}
+        onClick={() => toggleBookmark()}
+        className='z-[2] relative'
       >
         <Bookmark
-          //   fill={isBookmarkedByMe ? 'currentColor' : 'transparent'}
-          fill='transparent'
+          fill={isBookmarkedByMe ? 'currentColor' : 'transparent'}
           className='size-5'
         />
       </button>
-      {/* {bookmarksCount > 0 && !isParentPost && (
-        <span className='text-[13px] text-gray-4 dark:text-gray-2 ml-2'>
+      {bookmarksCount > 0 && (
+        <span className='text-[13px] leading-4 text-center text-white/75'>
           {bookmarksCount}
         </span>
-      )} */}
-
-      {/* <span className='text-[13px] text-gray-2 ml-2'>0</span> */}
+      )}
     </div>
   );
 };

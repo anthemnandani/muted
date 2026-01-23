@@ -60,7 +60,7 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
             likes,
           }}
           hideLikes={hideLikes}
-          isParentPost={isParentPost}
+          authorId={author.id}
         />
 
         <ThreadReplyButton
@@ -97,9 +97,8 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
             bookmarksCount,
             bookmarks,
           }}
-          isParentPost={isParentPost}
         />
-        <CopyLinkButton postId={id} username={author.username} />
+        <CopyLinkButton threadId={id} />
       </div>
     </>
   );

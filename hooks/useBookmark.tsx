@@ -10,15 +10,17 @@ import { toast } from 'sonner';
 interface UseBookmarkProps {
   bookmarksCount?: number;
   bookmarks?: Bookmark[];
-  postId: string;
+  id: string;
   collectionId?: string;
+  type: 'POST' | 'THREAD';
 }
 
 const useBookmark = ({
   bookmarksCount: initialCount,
   bookmarks,
-  postId,
+  id,
   collectionId,
+  type,
 }: UseBookmarkProps) => {
   const performAction = useOptimisticAction();
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -37,7 +39,7 @@ const useBookmark = ({
         (bookmark) =>
           bookmark.userId === loggedUser?.id &&
           collectionId &&
-          bookmark.collection?.id === collectionId
+          bookmark.collection?.id === collectionId,
       ) || false
     );
   }, [bookmarks, loggedUser?.id, collectionId]);
@@ -46,14 +48,15 @@ const useBookmark = ({
     return (
       bookmarks?.some(
         (bookmark) =>
-          bookmark.userId === loggedUser?.id && !bookmark?.collection?.isDefault
+          bookmark.userId === loggedUser?.id &&
+          !bookmark?.collection?.isDefault,
       ) || false
     );
   }, [bookmarks, loggedUser?.id]);
 
   const [isBookmarkedByMe, setIsBookmarkedByMe] = useState(isBookmarkedInitial);
   const [isBookmarkedInTarget, setIsBookmarkedInTarget] = useState(
-    isBookmarkedInTargetInitial
+    isBookmarkedInTargetInitial,
   );
   const [bookmarksCount, setBookmarksCount] = useState(initialCount ?? 0);
 
@@ -69,12 +72,14 @@ const useBookmark = ({
   const { mutate: serverToggleBookmark } =
     api.collection.toggleBookmark.useMutation({
       onSettled: () => {
-        utils.collection.getUserCollections.invalidate({
-          username: loggedUser?.username as string,
-        });
-        utils.collection.getCollection.invalidate({
-          id: collectionId,
-        });
+        if (type === 'POST') {
+          utils.collection.getUserCollections.invalidate({
+            username: loggedUser?.username as string,
+          });
+          utils.collection.getCollection.invalidate({
+            id: collectionId,
+          });
+        }
       },
     });
 
@@ -87,7 +92,7 @@ const useBookmark = ({
   }, []);
 
   const toggleBookmark = async (removeFromAll?: boolean) => {
-    if (!loggedUser || !postId) {
+    if (!loggedUser || !id) {
       toast.error('Log in to bookmark');
       return;
     }
@@ -129,7 +134,7 @@ const useBookmark = ({
     }
 
     if (performAction) {
-      performAction(postId, 'BOOKMARK', intent, {
+      performAction(id, 'BOOKMARK', intent, {
         collectionId,
         removeFromAll,
       });
@@ -139,7 +144,8 @@ const useBookmark = ({
 
     debounceTimeoutRef.current = setTimeout(() => {
       serverToggleBookmark({
-        postId,
+        id,
+        type,
         isDefault: !collectionId,
         collectionId,
         removeFromAll,

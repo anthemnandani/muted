@@ -13,17 +13,21 @@ type PerformActionFn = (
   postId: string,
   action: ACTION_TYPE,
   active: boolean,
-  payload?: any
+  payload?: any,
 ) => void;
 
 const OptimisticActionContext = createContext<PerformActionFn | undefined>(
-  undefined
+  undefined,
 );
 
 export type TargetType =
   | {
       type: QUERY_TYPE.FEED;
-      variables: { searchQuery?: string; sortBy?: 'LATEST' | 'TOP' };
+      variables: { searchQuery?: string };
+    }
+  | {
+      type: QUERY_TYPE.THREAD_FEED;
+      variables: { searchQuery?: string };
     }
   | { type: QUERY_TYPE.POST_DETAILS; variables: { id: string } }
   | {
@@ -63,42 +67,49 @@ export const OptimisticActionProvider = ({
         action,
         userId,
         active,
-        payload
+        payload,
       );
 
     switch (target.type) {
       case QUERY_TYPE.FEED:
         utils.post.getInfinitePosts.setInfiniteData(
           target.variables,
-          update('posts')
+          update('posts'),
+        );
+        break;
+
+      case QUERY_TYPE.THREAD_FEED:
+        utils.thread.getInfiniteThreads.setInfiniteData(
+          target.variables,
+          update('threads'),
         );
         break;
 
       case QUERY_TYPE.TAG_FEED:
         utils.post.getPostsByTag.setInfiniteData(
           target.variables,
-          update('posts')
+          update('posts'),
         );
         break;
 
       case QUERY_TYPE.FOLLOWING_FEED:
         utils.post.getFollowingPosts.setInfiniteData(
           target.variables,
-          update('posts')
+          update('posts'),
         );
         break;
 
       case QUERY_TYPE.COMMENTS:
         utils.post.getComments.setInfiniteData(
           target.variables,
-          update('comments')
+          update('comments'),
         );
         break;
 
       case QUERY_TYPE.REPLIES:
         utils.post.getReplies.setInfiniteData(
           target.variables,
-          update('replies')
+          update('replies'),
         );
         break;
 
@@ -109,28 +120,28 @@ export const OptimisticActionProvider = ({
       case QUERY_TYPE.USER_POSTS:
         utils.user.getUserPosts.setInfiniteData(
           target.variables,
-          update('posts')
+          update('posts'),
         );
         break;
 
       case QUERY_TYPE.USER_REPOSTS:
         utils.user.getUserReposts.setInfiniteData(
           target.variables,
-          update('posts')
+          update('posts'),
         );
         break;
 
       case QUERY_TYPE.USER_LIKED:
         utils.user.getUserLikedPosts.setInfiniteData(
           target.variables,
-          update('posts')
+          update('posts'),
         );
         break;
 
       case QUERY_TYPE.COLLECTION_POSTS:
         utils.collection.getCollection.setInfiniteData(
           target.variables,
-          update('posts')
+          update('posts'),
         );
         break;
 

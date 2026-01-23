@@ -54,7 +54,8 @@ const CommentCard = ({
   } = useLike({
     initialLikesCount: likesCount,
     likes,
-    postId: id,
+    id,
+    type: 'POST',
   });
 
   const {
@@ -92,7 +93,7 @@ const CommentCard = ({
       type: QUERY_TYPE.REPLIES,
       variables: { parentCommentId: id },
     }),
-    [id]
+    [id],
   );
 
   return (

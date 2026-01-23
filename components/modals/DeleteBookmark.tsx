@@ -10,12 +10,12 @@ import { Dialog, DialogContent, DialogHeader } from '../ui/dialog';
 
 const DeleteBookmark = ({ postId }: { postId: string }) => {
   const { openDeleteDialog, setOpenDeleteDialog } = useDeleteBookmark();
-  const { toggleBookmark } = useBookmark({ postId });
+  const { toggleBookmark } = useBookmark({ id: postId, type: 'POST' });
 
   const isOpen = openDeleteDialog === postId;
 
   const handleDeleteBookmark = (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   ) => {
     e.stopPropagation();
     toggleBookmark(true);

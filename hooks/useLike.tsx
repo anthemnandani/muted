@@ -5,7 +5,7 @@ import { useUser } from '@clerk/nextjs';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-const useLike = ({ initialLikesCount, likes, postId }: UseLikeProps) => {
+const useLike = ({ initialLikesCount, likes, id, type }: UseLikeProps) => {
   const { user: loggedUser } = useUser();
   const utils = api.useUtils();
 
@@ -14,7 +14,7 @@ const useLike = ({ initialLikesCount, likes, postId }: UseLikeProps) => {
 
   const isLikedByMeInitial = useMemo(
     () => likes?.some((like) => like.userId === loggedUser?.id) || false,
-    [likes, loggedUser?.id]
+    [likes, loggedUser?.id],
   );
 
   const [isLikedByMe, setIsLikedByMe] = useState(isLikedByMeInitial);
@@ -22,12 +22,14 @@ const useLike = ({ initialLikesCount, likes, postId }: UseLikeProps) => {
 
   const { mutate: serverToggleLike } = api.like.toggleLike.useMutation({
     onSettled: () => {
-      utils.user.getUserProfile.invalidate({
-        username: loggedUser?.username as string,
-      });
-      utils.user.getUserLikedPosts.invalidate({
-        username: loggedUser?.username as string,
-      });
+      if (type === 'POST') {
+        utils.user.getUserProfile.invalidate({
+          username: loggedUser?.username as string,
+        });
+        utils.user.getUserLikedPosts.invalidate({
+          username: loggedUser?.username as string,
+        });
+      }
     },
   });
 
@@ -51,7 +53,7 @@ const useLike = ({ initialLikesCount, likes, postId }: UseLikeProps) => {
     setLikesCount((prev) => (willBeLiked ? prev + 1 : Math.max(0, prev - 1)));
 
     if (performAction) {
-      performAction(postId, 'LIKE', willBeLiked);
+      performAction(id, 'LIKE', willBeLiked);
     }
 
     if (debounceTimeoutRef.current) {
@@ -60,8 +62,9 @@ const useLike = ({ initialLikesCount, likes, postId }: UseLikeProps) => {
 
     debounceTimeoutRef.current = setTimeout(() => {
       serverToggleLike({
-        id: postId,
+        id,
         intent: willBeLiked,
+        type,
       });
     }, 1000);
   };

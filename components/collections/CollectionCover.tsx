@@ -16,8 +16,9 @@ const CollectionCover = ({
 
   const { toggleBookmark, isBookmarkedInTarget } = useBookmark({
     bookmarks,
-    postId,
+    id: postId,
     collectionId: collection?.id,
+    type: 'POST',
   });
 
   const handleCollectionClick = (e: React.MouseEvent) => {
@@ -44,7 +45,7 @@ const CollectionCover = ({
                   ? firstMedia.fileUrl!
                   : getVideoThumbnailUrl(
                       firstMedia.playbackId as string,
-                      firstMedia.thumbnailToken as string
+                      firstMedia.thumbnailToken as string,
                     )
               }
               alt='collection-cover'

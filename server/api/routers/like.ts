@@ -8,15 +8,22 @@ export const likeRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
+        type: z.enum(['POST', 'THREAD']),
         intent: z.boolean().optional(),
-      })
+      }),
     )
-    .mutation(async ({ input: { id, intent }, ctx }) => {
+    .mutation(async ({ input: { id, intent, type }, ctx }) => {
       const { userId, db } = ctx;
-      const data = { postId: id, userId };
+
+      const isThread = type === 'THREAD';
+      const whereClause = isThread
+        ? { userId_threadId: { userId, threadId: id } }
+        : { userId_postId: { userId, postId: id } };
+
+      const data = isThread ? { threadId: id, userId } : { postId: id, userId };
 
       const existingLike = await db.like.findUnique({
-        where: { userId_postId: data },
+        where: whereClause,
       });
 
       const shouldCreate = intent !== undefined ? intent : existingLike == null;
@@ -30,18 +37,23 @@ export const likeRouter = createTRPCRouter({
           const createdLike = await prisma.like.create({
             data,
             select: {
-              post: { select: { text: true, author: true } },
+              post: { select: { authorId: true } },
+              thread: { select: { authorId: true } },
             },
           });
 
-          if (createdLike.post?.author.id !== userId) {
+          const targetAuthorId = isThread
+            ? createdLike.thread?.authorId
+            : createdLike.post?.authorId;
+
+          if (targetAuthorId) {
             await prisma.notification.create({
               data: {
                 type: NotificationType.LIKE,
                 senderUserId: userId,
-                receiverUserId: createdLike.post?.author.id,
-                postId: data.postId,
-                message: 'liked your post',
+                receiverUserId: targetAuthorId,
+                [isThread ? 'threadId' : 'postId']: id,
+                message: isThread ? 'liked your thread' : 'liked your post',
               },
             });
           }
@@ -57,7 +69,7 @@ export const likeRouter = createTRPCRouter({
         if (!existingLike) return { addedLike: false };
 
         await db.like.delete({
-          where: { userId_postId: data },
+          where: whereClause,
         });
 
         return { addedLike: false };

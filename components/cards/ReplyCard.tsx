@@ -38,8 +38,9 @@ const ReplyCard = ({
     toggleLike,
   } = useLike({
     initialLikesCount: likesCount,
+    type: 'POST',
     likes,
-    postId: id,
+    id,
   });
 
   const handleReplyClick = () => {

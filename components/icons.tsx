@@ -734,7 +734,6 @@ export const Icons = {
       role='img'
       {...props}
     >
-      <title>Copy Link</title>
       <path
         strokeLinecap='round'
         strokeLinejoin='round'

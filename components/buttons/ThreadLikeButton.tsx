@@ -1,71 +1,31 @@
 'use client';
-import { PostProps } from '@/lib/types';
-import { cn } from '@/lib/utils';
-import { api } from '@/trpc/react';
+import useLike from '@/hooks/useLike';
+import { LikeButtonProps } from '@/lib/types';
+import { cn, formatCount } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
 import React from 'react';
-import { toast } from 'sonner';
 import { Icons } from '../icons';
-
-interface LikeButtonProps {
-  likeInfo: Pick<PostProps, 'id' | 'likes' | 'likesCount'>;
-  isParentPost?: boolean;
-  hideLikes?: boolean;
-}
 
 const ThreadLikeButton: React.FC<LikeButtonProps> = ({
   likeInfo,
-  isParentPost,
+  authorId,
   hideLikes,
 }) => {
-  const { user: loggedUser } = useUser();
-
-  const { likesCount: initialLikesCount, id, likes } = likeInfo;
-  const isLikedByMeInitial =
-    likes?.some((like) => like.userId === loggedUser?.id) || false;
-
-  const [isLikedByMe, setIsLikedByMe] = React.useState(isLikedByMeInitial);
-  const [likesCount, setLikesCount] = React.useState(initialLikesCount || 0);
-
-  React.useEffect(() => {
-    setIsLikedByMe(isLikedByMeInitial);
-    setLikesCount(initialLikesCount || 0);
-  }, [isLikedByMeInitial, initialLikesCount]);
-
-  const trpcUtils = api.useUtils();
-
-  const { mutate: toggleLike, isPending } = api.like.toggleLike.useMutation({
-    onMutate: async () => {
-      setIsLikedByMe((prev) => !prev);
-      setLikesCount((prev) => (isLikedByMe ? prev - 1 : prev + 1));
-
-      return {
-        previousIsLikedByMe: isLikedByMe,
-        previousLikesCount: likesCount,
-      };
-    },
-    onError: (error, variables, context) => {
-      if (
-        context?.previousIsLikedByMe !== undefined &&
-        context?.previousLikesCount !== undefined
-      ) {
-        setIsLikedByMe(context.previousIsLikedByMe);
-        setLikesCount(context.previousLikesCount);
-      }
-      toast.error('Something went wrong!');
-    },
-    onSuccess: async () => {
-      await trpcUtils.thread.getInfiniteThreads.invalidate();
-    },
+  const { isLikedByMe, likesCount, toggleLike } = useLike({
+    initialLikesCount: likeInfo.likesCount,
+    likes: likeInfo.likes,
+    id: likeInfo.id,
+    type: 'THREAD',
   });
+
+  const { user } = useUser();
 
   return (
     <div className='icon-container-hover'>
       <button
         type='button'
-        disabled={isPending}
-        title={isLikedByMe ? 'Unlike' : 'Like'}
-        onClick={() => toggleLike({ id })}
+        aria-label={isLikedByMe ? 'Unlike' : 'Like'}
+        onClick={toggleLike}
         className='flex items-center gap-2 z-[2] relative'
       >
         <Icons.heart
@@ -74,18 +34,12 @@ const ThreadLikeButton: React.FC<LikeButtonProps> = ({
             'text-primary-red': isLikedByMe,
           })}
         />
+        {(!hideLikes || user?.id === authorId) && likesCount > 0 && (
+          <strong className='text-[13px] leading-4 text-center text-white/75'>
+            {formatCount(likesCount)}
+          </strong>
+        )}
       </button>
-      {likesCount > 0 && !hideLikes && !isParentPost && (
-        <span
-          className={cn(
-            'text-[13px] ml-2',
-            isLikedByMe && 'text-primary-red',
-            !isLikedByMe && 'text-gray-4 dark:text-gray-2',
-          )}
-        >
-          {likesCount}
-        </span>
-      )}
     </div>
   );
 };

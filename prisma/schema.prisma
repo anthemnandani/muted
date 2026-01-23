@@ -291,9 +291,9 @@ model Bookmark {
   createdAt DateTime @default(now())
 
   userId       String
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  collectionId String
-  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collectionId String?
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: Cascade)
 
   postId String?
   post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
@@ -302,7 +302,7 @@ model Bookmark {
   thread   Thread? @relation(fields: [threadId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId, collectionId])
-  @@unique([userId, threadId, collectionId])
+  @@unique([userId, threadId])
   @@index([userId])
   @@index([collectionId])
 }

@@ -52,7 +52,7 @@ const ThreadRepostButton: React.FC<RepostButtonProps> = ({
   const { user: loggedUser } = useUser();
 
   const isRepostedByMe = React.useMemo(() => {
-    return reposts.some((repost) => repost.userId === loggedUser?.id);
+    return reposts?.some((repost) => repost.userId === loggedUser?.id);
   }, [reposts, loggedUser?.id]);
 
   const trpcUtils = api.useUtils();

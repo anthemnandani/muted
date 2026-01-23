@@ -272,7 +272,8 @@ export interface RepostIndicatorProps {
 export interface UseLikeProps {
   initialLikesCount: number;
   likes: { userId: string }[];
-  postId: string;
+  id: string;
+  type: 'POST' | 'THREAD';
 }
 
 export interface LikeButtonProps {
@@ -687,7 +688,7 @@ export interface CommentsPanelProps {
 
 export type Bookmark = {
   userId: string;
-  collection: { id: string; isDefault: boolean };
+  collection: { id: string; isDefault: boolean } | null;
 };
 
 export type BookmarkInfo = Pick<Post, 'id' | 'bookmarks' | 'bookmarksCount'>;
@@ -705,6 +706,12 @@ export interface ActionsBarProps {
     repostsCount?: number;
     reposts?: Repost[];
   };
+}
+
+export interface CopyLinkButtonProps {
+  postId?: string;
+  username?: string;
+  threadId?: string;
 }
 
 export type Comment = {

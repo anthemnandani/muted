@@ -15,7 +15,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const { setOpenDeleteDialog, openDeleteDialog } = useDeleteBookmark();
-  const { id: postId, bookmarksCount: initialCount, bookmarks } = bookmarkInfo;
+  const { id, bookmarksCount: initialCount, bookmarks } = bookmarkInfo;
   const timeoutRef = useRef<NodeJS.Timeout>();
   const showTimeoutRef = useRef<NodeJS.Timeout>();
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -24,21 +24,26 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
     toggleBookmark,
     bookmarksCount,
     hasNonDefaultBookmarks,
-  } = useBookmark({ bookmarksCount: initialCount, bookmarks, postId });
+  } = useBookmark({
+    bookmarksCount: initialCount,
+    bookmarks,
+    id,
+    type: 'POST',
+  });
 
   const handleClick = () => {
     if (showTimeoutRef.current) clearTimeout(showTimeoutRef.current);
 
     if (hasNonDefaultBookmarks) {
       setShowMenu(false);
-      setOpenDeleteDialog(postId);
+      setOpenDeleteDialog(id);
     } else {
       toggleBookmark();
     }
   };
 
   const handleMouseEnter = () => {
-    if (openDeleteDialog === postId) return;
+    if (openDeleteDialog === id) return;
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
@@ -57,11 +62,11 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
   };
 
   useEffect(() => {
-    if (openDeleteDialog === postId) {
+    if (openDeleteDialog === id) {
       setShowMenu(false);
       if (showTimeoutRef.current) clearTimeout(showTimeoutRef.current);
     }
-  }, [openDeleteDialog, postId]);
+  }, [openDeleteDialog, id]);
 
   useEffect(() => {
     return () => {
@@ -74,7 +79,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
     <div
       className={cn(
         'flex flex-col items-center relative',
-        isPanel && 'flex-row'
+        isPanel && 'flex-row',
       )}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -86,14 +91,14 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
         onClick={handleClick}
         className={cn(
           'btn-action mt-2 mb-1.5',
-          isPanel && 'mt-0 mb-0 mr-1.5 size-9'
+          isPanel && 'mt-0 mb-0 mr-1.5 size-9',
         )}
       >
         <Icons.save
           fill={isBookmarkedByMe ? 'currentColor' : '#fff'}
           className={cn(
             'size-5 transition-colors',
-            isBookmarkedByMe && 'text-primary-blue'
+            isBookmarkedByMe && 'text-primary-blue',
           )}
         />
       </button>
@@ -104,7 +109,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
 
       {showMenu && (
         <CollectionsMenu
-          postId={postId}
+          postId={id}
           isOpen={showMenu}
           onClose={() => setShowMenu(false)}
           bookmarkInfo={bookmarkInfo}
@@ -112,7 +117,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
         />
       )}
 
-      <DeleteBookmark postId={postId} />
+      <DeleteBookmark postId={id} />
     </div>
   );
 };

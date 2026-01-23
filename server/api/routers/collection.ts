@@ -19,7 +19,7 @@ export const collectionRouter = createTRPCRouter({
         privacy: z.enum(['PUBLIC', 'PRIVATE']),
         description: z.string().optional(),
         postId: z.string().optional(),
-      })
+      }),
     )
     .mutation(
       async ({ input: { name, privacy, description, postId }, ctx }) => {
@@ -92,7 +92,7 @@ export const collectionRouter = createTRPCRouter({
             collection: createdCollection,
           };
         });
-      }
+      },
     ),
 
   getUserCollections: privateProcedure
@@ -107,7 +107,7 @@ export const collectionRouter = createTRPCRouter({
             userId: z.string(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const { userId, db } = ctx;
@@ -219,7 +219,7 @@ export const collectionRouter = createTRPCRouter({
                 author: bookmark.post!.author,
                 text: bookmark.post!.text,
               };
-            })
+            }),
           );
 
           return {
@@ -231,7 +231,7 @@ export const collectionRouter = createTRPCRouter({
             postsCount: collection.bookmarks.length,
             bookmarks,
           };
-        })
+        }),
       );
 
       return {
@@ -243,19 +243,23 @@ export const collectionRouter = createTRPCRouter({
   toggleBookmark: privateProcedure
     .input(
       z.object({
-        postId: z.string(),
+        id: z.string(),
+        type: z.enum(['POST', 'THREAD']),
         collectionId: z.string().optional(),
         isDefault: z.boolean().optional(),
         removeFromAll: z.boolean().optional(),
         intent: z.boolean().optional(),
-      })
+      }),
     )
     .mutation(
       async ({
-        input: { postId, collectionId, isDefault, removeFromAll, intent },
+        input: { id, type, collectionId, isDefault, removeFromAll, intent },
         ctx,
       }) => {
         const { userId, db } = ctx;
+
+        const isThread = type === 'THREAD';
+        const targetField = isThread ? 'threadId' : 'postId';
 
         const defaultCollection = await db.collection.findFirst({
           where: { userId, isDefault: true },
@@ -270,20 +274,24 @@ export const collectionRouter = createTRPCRouter({
 
         if (removeFromAll) {
           await db.bookmark.deleteMany({
-            where: { postId, userId },
+            where: { [targetField]: id, userId },
           });
           return { addedBookmark: false };
         }
 
-        if (isDefault) {
-          const existingBookmark = await db.bookmark.findUnique({
-            where: {
+        const uniqueWhere = isThread
+          ? { userId_threadId: { userId, threadId: id } }
+          : {
               userId_postId_collectionId: {
-                postId,
                 userId,
+                postId: id,
                 collectionId: defaultCollection.id,
               },
-            },
+            };
+
+        if (isDefault) {
+          const existingBookmark = await db.bookmark.findUnique({
+            where: uniqueWhere,
           });
 
           const shouldBookmark =
@@ -296,9 +304,9 @@ export const collectionRouter = createTRPCRouter({
 
             await db.bookmark.create({
               data: {
-                postId,
+                [targetField]: id,
                 userId,
-                collectionId: defaultCollection.id,
+                ...(isThread ? {} : { collectionId: defaultCollection.id }),
               },
             });
             return { addedBookmark: true };
@@ -307,13 +315,7 @@ export const collectionRouter = createTRPCRouter({
             if (!existingBookmark) return { addedBookmark: false };
 
             await db.bookmark.delete({
-              where: {
-                userId_postId_collectionId: {
-                  postId,
-                  userId,
-                  collectionId: defaultCollection.id,
-                },
-              },
+              where: uniqueWhere,
             });
             return { addedBookmark: false };
           }
@@ -327,13 +329,7 @@ export const collectionRouter = createTRPCRouter({
         }
 
         const existingBookmark = await db.bookmark.findUnique({
-          where: {
-            userId_postId_collectionId: {
-              postId,
-              userId,
-              collectionId,
-            },
-          },
+          where: uniqueWhere,
         });
 
         const shouldBookmarkCustom =
@@ -347,24 +343,18 @@ export const collectionRouter = createTRPCRouter({
           await db.$transaction(async (tx) => {
             await tx.bookmark.create({
               data: {
-                postId,
+                [targetField]: id,
                 userId,
-                collectionId,
+                ...(isThread ? {} : { collectionId }),
               },
             });
 
             await tx.bookmark.upsert({
-              where: {
-                userId_postId_collectionId: {
-                  postId,
-                  userId,
-                  collectionId: defaultCollection.id,
-                },
-              },
+              where: uniqueWhere,
               create: {
-                postId,
+                [targetField]: id,
                 userId,
-                collectionId: defaultCollection.id,
+                ...(isThread ? {} : { collectionId: defaultCollection.id }),
               },
               update: {},
             });
@@ -376,19 +366,13 @@ export const collectionRouter = createTRPCRouter({
           if (!existingBookmark) return { addedBookmark: false };
 
           await db.bookmark.delete({
-            where: {
-              userId_postId_collectionId: {
-                postId,
-                userId,
-                collectionId,
-              },
-            },
+            where: uniqueWhere,
           });
           return { addedBookmark: false };
         }
 
         return { addedBookmark: !!existingBookmark };
-      }
+      },
     ),
 
   deleteCollection: privateProcedure
@@ -418,7 +402,7 @@ export const collectionRouter = createTRPCRouter({
         name: z.string(),
         description: z.string(),
         privacy: z.enum(['PUBLIC', 'PRIVATE']),
-      })
+      }),
     )
     .mutation(async ({ input: { id, name, description, privacy }, ctx }) => {
       const { userId, db } = ctx;
@@ -451,7 +435,7 @@ export const collectionRouter = createTRPCRouter({
             createdAt: z.date(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input: { id, limit, cursor }, ctx }) => {
       if (!id) {
@@ -563,9 +547,9 @@ export const collectionRouter = createTRPCRouter({
           likesCount: bookmark.post?.likes.length,
           repostsCount: bookmark.post?.reposts.length,
           bookmarksCount: new Set(
-            bookmark.post?.bookmarks.map((bookmark) => bookmark.userId)
+            bookmark.post?.bookmarks.map((bookmark) => bookmark.userId),
           ).size,
-        }))
+        })),
       );
 
       let nextCursor: typeof cursor | undefined;

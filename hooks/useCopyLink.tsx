@@ -1,15 +1,17 @@
 import { toast } from 'sonner';
 
-const useCopyLink = ({
-  postId,
-  username,
-}: {
+interface Props {
   postId?: string;
-  username: string;
-}) => {
+  threadId?: string;
+  username?: string;
+}
+
+const useCopyLink = ({ postId, threadId, username }: Props) => {
+  const link = postId ? `/post/${postId}` : `/thread/${threadId}`;
+
   const handleCopyLink = async () => {
     try {
-      const copyLink = `${process.env.NEXT_PUBLIC_APP_URL}/@${username}/post/${postId}`;
+      const copyLink = `${process.env.NEXT_PUBLIC_APP_URL}/${link}`;
       await navigator.clipboard.writeText(copyLink);
       toast.success('Copied');
     } catch (error) {
