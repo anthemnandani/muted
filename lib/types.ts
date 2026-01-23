@@ -237,6 +237,12 @@ export interface PostsListProps {
   containerRef?: React.RefObject<HTMLDivElement>;
 }
 
+export interface ThreadsListProps {
+  threads: Thread[];
+  fetchNextPage: () => void;
+  hasNextPage?: boolean;
+}
+
 export interface EditProfileProps {
   userBio: string;
   userImage: string;

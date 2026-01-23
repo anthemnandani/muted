@@ -1,10 +1,8 @@
 'use client';
 
-import useDevice from '@/hooks/useDevice';
 import useHomeNavigation from '@/hooks/useHomeNavigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Fragment } from 'react';
 import UserMenu from '../menus/UserMenu';
 import Navigation from '../shared/Navigation';
 import NotificationSidebar from './NotificationSidebar';

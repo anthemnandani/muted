@@ -30,7 +30,7 @@ const ThreadFilterMenu = ({
       <DropdownMenuContent className='shadow-xl bg-gray-6 z-[1000] w-[240px] rounded-2xl -mt-3'>
         <DropdownMenuItem
           className='dropdown-menu-item'
-          onClick={() => router.push('/')}
+          onClick={() => router.push('/threads')}
         >
           {ThreadFilter.FOR_YOU}
           {selectedFilter === ThreadFilter.FOR_YOU && (
@@ -39,7 +39,7 @@ const ThreadFilterMenu = ({
         </DropdownMenuItem>
         <DropdownMenuItem
           className='dropdown-menu-item'
-          onClick={() => router.push('/following')}
+          onClick={() => router.push('/threads/following')}
         >
           {ThreadFilter.FOLLOWING}
           {selectedFilter === ThreadFilter.FOLLOWING && (
@@ -49,7 +49,7 @@ const ThreadFilterMenu = ({
 
         <DropdownMenuItem
           className='dropdown-menu-item'
-          onClick={() => router.push('/liked')}
+          onClick={() => router.push('/threads/liked')}
         >
           {ThreadFilter.LIKED}
           {selectedFilter === ThreadFilter.LIKED && (
@@ -59,7 +59,7 @@ const ThreadFilterMenu = ({
 
         <DropdownMenuItem
           className='dropdown-menu-item'
-          onClick={() => router.push('/saved')}
+          onClick={() => router.push('/threads/saved')}
         >
           {ThreadFilter.SAVED}
           {selectedFilter === ThreadFilter.SAVED && (

@@ -21,7 +21,7 @@ const Navigation = () => {
 
   const totalUnreadMessages = chats.reduce(
     (total, chat) => total + chat.unreadCount,
-    0
+    0,
   );
 
   const totalUnreadMsgsAndRequests = totalUnreadMessages + messageRequestsCount;
@@ -43,7 +43,7 @@ const Navigation = () => {
       <MenuLink
         route='/threads'
         icon={Icons.threads}
-        isActive={pathname === '/threads' && !isSearchOpen}
+        isActive={pathname?.startsWith('/threads') && !isSearchOpen}
       />
       <button
         type='button'
@@ -53,13 +53,13 @@ const Navigation = () => {
           'flex-center size-12 transition-all duration-150',
           isSearchOpen
             ? 'bg-[#1f1f1f] rounded-full'
-            : 'hover:bg-primary-2 rounded-xl'
+            : 'hover:bg-primary-2 rounded-xl',
         )}
       >
         <Icons.search
           className={cn(
             'size-6 transition-colors duration-150',
-            isSearchOpen ? 'text-foreground' : 'text-secondary-2'
+            isSearchOpen ? 'text-foreground' : 'text-secondary-2',
           )}
         />
       </button>
@@ -80,14 +80,14 @@ const Navigation = () => {
           'relative flex-center size-12 transition-all duration-150',
           isNotificationOpen
             ? 'bg-[#1f1f1f] rounded-full'
-            : 'hover:bg-primary-2 rounded-xl'
+            : 'hover:bg-primary-2 rounded-xl',
         )}
       >
         {unreadCount > 0 ? (
           <Icons.activityWithCircle
             className={cn(
               'size-[30px] transition-colors duration-150',
-              isNotificationOpen ? 'text-white/90' : 'text-secondary-2'
+              isNotificationOpen ? 'text-white/90' : 'text-secondary-2',
             )}
             fill={isNotificationOpen ? 'currentColor' : 'none'}
           />
@@ -95,7 +95,7 @@ const Navigation = () => {
           <Icons.activity
             className={cn(
               'size-[30px] transition-colors duration-150',
-              isNotificationOpen ? 'text-white/90' : 'text-secondary-2'
+              isNotificationOpen ? 'text-white/90' : 'text-secondary-2',
             )}
             fill={isNotificationOpen ? 'currentColor' : 'none'}
           />

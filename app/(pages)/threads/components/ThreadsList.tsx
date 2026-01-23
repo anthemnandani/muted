@@ -1,14 +1,8 @@
 'use client';
 import ThreadCard from '@/components/cards/ThreadCard';
 import { Icons } from '@/components/icons';
-import { Thread } from '@/lib/types';
+import { ThreadsListProps } from '@/lib/types';
 import InfiniteScroll from 'react-infinite-scroll-component';
-
-interface ThreadsListProps {
-  threads: Thread[];
-  fetchNextPage: () => void;
-  hasNextPage?: boolean;
-}
 
 const ThreadsList: React.FC<ThreadsListProps> = ({
   threads,
