@@ -4,9 +4,9 @@ import FeedWrapper from '@/components/shared/FeedWrapper';
 import { ThreadFilter } from '@/lib/types';
 import { api } from '@/trpc/react';
 
-const ThreadsClient = () => {
+const FollowingThreadsClient = () => {
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
-    api.thread.getAllThreads.useInfiniteQuery(
+    api.thread.getFollowingThreads.useInfiniteQuery(
       {},
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -24,10 +24,10 @@ const ThreadsClient = () => {
       hasNextPage={hasNextPage}
       isLoading={isLoading}
       isError={isError}
-      selectedFilter={ThreadFilter.FOR_YOU}
-      emptyStateMessage='No threads found.'
+      selectedFilter={ThreadFilter.FOLLOWING}
+      emptyStateMessage='Follow people to see their threads here.'
     />
   );
 };
 
-export default ThreadsClient;
+export default FollowingThreadsClient;

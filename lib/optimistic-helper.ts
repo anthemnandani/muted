@@ -1,9 +1,9 @@
-import type { Post } from './types';
+import type { Post, Thread } from './types';
 
-export type ACTION_TYPE = 'LIKE' | 'BOOKMARK';
+export type ACTION_TYPE = 'LIKE' | 'BOOKMARK' | 'REPOST';
 
 const recipes = {
-  LIKE: (item: Post, userId: string, active: boolean) => ({
+  LIKE: (item: Post | Thread, userId: string, active: boolean) => ({
     ...item,
     likesCount: active
       ? (item.likesCount || 0) + 1
@@ -13,25 +13,35 @@ const recipes = {
       : (item.likes || []).filter((l) => l.userId !== userId),
   }),
 
+  REPOST: (item: Post | Thread, userId: string, active: boolean) => ({
+    ...item,
+    repostsCount: active
+      ? (item.repostsCount || 0) + 1
+      : Math.max(0, (item.repostsCount || 0) - 1),
+    reposts: active
+      ? [...(item.reposts || []), { userId }]
+      : (item.reposts || []).filter((r) => r.user?.id !== userId),
+  }),
+
   BOOKMARK: (
-    item: Post,
+    item: Post | Thread,
     userId: string,
     active: boolean,
-    payload?: { collectionId: string; removeFromAll?: boolean }
+    payload?: { collectionId: string; removeFromAll?: boolean },
   ) => {
     const currentBookmarks = item.bookmarks || [];
     const targetCollectionId = payload?.collectionId;
     const removeFromAll = payload?.removeFromAll;
 
     const isBookmarkedGlobally = currentBookmarks.some(
-      (b) => b.userId === userId
+      (b) => b.userId === userId,
     );
 
     if (active) {
       const isAlreadyInTarget = targetCollectionId
         ? currentBookmarks.some(
             (b) =>
-              b.userId === userId && b.collection?.id === targetCollectionId
+              b.userId === userId && b.collection?.id === targetCollectionId,
           )
         : isBookmarkedGlobally;
 
@@ -63,14 +73,14 @@ const recipes = {
       } else if (targetCollectionId) {
         newBookmarks = newBookmarks.filter(
           (b) =>
-            !(b.userId === userId && b.collection?.id === targetCollectionId)
+            !(b.userId === userId && b.collection?.id === targetCollectionId),
         );
       } else {
         newBookmarks = newBookmarks.filter((b) => b.userId !== userId);
       }
 
       const userStillHasBookmarks = newBookmarks.some(
-        (b) => b.userId === userId
+        (b) => b.userId === userId,
       );
 
       const newCount =
@@ -94,19 +104,33 @@ export const applyOptimisticUpdate = (
   action: ACTION_TYPE,
   userId: string,
   active: boolean,
-  payload?: { collectionId: string; removeFromAll?: boolean }
+  payload?: { collectionId: string; removeFromAll?: boolean },
 ) => {
   if (!oldData) return oldData;
+
+  const shouldRemoveItem = (item: any) => {
+    if (
+      action === 'REPOST' &&
+      !active &&
+      item.repostedBy?.id === userId &&
+      item.id === targetId
+    ) {
+      return true;
+    }
+    return false;
+  };
 
   if (oldData.pages) {
     return {
       ...oldData,
       pages: oldData.pages.map((page: any) => ({
         ...page,
-        [listKey]: page[listKey].map((item: any) => {
-          if (item.id !== targetId) return item;
-          return recipes[action](item, userId, active, payload);
-        }),
+        [listKey]: page[listKey]
+          .filter((item: any) => !shouldRemoveItem(item))
+          .map((item: any) => {
+            if (item.id !== targetId) return item;
+            return recipes[action](item, userId, active, payload);
+          }),
       })),
     };
   }

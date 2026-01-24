@@ -14,7 +14,7 @@ const RepostedBy = ({
   return (
     <div className='px-6 mb-3'>
       <div className='flex items-center gap-3'>
-        <Icons.repost className='size-4 text-[#999] dark:text-gray-3' />
+        <Icons.threadRepost className='size-4 text-white/75' />
 
         <Username author={repostedBy} repostedAt={repostedAt} isReposted />
       </div>

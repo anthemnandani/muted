@@ -1,8 +1,7 @@
-import { ThreadFilter } from '@/lib/types';
-import ThreadsClient from '../ThreadsClient';
+import SavedThreadsClient from './SavedThreadsClient';
 
 const SavedThreadsPage = () => {
-  return <ThreadsClient filter={ThreadFilter.SAVED} />;
+  return <SavedThreadsClient />;
 };
 
 export default SavedThreadsPage;

@@ -4,26 +4,21 @@ import Error from '@/app/error';
 import CreateWithInput from '@/components/inputs/CreateWithInput';
 import ThreadFilterMenu from '@/components/menus/ThreadFilterMenu';
 import HeaderWrapper from '@/components/shared/HeaderWrapper';
-import PostsList from '@/components/shared/PostsList';
+import ThreadsList from '@/components/shared/ThreadsList';
 import Wrapper from '@/components/shared/Wrapper';
+import {
+  OptimisticActionProvider,
+  TargetType,
+} from '@/contexts/OptimisticActionContext';
 import useDevice from '@/hooks/useDevice';
-import { ParentPostProps, ThreadFilter } from '@/lib/types';
-import useDialog from '@/store/postDialog';
-import React from 'react';
+import { QUERY_TYPE } from '@/lib/constants';
+import { FeedWrapperProps } from '@/lib/types';
+import { useThreadStore } from '@/store/threadStore';
+import { useMemo } from 'react';
 import Loader from './Loader';
 
-interface FeedWrapperProps {
-  posts?: ParentPostProps[];
-  isLoading: boolean;
-  isError: boolean;
-  hasNextPage?: boolean;
-  fetchNextPage?: any;
-  selectedFilter?: ThreadFilter;
-  emptyStateMessage: string | React.ReactNode;
-}
-
 const FeedWrapper = ({
-  posts,
+  threads,
   isLoading,
   isError,
   hasNextPage,
@@ -31,14 +26,20 @@ const FeedWrapper = ({
   selectedFilter,
   emptyStateMessage,
 }: FeedWrapperProps) => {
-  const { setOpenDialog } = useDialog();
+  const { setOpenDialog } = useThreadStore();
+
   const { isMobile } = useDevice();
+
+  const optimisticTarget = useMemo(
+    () => ({ type: QUERY_TYPE.THREAD_FEED, variables: {} }),
+    [],
+  );
 
   if (isLoading) return <Loader />;
   if (isError) return <Error />;
 
   return (
-    <React.Fragment>
+    <OptimisticActionProvider target={optimisticTarget as TargetType}>
       {!isMobile && (
         <HeaderWrapper>
           <ThreadFilterMenu selectedFilter={selectedFilter} />
@@ -48,16 +49,23 @@ const FeedWrapper = ({
         <div className='w-full md:flex hidden'>
           <CreateWithInput onClick={() => setOpenDialog(true)} />
         </div>
-        <section className='flex flex-col gap-4 justify-start w-full'>
-          <PostsList
-            posts={posts}
-            fetchNextPage={fetchNextPage}
-            hasNextPage={hasNextPage}
-            emptyStateMessage={emptyStateMessage}
-          />
+        <section className='flex flex-col gap-4 justify-start w-full min-h-[50vh]'>
+          {threads?.length === 0 ? (
+            <div className='flex-col-center w-full h-full py-20 text-center animate-in fade-in zoom-in duration-300'>
+              <p className='text-white/40 text-sm font-medium'>
+                {emptyStateMessage}
+              </p>
+            </div>
+          ) : (
+            <ThreadsList
+              threads={threads!}
+              fetchNextPage={fetchNextPage}
+              hasNextPage={hasNextPage}
+            />
+          )}
         </section>
       </Wrapper>
-    </React.Fragment>
+    </OptimisticActionProvider>
   );
 };
 

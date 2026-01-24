@@ -37,7 +37,7 @@ export type PostProps = ArrayElement<
 export type Post = RouterOutputs['post']['getInfinitePosts']['posts'][number];
 
 export type Thread =
-  RouterOutputs['thread']['getInfiniteThreads']['threads'][number];
+  RouterOutputs['thread']['getAllThreads']['threads'][number];
 
 export type PostMedia = {
   fileType: string;
@@ -159,7 +159,8 @@ export interface MenuItemProps {
 }
 
 export type Repost = {
-  postId: string | null;
+  postId?: string | null;
+  threadId?: string | null;
   user: AuthorInfoProps;
   createdAt: Date;
 };
@@ -168,6 +169,16 @@ export type Mention = {
   user: AuthorInfoProps;
   index: number;
 };
+
+export interface FeedWrapperProps {
+  threads?: ParentPostProps[];
+  isLoading: boolean;
+  isError: boolean;
+  hasNextPage?: boolean;
+  fetchNextPage?: any;
+  selectedFilter?: ThreadFilter;
+  emptyStateMessage: string | React.ReactNode;
+}
 
 export type ParentPostProps = {
   id: string;
@@ -180,16 +191,17 @@ export type ParentPostProps = {
   bookmarks: Bookmark[];
   quoteId: string | null;
   reposts: Repost[];
-  parentPostId: string | null;
+  parentPostId?: string | null;
   parentPost?: any;
+  parentId?: string | null;
   mentions: Mention[];
   author: AuthorInfoProps;
-  repostedBy?: AuthorInfoProps;
+  repostedBy?: AuthorInfoProps | null;
   postChildren?: ParentPostProps[];
   likesCount?: number;
   bookmarksCount?: number;
   repostsCount?: number;
-  repostedAt?: Date;
+  repostedAt?: Date | null;
   pinned?: boolean;
   hideLikes?: boolean;
   turnOffComments?: boolean;
@@ -238,7 +250,7 @@ export interface PostsListProps {
 }
 
 export interface ThreadsListProps {
-  threads: Thread[];
+  threads: ParentPostProps[];
   fetchNextPage: () => void;
   hasNextPage?: boolean;
 }
@@ -433,7 +445,7 @@ export interface PostFooterProps {
   id: string;
   text?: string | null;
   reposts: Repost[];
-  repostedBy?: AuthorInfoProps;
+  repostedBy?: AuthorInfoProps | null;
   mentions?: Mention[];
   totalCount?: number;
   currentIndex: number;
@@ -519,7 +531,7 @@ export interface PostMediaCarouselProps {
   text: string | null;
   pinned?: boolean;
   reposts: Repost[];
-  repostedBy?: AuthorInfoProps;
+  repostedBy?: AuthorInfoProps | null;
   mentions?: Mention[];
   hideLikes?: boolean;
   turnOffComments?: boolean;
@@ -682,7 +694,7 @@ export interface CommentsPanelProps {
   createdAt: Date;
   author: AuthorInfoProps;
   reposts: Repost[];
-  repostedBy?: AuthorInfoProps;
+  repostedBy?: AuthorInfoProps | null;
   repostsCount?: number;
   likesCount?: number;
   likes?: { userId: string }[];
@@ -765,7 +777,7 @@ export interface PostInfoCardProps {
   author: AuthorInfoProps;
   createdAt: Date;
   reposts: Repost[];
-  repostedBy?: AuthorInfoProps;
+  repostedBy?: AuthorInfoProps | null;
 }
 
 export interface UsersMenuProps {
@@ -792,7 +804,7 @@ export interface UseMentionsProps {
 }
 
 export interface RepostBannerProps {
-  repostedBy?: AuthorInfoProps;
+  repostedBy?: AuthorInfoProps | null;
   reposts: Repost[];
 }
 

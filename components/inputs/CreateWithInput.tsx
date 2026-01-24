@@ -7,9 +7,6 @@ import { Separator } from '../ui/separator';
 
 const CreateWithInput = ({ onClick }: { onClick: () => void }) => {
   const { user } = useUser();
-  // const { data } = api.user.getUserProfile.useQuery({
-  //   username: user?.username!,
-  // });
 
   return (
     <div className='flex flex-col w-full select-none' onClick={onClick}>

@@ -79,7 +79,7 @@ export const OptimisticActionProvider = ({
         break;
 
       case QUERY_TYPE.THREAD_FEED:
-        utils.thread.getInfiniteThreads.setInfiniteData(
+        utils.thread.getAllThreads.setInfiniteData(
           target.variables,
           update('threads'),
         );

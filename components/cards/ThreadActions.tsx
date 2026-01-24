@@ -5,7 +5,7 @@ import ThreadBookmarkButton from '@/components/buttons/ThreadBookmarkButton';
 import ThreadLikeButton from '@/components/buttons/ThreadLikeButton';
 import ThreadReplyButton from '@/components/buttons/ThreadReplyButton';
 import ThreadRepostButton from '@/components/buttons/ThreadRepostButton';
-import { AuthorInfoProps, Bookmark, PostMedia } from '@/lib/types';
+import type { AuthorInfoProps, Bookmark, PostMedia, Repost } from '@/lib/types';
 import { LinkPreview, PostPrivacy } from '@prisma/client';
 
 interface ThreadActionsProps {
@@ -17,7 +17,7 @@ interface ThreadActionsProps {
   author: AuthorInfoProps;
   createdAt: Date;
   repliesCount: number;
-  reposts?: { userId: string; postId: string }[];
+  reposts?: Repost[];
   repostsCount: number;
   bookmarks: Bookmark[];
   bookmarksCount: number;
@@ -83,7 +83,6 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
           createdAt={createdAt}
           reposts={reposts!}
           repostsCount={repostsCount}
-          isParentPost={isParentPost}
           media={media!}
           linkPreview={linkPreview!}
           mentions={mentions}

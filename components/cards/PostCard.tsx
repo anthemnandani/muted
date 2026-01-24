@@ -80,7 +80,7 @@ const PostCard: React.FC<PostCardProps> = ({
         <div
           className={cn(
             'h-max flex-end grow gap-4 w-full transition-transform duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]',
-            isPanelOpen ? 'translate-x-[-180px]' : 'translate-x-0'
+            isPanelOpen ? 'translate-x-[-180px]' : 'translate-x-0',
           )}
         >
           <PostMediaCarousel
@@ -120,7 +120,7 @@ const PostCard: React.FC<PostCardProps> = ({
           className={cn(
             'fixed top-1/2 right-0 w-[480px] h-screen z-50',
             '-translate-y-1/2',
-            'shadow-lg'
+            'shadow-lg',
           )}
         >
           <CommentsPanel

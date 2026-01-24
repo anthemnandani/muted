@@ -1,16 +1,17 @@
 'use client';
 
-import ThreadActions from '@/app/(pages)/threads/components/ThreadActions';
-import type { Thread } from '@/lib/types';
+import ThreadActions from '@/components/cards/ThreadActions';
+import type { ParentPostProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useHiddenPosts } from '@/store/hiddenPosts';
 import { useMutedUsers } from '@/store/mutedUsers';
 import { useRouter } from 'next/navigation';
 import React from 'react';
-import ThreadContent from '../../app/(pages)/threads/components/ThreadContent';
 import PostHeader from '../posts/PostHeader';
+import RepostedBy from '../user/RepostedBy';
+import ThreadContent from './ThreadContent';
 
-interface ThreadCardBaseProps extends Thread {
+interface ThreadCardBaseProps extends ParentPostProps {
   variant?: 'default' | 'reply';
   showHeader?: boolean;
   showActions?: boolean;
@@ -25,8 +26,8 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   author,
   media,
   quoteId,
-  //   repostedBy,
-  //   repostedAt,
+  repostedBy,
+  repostedAt,
   mentions,
   likes,
   likesCount,
@@ -53,7 +54,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
     <>
       <ThreadContent
         id={id}
-        text={text}
+        text={text!}
         mentions={mentions}
         media={media}
         author={author}
@@ -89,9 +90,9 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
 
   return (
     <div className={cn('mb-3', className)}>
-      {/* {repostedBy && (
-        <RepostedBy repostedBy={repostedBy} repostedAt={repostedAt} />
-      )} */}
+      {repostedBy && (
+        <RepostedBy repostedBy={repostedBy} repostedAt={repostedAt!} />
+      )}
 
       {showHeader && (
         <PostHeader
@@ -99,7 +100,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
           createdAt={createdAt}
           id={id}
           currentText={text ?? ''}
-          hideLikes={hideLikes}
+          hideLikes={hideLikes!}
           variant={variant}
         />
       )}
@@ -134,11 +135,11 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
             createdAt={createdAt}
             repliesCount={repliesCount ?? 0}
             repostsCount={repostsCount ?? 0}
-            // reposts={reposts}
+            reposts={reposts}
             // media={media}
             // linkPreview={linkPreview}
             mentions={mentions}
-            hideLikes={hideLikes}
+            hideLikes={hideLikes!}
             bookmarksCount={bookmarksCount ?? 0}
             bookmarks={bookmarks}
             privacy={privacy}

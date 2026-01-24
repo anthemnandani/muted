@@ -1,8 +1,7 @@
-import { ThreadFilter } from '@/lib/types';
-import ThreadsClient from '../ThreadsClient';
+import LikedThreadsClient from './LikedThreadsClient';
 
 const LikedThreadsPage = () => {
-  return <ThreadsClient filter={ThreadFilter.LIKED} />;
+  return <LikedThreadsClient />;
 };
 
 export default LikedThreadsPage;

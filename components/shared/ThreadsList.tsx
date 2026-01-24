@@ -9,19 +9,6 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
   fetchNextPage,
   hasNextPage,
 }) => {
-  //   const uniquePosts = useMemo(() => {
-  //     if (!posts) return [];
-  //     const seenPosts = new Set();
-  //     return posts.filter((post) => {
-  //       const key = post.repostedBy
-  //         ? `repost-${post.repostedBy.id}-${post.id}`
-  //         : `post-${post.id}`;
-  //       if (seenPosts.has(key)) return false;
-  //       seenPosts.add(key);
-  //       return true;
-  //     });
-  //   }, [posts]);
-
   return (
     <InfiniteScroll
       dataLength={threads.length}
@@ -33,11 +20,19 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
         </div>
       }
     >
-      {threads.map((thread, index) => (
-        <div key={thread.id}>
-          <ThreadCard {...thread} isLastThread={index === threads.length - 1} />
-        </div>
-      ))}
+      {threads.map((thread, index) => {
+        const uniqueKey = thread.repostedBy
+          ? `${thread.id}-reposted-${thread.repostedBy.id}`
+          : `${thread.id}-original`;
+        return (
+          <div key={uniqueKey}>
+            <ThreadCard
+              {...thread}
+              isLastThread={index === threads.length - 1}
+            />
+          </div>
+        );
+      })}
     </InfiniteScroll>
   );
 };

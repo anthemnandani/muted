@@ -13,6 +13,41 @@ import { Filter } from 'bad-words';
 import z from 'zod';
 import { createTRPCRouter, privateProcedure } from '../trpc';
 
+const THREAD_SELECT = (userId: string) => ({
+  id: true,
+  createdAt: true,
+  text: true,
+  media: true,
+  parentId: true,
+  quoteId: true,
+  path: true,
+  repliesCount: true,
+  hideLikes: true,
+  privacy: true,
+  author: { select: { ...GET_USER } },
+  ...getLikesWithBlockFilter(userId),
+  ...getBookmarksWithBlockFilter(userId),
+  ...GET_MENTIONS,
+  reposts: {
+    select: {
+      createdAt: true,
+      threadId: true,
+      user: { select: { ...GET_USER } },
+    },
+  },
+});
+
+const paginationInput = z.object({
+  limit: z.number().optional().default(20),
+  cursor: z
+    .object({
+      id: z.string(),
+      createdAt: z.date(),
+    })
+    .optional(),
+  searchQuery: z.string().optional(),
+});
+
 export const threadRouter = createTRPCRouter({
   createThread: privateProcedure
     .input(
@@ -165,155 +200,293 @@ export const threadRouter = createTRPCRouter({
       };
     }),
 
-  getInfiniteThreads: privateProcedure
+  getAllThreads: privateProcedure
+    .input(paginationInput)
+    .query(async ({ input, ctx }) => {
+      const { userId, db } = ctx;
+      const { limit, cursor, searchQuery } = input;
+
+      const [threads, reposts] = await Promise.all([
+        db.thread.findMany({
+          where: {
+            parentId: null,
+            privacy: 'ANYONE',
+            text: searchQuery ? { contains: searchQuery } : undefined,
+            createdAt: cursor ? { lt: cursor.createdAt } : undefined,
+          },
+          take: limit + 1,
+          orderBy: { createdAt: 'desc' },
+          select: THREAD_SELECT(userId),
+        }),
+        db.repost.findMany({
+          where: {
+            createdAt: cursor ? { lt: cursor.createdAt } : undefined,
+          },
+          take: limit + 1,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            user: { select: { ...GET_USER } },
+            thread: { select: THREAD_SELECT(userId) },
+          },
+        }),
+      ]);
+
+      const normalizedThreads = threads.map((t) => ({
+        ...t,
+        type: 'thread',
+        sortDate: t.createdAt,
+        repostedBy: null,
+        repostedAt: null,
+      }));
+
+      const normalizedReposts = reposts
+        .filter((r) => r.thread !== null)
+        .map((r) => ({
+          ...r.thread!,
+          type: 'repost',
+          sortDate: r.createdAt,
+          repostedBy: r.user,
+          repostedAt: r.createdAt,
+        }));
+
+      const combinedFeed = [...normalizedThreads, ...normalizedReposts].sort(
+        (a, b) => b.sortDate.getTime() - a.sortDate.getTime(),
+      );
+
+      const pagedFeed = combinedFeed.slice(0, limit + 1);
+
+      const formattedThreads = pagedFeed.map((item) => ({
+        ...item,
+        media: item.media as PostMedia[],
+        likesCount: item.likes.length,
+        repostsCount: item.reposts.length,
+        repliesCount: item.repliesCount,
+        bookmarksCount: new Set(item.bookmarks.map((b) => b.userId)).size,
+      }));
+
+      let nextCursor;
+      if (formattedThreads.length > limit) {
+        const nextItem = formattedThreads[limit];
+        formattedThreads.pop();
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
+        };
+      }
+
+      return { threads: formattedThreads, nextCursor };
+    }),
+
+  getFollowingThreads: privateProcedure
+    .input(paginationInput)
+    .query(async ({ input, ctx }) => {
+      const { limit, cursor, searchQuery } = input;
+      const { userId, db } = ctx;
+
+      const threads = await db.thread.findMany({
+        where: {
+          author: { followers: { some: { followerId: userId } } },
+          parentId: null,
+          text: searchQuery ? { contains: searchQuery } : undefined,
+          createdAt: cursor ? { lt: cursor.createdAt } : undefined,
+        },
+        take: limit + 1,
+        orderBy: { createdAt: 'desc' },
+        select: THREAD_SELECT(userId),
+      });
+
+      const formattedThreads = threads.map((item) => ({
+        ...item,
+        media: item.media as PostMedia[],
+        likesCount: item.likes.length,
+        repostsCount: item.reposts.length,
+        repliesCount: item.repliesCount,
+        bookmarksCount: new Set(item.bookmarks.map((b) => b.userId)).size,
+      }));
+
+      let nextCursor;
+      if (formattedThreads.length > limit) {
+        const nextItem = formattedThreads[limit];
+        formattedThreads.pop();
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
+        };
+      }
+
+      return { threads: formattedThreads, nextCursor };
+    }),
+
+  getLikedThreads: privateProcedure
+    .input(paginationInput)
+    .query(async ({ input, ctx }) => {
+      const { limit, cursor, searchQuery } = input;
+      const { userId, db } = ctx;
+
+      const threads = await db.thread.findMany({
+        where: {
+          likes: { some: { userId } },
+          text: searchQuery ? { contains: searchQuery } : undefined,
+        },
+        take: limit + 1,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        select: THREAD_SELECT(userId),
+      });
+
+      const formattedThreads = threads.map((t) => ({
+        ...t,
+        media: t.media as PostMedia[],
+        likesCount: t.likes.length,
+        repostsCount: t.reposts.length,
+        repliesCount: t.repliesCount,
+        bookmarksCount: new Set(t.bookmarks.map((b) => b.userId)).size,
+        repostedBy: null,
+        repostedAt: null,
+      }));
+
+      let nextCursor;
+      if (formattedThreads.length > limit) {
+        const nextItem = formattedThreads[limit];
+        formattedThreads.pop();
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
+        };
+      }
+
+      return { threads: formattedThreads, nextCursor };
+    }),
+
+  getSavedThreads: privateProcedure
+    .input(paginationInput)
+    .query(async ({ input, ctx }) => {
+      const { limit, cursor, searchQuery } = input;
+      const { userId, db } = ctx;
+
+      const threads = await db.thread.findMany({
+        where: {
+          bookmarks: { some: { userId } },
+          text: searchQuery ? { contains: searchQuery } : undefined,
+        },
+        take: limit + 1,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        select: THREAD_SELECT(userId),
+      });
+
+      const formattedThreads = threads.map((t) => ({
+        ...t,
+        media: t.media as PostMedia[],
+        likesCount: t.likes.length,
+        repostsCount: t.reposts.length,
+        repliesCount: t.repliesCount,
+        bookmarksCount: new Set(t.bookmarks.map((b) => b.userId)).size,
+        repostedBy: null,
+        repostedAt: null,
+      }));
+
+      let nextCursor;
+      if (formattedThreads.length > limit) {
+        const nextItem = formattedThreads[limit];
+        formattedThreads.pop();
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
+        };
+      }
+
+      return { threads: formattedThreads, nextCursor };
+    }),
+
+  toggleRepost: privateProcedure
     .input(
       z.object({
-        searchQuery: z.string().optional(),
-        filter: z
-          .nativeEnum(ThreadFilter)
-          .optional()
-          .default(ThreadFilter.FOR_YOU),
-        limit: z.number().optional(),
-        cursor: z
-          .object({
-            id: z.string(),
-            createdAt: z.date(),
-          })
-          .optional(),
+        id: z.string(),
       }),
     )
-    .query(
-      async ({ input: { limit = 20, filter, cursor, searchQuery }, ctx }) => {
-        const { userId, db } = ctx;
-        let whereClause: Prisma.ThreadWhereInput = {
-          text: {
-            contains: searchQuery,
-          },
-        };
+    .mutation(async ({ input: { id }, ctx }) => {
+      const { userId, db } = ctx;
+      const data = { threadId: id, userId };
 
-        // Switch logic based on filter
-        switch (filter) {
-          case ThreadFilter.FOLLOWING:
-            whereClause = {
-              ...whereClause,
-              author: {
-                followers: {
-                  some: {
-                    followerId: userId,
-                  },
-                },
-              },
-              OR: [{ parentId: null }, { reposts: { some: {} } }],
-            };
-            break;
+      const existingRepost = await db.repost.findUnique({
+        where: {
+          userId_threadId: data,
+        },
+      });
 
-          case ThreadFilter.LIKED:
-            whereClause = {
-              ...whereClause,
-              likes: {
-                some: {
-                  userId,
-                },
-              },
-            };
-            break;
-
-          case ThreadFilter.SAVED:
-            whereClause = {
-              ...whereClause,
-              bookmarks: {
-                some: {
-                  userId,
-                },
-              },
-            };
-            break;
-
-          case ThreadFilter.FOR_YOU:
-          default:
-            whereClause = {
-              ...whereClause,
-              OR: [
-                { parentId: null },
-                {
-                  AND: [{ parentId: { not: null } }, { reposts: { some: {} } }],
-                },
-              ],
-            };
-            break;
-        }
-        const threads = await db.thread.findMany({
-          where: whereClause,
-          take: limit + 1,
-          cursor: cursor ? { createdAt_id: cursor } : undefined,
-          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-          select: {
-            id: true,
-            createdAt: true,
-            text: true,
-            media: true,
-            parentId: true,
-            quoteId: true,
-            path: true,
-            repliesCount: true,
-            hideLikes: true,
-            privacy: true,
-            author: {
-              select: {
-                ...GET_USER,
-              },
-            },
-            ...getLikesWithBlockFilter(userId),
-            ...getBookmarksWithBlockFilter(userId),
-            ...GET_MENTIONS,
-            //   ...getPostReplies(userId),
-            reposts: {
-              select: {
-                createdAt: true,
-                user: {
-                  select: {
-                    ...GET_USER,
-                  },
-                },
-                post: {
-                  select: {
-                    id: true,
-                  },
+      if (existingRepost == null) {
+        const transactionResult = await db.$transaction(async (prisma) => {
+          const createdRepost = await prisma.repost.create({
+            data,
+            select: {
+              thread: {
+                select: {
+                  text: true,
+                  authorId: true,
                 },
               },
             },
-          },
+          });
+
+          // const createNotification = await prisma.notification.create({
+          //   data: {
+          //     type: 'REPOST',
+          //     postId: data.postId,
+          //     message: createdRepost.post.text || '',
+          //     senderUserId: userId,
+          //     receiverUserId: createdRepost.post.authorId,
+          //   },
+          // });
+
+          return {
+            createdRepost,
+            // createNotification,
+          };
         });
 
-        const formattedThreads = await Promise.all(
-          threads.map(async (thread) => {
-            return {
-              ...thread,
-              media: thread.media as PostMedia[],
-              likesCount: thread.likes.length,
-              repostsCount: thread.reposts.length,
-              repliesCount: thread.repliesCount,
-              bookmarksCount: new Set(
-                thread.bookmarks.map((bookmark) => bookmark.userId),
-              ).size,
-            };
-          }),
-        );
-
-        let nextCursor: typeof cursor | undefined;
-        if (formattedThreads.length > limit) {
-          const nextItem = formattedThreads[limit];
-          nextCursor = {
-            id: nextItem.id,
-            createdAt: nextItem.createdAt,
-          };
-          formattedThreads.length = limit;
+        if (!transactionResult) {
+          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
         }
 
-        return {
-          threads: formattedThreads,
-          nextCursor,
-        };
-      },
-    ),
+        return { createdRepost: true };
+      } else {
+        const transactionResult = await db.$transaction(async (prisma) => {
+          const removeRepost = await prisma.repost.delete({
+            where: {
+              userId_threadId: data,
+            },
+          });
+
+          // const notification = await prisma.notification.findFirst({
+          //   where: {
+          //     senderUserId: userId,
+          //     postId: data.postId,
+          //     type: 'REPOST',
+          //   },
+          //   select: {
+          //     id: true,
+          //   },
+          // });
+
+          // if (notification) {
+          //   await prisma.notification.delete({
+          //     where: {
+          //       id: notification.id,
+          //     },
+          //   });
+          // }
+
+          return {
+            removeRepost,
+          };
+        });
+
+        if (!transactionResult) {
+          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+        }
+
+        return { createdRepost: false };
+      }
+    }),
 });

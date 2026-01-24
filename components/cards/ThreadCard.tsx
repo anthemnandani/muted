@@ -1,12 +1,12 @@
 'use client';
 
-import { Thread } from '@/lib/types';
+import { ParentPostProps, Thread } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import React from 'react';
 import { Separator } from '../ui/separator';
 import ThreadCardBase from './ThreadCardBase';
 
-interface ThreadCardProps extends Thread {
+interface ThreadCardProps extends ParentPostProps {
   isLastThread?: boolean;
   showUsername?: boolean;
   variant?: 'default' | 'reply';

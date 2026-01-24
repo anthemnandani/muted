@@ -1,8 +1,7 @@
-import { ThreadFilter } from '@/lib/types';
-import ThreadsClient from '../ThreadsClient';
+import FollowingThreadsClient from './FollowingThreadsClient';
 
 const FollowingThreadsPage = () => {
-  return <ThreadsClient filter={ThreadFilter.FOLLOWING} />;
+  return <FollowingThreadsClient />;
 };
 
 export default FollowingThreadsPage;

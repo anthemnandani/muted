@@ -4,7 +4,6 @@ import { RepostBannerProps } from '@/lib/types';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Fragment } from 'react';
 import RepostersList from '../modals/RepostersList';
 
 const RepostBanner: React.FC<RepostBannerProps> = ({ repostedBy, reposts }) => {

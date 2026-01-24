@@ -31,7 +31,7 @@ const useCreateThread = () => {
         toast.error('PostingError: Something went wrong!');
       },
       onSettled: async () => {
-        await trpcUtils.thread.getInfiniteThreads.invalidate();
+        await trpcUtils.thread.getAllThreads.invalidate();
       },
       retry: false,
     });
