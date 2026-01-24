@@ -1,44 +1,44 @@
-// import usePostDialog from '@/store/postDialog';
-// import { api } from '@/trpc/react';
-// import { useEffect, useState } from 'react';
-// import { useDebounce } from 'use-debounce';
+import { useThreadStore } from '@/store/threadStore';
+import { api } from '@/trpc/react';
+import { useEffect, useState } from 'react';
+import { useDebounce } from 'use-debounce';
 
-// const useLinkPreview = () => {
-//   const { postData, setPostData } = usePostDialog();
-//   const [urlToFetch, setUrlToFetch] = useState<string | null>(null);
+const useLinkPreview = () => {
+  const { text, setLinkPreview } = useThreadStore();
+  const [urlToFetch, setUrlToFetch] = useState<string | null>(null);
 
-//   const [debouncedUrl] = useDebounce(urlToFetch, 750);
+  const [debouncedUrl] = useDebounce(urlToFetch, 750);
 
-//   const { data, isFetching } = api.post.getLinkInfo.useQuery(
-//     { url: debouncedUrl! },
-//     {
-//       enabled: !!debouncedUrl,
-//       retry: false,
-//       refetchOnWindowFocus: false,
-//     }
-//   );
+  const { data, isFetching } = api.post.getLinkInfo.useQuery(
+    { url: debouncedUrl! },
+    {
+      enabled: !!debouncedUrl,
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  );
 
-//   useEffect(() => {
-//     const urlRegex =
-//       /((?:https?:\/\/)?(?:www\.)?[^\s]+\.[a-z]{2,}(?:\/[^\s]*)?)/gi;
-//     const matches = postData.threadText.match(urlRegex);
+  useEffect(() => {
+    const urlRegex =
+      /((?:https?:\/\/)?(?:www\.)?[^\s]+\.[a-z]{2,}(?:\/[^\s]*)?)/gi;
+    const matches = text.match(urlRegex);
 
-//     const lastUrl = matches ? matches[matches.length - 1] : null;
+    const lastUrl = matches ? matches[matches.length - 1] : null;
 
-//     setUrlToFetch(lastUrl);
-//   }, [postData.threadText]);
+    setUrlToFetch(lastUrl);
+  }, [text]);
 
-//   useEffect(() => {
-//     if (data) {
-//       setPostData({ ...postData, linkPreview: data });
-//     } else if (debouncedUrl && !isFetching) {
-//       setPostData({ ...postData, linkPreview: null });
-//     }
-//   }, [data, debouncedUrl, isFetching]);
+  useEffect(() => {
+    if (data) {
+      setLinkPreview(data);
+    } else if (debouncedUrl && !isFetching) {
+      setLinkPreview(null);
+    }
+  }, [data, debouncedUrl, isFetching]);
 
-//   const isLinkPreviewLoading = !!debouncedUrl && isFetching;
+  const isLinkPreviewLoading = !!debouncedUrl && isFetching;
 
-//   return { isLinkPreviewLoading };
-// };
+  return { isLinkPreviewLoading };
+};
 
-// export default useLinkPreview;
+export default useLinkPreview;

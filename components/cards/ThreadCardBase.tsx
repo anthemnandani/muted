@@ -1,7 +1,7 @@
 'use client';
 
 import ThreadActions from '@/components/cards/ThreadActions';
-import type { ParentPostProps } from '@/lib/types';
+import { ThreadCardBaseProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useHiddenPosts } from '@/store/hiddenPosts';
 import { useMutedUsers } from '@/store/mutedUsers';
@@ -9,15 +9,8 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 import PostHeader from '../posts/PostHeader';
 import RepostedBy from '../user/RepostedBy';
+import LinkPreviewCard from './LinkPreviewCard';
 import ThreadContent from './ThreadContent';
-
-interface ThreadCardBaseProps extends ParentPostProps {
-  variant?: 'default' | 'reply';
-  showHeader?: boolean;
-  showActions?: boolean;
-  className?: string;
-  children?: React.ReactNode;
-}
 
 const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   id,
@@ -38,7 +31,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   repliesCount,
   hideLikes,
   privacy,
-  //   linkPreview,
+  linkPreview,
   //   showMuted = true,
   variant = 'default',
   showHeader = true,
@@ -111,7 +104,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
         content
       )}
 
-      {/* {linkPreview && (
+      {linkPreview && (
         <div className='mx-2 md:mx-4 my-2'>
           <a href={linkPreview.url} target='_blank' rel='noreferrer'>
             <LinkPreviewCard
@@ -122,7 +115,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
             />
           </a>
         </div>
-      )} */}
+      )}
 
       {showActions && (
         <div className='pt-2 flex-between w-full px-2 md:px-4'>

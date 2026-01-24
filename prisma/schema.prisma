@@ -156,9 +156,11 @@ model Thread {
   hideLikes       Boolean  @default(false)
   turnOffComments Boolean  @default(false)
 
-  quoteId  String?
-  quote    Thread?  @relation("ThreadQuotes", fields: [quoteId], references: [id], onDelete: SetNull)
-  quotedBy Thread[] @relation("ThreadQuotes")
+  quoteId        String?
+  quote          Thread?      @relation("ThreadQuotes", fields: [quoteId], references: [id], onDelete: SetNull)
+  quotedBy       Thread[]     @relation("ThreadQuotes")
+  linkPreviewUrl String?
+  linkPreview    LinkPreview? @relation(fields: [linkPreviewUrl], references: [url])
 
   likes         Like[]
   reposts       Repost[]
@@ -382,7 +384,9 @@ model LinkPreview {
   description String?
   image       String?
   createdAt   DateTime @default(now())
-  posts       Post[]
+  // posts       Post[]
+  threads     Thread[]
+  Post        Post[]
 
   @@index([url])
 }

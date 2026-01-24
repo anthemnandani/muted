@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 const useCreateThread = () => {
   const router = useRouter();
-  const { text, privacy, validMentions, reset, setOpenDialog } =
+  const { text, privacy, linkPreview, validMentions, reset, setOpenDialog } =
     useThreadStore();
 
   const trpcUtils = api.useUtils();
@@ -173,7 +173,7 @@ const useCreateThread = () => {
       privacy,
       // quoteId: quoteInfo?.id,
       // postAuthor: quoteInfo?.author.id,
-      // linkPreview: threadData.linkPreview ?? undefined,
+      linkPreview: linkPreview ?? undefined,
       mentions: validMentions.map((m) => ({
         mentionedUserId: m.mentionedUserId,
         index: m.startIndex,

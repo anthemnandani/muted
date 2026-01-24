@@ -101,7 +101,7 @@ export const formatMsgTime = (date: Date | string): string => {
   const msgDate = new Date(
     messageDate.getFullYear(),
     messageDate.getMonth(),
-    messageDate.getDate()
+    messageDate.getDate(),
   );
 
   const diffInMs = today.getTime() - msgDate.getTime();
@@ -178,7 +178,7 @@ export const countTotalReplies = (replies: any) => {
 
 export function buildReplyTree(
   replies?: ParentPostProps[],
-  rootPostId?: string
+  rootPostId?: string,
 ) {
   const replyMap: { [key: string]: ParentPostProps } = {};
   replies?.forEach((reply) => {
@@ -245,7 +245,7 @@ export function isVideo(fileType: string): boolean {
 }
 
 export const getImageDimensions = (
-  file: File
+  file: File,
 ): Promise<{ width: number; height: number }> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -258,7 +258,7 @@ export const getImageDimensions = (
 };
 
 export const getVideoDimensions = (
-  file: File
+  file: File,
 ): Promise<{ width: number; height: number }> => {
   return new Promise((resolve, reject) => {
     const video = document.createElement('video');
@@ -302,7 +302,7 @@ export const getMediaAspectRatio = (dimensions: {
 
 export const getVideoObjectFit = (
   aspectRatio: string,
-  originalDimensions?: { width: number; height: number }
+  originalDimensions?: { width: number; height: number },
 ): 'object-cover' | 'object-contain' => {
   if (!originalDimensions) return 'object-cover';
 
@@ -323,7 +323,7 @@ export const getVideoObjectFit = (
 
 export const getVideoThumbnailUrl = (
   playbackId: string,
-  thumbnailToken: string
+  thumbnailToken: string,
 ) => {
   if (!playbackId && !thumbnailToken) return '';
   return `https://image.mux.com/${playbackId}/thumbnail.png?token=${thumbnailToken}`;
@@ -331,7 +331,7 @@ export const getVideoThumbnailUrl = (
 
 export const getImageObjectFit = (
   aspectRatio: string,
-  originalDimensions?: { width: number; height: number }
+  originalDimensions?: { width: number; height: number },
 ): 'object-cover' | 'object-contain' => {
   if (!originalDimensions) return 'object-cover';
   const originalRatio = originalDimensions.width / originalDimensions.height;
@@ -351,7 +351,7 @@ export const getImageObjectFit = (
 
 export const getTargetRatio = (
   ratio?: string | null,
-  originalDimensions?: { width: number; height: number }
+  originalDimensions?: { width: number; height: number },
 ) => {
   if (!ratio || ratio === 'original') {
     if (originalDimensions) {
@@ -370,7 +370,7 @@ export const getTargetRatio = (
 
 export const getAspectRatio = (
   file: MediaFile,
-  dims: { width: number; height: number }
+  dims: { width: number; height: number },
 ) => {
   const selectedRatio = file?.aspectRatio || 'original';
   let ratio: number | undefined = undefined;
@@ -392,17 +392,17 @@ export function highlightTextContent(text: string) {
       return `<a href="${fullUrl}" class="text-primary-blue hover:underline break-all" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">${displayUrl}${
         displayUrl.length < domain.length ? '...' : ''
       }</a>`;
-    }
+    },
   );
 
   const withHashtags = withUrls.replace(
     /#([\w.+?!,@$%&*()-]+[a-zA-Z0-9_$]+)(?=\s|$)/g,
-    '<a href="/feed/$1" class="hashtag-link !text-primary-blue hover:underline hover:decoration-1 hover:transition-all hover:duration-300">#$1</a>'
+    '<a href="/feed/$1" class="hashtag-link !text-primary-blue hover:underline hover:decoration-1 hover:transition-all hover:duration-300">#$1</a>',
   );
 
   return withHashtags.replace(
     /@(\w+)/g,
-    '<a href="/@$1" class="text-primary-blue hover:underline">@$1</a>'
+    '<a href="/@$1" class="text-primary-blue hover:underline">@$1</a>',
   );
 }
 
@@ -430,7 +430,7 @@ export function formatCount(count: number): string {
 
 export function parseUsernamePath(
   path: string,
-  username: string
+  username: string,
 ): {
   basePath: string;
   lastSegment: string;
@@ -475,10 +475,12 @@ export const getVideoDuration = async (file: File): Promise<number> => {
 };
 
 export const calculateTotalVideoDuration = async (
-  files: File[]
+  files: File[],
 ): Promise<number> => {
   const durations = await Promise.all(
-    files.filter((file) => getMediaType(file) === 'video').map(getVideoDuration)
+    files
+      .filter((file) => getMediaType(file) === 'video')
+      .map(getVideoDuration),
   );
   return durations.reduce((sum, duration) => sum + duration, 0);
 };
@@ -519,7 +521,7 @@ export const getTotalRepliesCount = (post: any) => {
     (total: number, comment: any) => {
       return total + comment._count.replies;
     },
-    0
+    0,
   );
 
   return directCommentsCount + nestedRepliesCount;
@@ -528,7 +530,7 @@ export const getTotalRepliesCount = (post: any) => {
 export const extractSuggestions = (
   texts: string[],
   query: string,
-  limit: number
+  limit: number,
 ): string[] => {
   const bestSuggestionPerPost: Map<string, string> = new Map();
   const queryLower = query.toLowerCase();
@@ -621,7 +623,7 @@ export const getImageUrl = (media: PostMedia) => {
 
 export const shouldShowDateSeparator = (
   currentMessage: Message,
-  previousMessage?: Message | null
+  previousMessage?: Message | null,
 ): boolean => {
   if (!previousMessage) return true;
 
@@ -682,7 +684,7 @@ export const formatFeedsToString = (feeds: string[]): string => {
       .toLowerCase()
       .split('_')
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ')
+      .join(' '),
   );
 
   return formatted.join(', ');
@@ -697,7 +699,7 @@ export const formatDateAndTime = (date: Date) => {
 };
 
 export const capitalizeFirstLetter = (
-  str: string | null | undefined
+  str: string | null | undefined,
 ): string => {
   if (!str) {
     return '';
@@ -758,7 +760,7 @@ export const getPostThumbnail = (media?: PostMedia) => {
     ? media?.fileUrl
     : getVideoThumbnailUrl(
         media.playbackId as string,
-        media.thumbnailToken as string
+        media.thumbnailToken as string,
       );
 };
 
@@ -861,7 +863,7 @@ export const getReportType = (report: AdminReport) => {
 };
 
 export async function enrichPostWithTokens<T extends { media: unknown }>(
-  post: T
+  post: T,
 ): Promise<T & { media: PostMedia[] }> {
   const mediaItems = (post.media as PostMedia[]) || [];
 
@@ -873,7 +875,7 @@ export async function enrichPostWithTokens<T extends { media: unknown }>(
     mediaItems.map(async (mediaItem) => {
       if (mediaItem.fileType === 'video' && mediaItem.playbackId) {
         const { videoToken, thumbnailToken } = await createPlaybackTokens(
-          mediaItem.playbackId
+          mediaItem.playbackId,
         );
 
         return {
@@ -883,7 +885,7 @@ export async function enrichPostWithTokens<T extends { media: unknown }>(
         };
       }
       return mediaItem;
-    })
+    }),
   );
 
   return {
@@ -893,7 +895,7 @@ export async function enrichPostWithTokens<T extends { media: unknown }>(
 }
 
 export async function enrichPostsWithTokens<T extends { media: unknown }>(
-  posts: T[]
+  posts: T[],
 ): Promise<(T & { media: PostMedia[] })[]> {
   return Promise.all(posts.map((post) => enrichPostWithTokens(post)));
 }
@@ -924,7 +926,7 @@ export const enrichMediaTokens = async (media: PostMedia[]) => {
 
   if (firstItem.fileType === 'video' && firstItem.playbackId) {
     const { videoToken, thumbnailToken } = await createPlaybackTokens(
-      firstItem.playbackId
+      firstItem.playbackId,
     );
 
     newMedia[0] = {

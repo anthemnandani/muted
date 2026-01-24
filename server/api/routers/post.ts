@@ -1847,8 +1847,6 @@ export const postRouter = createTRPCRouter({
           return null;
         }
 
-        console.log('Preview: ', preview);
-
         return preview;
       } catch (error) {
         console.error('Failed to fetch link preview:', error);

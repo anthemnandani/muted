@@ -196,6 +196,7 @@ export type ParentPostProps = {
   parentId?: string | null;
   mentions: Mention[];
   author: AuthorInfoProps;
+  linkPreview?: LinkPreview | null;
   repostedBy?: AuthorInfoProps | null;
   postChildren?: ParentPostProps[];
   likesCount?: number;
@@ -220,6 +221,14 @@ export type ParentPostProps = {
 };
 
 export interface PostCardProps extends ParentPostProps, PostDisplayProps {}
+
+export interface ThreadCardBaseProps extends ParentPostProps {
+  variant?: 'default' | 'reply';
+  showHeader?: boolean;
+  showActions?: boolean;
+  className?: string;
+  children?: React.ReactNode;
+}
 
 export interface UserAvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   image?: string | null;
@@ -387,6 +396,15 @@ export type LinkPreview = {
   description: string | null;
   image: string | null;
 };
+
+export interface LinkPreviewCardProps {
+  title: string | null;
+  description: string | null;
+  image: string | null;
+  isLoading?: boolean;
+  onClose?: () => void;
+  url: string;
+}
 
 export type ThreadData = {
   privacy: Privacy;

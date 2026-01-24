@@ -1,13 +1,14 @@
-import { PostMedia, ThreadFilter } from '@/lib/types';
+import { PostMedia } from '@/lib/types';
 import { extractHashtags } from '@/lib/utils';
 import {
+  GET_LINK_PREVIEW,
   GET_MENTIONS,
   GET_USER,
   getBookmarksWithBlockFilter,
   getLikesWithBlockFilter,
 } from '@/server/constants';
 import { createId } from '@paralleldrive/cuid2';
-import { PostPrivacy, Prisma } from '@prisma/client';
+import { PostPrivacy } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
 import z from 'zod';
@@ -28,6 +29,7 @@ const THREAD_SELECT = (userId: string) => ({
   ...getLikesWithBlockFilter(userId),
   ...getBookmarksWithBlockFilter(userId),
   ...GET_MENTIONS,
+  ...GET_LINK_PREVIEW,
   reposts: {
     select: {
       createdAt: true,
@@ -78,127 +80,129 @@ export const threadRouter = createTRPCRouter({
         // quoteId: z.string().optional(),
         // postAuthor: z.string().optional(),
         // parentPostId: z.string().optional(),
-        // linkPreview: z
-        //   .object({
-        //     url: z.string(),
-        //     title: z.string().nullable().optional(),
-        //     description: z.string().nullable().optional(),
-        //     image: z.string().nullable().optional(),
-        //   })
-        //   .optional(),
+        linkPreview: z
+          .object({
+            url: z.string(),
+            title: z.string().nullable().optional(),
+            description: z.string().nullable().optional(),
+            image: z.string().nullable().optional(),
+          })
+          .optional(),
       }),
     )
-    .mutation(async ({ ctx, input: { text, mentions, privacy } }) => {
-      const { userId, db } = ctx;
+    .mutation(
+      async ({ ctx, input: { text, mentions, privacy, linkPreview } }) => {
+        const { userId, db } = ctx;
 
-      if (!userId) {
-        throw new TRPCError({ code: 'NOT_FOUND' });
-      }
+        if (!userId) {
+          throw new TRPCError({ code: 'NOT_FOUND' });
+        }
 
-      const filter = new Filter();
-      const textToPost = text || '';
-      const filteredText = filter.clean(textToPost);
-      const hashtags = extractHashtags(filteredText);
+        const filter = new Filter();
+        const textToPost = text || '';
+        const filteredText = filter.clean(textToPost);
+        const hashtags = extractHashtags(filteredText);
 
-      const transactionResult = await db.$transaction(async (prisma) => {
-        // let linkPreview;
+        const transactionResult = await db.$transaction(async (prisma) => {
+          let linkPreviewResult;
 
-        // if (input.linkPreview) {
-        //   linkPreview = await prisma.linkPreview.upsert({
-        //     where: { url: input.linkPreview.url },
-        //     update: {},
-        //     create: {
-        //       url: input.linkPreview.url,
-        //       title: input.linkPreview.title,
-        //       description: input.linkPreview.description,
-        //       image: input.linkPreview.image,
-        //     },
-        //   });
-        // }
+          if (linkPreview) {
+            linkPreviewResult = await prisma.linkPreview.upsert({
+              where: { url: linkPreview.url },
+              update: {},
+              create: {
+                url: linkPreview.url,
+                title: linkPreview.title,
+                description: linkPreview.description,
+                image: linkPreview.image,
+              },
+            });
+          }
 
-        const threadId = createId();
-        const path = `/${threadId}/`;
+          const threadId = createId();
+          const path = `/${threadId}/`;
 
-        const newThread = await prisma.thread.create({
-          data: {
-            id: threadId,
-            text: filteredText,
-            authorId: userId,
-            // media: input.media,
-            privacy,
-            // quoteId: input.quoteId,
-            path,
-            // linkPreviewUrl: linkPreview?.url,
-            hashtags: {
-              connectOrCreate: hashtags.map((tag) => {
-                const tagName = tag.slice(1);
-                return {
-                  where: { name: tagName },
-                  create: { name: tagName },
-                };
-              }),
-            },
-            mentions: mentions
-              ? {
-                  create: mentions.map((mention) => ({
-                    index: mention.index,
-                    user: {
-                      connect: {
-                        id: mention.mentionedUserId,
+          const newThread = await prisma.thread.create({
+            data: {
+              id: threadId,
+              text: filteredText,
+              authorId: userId,
+              // media: input.media,
+              privacy,
+              // quoteId: input.quoteId,
+              path,
+              linkPreviewUrl: linkPreviewResult?.url,
+              hashtags: {
+                connectOrCreate: hashtags.map((tag) => {
+                  const tagName = tag.slice(1);
+                  return {
+                    where: { name: tagName },
+                    create: { name: tagName },
+                  };
+                }),
+              },
+              mentions: mentions
+                ? {
+                    create: mentions.map((mention) => ({
+                      index: mention.index,
+                      user: {
+                        connect: {
+                          id: mention.mentionedUserId,
+                        },
                       },
-                    },
-                  })),
-                }
-              : undefined,
-          },
-          select: {
-            id: true,
-            author: true,
-          },
+                    })),
+                  }
+                : undefined,
+            },
+            select: {
+              id: true,
+              author: true,
+            },
+          });
+
+          // if (input.postAuthor && userId !== input.postAuthor) {
+          //   await prisma.notification.create({
+          //     data: {
+          //       type: 'QUOTE',
+          //       senderUserId: userId,
+          //       receiverUserId: input.postAuthor,
+          //       postId: newpost.id,
+          //       message: filteredText,
+          //     },
+          //   });
+          // }
+
+          // if (input.mentions?.length) {
+          //   await Promise.all(
+          //     input.mentions.map((mention) =>
+          //       prisma.notification.create({
+          //         data: {
+          //           type: 'MENTION',
+          //           senderUserId: userId,
+          //           receiverUserId: mention.userId,
+          //           postId: newpost.id,
+          //           message: filteredText,
+          //         },
+          //       }),
+          //     ),
+          //   );
+          // }
+
+          return {
+            newThread,
+          };
         });
 
-        // if (input.postAuthor && userId !== input.postAuthor) {
-        //   await prisma.notification.create({
-        //     data: {
-        //       type: 'QUOTE',
-        //       senderUserId: userId,
-        //       receiverUserId: input.postAuthor,
-        //       postId: newpost.id,
-        //       message: filteredText,
-        //     },
-        //   });
-        // }
-
-        // if (input.mentions?.length) {
-        //   await Promise.all(
-        //     input.mentions.map((mention) =>
-        //       prisma.notification.create({
-        //         data: {
-        //           type: 'MENTION',
-        //           senderUserId: userId,
-        //           receiverUserId: mention.userId,
-        //           postId: newpost.id,
-        //           message: filteredText,
-        //         },
-        //       }),
-        //     ),
-        //   );
-        // }
+        if (!transactionResult) {
+          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+        }
 
         return {
-          newThread,
+          thread: transactionResult.newThread,
+          success: true,
         };
-      });
-
-      if (!transactionResult) {
-        throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
-      }
-
-      return {
-        thread: transactionResult.newThread,
-        success: true,
-      };
-    }),
+      },
+    ),
 
   getAllThreads: privateProcedure
     .input(paginationInput)

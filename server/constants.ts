@@ -59,6 +59,17 @@ export const GET_REPOSTS = {
   },
 };
 
+export const GET_LINK_PREVIEW = {
+  linkPreview: {
+    select: {
+      url: true,
+      title: true,
+      description: true,
+      image: true,
+    },
+  },
+};
+
 export const getLikesWithBlockFilter = (userId: string) => ({
   likes: {
     where: {

@@ -15,6 +15,7 @@ import { QUERY_TYPE } from '@/lib/constants';
 import { FeedWrapperProps } from '@/lib/types';
 import { useThreadStore } from '@/store/threadStore';
 import { useMemo } from 'react';
+import CreateThread from '../modals/CreateThread';
 import Loader from './Loader';
 
 const FeedWrapper = ({
@@ -65,6 +66,7 @@ const FeedWrapper = ({
           )}
         </section>
       </Wrapper>
+      <CreateThread />
     </OptimisticActionProvider>
   );
 };

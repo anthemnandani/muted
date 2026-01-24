@@ -1,6 +1,7 @@
 'use client';
 
 import useCreateThread from '@/hooks/useCreateThread';
+import useLinkPreview from '@/hooks/useLinkPreview';
 import useMentions from '@/hooks/useMentions';
 import { useThreadStore } from '@/store/threadStore';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
@@ -9,6 +10,7 @@ import Link from 'next/link';
 import { useRef } from 'react';
 import { toast } from 'sonner';
 import CreateThreadDesktop from '../buttons/CreateThreadDesktop';
+import LinkPreviewCard from '../cards/LinkPreviewCard';
 import { Icons } from '../icons';
 import CreateThreadInput from '../inputs/CreateThreadInput';
 import PostPrivacyMenu from '../menus/PostPrivacyMenu';
@@ -31,10 +33,14 @@ const CreateThread = () => {
     addValidMention,
     updateMentionIndices,
     setText,
+    linkPreview,
+    setLinkPreview,
   } = useThreadStore();
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { isCreating, handleMutation } = useCreateThread();
+  const { isLinkPreviewLoading } = useLinkPreview();
 
   const {
     mentionSuggestions,
@@ -116,6 +122,18 @@ const CreateThread = () => {
                 isLoading={isMentionsLoading}
                 onSelect={insertMention}
               />
+            )}
+            {(linkPreview || isLinkPreviewLoading) && (
+              <div className='mx-6'>
+                <LinkPreviewCard
+                  url={linkPreview?.url!}
+                  title={linkPreview?.title || ''}
+                  description={linkPreview?.description || ''}
+                  image={linkPreview?.image || ''}
+                  isLoading={isLinkPreviewLoading}
+                  onClose={() => setLinkPreview(null)}
+                />
+              </div>
             )}
             <div className='w-full flex-between p-6'>
               <PostPrivacyMenu />
