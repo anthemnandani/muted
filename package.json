@@ -64,7 +64,7 @@
     "framer-motion": "^12.23.26",
     "handlebars": "^4.7.8",
     "inngest": "^3.44.3",
-    "inngest-cli": "^1.12.1",
+    "inngest-cli": "^1.16.1",
     "input-otp": "^1.4.2",
     "jszip": "^3.10.1",
     "lodash": "^4.17.21",
