@@ -71,7 +71,7 @@ const ThreadsGrid = ({
             {posts?.map((post) => (
               <Link
                 key={post.id}
-                href={`/${post.author.username}/post/${post.id}`}
+                href={`/post/${post.id}`}
                 className='aspect-square relative group overflow-hidden border border-gray-1 dark:border-gray-5'
               >
                 {renderPostContent(post)}

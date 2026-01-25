@@ -1,4 +1,9 @@
-import type { LinkPreview, ReplyPostInfo, ValidMention } from '@/lib/types';
+import type {
+  ReplyPostInfo,
+  ValidMention,
+  ThreadInfo,
+  LinkPreview,
+} from '@/lib/types';
 import type { PostPrivacy } from '@prisma/client';
 import { create } from 'zustand';
 
@@ -7,6 +12,7 @@ interface ThreadStoreProps {
   text: string;
   privacy: PostPrivacy;
   linkPreview: LinkPreview | null;
+  quoteInfo: ThreadInfo | null;
   validMentions: ValidMention[];
   replyPostInfo: ReplyPostInfo | null;
   editPostInfo: { id: string; text: string } | null;
@@ -15,6 +21,7 @@ interface ThreadStoreProps {
   setText: (text: string) => void;
   setPrivacy: (privacy: PostPrivacy) => void;
   setLinkPreview: (linkPreview: LinkPreview | null) => void;
+  setQuoteInfo: (quote: ThreadInfo | null) => void;
   addValidMention: (mention: ValidMention) => void;
   setReplyPostInfo: (reply: ReplyPostInfo | null) => void;
   setEditPostInfo: (edit: { id: string; text: string } | null) => void;
@@ -32,11 +39,13 @@ export const useThreadStore = create<ThreadStoreProps>((set, get) => ({
   validMentions: [],
   replyPostInfo: null,
   editPostInfo: null,
+  quoteInfo: null,
 
   setOpenDialog: (open: boolean) => set({ openDialog: open }),
   setText: (text: string) => set({ text }),
   setPrivacy: (privacy: PostPrivacy) => set({ privacy }),
   setLinkPreview: (linkPreview: LinkPreview | null) => set({ linkPreview }),
+  setQuoteInfo: (quote) => set({ quoteInfo: quote }),
   addValidMention: (mention) =>
     set((state) => ({
       validMentions: [...state.validMentions, mention],
@@ -81,5 +90,6 @@ export const useThreadStore = create<ThreadStoreProps>((set, get) => ({
       validMentions: [],
       replyPostInfo: null,
       editPostInfo: null,
+      quoteInfo: null,
     }),
 }));

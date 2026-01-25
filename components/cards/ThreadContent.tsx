@@ -4,16 +4,14 @@ import { isImageOrVideo } from '@/lib/utils';
 import React from 'react';
 
 interface ThreadContentProps {
-  id: string;
   text: string;
-  media: PostMedia[];
-  mentions: Mention[];
+  media?: PostMedia[] | null;
+  mentions?: Mention[];
   author: AuthorInfoProps;
   variant?: 'default' | 'reply';
 }
 
 const ThreadContent = ({
-  id,
   text,
   mentions,
   author,

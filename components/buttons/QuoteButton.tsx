@@ -1,20 +1,18 @@
 import { Icons } from '@/components/icons';
-import type { ParentPostInfo } from '@/lib/types';
-import useDialog from '@/store/postDialog';
+import type { ThreadInfo } from '@/lib/types';
+import { useThreadStore } from '@/store/threadStore';
 import React from 'react';
-import { toast } from 'sonner';
 import { DropdownMenuItem } from '../ui/dropdown-menu';
 
 interface QuoteButtonProps {
-  quoteInfo: ParentPostInfo;
-  disabled?: boolean;
+  quoteInfo: ThreadInfo;
 }
 
-const QuoteButton: React.FC<QuoteButtonProps> = ({ quoteInfo, disabled }) => {
-  const { setOpenDialog, setQuoteInfo } = useDialog();
+const QuoteButton: React.FC<QuoteButtonProps> = ({ quoteInfo }) => {
+  const { setOpenDialog, setQuoteInfo } = useThreadStore();
 
   const handleQuoteClick = () => {
-    if (disabled) return toast.error('You cannot quote this post');
+    // if (disabled) return toast.error('You cannot quote this post');
     setOpenDialog(true);
     setQuoteInfo(quoteInfo);
   };
@@ -22,8 +20,7 @@ const QuoteButton: React.FC<QuoteButtonProps> = ({ quoteInfo, disabled }) => {
   return (
     <DropdownMenuItem
       onClick={handleQuoteClick}
-      disabled={disabled}
-      className='dropdown-menu-item flex-between py-3.5 px-4 data-[disabled]:pointer-events-auto'
+      className='dropdown-menu-item flex-between py-3.5 px-4'
     >
       Quote
       <Icons.quote className='size-5' />

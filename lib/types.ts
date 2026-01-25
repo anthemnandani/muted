@@ -59,10 +59,28 @@ export type ParentPostInfo = Pick<
   'id' | 'text' | 'media' | 'author' | 'mentions'
 > & { createdAt?: Date };
 
-export type ReplyPostInfo = Pick<
-  Post,
-  'id' | 'text' | 'author' | 'mentions' | 'privacy' | 'createdAt'
+export type ThreadInfo = Partial<
+  Pick<
+    Thread,
+    | 'id'
+    | 'text'
+    | 'author'
+    | 'mentions'
+    | 'createdAt'
+    | 'media'
+    | 'quoteId'
+    | 'linkPreview'
+  >
 >;
+
+export type ReplyPostInfo = {
+  id: string;
+  text: string;
+  author: AuthorInfoProps;
+  mentions?: Mention[];
+  privacy: PostPrivacy;
+  createdAt: Date;
+};
 
 export type UserProfileInfoProps = RouterOutputs['user']['getUserProfile'] & {
   isBlocked: boolean;
@@ -171,7 +189,7 @@ export type Mention = {
 };
 
 export interface FeedWrapperProps {
-  threads?: ParentPostProps[];
+  threads?: ThreadProps[];
   isLoading: boolean;
   isError: boolean;
   hasNextPage?: boolean;
@@ -222,7 +240,44 @@ export type ParentPostProps = {
 
 export interface PostCardProps extends ParentPostProps, PostDisplayProps {}
 
-export interface ThreadCardBaseProps extends ParentPostProps {
+export type ThreadProps = {
+  id: string;
+  createdAt: Date;
+  text: string;
+  media?: PostMedia[];
+  likes: {
+    userId: string;
+  }[];
+  bookmarks: Bookmark[];
+  quoteId: string | null;
+  reposts: Repost[];
+  parentId: string | null;
+  mentions?: Mention[];
+  author: AuthorInfoProps;
+  linkPreview: LinkPreview | null;
+  repostedBy?: AuthorInfoProps | null;
+  likesCount: number;
+  bookmarksCount: number;
+  repostsCount: number;
+  repostedAt?: Date | null;
+  pinned?: boolean;
+  hideLikes?: boolean;
+  turnOffComments?: boolean;
+  isHidden?: boolean;
+  isMuted?: boolean;
+  privacy: PostPrivacy;
+  status?: PostStatus;
+  // _count?: {
+  //   likes: number;
+  //   reposts: number;
+  //   replies: number;
+  // };
+  path: string | null;
+  repliesCount: number;
+  parentRepliesCount?: number;
+};
+
+export interface ThreadCardBaseProps extends ThreadProps {
   variant?: 'default' | 'reply';
   showHeader?: boolean;
   showActions?: boolean;
@@ -259,7 +314,7 @@ export interface PostsListProps {
 }
 
 export interface ThreadsListProps {
-  threads: ParentPostProps[];
+  threads: ThreadProps[];
   fetchNextPage: () => void;
   hasNextPage?: boolean;
 }
@@ -308,6 +363,20 @@ export interface LikeButtonProps {
   authorId: string;
   hideLikes?: boolean;
   isPanel?: boolean;
+}
+
+export interface ThreadRepostButtonProps {
+  id: string;
+  text: string;
+  author?: AuthorInfoProps;
+  media?: PostMedia[];
+  linkPreview: LinkPreview | null;
+  quoteId: string | null;
+  mentions?: Mention[];
+  createdAt: Date;
+  reposts?: Repost[];
+  repostsCount: number;
+  isCheckingPermissions?: boolean;
 }
 
 export interface BookmarkButtonProps {
@@ -526,6 +595,27 @@ export interface VolumeControlsProps {
   player: MuxPlayerRef | null;
   showControls: boolean;
   isVertical?: boolean;
+}
+
+export interface ThreadActionsProps {
+  id: string;
+  privacy: PostPrivacy;
+  likesCount: number;
+  likes: { userId: string }[];
+  text: string;
+  author: AuthorInfoProps;
+  createdAt: Date;
+  repliesCount: number;
+  reposts?: Repost[];
+  repostsCount: number;
+  bookmarks: Bookmark[];
+  bookmarksCount: number;
+  media?: PostMedia[];
+  linkPreview: LinkPreview | null;
+  mentions?: Mention[];
+  hideLikes: boolean;
+  isParentPost?: boolean;
+  quoteId: string | null;
 }
 
 export interface PostActionMenuProps {

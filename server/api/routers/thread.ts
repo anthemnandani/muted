@@ -403,6 +403,41 @@ export const threadRouter = createTRPCRouter({
       return { threads: formattedThreads, nextCursor };
     }),
 
+  getQuotedThread: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const { userId } = ctx;
+      const threadInfo = await ctx.db.thread.findUnique({
+        where: {
+          id: input.id,
+        },
+        select: THREAD_SELECT(userId),
+      });
+
+      if (!threadInfo) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      return {
+        threadInfo: {
+          id: threadInfo.id,
+          text: threadInfo.text,
+          createdAt: threadInfo.createdAt,
+          likeCount: threadInfo.likes,
+          user: threadInfo.author,
+          likes: threadInfo.likes.length,
+          repliesCount: threadInfo.repliesCount,
+          media: threadInfo.media as PostMedia[],
+          linkPreview: threadInfo.linkPreview,
+          mentions: threadInfo.mentions,
+        },
+      };
+    }),
+
   toggleRepost: privateProcedure
     .input(
       z.object({

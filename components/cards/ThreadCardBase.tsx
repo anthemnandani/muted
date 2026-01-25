@@ -11,6 +11,7 @@ import PostHeader from '../posts/PostHeader';
 import RepostedBy from '../user/RepostedBy';
 import LinkPreviewCard from './LinkPreviewCard';
 import ThreadContent from './ThreadContent';
+import ThreadQuoteCard from './ThreadQuoteCard';
 
 const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   id,
@@ -46,18 +47,17 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   const content = (
     <>
       <ThreadContent
-        id={id}
-        text={text!}
+        text={text}
         mentions={mentions}
         media={media}
         author={author}
         variant={variant}
       />
-      {/* {quoteId && (
+      {quoteId && (
         <div className='px-10'>
           <ThreadQuoteCard quoteId={quoteId} />
         </div>
-      )} */}
+      )}
     </>
   );
 
@@ -106,14 +106,12 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
 
       {linkPreview && (
         <div className='mx-2 md:mx-4 my-2'>
-          <a href={linkPreview.url} target='_blank' rel='noreferrer'>
-            <LinkPreviewCard
-              url={linkPreview.url}
-              title={linkPreview.title}
-              description={linkPreview.description}
-              image={linkPreview.image}
-            />
-          </a>
+          <LinkPreviewCard
+            url={linkPreview.url}
+            title={linkPreview.title}
+            description={linkPreview.description}
+            image={linkPreview.image}
+          />
         </div>
       )}
 
@@ -130,7 +128,8 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
             repostsCount={repostsCount ?? 0}
             reposts={reposts}
             // media={media}
-            // linkPreview={linkPreview}
+            linkPreview={linkPreview}
+            quoteId={quoteId}
             mentions={mentions}
             hideLikes={hideLikes!}
             bookmarksCount={bookmarksCount ?? 0}

@@ -11,6 +11,7 @@ import { IGif } from '@giphy/js-types';
 import { X } from 'lucide-react';
 import React from 'react';
 import { useDropzone, type Accept } from 'react-dropzone';
+import ThreadQuoteCard from '../cards/ThreadQuoteCard';
 import EmojiPicker from '../modals/EmojiPicker';
 import GifPicker from '../modals/GifPicker';
 import UserAvatar from '../shared/UserAvatar';
@@ -29,7 +30,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
 }) => {
   const { isMobile } = useWindow();
   const { user } = useUser();
-  const { openDialog, text, setText } = useThreadStore();
+  const { openDialog, text, setText, quoteInfo } = useThreadStore();
   const userFullName = React.useMemo(
     () => getFullName(user?.firstName ?? '', user?.lastName ?? ''),
     [user],
@@ -206,9 +207,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
           <EmojiPicker onChange={handleEmojiSelect} />
         </div>
 
-        {/* {quoteInfo && (
-          <ThreadQuoteCard {...quoteInfo} createdAt={quoteInfo.createdAt} />
-        )} */}
+        {quoteInfo && <ThreadQuoteCard {...quoteInfo} />}
       </div>
     </div>
   );

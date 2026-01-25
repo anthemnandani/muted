@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 interface UseThreadRepostProps {
-  reposts: Repost[];
+  reposts?: Repost[];
   initialRepostsCount: number;
   threadId: string;
 }

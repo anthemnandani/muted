@@ -6,30 +6,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useThreadRepost } from '@/hooks/useThreadRepost';
-import { AuthorInfoProps, PostMedia, Repost } from '@/lib/types';
+import { ThreadRepostButtonProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { LinkPreview } from '@prisma/client';
-import React, { Fragment } from 'react';
+import { Fragment } from 'react';
 import QuoteButton from './QuoteButton';
 
-interface RepostButtonProps {
-  id: string;
-  text: string | null;
-  author: AuthorInfoProps;
-  media: PostMedia[] | null;
-  linkPreview: LinkPreview | null;
-  mentions: Array<{
-    user: AuthorInfoProps;
-    index: number;
-  }>;
-  createdAt?: Date;
-  reposts: Repost[];
-  repostsCount: number;
-  isCheckingPermissions?: boolean;
-  canInteract?: boolean;
-}
-
-const ThreadRepostButton: React.FC<RepostButtonProps> = ({
+const ThreadRepostButton: React.FC<ThreadRepostButtonProps> = ({
   id,
   text,
   author,
@@ -38,9 +20,9 @@ const ThreadRepostButton: React.FC<RepostButtonProps> = ({
   media,
   linkPreview,
   mentions,
+  quoteId,
   repostsCount,
   isCheckingPermissions,
-  canInteract,
 }) => {
   const {
     isRepostedByMe,
@@ -101,11 +83,11 @@ const ThreadRepostButton: React.FC<RepostButtonProps> = ({
                 id,
                 author,
                 createdAt,
-                media: media!,
-                // linkPreview: linkPreview!,
+                media,
+                quoteId,
+                linkPreview,
                 mentions,
               }}
-              disabled={!canInteract}
             />
           </Fragment>
         )}

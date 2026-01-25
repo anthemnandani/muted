@@ -5,31 +5,7 @@ import ThreadBookmarkButton from '@/components/buttons/ThreadBookmarkButton';
 import ThreadLikeButton from '@/components/buttons/ThreadLikeButton';
 import ThreadReplyButton from '@/components/buttons/ThreadReplyButton';
 import ThreadRepostButton from '@/components/buttons/ThreadRepostButton';
-import type { AuthorInfoProps, Bookmark, PostMedia, Repost } from '@/lib/types';
-import { LinkPreview, PostPrivacy } from '@prisma/client';
-
-interface ThreadActionsProps {
-  id: string;
-  privacy: PostPrivacy;
-  likesCount: number;
-  likes: { userId: string }[];
-  text: string | null;
-  author: AuthorInfoProps;
-  createdAt: Date;
-  repliesCount: number;
-  reposts?: Repost[];
-  repostsCount: number;
-  bookmarks: Bookmark[];
-  bookmarksCount: number;
-  media?: PostMedia[];
-  linkPreview?: LinkPreview | null;
-  mentions: Array<{
-    user: AuthorInfoProps;
-    index: number;
-  }>;
-  hideLikes: boolean;
-  isParentPost?: boolean;
-}
+import { ThreadActionsProps } from '@/lib/types';
 
 const ThreadActions: React.FC<ThreadActionsProps> = ({
   id,
@@ -43,6 +19,7 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
   repostsCount,
   hideLikes,
   media,
+  quoteId,
   linkPreview,
   mentions,
   bookmarks,
@@ -81,11 +58,12 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
           text={text}
           author={author}
           createdAt={createdAt}
-          reposts={reposts!}
+          reposts={reposts}
           repostsCount={repostsCount}
-          media={media!}
-          linkPreview={linkPreview!}
+          media={media}
+          linkPreview={linkPreview}
           mentions={mentions}
+          quoteId={quoteId}
         />
       </div>
 

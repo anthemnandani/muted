@@ -78,7 +78,7 @@ const CreateThread = () => {
               Posted
             </div>
             <Link
-              href={`/${threadInfo.author.username}/thread/${threadInfo.id}`}
+              href={`/thread/${threadInfo.id}`}
               className='hover:text-blue-900'
             >
               View
