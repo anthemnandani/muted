@@ -77,7 +77,7 @@ export const threadRouter = createTRPCRouter({
           )
           .optional(),
         privacy: z.nativeEnum(PostPrivacy).default('ANYONE'),
-        // quoteId: z.string().optional(),
+        quoteId: z.string().optional(),
         // postAuthor: z.string().optional(),
         // parentPostId: z.string().optional(),
         linkPreview: z
@@ -91,7 +91,10 @@ export const threadRouter = createTRPCRouter({
       }),
     )
     .mutation(
-      async ({ ctx, input: { text, mentions, privacy, linkPreview } }) => {
+      async ({
+        ctx,
+        input: { text, mentions, privacy, quoteId, linkPreview },
+      }) => {
         const { userId, db } = ctx;
 
         if (!userId) {
@@ -129,7 +132,7 @@ export const threadRouter = createTRPCRouter({
               authorId: userId,
               // media: input.media,
               privacy,
-              // quoteId: input.quoteId,
+              quoteId,
               path,
               linkPreviewUrl: linkPreviewResult?.url,
               hashtags: {

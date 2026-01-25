@@ -5,8 +5,15 @@ import { toast } from 'sonner';
 
 const useCreateThread = () => {
   const router = useRouter();
-  const { text, privacy, linkPreview, validMentions, reset, setOpenDialog } =
-    useThreadStore();
+  const {
+    text,
+    privacy,
+    linkPreview,
+    quoteInfo,
+    validMentions,
+    reset,
+    setOpenDialog,
+  } = useThreadStore();
 
   const trpcUtils = api.useUtils();
 
@@ -171,7 +178,7 @@ const useCreateThread = () => {
       //     }
       //   : undefined,
       privacy,
-      // quoteId: quoteInfo?.id,
+      quoteId: quoteInfo?.id,
       // postAuthor: quoteInfo?.author.id,
       linkPreview: linkPreview ?? undefined,
       mentions: validMentions.map((m) => ({
