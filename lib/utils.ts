@@ -4,7 +4,12 @@ import { useSearchStore } from '@/store/searchStore';
 import useVideoPlayer from '@/store/videoPlayer';
 import { type User } from '@clerk/nextjs/server';
 import { type UserResource } from '@clerk/types';
-import { AppealStatus, ReportStatus, UserStatus } from '@prisma/client';
+import {
+  AppealStatus,
+  FileType,
+  ReportStatus,
+  UserStatus,
+} from '@prisma/client';
 import { type ClassValue, clsx } from 'clsx';
 import {
   differenceInDays,
@@ -214,14 +219,16 @@ export function formatRepostTime(repostTimestamp: Date): string {
   }
 }
 
-export function isImageOrVideo(fileType: string): 'image' | 'video' | null {
-  const imageTypes = ['jpeg', 'jpg', 'png', 'webp'];
+export function isImageOrVideo(fileUrl: string): FileType | null {
+  const imageTypes = ['jpeg', 'jpg', 'png', 'webp', 'gif'];
   const videoTypes = ['mp4', 'mov'];
 
-  if (imageTypes.includes(fileType.toLowerCase())) {
-    return 'image';
-  } else if (videoTypes.includes(fileType.toLowerCase())) {
-    return 'video';
+  const fileExtension = fileUrl.split('.').pop();
+
+  if (imageTypes.includes(fileExtension!.toLowerCase())) {
+    return FileType.IMAGE;
+  } else if (videoTypes.includes(fileExtension!.toLowerCase())) {
+    return FileType.VIDEO;
   } else {
     return null;
   }

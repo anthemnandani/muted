@@ -6,6 +6,7 @@ import type {
   AppealStatus,
   CollectionPrivacy,
   EncodingStatus,
+  FileType,
   FilteredKeyword,
   FollowRequestStatus,
   MessageReportCategory,
@@ -17,6 +18,7 @@ import type {
   Role,
   User,
   UserStatus,
+  Media,
 } from '@prisma/client';
 import { PostPrivacy, Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
@@ -121,6 +123,14 @@ export interface UserProfileContentProps {
   isFollower?: boolean;
   privacy?: Privacy;
   isBlocked: boolean;
+}
+
+export interface ThreadContentProps {
+  text: string;
+  media?: Media[] | null;
+  mentions?: Mention[];
+  author: AuthorInfoProps;
+  variant?: 'default' | 'reply';
 }
 
 export type UserCardProps = ArrayElement<
@@ -245,7 +255,7 @@ export type ThreadProps = {
   id: string;
   createdAt: Date;
   text: string;
-  media?: PostMedia[];
+  media?: Media[];
   likes: {
     userId: string;
   }[];
@@ -299,6 +309,11 @@ export interface CreatePostInputProps extends DropzoneProps {
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   setPostData: (data: PostData) => void;
   value: string;
+  handleMentionSearch: (value: string, cursorPosition: number) => void;
+}
+export interface CreateThreadInputProps {
+  placeholder: string;
+  textareaRef: React.RefObject<HTMLTextAreaElement>;
   handleMentionSearch: (value: string, cursorPosition: number) => void;
 }
 
@@ -370,7 +385,7 @@ export interface ThreadRepostButtonProps {
   id: string;
   text: string;
   author?: AuthorInfoProps;
-  media?: PostMedia[];
+  media?: Media[];
   linkPreview: LinkPreview | null;
   quoteId: string | null;
   mentions?: Mention[];
@@ -611,7 +626,7 @@ export interface ThreadActionsProps {
   repostsCount: number;
   bookmarks: Bookmark[];
   bookmarksCount: number;
-  media?: PostMedia[];
+  media?: Media[];
   linkPreview: LinkPreview | null;
   mentions?: Mention[];
   hideLikes: boolean;
@@ -1528,3 +1543,8 @@ export type AdminAppeal =
 export type AdminReportPost = NonNullable<AdminReport['post']>;
 
 export type MuxPlayerRef = ElementRef<typeof MuxPlayer>;
+
+export type UploadResult = {
+  fileUrl: string;
+  fileType: FileType;
+} | null;

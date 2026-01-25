@@ -1,10 +1,13 @@
+import { MediaFile, UploadResult } from '@/lib/types';
+import useFileStore from '@/store/fileStore';
 import { useThreadStore } from '@/store/threadStore';
 import { api } from '@/trpc/react';
-import { useRouter } from 'next/navigation';
+import type { IGif } from '@giphy/js-types';
+import { FileType } from '@prisma/client';
 import { toast } from 'sonner';
+import { useMuxUpload } from './useMuxUpload';
 
 const useCreateThread = () => {
-  const router = useRouter();
   const {
     text,
     privacy,
@@ -14,6 +17,8 @@ const useCreateThread = () => {
     reset,
     setOpenDialog,
   } = useThreadStore();
+  const { threadMedia, setThreadMedia } = useFileStore();
+  const { uploadToStorage } = useMuxUpload();
 
   const trpcUtils = api.useUtils();
 
@@ -29,10 +34,10 @@ const useCreateThread = () => {
   const { mutateAsync: createThread, isPending: isCreating } =
     api.thread.createThread.useMutation({
       onMutate: () => {
-        setOpenDialog(false);
         setTimeout(() => {
+          setThreadMedia(null);
           reset();
-        }, 150);
+        }, 300);
       },
       onError: () => {
         toast.error('PostingError: Something went wrong!');
@@ -72,122 +77,72 @@ const useCreateThread = () => {
   //       retry: false,
   //     });
 
-  //   const handleMediaUpload = async () => {
-  //     if (selectedFile.length === 0) return {};
+  const isGiphy = (media: any): media is IGif => {
+    return media && 'images' in media && 'original' in media.images;
+  };
 
-  //     const file = selectedFile[0];
-  //     try {
-  //       if ('images' in file) {
-  //         const response = await fetch(file.images.original.url);
-  //         const blob = await response.blob();
-  //         const gifFile = new File([blob], `${file.id}.gif`, {
-  //           type: 'image/gif',
-  //         });
+  const isMediaFile = (media: any): media is MediaFile => {
+    return media && 'file' in media && media.file instanceof File;
+  };
 
-  //         const fileRes = await startUpload([gifFile]);
-  //         if (!fileRes?.[0]) return {};
+  const handleMediaUpload = async (): Promise<UploadResult> => {
+    if (!threadMedia) return null;
 
-  //         return {
-  //           fileUrl: fileRes[0].fileUrl,
-  //           fileType: 'gif',
-  //         };
-  //       }
-  //       if (file instanceof File) {
-  //         const dimensions = file.type.startsWith('image/')
-  //           ? await getImageDimensions(file)
-  //           : file.type.startsWith('video/')
-  //             ? await getVideoDimensions(file)
-  //             : null;
+    try {
+      let fileToUpload: File | null = null;
+      let type: FileType = FileType.IMAGE;
 
-  //         let aspectRatio;
-  //         let originalDimensions;
+      if (isGiphy(threadMedia)) {
+        const response = await fetch(threadMedia.images.original.url);
+        const blob = await response.blob();
+        fileToUpload = new File([blob], `${threadMedia.id}.gif`, {
+          type: 'image/gif',
+        });
+        type = FileType.GIF;
+      } else if (isMediaFile(threadMedia)) {
+        fileToUpload = threadMedia.file;
+        type = FileType.IMAGE;
+      }
 
-  //         if (dimensions) {
-  //           aspectRatio = getMediaAspectRatio(dimensions);
-  //           if (!aspectRatio) {
-  //             originalDimensions = dimensions;
-  //           }
-  //         }
+      if (!fileToUpload) return null;
 
-  //         const fileRes = await startUpload(selectedFile as File[]);
-  //         if (!fileRes?.[0]) return {};
+      const url = await uploadToStorage(fileToUpload);
+      if (!url) throw new Error('Upload failed to return a URL');
 
-  //         return {
-  //           fileUrl: fileRes[0].fileUrl,
-  //           fileType: fileRes[0].fileKey.split('.').pop() || '',
-  //           aspectRatio,
-  //           originalDimensions,
-  //         };
-  //       }
-  //       return {};
-  //     } catch (error) {
-  //       toast.error('Error processing media file');
-  //       return {};
-  //     }
-  //   };
+      return { fileUrl: url, fileType: type };
+    } catch (error) {
+      toast.error('Failed to upload media. Please try again.');
+      throw error;
+    }
+  };
 
   const handleMutation = async () => {
-    // const {
-    //   fileUrl: mediaUploadUrl,
-    //   fileType,
-    //   aspectRatio,
-    //   originalDimensions,
-    // } = await handleMediaUpload();
+    setOpenDialog(false);
 
-    // const promise = replyPostInfo
-    //   ? replyToPost({
-    //       text: threadData.text.trim(),
-    //       postId: replyPostInfo.id,
-    //       media: mediaUploadUrl
-    //         ? { fileType, fileUrl: mediaUploadUrl }
-    //         : undefined,
-    //       privacy: threadData.privacy,
-    //       postAuthor: replyPostInfo.author.id,
-    //     })
-    //   : editPostInfo
-    //     ? editPost({
-    //         id: editPostInfo.id,
-    //         text: threadData.text.trim(),
-    //         mentions,
-    //       })
-    //     : createThread({
-    //         text: threadData.text.trim(),
-    //         media: mediaUploadUrl
-    //           ? {
-    //               fileType: fileType as MediaType,
-    //               fileUrl: mediaUploadUrl,
-    //               aspectRatio,
-    //               originalDimensions,
-    //             }
-    //           : undefined,
-    //         privacy: threadData.privacy,
-    //         quoteId: quoteInfo?.id,
-    //         postAuthor: quoteInfo?.author.id,
-    //         linkPreview: threadData.linkPreview ?? undefined,
-    //         mentions,
-    //       });
+    try {
+      const mediaResult = await handleMediaUpload();
 
-    const promise = createThread({
-      text: text.trim(),
-      // media: mediaUploadUrl
-      //   ? {
-      //       fileType: fileType as MediaType,
-      //       fileUrl: mediaUploadUrl,
-      //       aspectRatio,
-      //       originalDimensions,
-      //     }
-      //   : undefined,
-      privacy,
-      quoteId: quoteInfo?.id,
-      // postAuthor: quoteInfo?.author.id,
-      linkPreview: linkPreview ?? undefined,
-      mentions: validMentions.map((m) => ({
-        mentionedUserId: m.mentionedUserId,
-        index: m.startIndex,
-      })),
-    });
+      const promise = createThread({
+        text: text.trim(),
+        media: mediaResult?.fileUrl
+          ? {
+              fileType: mediaResult.fileType,
+              fileUrl: mediaResult.fileUrl,
+            }
+          : undefined,
+        privacy,
+        quoteId: quoteInfo?.id,
+        linkPreview: linkPreview ?? undefined,
+        mentions: validMentions.map((m) => ({
+          mentionedUserId: m.mentionedUserId,
+          index: m.startIndex,
+        })),
+      });
 
-    return promise as any;
+      return promise as any;
+    } catch (error) {
+      throw error;
+    }
   };
 
   return {

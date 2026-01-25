@@ -184,6 +184,7 @@ model Thread {
 enum FileType {
   IMAGE
   VIDEO
+  GIF
 }
 
 enum EncodingStatus {
@@ -200,8 +201,8 @@ model Media {
   fileType FileType
   altText  String?
 
-  width       Int
-  height      Int
+  width       Int?
+  height      Int?
   aspectRatio String?
 
   videoId        String?

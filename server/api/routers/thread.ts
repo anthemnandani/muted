@@ -8,7 +8,7 @@ import {
   getLikesWithBlockFilter,
 } from '@/server/constants';
 import { createId } from '@paralleldrive/cuid2';
-import { PostPrivacy } from '@prisma/client';
+import { FileType, PostPrivacy } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
 import z from 'zod';
@@ -55,19 +55,19 @@ export const threadRouter = createTRPCRouter({
     .input(
       z.object({
         text: z.string().optional(),
-        // media: z
-        //   .object({
-        //     fileType: z.string(),
-        //     fileUrl: z.string(),
-        //     aspectRatio: z.string().optional(),
-        //     originalDimensions: z
-        //       .object({
-        //         width: z.number(),
-        //         height: z.number(),
-        //       })
-        //       .optional(),
-        //   })
-        //   .optional(),
+        media: z
+          .object({
+            fileType: z.nativeEnum(FileType),
+            fileUrl: z.string(),
+            aspectRatio: z.string().optional(),
+            originalDimensions: z
+              .object({
+                width: z.number(),
+                height: z.number(),
+              })
+              .optional(),
+          })
+          .optional(),
         mentions: z
           .array(
             z.object({
@@ -93,7 +93,7 @@ export const threadRouter = createTRPCRouter({
     .mutation(
       async ({
         ctx,
-        input: { text, mentions, privacy, quoteId, linkPreview },
+        input: { text, mentions, media, privacy, quoteId, linkPreview },
       }) => {
         const { userId, db } = ctx;
 
@@ -130,11 +130,11 @@ export const threadRouter = createTRPCRouter({
               id: threadId,
               text: filteredText,
               authorId: userId,
-              // media: input.media,
               privacy,
               quoteId,
               path,
               linkPreviewUrl: linkPreviewResult?.url,
+              media: media ? { create: media } : undefined,
               hashtags: {
                 connectOrCreate: hashtags.map((tag) => {
                   const tagName = tag.slice(1);
@@ -264,7 +264,6 @@ export const threadRouter = createTRPCRouter({
 
       const formattedThreads = pagedFeed.map((item) => ({
         ...item,
-        media: item.media as PostMedia[],
         likesCount: item.likes.length,
         repostsCount: item.reposts.length,
         repliesCount: item.repliesCount,
@@ -304,7 +303,6 @@ export const threadRouter = createTRPCRouter({
 
       const formattedThreads = threads.map((item) => ({
         ...item,
-        media: item.media as PostMedia[],
         likesCount: item.likes.length,
         repostsCount: item.reposts.length,
         repliesCount: item.repliesCount,
@@ -343,7 +341,6 @@ export const threadRouter = createTRPCRouter({
 
       const formattedThreads = threads.map((t) => ({
         ...t,
-        media: t.media as PostMedia[],
         likesCount: t.likes.length,
         repostsCount: t.reposts.length,
         repliesCount: t.repliesCount,
@@ -384,7 +381,6 @@ export const threadRouter = createTRPCRouter({
 
       const formattedThreads = threads.map((t) => ({
         ...t,
-        media: t.media as PostMedia[],
         likesCount: t.likes.length,
         repostsCount: t.reposts.length,
         repliesCount: t.repliesCount,
@@ -434,7 +430,7 @@ export const threadRouter = createTRPCRouter({
           user: threadInfo.author,
           likes: threadInfo.likes.length,
           repliesCount: threadInfo.repliesCount,
-          media: threadInfo.media as PostMedia[],
+          media: threadInfo.media,
           linkPreview: threadInfo.linkPreview,
           mentions: threadInfo.mentions,
         },

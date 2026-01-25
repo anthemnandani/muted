@@ -10,7 +10,7 @@ import UserAvatar from '../shared/UserAvatar';
 import Username from '../user/Username';
 import LinkPreviewCard from './LinkPreviewCard';
 import type { ThreadInfo } from '@/lib/types';
-import ThreadContent from './ThreadContent';
+import ThreadContent from '../shared/ThreadContent';
 
 const ThreadQuoteCard: React.FC<ThreadInfo> = ({
   author,

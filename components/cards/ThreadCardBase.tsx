@@ -6,11 +6,11 @@ import { cn } from '@/lib/utils';
 import { useHiddenPosts } from '@/store/hiddenPosts';
 import { useMutedUsers } from '@/store/mutedUsers';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import { Fragment } from 'react';
 import PostHeader from '../posts/PostHeader';
 import RepostedBy from '../user/RepostedBy';
 import LinkPreviewCard from './LinkPreviewCard';
-import ThreadContent from './ThreadContent';
+import ThreadContent from '../shared/ThreadContent';
 import ThreadQuoteCard from './ThreadQuoteCard';
 
 const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
@@ -45,7 +45,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   const router = useRouter();
 
   const content = (
-    <>
+    <Fragment>
       <ThreadContent
         text={text}
         mentions={mentions}
@@ -58,7 +58,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
           <ThreadQuoteCard quoteId={quoteId} />
         </div>
       )}
-    </>
+    </Fragment>
   );
 
   //   if (isMutedUser(author.id) && showMuted) {

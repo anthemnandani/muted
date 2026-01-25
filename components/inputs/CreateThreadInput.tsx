@@ -3,25 +3,20 @@
 import { Icons } from '@/components/icons';
 import { ResizeTextarea } from '@/components/ui/resize-textarea';
 import useWindow from '@/hooks/useWindow';
+import { CreateThreadInputProps } from '@/lib/types';
 import { getFullName } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
 import { useThreadStore } from '@/store/threadStore';
 import { useUser } from '@clerk/nextjs';
 import { IGif } from '@giphy/js-types';
 import { X } from 'lucide-react';
-import React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDropzone, type Accept } from 'react-dropzone';
 import ThreadQuoteCard from '../cards/ThreadQuoteCard';
 import EmojiPicker from '../modals/EmojiPicker';
 import GifPicker from '../modals/GifPicker';
 import UserAvatar from '../shared/UserAvatar';
 import { Button } from '../ui/button';
-
-interface CreateThreadInputProps {
-  placeholder: string;
-  textareaRef: React.RefObject<HTMLTextAreaElement>;
-  handleMentionSearch: (value: string, cursorPosition: number) => void;
-}
 
 const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
   placeholder,
@@ -31,7 +26,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
   const { isMobile } = useWindow();
   const { user } = useUser();
   const { openDialog, text, setText, quoteInfo } = useThreadStore();
-  const userFullName = React.useMemo(
+  const userFullName = useMemo(
     () => getFullName(user?.firstName ?? '', user?.lastName ?? ''),
     [user],
   );
@@ -40,12 +35,10 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
 
   const maxSize = 512 * 1024 * 1024;
 
-  const [previewType, setPreviewType] = React.useState<
-    'image' | 'video' | null
-  >(null);
-  const [previewURL, setPreviewURL] = React.useState<string | undefined>(
-    undefined,
+  const [previewType, setPreviewType] = useState<'image' | 'video' | null>(
+    null,
   );
+  const [previewURL, setPreviewURL] = useState<string | undefined>(undefined);
 
   const handleEmojiSelect = (emoji: string) => {
     const cursorPosition = textareaRef.current?.selectionStart || 0;
@@ -78,7 +71,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
     setText(newValue);
   };
 
-  const onDrop = React.useCallback(
+  const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       const acceptedFile = acceptedFiles[0];
 
@@ -116,11 +109,12 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
     onDrop,
     accept,
     maxSize,
+    maxFiles: 1,
   });
 
-  const scrollDownRef = React.useRef<HTMLDivElement | null>(null);
+  const scrollDownRef = useRef<HTMLDivElement | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     scrollDownRef.current?.scrollIntoView({
       behavior: 'smooth',
       block: 'nearest',
