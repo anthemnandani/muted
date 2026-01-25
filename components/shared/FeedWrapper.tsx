@@ -26,6 +26,7 @@ const FeedWrapper = ({
   fetchNextPage,
   selectedFilter,
   emptyStateMessage,
+  isSearch,
 }: FeedWrapperProps) => {
   const { setOpenDialog } = useThreadStore();
 
@@ -41,15 +42,17 @@ const FeedWrapper = ({
 
   return (
     <OptimisticActionProvider target={optimisticTarget as TargetType}>
-      {!isMobile && (
+      {!isMobile && !isSearch && (
         <HeaderWrapper>
           <ThreadFilterMenu selectedFilter={selectedFilter} />
         </HeaderWrapper>
       )}
-      <Wrapper>
-        <div className='w-full md:flex hidden'>
-          <CreateWithInput onClick={() => setOpenDialog(true)} />
-        </div>
+      <Wrapper isSearch={isSearch}>
+        {!isSearch && (
+          <div className='w-full md:flex hidden'>
+            <CreateWithInput onClick={() => setOpenDialog(true)} />
+          </div>
+        )}
         <section className='flex flex-col gap-4 justify-start w-full min-h-[50vh]'>
           {threads?.length === 0 ? (
             <div className='flex-col-center w-full h-full py-20 text-center animate-in fade-in zoom-in duration-300'>
@@ -66,7 +69,7 @@ const FeedWrapper = ({
           )}
         </section>
       </Wrapper>
-      <CreateThread />
+      {!isSearch && <CreateThread />}
     </OptimisticActionProvider>
   );
 };

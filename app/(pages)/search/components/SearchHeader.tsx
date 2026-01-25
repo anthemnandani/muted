@@ -9,6 +9,7 @@ import { useSearchStore } from '@/store/searchStore';
 import { api } from '@/trpc/react';
 import { useState } from 'react';
 import PostsGrid from './PostsGrid';
+import Threads from './Threads';
 import Users from './Users';
 import VideoPosts from './VideoPosts';
 
@@ -20,6 +21,7 @@ const SearchHeader = ({ query }: { query: string }) => {
     { id: 'top', label: 'Top' },
     { id: 'users', label: 'Users' },
     { id: 'videos', label: 'Videos' },
+    { id: 'threads', label: 'Threads' },
   ];
 
   const { data, isLoading, isFetching, isError, hasNextPage, fetchNextPage } =
@@ -30,7 +32,7 @@ const SearchHeader = ({ query }: { query: string }) => {
         enabled: activeTab === 'top',
         trpc: { abortOnUnmount: true },
         staleTime: 10 * 60 * 1000,
-      }
+      },
     );
 
   if (isError) return <NotFound />;
@@ -41,7 +43,7 @@ const SearchHeader = ({ query }: { query: string }) => {
 
   return (
     <div className='sticky top-0 z-50'>
-      <div className='w-full'>
+      <div className='w-full main-container'>
         <Tabs
           defaultValue={activeTab}
           className='w-full'
@@ -62,7 +64,7 @@ const SearchHeader = ({ query }: { query: string }) => {
                   value={tab.id}
                   onClick={() => setActiveTab(tab.id as SearchTab)}
                   className={cn(
-                    'flex items-center w-full relative data-[state=active]:text-white text-white/60 transition-colors mx-4'
+                    'flex items-center w-full relative data-[state=active]:text-white text-white/60 transition-colors mx-4',
                   )}
                 >
                   <div
@@ -80,7 +82,7 @@ const SearchHeader = ({ query }: { query: string }) => {
                         className={cn(
                           'absolute -bottom-3 left-0 right-0 h-[2px] bg-white/90',
                           hoverTab === tab.id && 'animate-tab-slide',
-                          tab.id === activeTab && !hoverTab && 'scale-x-100'
+                          tab.id === activeTab && !hoverTab && 'scale-x-100',
                         )}
                       />
                     )}
@@ -109,6 +111,9 @@ const SearchHeader = ({ query }: { query: string }) => {
           </TabsContent>
           <TabsContent value='videos' className='w-full'>
             <VideoPosts query={query} />
+          </TabsContent>
+          <TabsContent value='threads' className='w-full'>
+            <Threads query={query} />
           </TabsContent>
         </Tabs>
       </div>

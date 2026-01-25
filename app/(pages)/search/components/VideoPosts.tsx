@@ -7,7 +7,7 @@ import PostsGrid from './PostsGrid';
 
 const VideoPosts = ({ query }: { query: string }) => {
   const { activeTab } = useSearchStore();
-  const { data, isLoading, isError, hasNextPage, fetchNextPage } =
+  const { data, isLoading, isFetching, isError, hasNextPage, fetchNextPage } =
     api.search.getVideoPosts.useInfiniteQuery(
       { query },
       {
@@ -15,12 +15,12 @@ const VideoPosts = ({ query }: { query: string }) => {
         enabled: activeTab === 'videos',
         trpc: { abortOnUnmount: true },
         staleTime: 10 * 60 * 1000,
-      }
+      },
     );
 
   if (isError) return <NotFound />;
 
-  if (isLoading) return <SkeletonGrid />;
+  if (isLoading || isFetching) return <SkeletonGrid />;
 
   const videoPosts = data?.pages.flatMap((page) => page.posts);
 

@@ -11,7 +11,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 
 const Users = ({ query }: { query: string }) => {
   const { activeTab } = useSearchStore();
-  const { data, isLoading, isError, hasNextPage, fetchNextPage } =
+  const { data, isLoading, isFetching, isError, hasNextPage, fetchNextPage } =
     api.search.getUserResults.useInfiniteQuery(
       { query },
       {
@@ -19,10 +19,10 @@ const Users = ({ query }: { query: string }) => {
         enabled: activeTab === 'users',
         trpc: { abortOnUnmount: true },
         staleTime: 10 * 60 * 1000,
-      }
+      },
     );
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return <UsersSkeleton />;
   }
 

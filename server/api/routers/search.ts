@@ -2,7 +2,6 @@ import { PostMedia } from '@/lib/types';
 import {
   enrichMediaTokens,
   enrichPostWithTokens,
-  enrichThumbnailToken,
   extractSuggestions,
   getTotalRepliesCount,
 } from '@/lib/utils';
@@ -24,7 +23,7 @@ export const searchRouter = createTRPCRouter({
     .input(
       z.object({
         query: z.string().min(1),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { query } = input;
@@ -54,7 +53,7 @@ export const searchRouter = createTRPCRouter({
       z.object({
         query: z.string().min(1),
         limit: z.number().optional().default(8),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       try {
@@ -106,13 +105,13 @@ export const searchRouter = createTRPCRouter({
           });
 
           const uniqueTexts = Array.from(
-            new Map(postTexts.map((p) => [p.id, p.text])).values()
+            new Map(postTexts.map((p) => [p.id, p.text])).values(),
           );
 
           const extractedSuggestions = extractSuggestions(
             uniqueTexts.filter((text) => !!text) as string[],
             query,
-            remainingCount
+            remainingCount,
           );
 
           suggestions = [
@@ -120,8 +119,8 @@ export const searchRouter = createTRPCRouter({
             ...extractedSuggestions.filter(
               (suggestion) =>
                 !suggestions.some(
-                  (s) => s.toLowerCase() === suggestion.toLowerCase()
-                )
+                  (s) => s.toLowerCase() === suggestion.toLowerCase(),
+                ),
             ),
           ];
 
@@ -139,7 +138,7 @@ export const searchRouter = createTRPCRouter({
     .input(
       z.object({
         query: z.string().min(1),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       try {
@@ -181,7 +180,7 @@ export const searchRouter = createTRPCRouter({
             createdAt: z.date(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input: { query, limit = 21, cursor }, ctx }) => {
       const { userId, db } = ctx;
@@ -292,16 +291,18 @@ export const searchRouter = createTRPCRouter({
       });
 
       const formattedPosts = await Promise.all(
-        posts.map(async (post) => ({
-          ...post,
-          media: await enrichThumbnailToken(post.media as PostMedia[]),
-          likesCount: post.likes.length,
-          repostsCount: post.reposts.length,
-          repliesCount: getTotalRepliesCount(post) as number,
-          bookmarksCount: new Set(
-            post.bookmarks.map((bookmark) => bookmark.userId)
-          ).size,
-        }))
+        posts.map(async (post) => {
+          const postWithTokens = await enrichPostWithTokens(post);
+          return {
+            ...postWithTokens,
+            likesCount: post.likes.length,
+            repostsCount: post.reposts.length,
+            repliesCount: getTotalRepliesCount(post) as number,
+            bookmarksCount: new Set(
+              post.bookmarks.map((bookmark) => bookmark.userId),
+            ).size,
+          };
+        }),
       );
 
       let nextCursor: typeof cursor | undefined;
@@ -324,7 +325,7 @@ export const searchRouter = createTRPCRouter({
     .input(
       z.object({
         query: z.string().min(1),
-      })
+      }),
     )
     .query(async ({ input: { query }, ctx }) => {
       const { userId, db } = ctx;
@@ -444,10 +445,10 @@ export const searchRouter = createTRPCRouter({
             repostsCount: post.reposts.length,
             repliesCount: getTotalRepliesCount(post) as number,
             bookmarksCount: new Set(
-              post.bookmarks.map((bookmark) => bookmark.userId)
+              post.bookmarks.map((bookmark) => bookmark.userId),
             ).size,
           };
-        })
+        }),
       );
 
       return formattedPosts;
@@ -464,7 +465,7 @@ export const searchRouter = createTRPCRouter({
             createdAt: z.date(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input: { query, limit = 20, cursor }, ctx }) => {
       const { userId, db } = ctx;
@@ -539,7 +540,7 @@ export const searchRouter = createTRPCRouter({
             createdAt: z.date(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input: { query, limit = 21, cursor }, ctx }) => {
       const { userId, db } = ctx;
@@ -650,24 +651,23 @@ export const searchRouter = createTRPCRouter({
       });
 
       const videoPosts = posts.filter((post) =>
-        (post.media as PostMedia[]).some((m) => m.fileType === 'video')
+        (post.media as PostMedia[]).some((m) => m.fileType === 'video'),
       );
 
       const postsWithTokens = await Promise.all(
         videoPosts.map(async (post) => {
-          const media = post.media as PostMedia[];
+          const postWithTokens = await enrichPostWithTokens(post);
 
           return {
-            ...post,
-            media: await enrichMediaTokens(media),
+            ...postWithTokens,
             likesCount: post.likes.length,
             repostsCount: post.reposts.length,
             repliesCount: getTotalRepliesCount(post) as number,
             bookmarksCount: new Set(
-              post.bookmarks.map((bookmark) => bookmark.userId)
+              post.bookmarks.map((bookmark) => bookmark.userId),
             ).size,
           };
-        })
+        }),
       );
 
       let nextCursor: typeof cursor | undefined;
@@ -690,7 +690,7 @@ export const searchRouter = createTRPCRouter({
     .input(
       z.object({
         query: z.string().min(1),
-      })
+      }),
     )
     .query(async ({ input: { query }, ctx }) => {
       const { userId, db } = ctx;
@@ -801,7 +801,7 @@ export const searchRouter = createTRPCRouter({
       });
 
       const videoPosts = posts.filter((post) =>
-        (post.media as PostMedia[]).some((m) => m.fileType === 'video')
+        (post.media as PostMedia[]).some((m) => m.fileType === 'video'),
       );
 
       const postsWithTokens = await Promise.all(
@@ -814,10 +814,10 @@ export const searchRouter = createTRPCRouter({
             repostsCount: post.reposts.length,
             repliesCount: getTotalRepliesCount(post) as number,
             bookmarksCount: new Set(
-              post.bookmarks.map((bookmark) => bookmark.userId)
+              post.bookmarks.map((bookmark) => bookmark.userId),
             ).size,
           };
-        })
+        }),
       );
 
       return postsWithTokens;

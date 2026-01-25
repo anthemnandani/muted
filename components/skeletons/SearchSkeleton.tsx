@@ -22,6 +22,7 @@ const SkeletonTabs = () => {
             <SkeletonTab />
             <SkeletonTab />
             <SkeletonTab />
+            <SkeletonTab />
           </div>
         </div>
 

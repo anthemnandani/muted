@@ -196,6 +196,7 @@ export interface FeedWrapperProps {
   fetchNextPage?: any;
   selectedFilter?: ThreadFilter;
   emptyStateMessage: string | React.ReactNode;
+  isSearch?: boolean;
 }
 
 export type ParentPostProps = {
