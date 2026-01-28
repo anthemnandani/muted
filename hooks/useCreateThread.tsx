@@ -1,9 +1,12 @@
-import { MediaFile, UploadResult } from '@/lib/types';
+import { MediaFile } from '@/lib/types';
+import { getVideoDimensions } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
 import { useThreadStore } from '@/store/threadStore';
 import { api } from '@/trpc/react';
 import type { IGif } from '@giphy/js-types';
-import { FileType } from '@prisma/client';
+import { createId } from '@paralleldrive/cuid2';
+import { EncodingStatus, FileType, PostStatus } from '@prisma/client';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMuxUpload } from './useMuxUpload';
 
@@ -18,136 +21,155 @@ const useCreateThread = () => {
     setOpenDialog,
   } = useThreadStore();
   const { threadMedia, setThreadMedia } = useFileStore();
-  const { uploadToStorage } = useMuxUpload();
+  const { uploadToStorage, prepareMuxUpload, startMuxUpload } = useMuxUpload();
 
-  const trpcUtils = api.useUtils();
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-  //   useEffect(() => {
-  //     if (editPostInfo) {
-  //       setThreadData((prev) => ({
-  //         ...prev,
-  //         text: editPostInfo.text,
-  //       }));
-  //     }
-  //   }, [editPostInfo]);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const createdThreadIdRef = useRef<string | null>(null);
 
-  const { mutateAsync: createThread, isPending: isCreating } =
-    api.thread.createThread.useMutation({
-      onMutate: () => {
-        setTimeout(() => {
-          setThreadMedia(null);
-          reset();
-        }, 300);
-      },
-      onError: () => {
-        toast.error('PostingError: Something went wrong!');
-      },
-      onSettled: async () => {
-        await trpcUtils.thread.getAllThreads.invalidate();
-      },
-      retry: false,
-    });
+  const { mutateAsync: createThread, isPending: isCreatingDB } =
+    api.thread.createThread.useMutation();
 
-  //   const { isLoading: isEditing, mutateAsync: editPost } =
-  //     api.post.editPost.useMutation({
-  //       onError: (err) => {
-  //         if (err.message === 'Edit window has expired') {
-  //           toast.error('Edit time window has expired');
-  //         } else {
-  //           toast.error('Error editing post');
-  //         }
-  //       },
-  //       onSettled: async () => {
-  //         await trpcUtils.invalidate();
-  //       },
-  //     });
+  const { mutate: deleteThread } = api.thread.deleteThread.useMutation();
 
-  //   const { isLoading: isReplying, mutateAsync: replyToPost } =
-  //     api.post.replyToPost.useMutation({
-  //       onError: (err) => {
-  //         toast.error('ReplyingError: Something went wrong!');
-  //         if (err.data?.code === 'UNAUTHORIZED') {
-  //           router.push('/sign-in');
-  //         }
-  //       },
-  //       onSettled: async () => {
-  //         await trpcUtils.post.getInfinitePosts.invalidate();
-  //         await trpcUtils.invalidate();
-  //       },
-  //       retry: false,
-  //     });
+  const isGiphy = (media: any): media is IGif =>
+    media && 'images' in media && 'original' in media.images;
 
-  const isGiphy = (media: any): media is IGif => {
-    return media && 'images' in media && 'original' in media.images;
+  const isMediaFile = (media: any): media is MediaFile =>
+    media && 'file' in media && media.file instanceof File;
+
+  const resetState = () => {
+    setOpenDialog(false);
+
+    setTimeout(() => {
+      setThreadMedia(null);
+      setIsUploading(false);
+      setUploadProgress(0);
+      createdThreadIdRef.current = null;
+      reset();
+    }, 300);
   };
 
-  const isMediaFile = (media: any): media is MediaFile => {
-    return media && 'file' in media && media.file instanceof File;
-  };
-
-  const handleMediaUpload = async (): Promise<UploadResult> => {
-    if (!threadMedia) return null;
-
-    try {
-      let fileToUpload: File | null = null;
-      let type: FileType = FileType.IMAGE;
-
-      if (isGiphy(threadMedia)) {
-        const response = await fetch(threadMedia.images.original.url);
-        const blob = await response.blob();
-        fileToUpload = new File([blob], `${threadMedia.id}.gif`, {
-          type: 'image/gif',
-        });
-        type = FileType.GIF;
-      } else if (isMediaFile(threadMedia)) {
-        fileToUpload = threadMedia.file;
-        type = FileType.IMAGE;
-      }
-
-      if (!fileToUpload) return null;
-
-      const url = await uploadToStorage(fileToUpload);
-      if (!url) throw new Error('Upload failed to return a URL');
-
-      return { fileUrl: url, fileType: type };
-    } catch (error) {
-      toast.error('Failed to upload media. Please try again.');
-      throw error;
+  const cancelUpload = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
     }
+
+    if (createdThreadIdRef.current) {
+      deleteThread({ id: createdThreadIdRef.current });
+    }
+
+    resetState();
+    toast.info('Thread creation cancelled');
   };
 
   const handleMutation = async () => {
-    setOpenDialog(false);
-
     try {
-      const mediaResult = await handleMediaUpload();
+      abortControllerRef.current = new AbortController();
+      setIsUploading(true);
+      setUploadProgress(0);
 
-      const promise = createThread({
-        text: text.trim(),
-        media: mediaResult?.fileUrl
-          ? {
-              fileType: mediaResult.fileType,
-              fileUrl: mediaResult.fileUrl,
-            }
-          : undefined,
-        privacy,
-        quoteId: quoteInfo?.id,
-        linkPreview: linkPreview ?? undefined,
-        mentions: validMentions.map((m) => ({
-          mentionedUserId: m.mentionedUserId,
-          index: m.startIndex,
-        })),
-      });
+      const generatedId = createId();
 
-      return promise as any;
+      let fileType: FileType = FileType.IMAGE;
+      let fileToUpload: File | null = null;
+
+      if (threadMedia) {
+        if (isGiphy(threadMedia)) {
+          fileType = FileType.GIF;
+          const res = await fetch(threadMedia.images.original.url);
+          const blob = await res.blob();
+          fileToUpload = new File([blob], `${threadMedia.id}.gif`, {
+            type: 'image/gif',
+          });
+        } else if (isMediaFile(threadMedia)) {
+          fileToUpload = threadMedia.file;
+          fileType = fileToUpload.type.startsWith('video')
+            ? FileType.VIDEO
+            : FileType.IMAGE;
+        }
+      }
+
+      if (fileType === FileType.VIDEO && fileToUpload) {
+        const passthrough = `thread|${generatedId}`;
+        const { url, uploadId } = await prepareMuxUpload(passthrough);
+        const finalDimensions = await getVideoDimensions(fileToUpload);
+
+        await createThread({
+          id: generatedId,
+          text: text.trim(),
+          privacy,
+          status: PostStatus.HIDDEN,
+          quoteId: quoteInfo?.id,
+          linkPreview: linkPreview ?? undefined,
+          mentions: validMentions.map((m) => ({
+            mentionedUserId: m.mentionedUserId,
+            index: m.startIndex,
+          })),
+          media: {
+            fileType: FileType.VIDEO,
+            encodingStatus: EncodingStatus.PROCESSING,
+            videoId: uploadId,
+            aspectRatio: (threadMedia as MediaFile)?.aspectRatio,
+            originalDimensions: finalDimensions,
+          },
+        });
+
+        createdThreadIdRef.current = generatedId;
+
+        await startMuxUpload(fileToUpload, url, (pct) =>
+          setUploadProgress(pct),
+        );
+      } else {
+        let finalUrl = null;
+
+        if (fileToUpload) {
+          finalUrl = await uploadToStorage(fileToUpload);
+          setUploadProgress(100);
+        }
+
+        await createThread({
+          id: generatedId,
+          text: text.trim(),
+          privacy,
+          status: PostStatus.VISIBLE,
+          quoteId: quoteInfo?.id,
+          linkPreview: linkPreview ?? undefined,
+          mentions: validMentions.map((m) => ({
+            mentionedUserId: m.mentionedUserId,
+            index: m.startIndex,
+          })),
+          media: finalUrl
+            ? {
+                fileType,
+                fileUrl: finalUrl,
+              }
+            : null,
+        });
+      }
+      toast.success('Thread posted!');
+
+      resetState();
     } catch (error) {
-      throw error;
+      toast.error('Failed to create thread');
+
+      if (createdThreadIdRef.current) {
+        deleteThread({ id: createdThreadIdRef.current });
+      }
+    } finally {
+      setIsUploading(false);
     }
   };
 
   return {
     handleMutation,
-    isCreating,
+    cancelUpload,
+    isCreating: isCreatingDB || isUploading,
+    isUploading,
+    uploadProgress,
   };
 };
 

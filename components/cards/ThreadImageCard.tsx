@@ -1,14 +1,10 @@
 'use client';
 
-import Image from 'next/image';
-import React from 'react';
+import { ThreadImageCardProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { FileType } from '@prisma/client';
-
-interface ThreadImageCardProps {
-  image: string;
-  fileType: FileType;
-}
+import Image from 'next/image';
+import React from 'react';
 
 const ThreadImageCard: React.FC<ThreadImageCardProps> = ({
   image,

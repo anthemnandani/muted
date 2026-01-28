@@ -25,6 +25,8 @@ const useCreatePost = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
+  const individualProgressRef = useRef<number[]>([]);
+
   const closeAndReset = () => {
     setOpenDialog(false);
     setTimeout(() => {
@@ -48,7 +50,7 @@ const useCreatePost = () => {
       },
     });
 
-  const { mutateAsync: deletePost } = api.post.deletePost.useMutation();
+  const { mutate: deletePost } = api.post.deletePost.useMutation();
 
   const cancelUpload = async () => {
     if (abortControllerRef.current) {
@@ -65,9 +67,7 @@ const useCreatePost = () => {
     }
 
     if (activePostId.current) {
-      try {
-        await deletePost({ id: activePostId.current });
-      } catch (error) {}
+      deletePost({ id: activePostId.current });
     }
 
     closeAndReset();
@@ -144,7 +144,8 @@ const useCreatePost = () => {
     postId: string,
   ): Promise<{ media: PostMedia; uploadUrl: string }> => {
     const finalDimensions = await getVideoDimensions(fileObj.file);
-    const { url, uploadId } = await prepareMuxUpload(postId);
+    const passthrough = `post|${postId}`;
+    const { url, uploadId } = await prepareMuxUpload(passthrough);
     const localBlobUrl = URL.createObjectURL(fileObj.file);
 
     return {
@@ -160,6 +161,13 @@ const useCreatePost = () => {
     };
   };
 
+  const handleProgressUpdate = (index: number, percent: number) => {
+    individualProgressRef.current[index] = percent;
+    const total = individualProgressRef.current.reduce((a, b) => a + b, 0);
+    const average = Math.round(total / individualProgressRef.current.length);
+    setUploadProgress(average);
+  };
+
   const handleCreatePost = async () => {
     if (mediaFiles.length === 0) return;
 
@@ -173,20 +181,7 @@ const useCreatePost = () => {
       abortControllerRef.current = new AbortController();
       const signal = abortControllerRef.current.signal;
 
-      const processedMedia: PostMedia[] = [];
-      const videoQueue: Array<() => Promise<void>> = [];
-
-      const progressMap = new Array(mediaFiles.length).fill(0);
-
-      const updateOverallProgress = (index: number, percent: number) => {
-        progressMap[index] = percent;
-        const total = progressMap.reduce((a, b) => a + b, 0);
-        const average = Math.round(total / mediaFiles.length);
-        setUploadProgress(average);
-      };
-
-      for (let i = 0; i < mediaFiles.length; i++) {
-        const fileObj = mediaFiles[i];
+      const uploadPromises = mediaFiles.map(async (fileObj, index) => {
         if (signal.aborted) throw new Error('Cancelled');
 
         if (fileObj.type === 'video') {
@@ -194,24 +189,23 @@ const useCreatePost = () => {
             fileObj,
             generatedPostId,
           );
-          processedMedia.push(media);
 
-          videoQueue.push(async () => {
-            await startMuxUpload(
-              fileObj.file,
-              uploadUrl,
-              (pct) => updateOverallProgress(i, pct),
-              (uploadInstance) => {
-                activeMuxUploads.current.push(uploadInstance);
-              },
-            );
-          });
+          await startMuxUpload(
+            fileObj.file,
+            uploadUrl,
+            (pct) => handleProgressUpdate(index, pct),
+            (uploadInstance) => activeMuxUploads.current.push(uploadInstance),
+          );
+
+          return media;
         } else {
           const media = await processImage(fileObj);
-          processedMedia.push(media);
-          updateOverallProgress(i, 100);
+          handleProgressUpdate(index, 100);
+          return media;
         }
-      }
+      });
+
+      const processedMedia = await Promise.all(uploadPromises);
 
       if (signal.aborted) throw new Error('Cancelled');
 
@@ -230,11 +224,6 @@ const useCreatePost = () => {
           ? PostStatus.HIDDEN
           : PostStatus.VISIBLE,
       });
-
-      for (const startUpload of videoQueue) {
-        if (signal.aborted) throw new Error('Cancelled');
-        await startUpload();
-      }
 
       setUploadProgress(100);
       toast.success('Post uploaded!');

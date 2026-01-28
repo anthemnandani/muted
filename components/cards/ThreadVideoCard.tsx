@@ -1,146 +1,156 @@
-// 'use client';
+'use client';
 
-// import { useCallback, useEffect, useMemo, useState } from 'react';
-// import Player from 'video.js/dist/types/player';
-// import { VideoPlayer } from '../shared/VideoPlayer';
-// import useVideoPlayer from '@/store/videoPlayer';
+import { ThreadVideoCardProps, type MuxPlayerRef } from '@/lib/types';
+import { cn, getTargetRatio, getVideoThumbnailUrl } from '@/lib/utils';
+import useVideoPlayer from '@/store/videoPlayer';
+import MuxPlayer from '@mux/mux-player-react';
+import { Play, Volume2, VolumeX } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useInView } from 'react-intersection-observer';
 
-// interface ThreadVideoCardProps {
-//   video: string;
-//   postId: string;
-//   poster?: string;
-// }
+const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
+  playbackId,
+  encodingStatus,
+  aspectRatio,
+  threadId,
+  videoToken,
+  thumbnailToken,
+  originalDimensions,
+  className,
+}) => {
+  const playerRef = useRef<MuxPlayerRef>(null);
+  const [isPaused, setIsPaused] = useState(true);
 
-// const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
-//   video,
-//   postId,
-//   poster,
-// }) => {
-//   const [player, setPlayer] = useState<Player | null>(null);
-//   const {
-//     currentlyPlaying,
-//     setCurrentlyPlaying,
-//     isMuted,
-//     setIsMuted,
-//     timestamps,
-//     setTimestamp,
-//   } = useVideoPlayer();
+  const { ref, inView } = useInView({
+    threshold: 0.7,
+    triggerOnce: false,
+  });
 
-//   const isSafari = useMemo(() => {
-//     if (typeof window === 'undefined') return false;
-//     return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-//   }, []);
+  const { currentlyPlaying, setCurrentlyPlaying, isMuted, setIsMuted } =
+    useVideoPlayer();
 
-//   const sourceType = useMemo(() => {
-//     if (isSafari) {
-//       return 'application/vnd.apple.mpegurl';
-//     }
-//     return 'application/x-mpegURL';
-//   }, [isSafari]);
+  useEffect(() => {
+    if (inView && encodingStatus === 'ENCODED') {
+      setCurrentlyPlaying(threadId);
+    }
+  }, [inView, threadId, setCurrentlyPlaying, encodingStatus]);
 
-//   const playerOptions = useMemo(
-//     () => ({
-//       controls: true,
-//       loop: false,
-//       muted: true,
-//       playsinline: true,
-//       preload: 'metadata',
-//       autoplay: false,
-//       disablePictureInPicture: true,
-//       userActions: { hotkeys: false, doubleClick: false },
-//       controlBar: {
-//         pictureInPictureToggle: false,
-//         fullscreenToggle: false,
-//         volumePanel: true,
-//         progressControl: {
-//           seekBar: true,
-//         },
-//       },
-//       sources: [{ src: video, type: sourceType }],
-//       html5: {
-//         vhs: {
-//           overrideNative: !isSafari,
-//           withCredentials: false,
-//         },
-//         nativeTextTracks: isSafari,
-//         nativeAudioTracks: isSafari,
-//         nativeVideoTracks: isSafari,
-//       },
-//       hls: {
-//         debug: false,
-//         enableLowInitialPlaylist: true,
-//         manifestLoadingTimeOut: 10000,
-//       },
-//     }),
-//     [video, sourceType, isSafari]
-//   );
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!player) return;
 
-//   useEffect(() => {
-//     if (!player) return;
+    if (currentlyPlaying === threadId && inView) {
+      player.play().catch(() => {});
+      setIsPaused(false);
+    } else {
+      player.pause();
+      setIsPaused(true);
+    }
+  }, [currentlyPlaying, threadId, inView]);
 
-//     if (currentlyPlaying === postId && player.paused() === true) {
-//       player.play();
-//     } else if (currentlyPlaying !== postId && player.paused() === false) {
-//       player.pause();
-//     }
-//   }, [currentlyPlaying, player, postId]);
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMuted(!isMuted);
+  };
 
-//   useEffect(() => {
-//     if (!player) return;
+  const handleVolumeChange = useCallback(
+    (e: Event) => {
+      const target = e.target as HTMLVideoElement;
+      setIsMuted(target.muted);
+    },
+    [setIsMuted],
+  );
 
-//     const handleVolumeChange = () => {
-//       if (player.muted() !== isMuted) {
-//         setIsMuted(player.muted() as boolean);
-//       }
-//     };
+  const securePoster = useMemo(() => {
+    if (encodingStatus === 'ENCODED' && playbackId && thumbnailToken) {
+      return getVideoThumbnailUrl(playbackId, thumbnailToken);
+    }
+    return undefined;
+  }, [playbackId, thumbnailToken, encodingStatus]);
 
-//     player.muted(isMuted);
-//     player.on('volumechange', handleVolumeChange);
+  const tokens = useMemo(
+    () => ({
+      playback: videoToken,
+      thumbnail: thumbnailToken,
+    }),
+    [videoToken, thumbnailToken],
+  );
 
-//     return () => {
-//       player.off('volumechange', handleVolumeChange);
-//     };
-//   }, [player, isMuted, setIsMuted]);
+  const numericRatio = getTargetRatio(aspectRatio, originalDimensions);
 
-//   useEffect(() => {
-//     if (player && timestamps[postId]) {
-//       player.currentTime(timestamps[postId]);
-//     }
-//   }, [player, timestamps, postId]);
+  return (
+    <div className={cn('mt-2.5 mb-2 block px-2 md:px-4', className)}>
+      <div
+        ref={ref}
+        className={cn(
+          'relative overflow-hidden rounded-md border border-border/50',
+          'w-auto max-w-[85%] max-h-[360px]',
+        )}
+        style={{
+          aspectRatio: numericRatio,
+        }}
+        onClick={() => {
+          setCurrentlyPlaying(threadId);
+          if (playerRef.current?.paused) {
+            playerRef.current?.play();
+          } else {
+            playerRef.current?.pause();
+          }
+        }}
+      >
+        <MuxPlayer
+          ref={playerRef}
+          playbackId={encodingStatus === 'ENCODED' ? playbackId : undefined}
+          src={encodingStatus === 'PROCESSING' ? playbackId : undefined}
+          streamType='on-demand'
+          muted={isMuted}
+          tokens={tokens}
+          poster={securePoster}
+          loop
+          playsInline
+          preload='auto'
+          onVolumeChange={handleVolumeChange}
+          onPlay={() => setIsPaused(false)}
+          onPause={() => setIsPaused(true)}
+          style={{
+            height: '100%',
+            width: '100%',
+            objectFit: 'cover',
+            '--controls': 'none',
+          }}
+          accentColor='#bf1313'
+        />
 
-//   const handleTimeUpdate = useCallback(() => {
-//     if (player) {
-//       setTimestamp(postId, player.currentTime() as number);
-//     }
-//   }, [postId, player, setTimestamp]);
+        <div
+          className='absolute bottom-3 right-3 z-20 cursor-pointer p-2 bg-black/40 hover:bg-black/60 rounded-full transition-colors backdrop-blur-sm'
+          onClick={toggleMute}
+        >
+          {isMuted ? (
+            <VolumeX className='size-4 stroke-[2.5px]' />
+          ) : (
+            <Volume2 className='size-4 stroke-[2.5px]' />
+          )}
+        </div>
 
-//   const handleVideoClick = useCallback(() => {
-//     if (!player) return;
+        {isPaused && inView && encodingStatus === 'ENCODED' && (
+          <div className='absolute inset-0 flex-center bg-black/10 transition-all duration-200 pointer-events-none'>
+            <div
+              className={cn(
+                'bg-black/40 hover:bg-black/60 backdrop-blur-[2px] rounded-full p-3',
+                'pointer-events-auto cursor-pointer transition-transform hover:scale-110',
+              )}
+              onClick={() => {
+                setCurrentlyPlaying(threadId);
+                playerRef.current?.play();
+              }}
+            >
+              <Play className='size-5 fill-current' />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
-//     if (player.paused()) {
-//       setCurrentlyPlaying(postId);
-//       player.play();
-//     } else {
-//       player.pause();
-//     }
-//   }, [player, postId, setCurrentlyPlaying]);
-
-//   return (
-//     <div
-//       className='relative overflow-hidden rounded-lg size-[300px] cursor-pointer'
-//       onClick={handleVideoClick}
-//     >
-//       <VideoPlayer
-//         poster={poster}
-//         options={playerOptions}
-//         onPlayerReady={(p) => {
-//           setPlayer(p);
-//         }}
-//         onTimeUpdate={handleTimeUpdate}
-//         isThread
-//       />
-//     </div>
-//   );
-// };
-
-// export default ThreadVideoCard;
+export default ThreadVideoCard;

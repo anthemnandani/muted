@@ -19,7 +19,7 @@ const EmojiPicker = ({ onChange }: EmojiPickerProps) => {
       <PopoverTrigger>
         <div
           role='button'
-          className='text-gray-3 flex cursor-pointer select-none items-center gap-1 text-[15px]'
+          className='text-white/50 flex cursor-pointer select-none items-center gap-1 text-[15px]'
         >
           <Smile className='size-5 select-none transform transition-transform active:scale-75' />
         </div>

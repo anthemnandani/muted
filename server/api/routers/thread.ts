@@ -1,5 +1,4 @@
-import { PostMedia } from '@/lib/types';
-import { extractHashtags } from '@/lib/utils';
+import { enrichThreadWithTokens, extractHashtags } from '@/lib/utils';
 import {
   GET_LINK_PREVIEW,
   GET_MENTIONS,
@@ -8,7 +7,12 @@ import {
   getLikesWithBlockFilter,
 } from '@/server/constants';
 import { createId } from '@paralleldrive/cuid2';
-import { FileType, PostPrivacy } from '@prisma/client';
+import {
+  EncodingStatus,
+  FileType,
+  PostPrivacy,
+  PostStatus,
+} from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
 import z from 'zod';
@@ -54,11 +58,15 @@ export const threadRouter = createTRPCRouter({
   createThread: privateProcedure
     .input(
       z.object({
+        id: z.string(),
         text: z.string().optional(),
         media: z
           .object({
             fileType: z.nativeEnum(FileType),
-            fileUrl: z.string(),
+            fileUrl: z.string().optional(),
+            encodingStatus: z.nativeEnum(EncodingStatus).optional(),
+            videoId: z.string().optional(),
+            playbackId: z.string().optional(),
             aspectRatio: z.string().optional(),
             originalDimensions: z
               .object({
@@ -67,7 +75,7 @@ export const threadRouter = createTRPCRouter({
               })
               .optional(),
           })
-          .optional(),
+          .nullable(),
         mentions: z
           .array(
             z.object({
@@ -88,12 +96,22 @@ export const threadRouter = createTRPCRouter({
             image: z.string().nullable().optional(),
           })
           .optional(),
+        status: z.nativeEnum(PostStatus),
       }),
     )
     .mutation(
       async ({
         ctx,
-        input: { text, mentions, media, privacy, quoteId, linkPreview },
+        input: {
+          id,
+          text,
+          mentions,
+          media,
+          privacy,
+          quoteId,
+          linkPreview,
+          status,
+        },
       }) => {
         const { userId, db } = ctx;
 
@@ -122,17 +140,17 @@ export const threadRouter = createTRPCRouter({
             });
           }
 
-          const threadId = createId();
-          const path = `/${threadId}/`;
+          const path = `/${id}/`;
 
           const newThread = await prisma.thread.create({
             data: {
-              id: threadId,
+              id,
               text: filteredText,
               authorId: userId,
               privacy,
               quoteId,
               path,
+              status,
               linkPreviewUrl: linkPreviewResult?.url,
               media: media ? { create: media } : undefined,
               hashtags: {
@@ -218,6 +236,7 @@ export const threadRouter = createTRPCRouter({
           where: {
             parentId: null,
             privacy: 'ANYONE',
+            status: PostStatus.VISIBLE,
             text: searchQuery ? { contains: searchQuery } : undefined,
             createdAt: cursor ? { lt: cursor.createdAt } : undefined,
           },
@@ -262,13 +281,18 @@ export const threadRouter = createTRPCRouter({
 
       const pagedFeed = combinedFeed.slice(0, limit + 1);
 
-      const formattedThreads = pagedFeed.map((item) => ({
-        ...item,
-        likesCount: item.likes.length,
-        repostsCount: item.reposts.length,
-        repliesCount: item.repliesCount,
-        bookmarksCount: new Set(item.bookmarks.map((b) => b.userId)).size,
-      }));
+      const formattedThreads = await Promise.all(
+        pagedFeed.map(async (item) => {
+          const threadWithTokens = await enrichThreadWithTokens(item);
+          return {
+            ...threadWithTokens,
+            likesCount: item.likes.length,
+            repostsCount: item.reposts.length,
+            repliesCount: item.repliesCount,
+            bookmarksCount: new Set(item.bookmarks.map((b) => b.userId)).size,
+          };
+        }),
+      );
 
       let nextCursor;
       if (formattedThreads.length > limit) {
@@ -293,6 +317,7 @@ export const threadRouter = createTRPCRouter({
         where: {
           author: { followers: { some: { followerId: userId } } },
           parentId: null,
+          status: PostStatus.VISIBLE,
           text: searchQuery ? { contains: searchQuery } : undefined,
           createdAt: cursor ? { lt: cursor.createdAt } : undefined,
         },
@@ -525,6 +550,48 @@ export const threadRouter = createTRPCRouter({
         }
 
         return { createdRepost: false };
+      }
+    }),
+
+  deleteThread: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { db } = ctx;
+      try {
+        await db.$transaction(async (prisma) => {
+          const threadToDelete = await prisma.thread.findUnique({
+            where: { id: input.id },
+          });
+
+          if (!threadToDelete) {
+            return { success: false };
+          }
+
+          await prisma.thread.delete({
+            where: {
+              id: input.id,
+            },
+          });
+
+          return { success: true };
+        });
+
+        return { success: true };
+      } catch (error) {
+        console.error('Error in deleteThread:', error);
+
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to delete thread',
+        });
       }
     }),
 });

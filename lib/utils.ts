@@ -7,6 +7,7 @@ import { type UserResource } from '@clerk/types';
 import {
   AppealStatus,
   FileType,
+  Media,
   ReportStatus,
   UserStatus,
 } from '@prisma/client';
@@ -216,21 +217,6 @@ export function formatRepostTime(repostTimestamp: Date): string {
     return `${minutesDiff}m ago`;
   } else {
     return '';
-  }
-}
-
-export function isImageOrVideo(fileUrl: string): FileType | null {
-  const imageTypes = ['jpeg', 'jpg', 'png', 'webp', 'gif'];
-  const videoTypes = ['mp4', 'mov'];
-
-  const fileExtension = fileUrl.split('.').pop();
-
-  if (imageTypes.includes(fileExtension!.toLowerCase())) {
-    return FileType.IMAGE;
-  } else if (videoTypes.includes(fileExtension!.toLowerCase())) {
-    return FileType.VIDEO;
-  } else {
-    return null;
   }
 }
 
@@ -897,6 +883,38 @@ export async function enrichPostWithTokens<T extends { media: unknown }>(
 
   return {
     ...post,
+    media: mediaWithTokens,
+  };
+}
+
+export async function enrichThreadWithTokens<T extends { media: unknown }>(
+  thread: T,
+): Promise<T & { media: Media[] }> {
+  const mediaItems = (thread.media as Media[]) || [];
+
+  if (mediaItems.length === 0) {
+    return { ...thread, media: [] };
+  }
+
+  const mediaWithTokens = await Promise.all(
+    mediaItems.map(async (mediaItem) => {
+      if (mediaItem.fileType === FileType.VIDEO && mediaItem.playbackId) {
+        const { videoToken, thumbnailToken } = await createPlaybackTokens(
+          mediaItem.playbackId,
+        );
+
+        return {
+          ...mediaItem,
+          videoToken: videoToken!,
+          thumbnailToken: thumbnailToken!,
+        };
+      }
+      return mediaItem;
+    }),
+  );
+
+  return {
+    ...thread,
     media: mediaWithTokens,
   };
 }

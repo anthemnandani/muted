@@ -12,6 +12,7 @@ import { IGif } from '@giphy/js-types';
 import { X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDropzone, type Accept } from 'react-dropzone';
+import { toast } from 'sonner';
 import ThreadQuoteCard from '../cards/ThreadQuoteCard';
 import EmojiPicker from '../modals/EmojiPicker';
 import GifPicker from '../modals/GifPicker';
@@ -22,6 +23,8 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
   placeholder,
   textareaRef,
   handleMentionSearch,
+  isUploading,
+  uploadProgress,
 }) => {
   const { isMobile } = useWindow();
   const { user } = useUser();
@@ -76,7 +79,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
       const acceptedFile = acceptedFiles[0];
 
       if (!acceptedFile) {
-        alert('Selected file is too large!');
+        toast.error('Selected file is too large!');
         return;
       }
 
@@ -93,7 +96,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
         id: crypto.randomUUID(),
         file: acceptedFile,
         preview: previewURL,
-        type: 'gif',
+        type: acceptedFile.type as 'image' | 'video' | 'gif',
       });
     },
     [maxSize],
@@ -165,17 +168,33 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
               />
             )}
 
-            <Button
-              onClick={() => {
-                setThreadMedia(null);
-                setPreviewURL('');
-                setPreviewType(null);
-              }}
-              variant='ghost'
-              className='size-[25px] p-1 absolute top-2 right-2 z-50 rounded-full transform active:scale-75 transition-transform cursor-pointer bg-background '
-            >
-              <X />
-            </Button>
+            {isUploading && (
+              <div className='absolute inset-0 z-40 bg-black/50 flex-col-center backdrop-blur-[1px]'>
+                <div className='w-[80%] max-w-[200px] h-2 bg-white/20 rounded-full overflow-hidden'>
+                  <div
+                    className='h-full bg-primary-blue transition-all duration-200 ease-out'
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+                <span className='text-white text-xs font-medium mt-2'>
+                  Uploading... {Math.round(uploadProgress)}%
+                </span>
+              </div>
+            )}
+
+            {!isUploading && (
+              <Button
+                onClick={() => {
+                  setThreadMedia(null);
+                  setPreviewURL('');
+                  setPreviewType(null);
+                }}
+                variant='ghost'
+                className='size-[25px] p-1 absolute top-2 right-2 z-50 rounded-full transform active:scale-75 transition-transform cursor-pointer bg-background '
+              >
+                <X />
+              </Button>
+            )}
           </div>
         )}
 
@@ -185,7 +204,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
             ref={scrollDownRef}
             className='space-y-2 mt-1 select-none w-fit'
           >
-            <div className='text-gray-3 flex gap-1 select-none items-center text-[15px]'>
+            <div className='text-white/50 flex gap-1 select-none items-center text-[15px]'>
               <input {...getInputProps()} />
               <Icons.image className='size-5 select-none transform active:scale-75 transition-transform cursor-pointer' />
             </div>

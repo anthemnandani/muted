@@ -47,10 +47,10 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   const content = (
     <Fragment>
       <ThreadContent
+        id={id}
         text={text}
         mentions={mentions}
         media={media}
-        author={author}
         variant={variant}
       />
       {quoteId && (
@@ -127,7 +127,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
             repliesCount={repliesCount ?? 0}
             repostsCount={repostsCount ?? 0}
             reposts={reposts}
-            // media={media}
+            media={media}
             linkPreview={linkPreview}
             quoteId={quoteId}
             mentions={mentions}

@@ -3,15 +3,12 @@
 import useCreateThread from '@/hooks/useCreateThread';
 import useLinkPreview from '@/hooks/useLinkPreview';
 import useMentions from '@/hooks/useMentions';
+import useFileStore from '@/store/fileStore';
 import { useThreadStore } from '@/store/threadStore';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
-import { Check } from 'lucide-react';
-import Link from 'next/link';
-import { useRef } from 'react';
-import { toast } from 'sonner';
+import { Fragment, useRef, useState } from 'react';
 import CreateThreadDesktop from '../buttons/CreateThreadDesktop';
 import LinkPreviewCard from '../cards/LinkPreviewCard';
-import { Icons } from '../icons';
 import CreateThreadInput from '../inputs/CreateThreadInput';
 import PostPrivacyMenu from '../menus/PostPrivacyMenu';
 import UsersMenu from '../menus/UsersMenu';
@@ -24,6 +21,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../ui/dialog';
+import DiscardPost from './DiscardPost';
 
 const CreateThread = () => {
   const {
@@ -35,12 +33,22 @@ const CreateThread = () => {
     setText,
     linkPreview,
     setLinkPreview,
+    reset,
   } = useThreadStore();
+
+  const { threadMedia, setThreadMedia } = useFileStore();
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { isCreating, handleMutation } = useCreateThread();
+  const {
+    isCreating,
+    handleMutation,
+    isUploading,
+    uploadProgress,
+    cancelUpload,
+  } = useCreateThread();
   const { isLinkPreviewLoading } = useLinkPreview();
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
 
   const {
     mentionSuggestions,
@@ -56,106 +64,100 @@ const CreateThread = () => {
     updateMentionIndices,
   });
 
-  const handleSubmit = () => {
-    const promise = handleMutation();
+  const handleOpenChange = (isOpen: boolean) => {
+    if (isOpen) {
+      setOpenDialog(true);
+      return;
+    }
 
-    toast.promise(promise, {
-      loading: (
-        <div className='flex w-[270px] items-center justify-start gap-1.5 p-0'>
-          <div>
-            <Icons.loading className='size-8' />
-          </div>
-          Posting
-        </div>
-      ),
-      success: (data) => {
-        const threadInfo = data?.thread;
-        return (
-          <div className='flex-between w-[270px] p-0 '>
-            <div className='flex-center gap-1.5'>
-              <Check className='size-5' />
-              {/* {data?.isEdited ? 'Edited' : 'Posted'} */}
-              Posted
-            </div>
-            <Link
-              href={`/thread/${threadInfo.id}`}
-              className='hover:text-blue-900'
-            >
-              View
-            </Link>
-          </div>
-        );
-      },
-      error: 'Error',
-      richColors: true,
-    });
+    const hasUnsavedChanges = text.trim().length > 0 || !!threadMedia;
+
+    if (isUploading || hasUnsavedChanges) {
+      setShowDiscardDialog(true);
+    } else {
+      setOpenDialog(false);
+      setTimeout(() => {
+        setThreadMedia(null);
+        reset();
+      }, 300);
+    }
+  };
+
+  const handleConfirmDiscard = () => {
+    setShowDiscardDialog(false);
+    cancelUpload();
   };
 
   return (
-    <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-      <DialogTrigger>
-        <CreateThreadDesktop />
-      </DialogTrigger>
-      <DialogContent className='w-full select-none border-none bg-transparent shadow-none outline-none md:max-w-[668px]'>
-        <DialogHeader>
-          <DialogTitle>
-            <VisuallyHidden.Root>New thread</VisuallyHidden.Root>
-          </DialogTitle>
-        </DialogHeader>
-        <h1 className='mb-2 w-full text-center font-bold text-white'>
-          New thread
-        </h1>
-        <Card className='relative rounded-2xl border-none bg-gray-6 shadow-2xl ring-1 ring-[#393939] ring-offset-0'>
-          <div className='max-h-[calc(100vh-100px)] overflow-y-auto'>
-            <div className='p-6'>
-              <CreateThreadInput
-                placeholder='Start a thread...'
-                textareaRef={textareaRef}
-                handleMentionSearch={handleMentionSearch}
-              />
-            </div>
-            {showMentionSuggestions && (
-              <UsersMenu
-                showMentionSuggestions={showMentionSuggestions}
-                mentionSuggestions={mentionSuggestions}
-                cursorPosition={cursorPosition}
-                isLoading={isMentionsLoading}
-                onSelect={insertMention}
-              />
-            )}
-            {(linkPreview || isLinkPreviewLoading) && (
-              <div className='mx-6'>
-                <LinkPreviewCard
-                  url={linkPreview?.url!}
-                  title={linkPreview?.title || ''}
-                  description={linkPreview?.description || ''}
-                  image={linkPreview?.image || ''}
-                  isLoading={isLinkPreviewLoading}
-                  onClose={() => setLinkPreview(null)}
+    <Fragment>
+      <Dialog open={openDialog} onOpenChange={handleOpenChange}>
+        <DialogTrigger>
+          <CreateThreadDesktop />
+        </DialogTrigger>
+        <DialogContent className='w-full select-none border-none bg-transparent shadow-none outline-none md:max-w-[668px]'>
+          <DialogHeader>
+            <DialogTitle>
+              <VisuallyHidden.Root>New thread</VisuallyHidden.Root>
+            </DialogTitle>
+          </DialogHeader>
+          <h1 className='mb-2 w-full text-center font-bold text-white'>
+            New thread
+          </h1>
+          <Card className='relative rounded-2xl border-none bg-gray-6 shadow-2xl ring-1 ring-[#393939] ring-offset-0'>
+            <div className='max-h-[calc(100vh-100px)] overflow-y-auto'>
+              <div className='p-6'>
+                <CreateThreadInput
+                  placeholder='Start a thread...'
+                  textareaRef={textareaRef}
+                  handleMentionSearch={handleMentionSearch}
+                  isUploading={isUploading}
+                  uploadProgress={uploadProgress}
                 />
               </div>
-            )}
-            <div className='w-full flex-between p-6'>
-              <PostPrivacyMenu />
-              <Button
-                onClick={() => handleSubmit()}
-                variant='ghost'
-                className='bg-transparent border border-border-dark dark:border-border-light rounded-lg text-[14px] leading-none flex-center hover:bg-transparent dark:hover:bg-transparent disabled:cursor-not-allowed disabled:pointer-events-auto'
-                disabled={text === '' || isCreating}
-              >
-                {isCreating && (
-                  <Icons.spinner
-                    className='mr-2 size-4 animate-spin'
-                    aria-hidden='true'
+              {showMentionSuggestions && (
+                <UsersMenu
+                  showMentionSuggestions={showMentionSuggestions}
+                  mentionSuggestions={mentionSuggestions}
+                  cursorPosition={cursorPosition}
+                  isLoading={isMentionsLoading}
+                  onSelect={insertMention}
+                />
+              )}
+              {(linkPreview || isLinkPreviewLoading) && (
+                <div className='mx-6'>
+                  <LinkPreviewCard
+                    url={linkPreview?.url!}
+                    title={linkPreview?.title || ''}
+                    description={linkPreview?.description || ''}
+                    image={linkPreview?.image || ''}
+                    isLoading={isLinkPreviewLoading}
+                    onClose={() => setLinkPreview(null)}
                   />
-                )}
-                Post
-              </Button>
+                </div>
+              )}
+              <div className='w-full flex-between p-6'>
+                <PostPrivacyMenu />
+                <Button
+                  onClick={() => handleMutation()}
+                  variant='ghost'
+                  className='bg-transparent border border-border-light rounded-lg text-[14px] leading-none flex-center hover:bg-transparent disabled:cursor-not-allowed disabled:pointer-events-auto'
+                  disabled={text === '' || isCreating}
+                >
+                  {isCreating ? 'Posting...' : 'Post'}
+                </Button>
+              </div>
             </div>
-          </div>
-        </Card>
-      </DialogContent>
-    </Dialog>
+          </Card>
+        </DialogContent>
+      </Dialog>
+      <DiscardPost
+        isOpen={showDiscardDialog}
+        onOpenChange={setShowDiscardDialog}
+        discardPost={handleConfirmDiscard}
+        showTrigger={false}
+        type='Thread'
+      />
+    </Fragment>
   );
 };
 

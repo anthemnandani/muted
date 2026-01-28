@@ -2,15 +2,15 @@
 
 import { Icons } from '@/components/icons';
 import { Card } from '@/components/ui/card';
+import type { ThreadInfo } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils';
 import { api } from '@/trpc/react';
 import Link from 'next/link';
 import React from 'react';
+import ThreadContent from '../shared/ThreadContent';
 import UserAvatar from '../shared/UserAvatar';
 import Username from '../user/Username';
 import LinkPreviewCard from './LinkPreviewCard';
-import type { ThreadInfo } from '@/lib/types';
-import ThreadContent from '../shared/ThreadContent';
 
 const ThreadQuoteCard: React.FC<ThreadInfo> = ({
   author,
@@ -45,6 +45,7 @@ const ThreadQuoteCard: React.FC<ThreadInfo> = ({
     return (
       <Link href={`/thread/${id}`} className='w-full'>
         <RenderCard
+          id={id}
           author={user}
           text={text}
           media={media}
@@ -71,6 +72,7 @@ const ThreadQuoteCard: React.FC<ThreadInfo> = ({
 export default ThreadQuoteCard;
 
 const RenderCard: React.FC<ThreadInfo> = ({
+  id,
   author,
   text,
   media,
@@ -95,12 +97,7 @@ const RenderCard: React.FC<ThreadInfo> = ({
         </div>
       </div>
 
-      <ThreadContent
-        text={text!}
-        author={author!}
-        media={media}
-        mentions={mentions}
-      />
+      <ThreadContent id={id!} text={text!} media={media} mentions={mentions} />
 
       {linkPreview && (
         <div className='mx-2 my-2'>

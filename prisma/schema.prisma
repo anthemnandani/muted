@@ -173,7 +173,7 @@ model Thread {
   lastEditedAt  DateTime?
 
   privacy PostPrivacy @default(ANYONE)
-  status  PostStatus  @default(VISIBLE)
+  status  PostStatus  @default(HIDDEN)
 
   @@unique([createdAt, id])
   @@index([authorId])
@@ -197,13 +197,12 @@ model Media {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
-  fileUrl  String
+  fileUrl  String?
   fileType FileType
   altText  String?
 
-  width       Int?
-  height      Int?
-  aspectRatio String?
+  originalDimensions Json?
+  aspectRatio        String?
 
   videoId        String?
   playbackId     String?

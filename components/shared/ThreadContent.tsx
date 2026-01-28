@@ -1,43 +1,46 @@
 import ThreadText from '@/components/shared/ThreadText';
-import type { ThreadContentProps } from '@/lib/types';
-import { isImageOrVideo } from '@/lib/utils';
+import { type OriginalDimensions, ThreadContentProps } from '@/lib/types';
 import { FileType } from '@prisma/client';
-import React from 'react';
+import { Fragment } from 'react';
 import ThreadImageCard from '../cards/ThreadImageCard';
+import ThreadVideoCard from '../cards/ThreadVideoCard';
 
 const ThreadContent = ({
+  id,
   text,
   mentions,
-  author,
   media,
   variant = 'default',
 }: ThreadContentProps) => {
   const threadMedia = media?.[0];
   return (
-    <React.Fragment>
+    <Fragment>
       {text && <ThreadText text={text} mentions={mentions} variant={variant} />}
       {threadMedia && (
-        <>
-          {isImageOrVideo(threadMedia.fileUrl) === FileType.IMAGE && (
+        <Fragment>
+          {(threadMedia.fileType === FileType.IMAGE ||
+            threadMedia.fileType === FileType.GIF) && (
             <ThreadImageCard
-              image={threadMedia.fileUrl}
+              image={threadMedia.fileUrl!}
               fileType={threadMedia.fileType}
             />
           )}
-          {/* {media.fileType === 'video' && (
+          {threadMedia.fileType === FileType.VIDEO && (
             <ThreadVideoCard
-              video={media.fileUrl! as string}
-              poster={media.thumbnailUrl! as string}
-              aspectRatio={media.aspectRatio}
-              author={author!}
-              createdAt={createdAt!}
-              postId={id!}
-              text={text}
+              playbackId={threadMedia.playbackId!}
+              encodingStatus={threadMedia.encodingStatus!}
+              aspectRatio={threadMedia.aspectRatio!}
+              thumbnailToken={threadMedia.thumbnailToken!}
+              videoToken={threadMedia.videoToken!}
+              originalDimensions={
+                threadMedia.originalDimensions as OriginalDimensions
+              }
+              threadId={id!}
             />
-          )} */}
-        </>
+          )}
+        </Fragment>
       )}
-    </React.Fragment>
+    </Fragment>
   );
 };
 

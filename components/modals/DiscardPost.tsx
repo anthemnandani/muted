@@ -19,6 +19,7 @@ const DiscardPost = ({
   isOpen: externalIsOpen,
   onOpenChange: externalOnOpenChange,
   showTrigger = false,
+  type = 'Post',
 }: DiscardPostProps) => {
   const [internalIsOpen, setInternalIsOpen] = useState(false);
 
@@ -30,7 +31,7 @@ const DiscardPost = ({
       {showTrigger && (
         <DialogTrigger asChild>
           <button
-            aria-label='Discard Post'
+            aria-label={`Discard ${type}`}
             type='button'
             className='font-normal'
           >
@@ -44,14 +45,14 @@ const DiscardPost = ({
       >
         <DialogHeader>
           <DialogTitle>
-            <VisuallyHidden.Root>Discard Post</VisuallyHidden.Root>
+            <VisuallyHidden.Root>Discard {type}</VisuallyHidden.Root>
           </DialogTitle>
         </DialogHeader>
         <Card className='rounded-2xl border-none bg-background dark:bg-gray-6 shadow-2xl ring-1 ring-gray-7 ring-offset-0'>
           <div className='w-full text-center px-6 pt-6 pb-5'>
-            <div className='font-normal text-xl pb-2'>Discard post?</div>
+            <div className='font-normal text-xl pb-2'>Discard {type}?</div>
             <p className='text-[15px] text-gray-3'>
-              If you leave, your media will be discarded.
+              If you leave, your {type.toLowerCase()} will be discarded.
             </p>
           </div>
           <div className='flex-between w-full border-t-[0.8px] border-t-gray-7'>

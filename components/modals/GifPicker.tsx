@@ -43,7 +43,7 @@ const GifPicker: React.FC<GifPickerProps> = ({ onGifSelect }) => {
     debounce((term: string) => {
       setDebouncedTerm(term);
     }, 500),
-    []
+    [],
   );
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,7 +71,7 @@ const GifPicker: React.FC<GifPickerProps> = ({ onGifSelect }) => {
   return (
     <Dialog open={openGifPicker} onOpenChange={setOpenGifPicker}>
       <DialogTrigger asChild>
-        <div className='text-gray-3 flex gap-1 select-none items-center text-[15px]'>
+        <div className='text-white/50 flex gap-1 select-none items-center text-[15px]'>
           <Icons.gif className='size-5 select-none transform active:scale-75 transition-transform cursor-pointer' />
         </div>
       </DialogTrigger>
@@ -80,7 +80,7 @@ const GifPicker: React.FC<GifPickerProps> = ({ onGifSelect }) => {
           'w-full md:max-w-[668px]',
           'select-none border-none bg-transparent shadow-none outline-none',
           'duration-300 ease-in-out transition-all',
-          'motion-reduce:transition-none motion-reduce:transform-none'
+          'motion-reduce:transition-none motion-reduce:transform-none',
         )}
       >
         <DialogHeader>

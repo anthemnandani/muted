@@ -9,6 +9,7 @@ import type {
   FileType,
   FilteredKeyword,
   FollowRequestStatus,
+  Media,
   MessageReportCategory,
   MessageRequestStatus,
   MessageStatus,
@@ -18,7 +19,6 @@ import type {
   Role,
   User,
   UserStatus,
-  Media,
 } from '@prisma/client';
 import { PostPrivacy, Privacy } from '@prisma/client';
 import type { inferRouterOutputs } from '@trpc/server';
@@ -47,10 +47,7 @@ export type PostMedia = {
   aspectRatio?: string;
   videoToken?: string;
   thumbnailToken?: string;
-  originalDimensions?: {
-    width: number;
-    height: number;
-  };
+  originalDimensions?: OriginalDimensions;
   videoId?: string;
   playbackId?: string;
   encodingStatus?: EncodingStatus;
@@ -126,10 +123,10 @@ export interface UserProfileContentProps {
 }
 
 export interface ThreadContentProps {
+  id: string;
   text: string;
   media?: Media[] | null;
   mentions?: Mention[];
-  author: AuthorInfoProps;
   variant?: 'default' | 'reply';
 }
 
@@ -315,6 +312,8 @@ export interface CreateThreadInputProps {
   placeholder: string;
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   handleMentionSearch: (value: string, cursorPosition: number) => void;
+  isUploading: boolean;
+  uploadProgress: number;
 }
 
 export interface PostsListProps {
@@ -451,16 +450,18 @@ export type Collection = {
   isDefault: boolean;
 };
 
+export type OriginalDimensions = {
+  width: number;
+  height: number;
+};
+
 export type MediaFile = {
   file: File;
   preview: string;
   id: string;
   type: 'image' | 'video' | 'gif';
   aspectRatio?: string;
-  originalDimensions?: {
-    width: number;
-    height: number;
-  };
+  originalDimensions?: OriginalDimensions;
   originalWidth?: number;
   originalHeight?: number;
   poster?: string;
@@ -586,11 +587,16 @@ export interface MediaLayerProps {
 export interface PostImageCardProps {
   image: string;
   aspectRatio?: string;
-  originalDimensions?: { width: number; height: number };
+  originalDimensions?: OriginalDimensions;
   text: string | null;
   isAdminPanel?: boolean;
   isCarousel?: boolean;
   isModal?: boolean;
+}
+
+export interface ThreadImageCardProps {
+  image: string;
+  fileType: FileType;
 }
 
 export interface PostVideoCardProps {
@@ -598,13 +604,24 @@ export interface PostVideoCardProps {
   postId: string;
   encodingStatus?: EncodingStatus;
   aspectRatio?: string;
-  originalDimensions?: { width: number; height: number };
+  originalDimensions?: OriginalDimensions;
   videoToken?: string;
   thumbnailToken?: string;
   showControls: boolean;
   isCarousel?: boolean;
   onPlayerRegister?: (player: MuxPlayerRef | null) => void;
   isModal?: boolean;
+}
+
+export interface ThreadVideoCardProps {
+  playbackId: string;
+  encodingStatus: EncodingStatus;
+  aspectRatio: string;
+  threadId: string;
+  videoToken: string;
+  thumbnailToken: string;
+  className?: string;
+  originalDimensions?: OriginalDimensions;
 }
 
 export interface VolumeControlsProps {
@@ -687,7 +704,7 @@ export interface VideoPlayerProps {
   videoToken?: string;
   thumbnailToken?: string;
   aspectRatio?: string;
-  originalDimensions?: { width: number; height: number };
+  originalDimensions?: OriginalDimensions;
   isCarousel?: boolean;
   isModal?: boolean;
 }
@@ -1124,6 +1141,7 @@ export interface DiscardPostProps {
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   showTrigger?: boolean;
+  type?: 'Post' | 'Thread';
 }
 
 export interface SidebarWrapperProps {
@@ -1545,6 +1563,9 @@ export type AdminReportPost = NonNullable<AdminReport['post']>;
 export type MuxPlayerRef = ElementRef<typeof MuxPlayer>;
 
 export type UploadResult = {
-  fileUrl: string;
   fileType: FileType;
+  fileUrl?: string;
+  videoId?: string;
+  playbackId?: string;
+  encodingStatus?: EncodingStatus;
 } | null;
