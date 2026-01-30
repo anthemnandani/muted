@@ -195,6 +195,32 @@ export type Mention = {
   index: number;
 };
 
+export interface ThreadHeaderProps {
+  author: AuthorInfoProps;
+  createdAt: Date;
+  id: string;
+  repostedBy?: AuthorInfoProps;
+  currentText: string;
+  variant: 'default' | 'reply';
+  linkPreview: LinkPreview | null;
+  hideLikes: boolean;
+  privacy: PostPrivacy;
+  mentions?: Mention[];
+}
+
+export interface ThreadActionMenuProps {
+  authorId: string;
+  id: string;
+  repostedBy?: AuthorInfoProps;
+  createdAt: Date;
+  currentText: string;
+  username: string;
+  hideLikes: boolean;
+  privacy: PostPrivacy;
+  mentions?: Mention[];
+  linkPreview: LinkPreview | null;
+}
+
 export interface FeedWrapperProps {
   threads?: ThreadProps[];
   isLoading: boolean;
@@ -723,8 +749,8 @@ export interface FilterButtonProps {
 }
 
 export interface UseDeletePostProps {
-  postId: string;
-  closeMenu?: () => void;
+  id: string;
+  onClose: () => void;
   isAdmin?: boolean;
 }
 
@@ -1297,15 +1323,6 @@ export interface DropzoneProps {
 export interface CreateThreadProps extends DropzoneProps {
   isLoading: boolean;
   handleSubmit: (value: boolean) => void;
-}
-
-export interface PostHeaderProps {
-  author: AuthorInfoProps;
-  createdAt: Date;
-  id: string;
-  currentText: string;
-  pinned?: boolean;
-  hideLikes?: boolean;
 }
 
 export interface PostTextProps {

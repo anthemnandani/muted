@@ -2,15 +2,11 @@ import { UseDeletePostProps } from '@/lib/types';
 import { api } from '@/trpc/react';
 import { toast } from 'sonner';
 
-const useDeletePost = ({
-  id,
-  onClose,
-  isAdmin = false,
-}: UseDeletePostProps) => {
+const useDeleteThread = ({ id, onClose, isAdmin }: UseDeletePostProps) => {
   const trpcUtils = api.useUtils();
 
-  const { mutateAsync: deletePost, isPending } =
-    api.post.deletePost.useMutation({
+  const { mutateAsync: deleteThread, isPending } =
+    api.thread.deleteThread.useMutation({
       onSettled: async () => {
         if (isAdmin) await trpcUtils.admin.getAllPosts.invalidate();
         else await trpcUtils.invalidate();
@@ -18,19 +14,19 @@ const useDeletePost = ({
       retry: false,
     });
 
-  const handleDeletePost = () => {
+  const handleDeleteThread = () => {
     onClose();
-    const promise = deletePost({ id });
+    const promise = deleteThread({ id });
 
     toast.promise(promise, {
       loading: 'Deleting...',
       success: () => 'Deleted',
-      error: 'Error deleting post.',
+      error: 'Error deleting thread.',
       richColors: true,
     });
   };
 
-  return { handleDeletePost, isDeleting: isPending };
+  return { handleDeleteThread, isDeleting: isPending };
 };
 
-export default useDeletePost;
+export default useDeleteThread;

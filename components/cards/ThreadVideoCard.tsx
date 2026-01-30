@@ -139,7 +139,8 @@ const ThreadVideoCard: React.FC<ThreadVideoCardProps> = ({
                 'bg-black/40 hover:bg-black/60 backdrop-blur-[2px] rounded-full p-3',
                 'pointer-events-auto cursor-pointer transition-transform hover:scale-110',
               )}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setCurrentlyPlaying(threadId);
                 playerRef.current?.play();
               }}

@@ -10,7 +10,14 @@ import { useThreadStore } from '@/store/threadStore';
 import { useUser } from '@clerk/nextjs';
 import { IGif } from '@giphy/js-types';
 import { X } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useDropzone, type Accept } from 'react-dropzone';
 import { toast } from 'sonner';
 import ThreadQuoteCard from '../cards/ThreadQuoteCard';
@@ -28,7 +35,8 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
 }) => {
   const { isMobile } = useWindow();
   const { user } = useUser();
-  const { openDialog, text, setText, quoteInfo } = useThreadStore();
+  const { openDialog, text, setText, quoteInfo, editThreadInfo } =
+    useThreadStore();
   const userFullName = useMemo(
     () => getFullName(user?.firstName ?? '', user?.lastName ?? ''),
     [user],
@@ -42,6 +50,16 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
     null,
   );
   const [previewURL, setPreviewURL] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (editThreadInfo && textareaRef.current) {
+      setTimeout(() => {
+        const length = textareaRef.current?.value.length || 0;
+        textareaRef.current?.focus();
+        textareaRef.current?.setSelectionRange(length, length);
+      }, 0);
+    }
+  }, [editThreadInfo, textareaRef]);
 
   const handleEmojiSelect = (emoji: string) => {
     const cursorPosition = textareaRef.current?.selectionStart || 0;
@@ -199,24 +217,28 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
         )}
 
         <div className='flex items-center gap-2'>
-          <div
-            {...getRootProps()}
-            ref={scrollDownRef}
-            className='space-y-2 mt-1 select-none w-fit'
-          >
-            <div className='text-white/50 flex gap-1 select-none items-center text-[15px]'>
-              <input {...getInputProps()} />
-              <Icons.image className='size-5 select-none transform active:scale-75 transition-transform cursor-pointer' />
-            </div>
-          </div>
+          {!editThreadInfo && (
+            <Fragment>
+              <div
+                {...getRootProps()}
+                ref={scrollDownRef}
+                className='space-y-2 mt-1 select-none w-fit'
+              >
+                <div className='text-white/50 flex gap-1 select-none items-center text-[15px]'>
+                  <input {...getInputProps()} />
+                  <Icons.image className='size-5 select-none transform active:scale-75 transition-transform cursor-pointer' />
+                </div>
+              </div>
 
-          <GifPicker
-            onGifSelect={(gif: IGif) => {
-              setPreviewURL(gif.images.original.url);
-              setThreadMedia(gif);
-              setPreviewType('image');
-            }}
-          />
+              <GifPicker
+                onGifSelect={(gif: IGif) => {
+                  setPreviewURL(gif.images.original.url);
+                  setThreadMedia(gif);
+                  setPreviewType('image');
+                }}
+              />
+            </Fragment>
+          )}
           <EmojiPicker onChange={handleEmojiSelect} />
         </div>
 

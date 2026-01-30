@@ -4,8 +4,6 @@ import type { ConfirmDialogProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
-import { Icons } from '../icons';
-import MenuItem from '../shared/MenuItem';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import {
@@ -22,22 +20,14 @@ const ConfirmDialog = ({
   setOpen,
   onClick,
   isLoading,
-  trigger,
   btnClassName,
   closeMenu,
   btnTitle = 'Delete',
+  trigger,
 }: ConfirmDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger ?? (
-          <MenuItem
-            icon={Icons.delete}
-            label='Delete'
-            className='text-primary-red focus:text-primary-red'
-          />
-        )}
-      </DialogTrigger>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent
         isSecondDialog
         className='w-full !max-w-[350px] select-none border-none bg-transparent shadow-none outline-none z-[1001] box-content'
@@ -67,7 +57,7 @@ const ConfirmDialog = ({
               variant='ghost'
               className={cn(
                 'flex-1 text-base text-primary-red hover:text-primary-red/75 font-bold rounded-none rounded-r-2xl h-[54px] ring-0 hover:bg-transparent',
-                btnClassName
+                btnClassName,
               )}
               onClick={onClick}
               disabled={isLoading}

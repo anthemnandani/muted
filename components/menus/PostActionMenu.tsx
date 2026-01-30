@@ -46,15 +46,18 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
   const { openPostReport } = useReportStore();
   const { openDeleteDialog, setOpenDeleteDialog } = useDeletePostStore();
   const { handleDeletePost, isDeleting } = useDeletePost({
-    postId,
-    closeMenu: () => setMenuOpen(false),
+    id: postId,
+    onClose: () => {
+      setOpenDeleteDialog(false);
+      setMenuOpen(false);
+    },
   });
 
   const { handleTogglePinPost, isLoading: isLoadingPinPost } = useTogglePinPost(
     {
       postId,
       isPinned: pinned!,
-    }
+    },
   );
 
   const { handleToggleHidePost, isLoading: isLoadingHidePost } =
@@ -80,104 +83,115 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
   };
 
   return (
-    <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen} modal={false}>
-      <DropdownMenuTrigger asChild>
-        <div
+    <Fragment>
+      <ConfirmDialog
+        open={openDeleteDialog}
+        setOpen={setOpenDeleteDialog}
+        closeMenu={() => setMenuOpen(false)}
+        title='Delete Post'
+        description="If you delete this post, you won't be able to restore it."
+        onClick={handleDeletePost}
+        isLoading={isDeleting}
+      />
+      <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen} modal={false}>
+        <DropdownMenuTrigger asChild>
+          <div
+            className={cn(
+              'cursor-pointer',
+              isModal ? 'post-detail-btn' : 'group dropdown-btn',
+              showControls ? 'opacity-100' : 'opacity-0',
+            )}
+          >
+            <MoreHorizontal className='size-6 text-white stroke-[2.5px]' />
+          </div>
+        </DropdownMenuTrigger>
+
+        <DropdownMenuContent
+          align='end'
           className={cn(
-            'cursor-pointer',
-            isModal ? 'post-detail-btn' : 'group dropdown-btn',
-            showControls ? 'opacity-100' : 'opacity-0'
+            'w-[200px] p-2 border-none rounded-xl bg-black/95 z-[3001]',
+            isModal && 'bg-gray-6',
           )}
         >
-          <MoreHorizontal className='size-6 text-white stroke-[2.5px]' />
-        </div>
-      </DropdownMenuTrigger>
+          {user?.id !== author.id ? (
+            <Fragment>
+              <MenuItem
+                icon={Icons.notInterested}
+                label='Not interested'
+                onClick={() => handleToggleHidePost({ postId })}
+                disabled={isLoadingHidePost}
+              />
+              <Separator />
+              <MenuItem
+                icon={Icons.mute}
+                label={isMutedUser(author.id) ? 'Unmute' : 'Mute'}
+                onClick={() => handleToggleMuteUser({ userId: author.id })}
+                disabled={isLoadingMuteUser}
+              />
+              <Separator />
+              <BlockUser
+                username={author.username}
+                userId={author.id}
+                closeMenu={() => setMenuOpen(false)}
+              />
+              <Separator />
+              <MenuItem
+                icon={Icons.report}
+                label='Report'
+                className='text-primary-red focus:text-primary-red'
+                onClick={() => {
+                  openPostReport(postId);
+                }}
+              />
+            </Fragment>
+          ) : (
+            <Fragment>
+              {timeLeft > 0 && (
+                <Fragment>
+                  <MenuItem
+                    icon={Edit}
+                    label={
+                      <div className='flex-between w-full'>
+                        <p>Edit</p>
+                        <p className='text-[15px] text-gray-3'>
+                          {formatTimeLeft(timeLeft)}
+                        </p>
+                      </div>
+                    }
+                    onClick={handleEdit}
+                  />
+                  <Separator />
+                </Fragment>
+              )}
 
-      <DropdownMenuContent
-        align='end'
-        className={cn(
-          'w-[200px] p-2 border-none rounded-xl bg-black/95 z-[3001]',
-          isModal && 'bg-gray-6'
-        )}
-      >
-        {user?.id !== author.id ? (
-          <Fragment>
-            <MenuItem
-              icon={Icons.notInterested}
-              label='Not interested'
-              onClick={() => handleToggleHidePost({ postId })}
-              disabled={isLoadingHidePost}
-            />
-            <Separator />
-            <MenuItem
-              icon={Icons.mute}
-              label={isMutedUser(author.id) ? 'Unmute' : 'Mute'}
-              onClick={() => handleToggleMuteUser({ userId: author.id })}
-              disabled={isLoadingMuteUser}
-            />
-            <Separator />
-            <BlockUser
-              username={author.username}
-              userId={author.id}
-              closeMenu={() => setMenuOpen(false)}
-            />
-            <Separator />
-            <MenuItem
-              icon={Icons.report}
-              label='Report'
-              className='text-primary-red focus:text-primary-red'
-              onClick={() => {
-                openPostReport(postId);
-              }}
-            />
-          </Fragment>
-        ) : (
-          <Fragment>
-            {timeLeft > 0 && (
-              <Fragment>
-                <MenuItem
-                  icon={Edit}
-                  label={
-                    <div className='flex-between w-full'>
-                      <p>Edit</p>
-                      <p className='text-[15px] text-gray-3'>
-                        {formatTimeLeft(timeLeft)}
-                      </p>
-                    </div>
-                  }
-                  onClick={handleEdit}
-                />
-                <Separator />
-              </Fragment>
-            )}
+              <MenuItem
+                icon={pinned ? PinOff : Icons.profilePin}
+                label={pinned ? 'Unpin from profile' : 'Pin to profile'}
+                onClick={handleTogglePinPost}
+                disabled={isLoadingPinPost}
+              />
+              <Separator />
 
-            <MenuItem
-              icon={pinned ? PinOff : Icons.profilePin}
-              label={pinned ? 'Unpin from profile' : 'Pin to profile'}
-              onClick={handleTogglePinPost}
-              disabled={isLoadingPinPost}
-            />
-            <Separator />
-
-            <ConfirmDialog
-              open={openDeleteDialog}
-              setOpen={setOpenDeleteDialog}
-              closeMenu={() => setMenuOpen(false)}
-              title='Delete Post'
-              description="If you delete this post, you won't be able to restore it."
-              onClick={handleDeletePost}
-              isLoading={isDeleting}
-            />
-          </Fragment>
-        )}
-        <Separator />
-        <MenuItem
-          icon={Icons.copyLink}
-          label='Copy link'
-          onClick={handleCopyLink}
-        />
-      </DropdownMenuContent>
-    </DropdownMenu>
+              <MenuItem
+                icon={Icons.delete}
+                label='Delete'
+                className='text-primary-red focus:text-primary-red'
+                onClick={() => {
+                  setOpenDeleteDialog(true);
+                  setMenuOpen(false);
+                }}
+              />
+            </Fragment>
+          )}
+          <Separator />
+          <MenuItem
+            icon={Icons.copyLink}
+            label='Copy link'
+            onClick={handleCopyLink}
+          />
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </Fragment>
   );
 };
 

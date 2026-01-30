@@ -1,20 +1,11 @@
-import type { AuthorInfoProps } from '@/lib/types';
+import { ThreadHeaderProps } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils';
+import Link from 'next/link';
 import ThreadActionMenu from '../menus/ThreadActionsMenu';
 import UserProfile from '../modals/UserProfile';
 import Username from '../user/Username';
 
-interface PostHeaderProps {
-  author: AuthorInfoProps;
-  createdAt: Date;
-  id: string;
-  repostedBy?: AuthorInfoProps;
-  currentText: string;
-  variant: 'default' | 'reply';
-  hideLikes: boolean;
-}
-
-const PostHeader: React.FC<PostHeaderProps> = ({
+const ThreadHeader: React.FC<ThreadHeaderProps> = ({
   author,
   createdAt,
   id,
@@ -22,11 +13,14 @@ const PostHeader: React.FC<PostHeaderProps> = ({
   currentText,
   variant,
   hideLikes,
+  mentions,
+  privacy,
+  linkPreview,
 }) => (
   <div className='flex justify-between w-full space-x-2 xs:space-x-4 px-2 md:px-4'>
     <UserProfile author={author} />
     <div className='flex-between w-full'>
-      <ul className='flex flex-wrap content-center items-center text-sm text-gray-3 sm:content-baseline gap-1 sm:gap-2'>
+      <ul className='flex flex-wrap content-center items-center text-sm text-white/50 sm:content-baseline gap-1 sm:gap-2'>
         <Username author={author} />
 
         {variant === 'default' && (
@@ -36,7 +30,7 @@ const PostHeader: React.FC<PostHeaderProps> = ({
             </li>
 
             <li className='hidden hover:cursor-pointer hover:text-gray-2 sm:block'>
-              <a href={`/@${author.username}`}>@{author.username}</a>
+              <Link href={`/@${author.username}`}>@{author.username}</Link>
             </li>
             <li>
               <div className='hidden size-1 rounded-full bg-gray-3 sm:block'></div>
@@ -44,21 +38,24 @@ const PostHeader: React.FC<PostHeaderProps> = ({
           </>
         )}
         <li className='mr-2 sm:mr-0'>
-          <a href={`/post/${id}`}>{formatTimeAgo(createdAt)}</a>
+          <Link href={`/thread/${id}`}>{formatTimeAgo(createdAt)}</Link>
         </li>
       </ul>
 
       <ThreadActionMenu
         authorId={author.id}
         username={author.username}
-        postId={id}
+        id={id}
         repostedBy={repostedBy}
         createdAt={createdAt}
         currentText={currentText}
         hideLikes={hideLikes}
+        mentions={mentions}
+        privacy={privacy}
+        linkPreview={linkPreview}
       />
     </div>
   </div>
 );
 
-export default PostHeader;
+export default ThreadHeader;

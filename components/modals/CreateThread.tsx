@@ -6,7 +6,7 @@ import useMentions from '@/hooks/useMentions';
 import useFileStore from '@/store/fileStore';
 import { useThreadStore } from '@/store/threadStore';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
-import { Fragment, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import CreateThreadDesktop from '../buttons/CreateThreadDesktop';
 import LinkPreviewCard from '../cards/LinkPreviewCard';
 import CreateThreadInput from '../inputs/CreateThreadInput';
@@ -34,6 +34,8 @@ const CreateThread = () => {
     linkPreview,
     setLinkPreview,
     reset,
+    editThreadInfo,
+    setPrivacy,
   } = useThreadStore();
 
   const { threadMedia, setThreadMedia } = useFileStore();
@@ -42,7 +44,9 @@ const CreateThread = () => {
 
   const {
     isCreating,
-    handleMutation,
+    isEditing,
+    handleCreate,
+    handleEdit,
     isUploading,
     uploadProgress,
     cancelUpload,
@@ -64,6 +68,29 @@ const CreateThread = () => {
     updateMentionIndices,
   });
 
+  useEffect(() => {
+    if (openDialog && editThreadInfo) {
+      setText(editThreadInfo.text);
+      setPrivacy(editThreadInfo.privacy);
+      setLinkPreview(editThreadInfo.linkPreview);
+
+      if (editThreadInfo.mentions && editThreadInfo.mentions.length > 0) {
+        editThreadInfo.mentions.forEach((m) => {
+          const mentionString = `@${m.user.username}`;
+          const index = editThreadInfo.text.indexOf(mentionString);
+          if (index >= 0) {
+            addValidMention({
+              username: m.user.username,
+              mentionedUserId: m.user.id,
+              startIndex: index,
+              endIndex: index + mentionString.length,
+            });
+          }
+        });
+      }
+    }
+  }, [openDialog, editThreadInfo, setText, setPrivacy, addValidMention]);
+
   const handleOpenChange = (isOpen: boolean) => {
     if (isOpen) {
       setOpenDialog(true);
@@ -71,6 +98,11 @@ const CreateThread = () => {
     }
 
     const hasUnsavedChanges = text.trim().length > 0 || !!threadMedia;
+
+    if (editThreadInfo) {
+      reset();
+      return;
+    }
 
     if (isUploading || hasUnsavedChanges) {
       setShowDiscardDialog(true);
@@ -88,6 +120,13 @@ const CreateThread = () => {
     cancelUpload();
   };
 
+  const buttonText = useMemo(() => {
+    if (isCreating) return 'Posting...';
+    if (isEditing) return 'Saving...';
+    if (editThreadInfo) return 'Save';
+    return 'Post';
+  }, [isCreating, isEditing, editThreadInfo]);
+
   return (
     <Fragment>
       <Dialog open={openDialog} onOpenChange={handleOpenChange}>
@@ -97,11 +136,13 @@ const CreateThread = () => {
         <DialogContent className='w-full select-none border-none bg-transparent shadow-none outline-none md:max-w-[668px]'>
           <DialogHeader>
             <DialogTitle>
-              <VisuallyHidden.Root>New thread</VisuallyHidden.Root>
+              <VisuallyHidden.Root>
+                {editThreadInfo ? 'Edit thread' : 'New thread'}
+              </VisuallyHidden.Root>
             </DialogTitle>
           </DialogHeader>
           <h1 className='mb-2 w-full text-center font-bold text-white'>
-            New thread
+            {editThreadInfo ? 'Edit thread' : 'New thread'}
           </h1>
           <Card className='relative rounded-2xl border-none bg-gray-6 shadow-2xl ring-1 ring-[#393939] ring-offset-0'>
             <div className='max-h-[calc(100vh-100px)] overflow-y-auto'>
@@ -138,12 +179,18 @@ const CreateThread = () => {
               <div className='w-full flex-between p-6'>
                 <PostPrivacyMenu />
                 <Button
-                  onClick={() => handleMutation()}
+                  onClick={() => {
+                    if (editThreadInfo) {
+                      handleEdit();
+                    } else {
+                      handleCreate();
+                    }
+                  }}
                   variant='ghost'
                   className='bg-transparent border border-border-light rounded-lg text-[14px] leading-none flex-center hover:bg-transparent disabled:cursor-not-allowed disabled:pointer-events-auto'
-                  disabled={text === '' || isCreating}
+                  disabled={text === '' || isCreating || isEditing}
                 >
-                  {isCreating ? 'Posting...' : 'Post'}
+                  {buttonText}
                 </Button>
               </div>
             </div>

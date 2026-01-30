@@ -7,7 +7,7 @@ import { useHiddenPosts } from '@/store/hiddenPosts';
 import { useMutedUsers } from '@/store/mutedUsers';
 import { useRouter } from 'next/navigation';
 import { Fragment } from 'react';
-import PostHeader from '../posts/PostHeader';
+import ThreadHeader from '../shared/ThreadHeader';
 import RepostedBy from '../user/RepostedBy';
 import LinkPreviewCard from './LinkPreviewCard';
 import ThreadContent from '../shared/ThreadContent';
@@ -88,13 +88,16 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
       )}
 
       {showHeader && (
-        <PostHeader
+        <ThreadHeader
           author={author}
           createdAt={createdAt}
           id={id}
           currentText={text ?? ''}
           hideLikes={hideLikes!}
           variant={variant}
+          mentions={mentions}
+          privacy={privacy}
+          linkPreview={linkPreview}
         />
       )}
 

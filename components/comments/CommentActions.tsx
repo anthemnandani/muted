@@ -30,8 +30,8 @@ const CommentActions = ({
   const [isOpen, setIsOpen] = useState(false);
   const { openDeleteDialog, setOpenDeleteDialog } = useDeletePostStore();
   const { handleDeletePost, isDeleting } = useDeletePost({
-    postId,
-    closeMenu: () => setIsOpen(false),
+    id: postId,
+    onClose: () => setIsOpen(false),
   });
 
   const handleStartEditing = () => {
@@ -92,7 +92,7 @@ const CommentActions = ({
               label='Report'
               className={cn(
                 'text-primary-red',
-                postAuthorId === user?.id && 'text-white/90'
+                postAuthorId === user?.id && 'text-white/90',
               )}
               onClick={() => {
                 openPostReport(postId);

@@ -18,7 +18,7 @@ const useCreateThread = () => {
     quoteInfo,
     validMentions,
     reset,
-    setOpenDialog,
+    editThreadInfo,
   } = useThreadStore();
   const { threadMedia, setThreadMedia } = useFileStore();
   const { uploadToStorage, prepareMuxUpload, startMuxUpload } = useMuxUpload();
@@ -29,8 +29,33 @@ const useCreateThread = () => {
   const abortControllerRef = useRef<AbortController | null>(null);
   const createdThreadIdRef = useRef<string | null>(null);
 
+  const utils = api.useUtils();
+
   const { mutateAsync: createThread, isPending: isCreatingDB } =
-    api.thread.createThread.useMutation();
+    api.thread.createThread.useMutation({
+      onSuccess: () => {
+        toast.success('Thread posted!');
+        resetState();
+      },
+
+      onSettled: async () => {
+        await utils.invalidate();
+      },
+    });
+
+  const { mutateAsync: editThread, isPending: isEditing } =
+    api.thread.editThread.useMutation({
+      onSuccess: () => {
+        toast.success('Thread updated!');
+        reset();
+      },
+      onError: () => {
+        toast.error('Failed to update thread');
+      },
+      onSettled: async () => {
+        await utils.invalidate();
+      },
+    });
 
   const { mutate: deleteThread } = api.thread.deleteThread.useMutation();
 
@@ -41,14 +66,12 @@ const useCreateThread = () => {
     media && 'file' in media && media.file instanceof File;
 
   const resetState = () => {
-    setOpenDialog(false);
-
+    reset();
     setTimeout(() => {
       setThreadMedia(null);
       setIsUploading(false);
       setUploadProgress(0);
       createdThreadIdRef.current = null;
-      reset();
     }, 300);
   };
 
@@ -66,10 +89,28 @@ const useCreateThread = () => {
     toast.info('Thread creation cancelled');
   };
 
-  const handleMutation = async () => {
+  const handleEdit = async () => {
     try {
-      abortControllerRef.current = new AbortController();
+      await editThread({
+        id: editThreadInfo!.id,
+        text: text.trim(),
+        privacy,
+        linkPreview: linkPreview ?? null,
+        mentions: validMentions.map((m) => ({
+          mentionedUserId: m.mentionedUserId,
+          index: m.startIndex,
+        })),
+      });
+    } catch (error) {
+      toast.error('Failed to update thread');
+    }
+  };
+
+  const handleCreate = async () => {
+    try {
       setIsUploading(true);
+
+      abortControllerRef.current = new AbortController();
       setUploadProgress(0);
 
       const generatedId = createId();
@@ -104,7 +145,7 @@ const useCreateThread = () => {
           privacy,
           status: PostStatus.HIDDEN,
           quoteId: quoteInfo?.id,
-          linkPreview: linkPreview ?? undefined,
+          linkPreview: linkPreview ?? null,
           mentions: validMentions.map((m) => ({
             mentionedUserId: m.mentionedUserId,
             index: m.startIndex,
@@ -137,7 +178,7 @@ const useCreateThread = () => {
           privacy,
           status: PostStatus.VISIBLE,
           quoteId: quoteInfo?.id,
-          linkPreview: linkPreview ?? undefined,
+          linkPreview: linkPreview ?? null,
           mentions: validMentions.map((m) => ({
             mentionedUserId: m.mentionedUserId,
             index: m.startIndex,
@@ -150,9 +191,6 @@ const useCreateThread = () => {
             : null,
         });
       }
-      toast.success('Thread posted!');
-
-      resetState();
     } catch (error) {
       toast.error('Failed to create thread');
 
@@ -165,9 +203,11 @@ const useCreateThread = () => {
   };
 
   return {
-    handleMutation,
+    handleCreate,
+    handleEdit,
     cancelUpload,
     isCreating: isCreatingDB || isUploading,
+    isEditing,
     isUploading,
     uploadProgress,
   };

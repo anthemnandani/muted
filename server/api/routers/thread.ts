@@ -6,7 +6,6 @@ import {
   getBookmarksWithBlockFilter,
   getLikesWithBlockFilter,
 } from '@/server/constants';
-import { createId } from '@paralleldrive/cuid2';
 import {
   EncodingStatus,
   FileType,
@@ -95,7 +94,7 @@ export const threadRouter = createTRPCRouter({
             description: z.string().nullable().optional(),
             image: z.string().nullable().optional(),
           })
-          .optional(),
+          .nullable(),
         status: z.nativeEnum(PostStatus),
       }),
     )
@@ -221,6 +220,165 @@ export const threadRouter = createTRPCRouter({
         return {
           thread: transactionResult.newThread,
           success: true,
+        };
+      },
+    ),
+
+  editThread: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        text: z.string(),
+        linkPreview: z
+          .object({
+            url: z.string(),
+            title: z.string().nullable().optional(),
+            description: z.string().nullable().optional(),
+            image: z.string().nullable().optional(),
+          })
+          .nullable(),
+        mentions: z
+          .array(
+            z.object({
+              mentionedUserId: z.string(),
+              index: z.number(),
+            }),
+          )
+          .optional(),
+        privacy: z.nativeEnum(PostPrivacy).default('ANYONE'),
+      }),
+    )
+    .mutation(
+      async ({ ctx, input: { id, text, mentions, privacy, linkPreview } }) => {
+        const { userId, db } = ctx;
+
+        if (!userId) {
+          throw new TRPCError({ code: 'NOT_FOUND' });
+        }
+
+        const thread = await ctx.db.thread.findUnique({
+          where: { id },
+          select: {
+            authorId: true,
+            createdAt: true,
+            mentions: {
+              select: {
+                userId: true,
+              },
+            },
+            hashtags: {
+              select: {
+                name: true,
+              },
+            },
+            text: true,
+          },
+        });
+
+        if (!thread) {
+          throw new TRPCError({ code: 'NOT_FOUND' });
+        }
+
+        if (thread.authorId !== userId) {
+          throw new TRPCError({ code: 'FORBIDDEN' });
+        }
+
+        const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+        if (thread.createdAt < fifteenMinutesAgo) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Edit window has expired',
+          });
+        }
+
+        const filter = new Filter();
+        const textToPost = text || '';
+        const filteredText = filter.clean(textToPost);
+        const hashtags = extractHashtags(filteredText);
+
+        const transactionResult = await db.$transaction(async (prisma) => {
+          if (mentions && mentions.length > 0) {
+            await Promise.all([
+              await prisma.mention.deleteMany({
+                where: {
+                  threadId: id,
+                },
+              }),
+              await prisma.mention.createMany({
+                data: mentions.map((mention) => ({
+                  threadId: id,
+                  userId: mention.mentionedUserId,
+                  index: mention.index,
+                })),
+              }),
+            ]);
+          }
+
+          if (hashtags && hashtags.length > 0) {
+            await prisma.thread.update({
+              where: { id },
+              data: {
+                hashtags: {
+                  disconnect: thread.hashtags.map((tag) => ({
+                    name: tag.name,
+                  })),
+                },
+              },
+            });
+          }
+
+          let linkPreviewUrlUpdate: string | null = null;
+
+          if (linkPreview === null) {
+            linkPreviewUrlUpdate = null;
+          } else if (linkPreview) {
+            const savedPreview = await prisma.linkPreview.upsert({
+              where: { url: linkPreview.url },
+              update: {},
+              create: {
+                url: linkPreview.url,
+                title: linkPreview.title,
+                description: linkPreview.description,
+                image: linkPreview.image,
+              },
+            });
+            linkPreviewUrlUpdate = savedPreview.url;
+          }
+
+          const updatedThread = await prisma.thread.update({
+            where: { id },
+            data: {
+              text: filteredText,
+              lastEditedAt: new Date(),
+              privacy,
+              linkPreviewUrl: linkPreviewUrlUpdate,
+              hashtags: {
+                connectOrCreate: hashtags.map((tag) => {
+                  const tagName = tag.slice(1);
+                  return {
+                    where: { name: tagName },
+                    create: { name: tagName },
+                  };
+                }),
+              },
+            },
+            select: {
+              id: true,
+              author: true,
+            },
+          });
+
+          return { updatedThread };
+        });
+
+        if (!transactionResult) {
+          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+        }
+
+        return {
+          updatedThread: transactionResult.updatedThread,
+          success: true,
+          isEdited: true,
         };
       },
     ),

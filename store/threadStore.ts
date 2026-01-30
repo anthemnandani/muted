@@ -1,30 +1,41 @@
 import type {
   ReplyPostInfo,
-  ValidMention,
   ThreadInfo,
   LinkPreview,
+  ValidMention,
+  Mention,
 } from '@/lib/types';
 import type { PostPrivacy } from '@prisma/client';
 import { create } from 'zustand';
 
+interface EditThreadData {
+  id: string;
+  text: string;
+  privacy: PostPrivacy;
+  linkPreview: LinkPreview | null;
+  mentions?: Mention[];
+}
+
 interface ThreadStoreProps {
   openDialog: boolean;
+  deleteThreadId: string | null;
   text: string;
   privacy: PostPrivacy;
   linkPreview: LinkPreview | null;
   quoteInfo: ThreadInfo | null;
   validMentions: ValidMention[];
   replyPostInfo: ReplyPostInfo | null;
-  editPostInfo: { id: string; text: string } | null;
+  editThreadInfo: EditThreadData | null;
 
   setOpenDialog: (open: boolean) => void;
+  setDeleteThreadId: (id: string | null) => void;
   setText: (text: string) => void;
   setPrivacy: (privacy: PostPrivacy) => void;
   setLinkPreview: (linkPreview: LinkPreview | null) => void;
   setQuoteInfo: (quote: ThreadInfo | null) => void;
   addValidMention: (mention: ValidMention) => void;
   setReplyPostInfo: (reply: ReplyPostInfo | null) => void;
-  setEditPostInfo: (edit: { id: string; text: string } | null) => void;
+  setEditThreadInfo: (edit: EditThreadData | null) => void;
 
   updateMentionIndices: (text: string) => void;
 
@@ -33,15 +44,17 @@ interface ThreadStoreProps {
 
 export const useThreadStore = create<ThreadStoreProps>((set, get) => ({
   openDialog: false,
+  deleteThreadId: null,
   text: '',
   privacy: 'ANYONE',
   linkPreview: null,
   validMentions: [],
   replyPostInfo: null,
-  editPostInfo: null,
+  editThreadInfo: null,
   quoteInfo: null,
 
   setOpenDialog: (open: boolean) => set({ openDialog: open }),
+  setDeleteThreadId: (id: string | null) => set({ deleteThreadId: id }),
   setText: (text: string) => set({ text }),
   setPrivacy: (privacy: PostPrivacy) => set({ privacy }),
   setLinkPreview: (linkPreview: LinkPreview | null) => set({ linkPreview }),
@@ -51,7 +64,7 @@ export const useThreadStore = create<ThreadStoreProps>((set, get) => ({
       validMentions: [...state.validMentions, mention],
     })),
   setReplyPostInfo: (reply) => set({ replyPostInfo: reply }),
-  setEditPostInfo: (edit) => set({ editPostInfo: edit }),
+  setEditThreadInfo: (edit) => set({ editThreadInfo: edit }),
   updateMentionIndices: (text) => {
     const currentMentions = get().validMentions;
     const updatedMentions: ValidMention[] = [];
@@ -82,14 +95,21 @@ export const useThreadStore = create<ThreadStoreProps>((set, get) => ({
 
     set({ validMentions: updatedMentions });
   },
-  reset: () =>
-    set({
-      text: '',
-      privacy: 'ANYONE',
-      linkPreview: null,
-      validMentions: [],
-      replyPostInfo: null,
-      editPostInfo: null,
-      quoteInfo: null,
-    }),
+  reset: () => {
+    set({ openDialog: false });
+    setTimeout(
+      () =>
+        set({
+          text: '',
+          privacy: 'ANYONE',
+          linkPreview: null,
+          validMentions: [],
+          replyPostInfo: null,
+          editThreadInfo: null,
+          quoteInfo: null,
+          deleteThreadId: null,
+        }),
+      300,
+    );
+  },
 }));
