@@ -39,7 +39,7 @@ const useCreateThread = () => {
       },
 
       onSettled: async () => {
-        await utils.invalidate();
+        await utils.thread.invalidate();
       },
     });
 
@@ -53,7 +53,7 @@ const useCreateThread = () => {
         toast.error('Failed to update thread');
       },
       onSettled: async () => {
-        await utils.invalidate();
+        await utils.thread.invalidate();
       },
     });
 

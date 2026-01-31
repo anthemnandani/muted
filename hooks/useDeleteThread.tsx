@@ -1,32 +1,43 @@
+import { useOptimisticAction } from '@/contexts/OptimisticActionContext';
 import { UseDeletePostProps } from '@/lib/types';
 import { api } from '@/trpc/react';
 import { toast } from 'sonner';
 
 const useDeleteThread = ({ id, onClose, isAdmin }: UseDeletePostProps) => {
-  const trpcUtils = api.useUtils();
+  const performAction = useOptimisticAction();
+  const utils = api.useUtils();
 
-  const { mutateAsync: deleteThread, isPending } =
-    api.thread.deleteThread.useMutation({
-      onSettled: async () => {
-        if (isAdmin) await trpcUtils.admin.getAllPosts.invalidate();
-        else await trpcUtils.invalidate();
-      },
-      retry: false,
-    });
+  const { mutate: deleteThread } = api.thread.deleteThread.useMutation({
+    onError: (err) => {
+      if (performAction) {
+        performAction(id, 'DELETE', false);
+      }
+      toast.error('Failed to delete thread');
+    },
 
-  const handleDeleteThread = () => {
-    onClose();
-    const promise = deleteThread({ id });
+    onSettled: () => {
+      // if (isAdmin) {
+      //   utils.admin.getAllThreads.invalidate();
+      // } else {
+      //   utils.thread.getAllThreads.invalidate();
+      // }
+      utils.thread.getAllThreads.invalidate();
+    },
+  });
 
-    toast.promise(promise, {
-      loading: 'Deleting...',
-      success: () => 'Deleted',
-      error: 'Error deleting thread.',
-      richColors: true,
-    });
+  const handleDeleteThread = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
+    if (performAction) {
+      onClose();
+      performAction(id, 'DELETE', true);
+      toast.success('Thread deleted');
+    }
+
+    deleteThread({ id });
   };
-
-  return { handleDeleteThread, isDeleting: isPending };
+  return { handleDeleteThread };
 };
 
 export default useDeleteThread;

@@ -3,11 +3,12 @@
 import useCopyLink from '@/hooks/useCopyLink';
 import useDeleteThread from '@/hooks/useDeleteThread';
 import useHideLikes from '@/hooks/useHideLikes';
+import usePinThread from '@/hooks/usePinThread';
 import { ThreadActionMenuProps } from '@/lib/types';
 import { formatTimeLeft } from '@/lib/utils';
 import { useThreadStore } from '@/store/threadStore';
 import { useUser } from '@clerk/nextjs';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, PinOff } from 'lucide-react';
 import { Fragment, useEffect, useState } from 'react';
 import { Icons } from '../icons';
 import ConfirmDialog from '../modals/ConfirmDialog';
@@ -30,6 +31,7 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
   mentions,
   privacy,
   linkPreview,
+  pinned,
 }) => {
   const { user } = useUser();
   const [timeLeft, setTimeLeft] = useState<number>(0);
@@ -41,7 +43,7 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
     setDeleteThreadId,
   } = useThreadStore();
 
-  const { handleDeleteThread, isDeleting } = useDeleteThread({
+  const { handleDeleteThread } = useDeleteThread({
     id,
     onClose: () => {
       setIsOpen(false);
@@ -55,6 +57,8 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
   });
 
   const { handleCopyLink } = useCopyLink({ threadId: id, username });
+
+  const { togglePin } = usePinThread({ id, pinned });
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -95,7 +99,6 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
         title='Delete Thread'
         description="If you delete this thread, you won't be able to restore it."
         onClick={handleDeleteThread}
-        isLoading={isDeleting}
       />
       <DropdownMenu modal={false} open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
@@ -156,9 +159,16 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
                 </Fragment>
               )}
 
-              <DropdownMenuItem className='dropdown-menu-item'>
-                Pin to profile
-                <Icons.profilePin className='size-5' />
+              <DropdownMenuItem
+                className='dropdown-menu-item'
+                onClick={togglePin}
+              >
+                {pinned ? 'Unpin from profile' : 'Pin to profile'}
+                {pinned ? (
+                  <PinOff className='size-5' />
+                ) : (
+                  <Icons.profilePin className='size-5' />
+                )}
               </DropdownMenuItem>
 
               <DropdownMenuItem

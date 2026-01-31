@@ -16,6 +16,7 @@ const ThreadHeader: React.FC<ThreadHeaderProps> = ({
   mentions,
   privacy,
   linkPreview,
+  pinned,
 }) => (
   <div className='flex justify-between w-full space-x-2 xs:space-x-4 px-2 md:px-4'>
     <UserProfile author={author} />
@@ -50,6 +51,7 @@ const ThreadHeader: React.FC<ThreadHeaderProps> = ({
         createdAt={createdAt}
         currentText={currentText}
         hideLikes={hideLikes}
+        pinned={pinned}
         mentions={mentions}
         privacy={privacy}
         linkPreview={linkPreview}

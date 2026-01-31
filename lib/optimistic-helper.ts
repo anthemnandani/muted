@@ -1,9 +1,22 @@
 import type { Post, Thread } from './types';
 
-export type ACTION_TYPE = 'LIKE' | 'BOOKMARK' | 'REPOST';
+export type ACTION_TYPE =
+  | 'LIKE'
+  | 'BOOKMARK'
+  | 'REPOST'
+  | 'PIN'
+  | 'DELETE'
+  | 'EDIT';
+
+export interface OptimisticUpdateParams {
+  item: Post | Thread;
+  userId?: string;
+  active?: boolean;
+  payload?: { collectionId: string; removeFromAll?: boolean };
+}
 
 const recipes = {
-  LIKE: (item: Post | Thread, userId: string, active: boolean) => ({
+  LIKE: ({ item, userId, active }: OptimisticUpdateParams) => ({
     ...item,
     likesCount: active
       ? (item.likesCount || 0) + 1
@@ -13,7 +26,7 @@ const recipes = {
       : (item.likes || []).filter((l) => l.userId !== userId),
   }),
 
-  REPOST: (item: Post | Thread, userId: string, active: boolean) => ({
+  REPOST: ({ item, userId, active }: OptimisticUpdateParams) => ({
     ...item,
     repostsCount: active
       ? (item.repostsCount || 0) + 1
@@ -23,12 +36,23 @@ const recipes = {
       : (item.reposts || []).filter((r) => r.user?.id !== userId),
   }),
 
-  BOOKMARK: (
-    item: Post | Thread,
-    userId: string,
-    active: boolean,
-    payload?: { collectionId: string; removeFromAll?: boolean },
-  ) => {
+  PIN: ({ item, active }: OptimisticUpdateParams) => ({
+    ...item,
+    pinned: active,
+  }),
+
+  EDIT: ({ item, payload }: OptimisticUpdateParams) => ({
+    ...item,
+    ...payload,
+  }),
+
+  DELETE: ({ item }: OptimisticUpdateParams) => ({
+    ...item,
+    deleted: true,
+    deletedAt: new Date(),
+  }),
+
+  BOOKMARK: ({ item, userId, active, payload }: OptimisticUpdateParams) => {
     const currentBookmarks = item.bookmarks || [];
     const targetCollectionId = payload?.collectionId;
     const removeFromAll = payload?.removeFromAll;
@@ -109,6 +133,9 @@ export const applyOptimisticUpdate = (
   if (!oldData) return oldData;
 
   const shouldRemoveItem = (item: any) => {
+    if (action === 'DELETE' && item.id === targetId) {
+      return true;
+    }
     if (
       action === 'REPOST' &&
       !active &&
@@ -129,7 +156,7 @@ export const applyOptimisticUpdate = (
           .filter((item: any) => !shouldRemoveItem(item))
           .map((item: any) => {
             if (item.id !== targetId) return item;
-            return recipes[action](item, userId, active, payload);
+            return recipes[action]({ item, userId, active, payload });
           }),
       })),
     };
@@ -140,7 +167,7 @@ export const applyOptimisticUpdate = (
     if (oldData[key]?.id === targetId) {
       return {
         ...oldData,
-        [key]: recipes[action](oldData[key], userId, active, payload),
+        [key]: recipes[action]({ item: oldData[key], userId, active, payload }),
       };
     }
   }

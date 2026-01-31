@@ -204,6 +204,7 @@ export interface ThreadHeaderProps {
   variant: 'default' | 'reply';
   linkPreview: LinkPreview | null;
   hideLikes: boolean;
+  pinned: boolean;
   privacy: PostPrivacy;
   mentions?: Mention[];
 }
@@ -216,6 +217,7 @@ export interface ThreadActionMenuProps {
   currentText: string;
   username: string;
   hideLikes: boolean;
+  pinned: boolean;
   privacy: PostPrivacy;
   mentions?: Mention[];
   linkPreview: LinkPreview | null;
@@ -932,7 +934,7 @@ export interface ConfirmDialogProps {
   onClick: () => void;
   open: boolean;
   setOpen: (open: boolean) => void;
-  isLoading: boolean;
+  isLoading?: boolean;
   closeMenu?: () => void;
   btnTitle?: string;
   btnClassName?: string;

@@ -27,6 +27,7 @@ const THREAD_SELECT = (userId: string) => ({
   path: true,
   repliesCount: true,
   hideLikes: true,
+  pinned: true,
   privacy: true,
   author: { select: { ...GET_USER } },
   ...getLikesWithBlockFilter(userId),
@@ -383,6 +384,36 @@ export const threadRouter = createTRPCRouter({
       },
     ),
 
+  togglePinThread: privateProcedure
+    .input(
+      z.object({
+        threadId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { userId, db } = ctx;
+      const threadExists = await db.thread.findUnique({
+        where: {
+          id: input.threadId,
+          authorId: userId,
+        },
+        select: {
+          pinned: true,
+        },
+      });
+
+      if (!threadExists) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      await db.thread.update({
+        where: { id: input.threadId },
+        data: { pinned: !threadExists.pinned },
+      });
+
+      return { pinned: !threadExists.pinned };
+    }),
+
   getAllThreads: privateProcedure
     .input(paginationInput)
     .query(async ({ input, ctx }) => {
@@ -394,6 +425,7 @@ export const threadRouter = createTRPCRouter({
           where: {
             parentId: null,
             privacy: 'ANYONE',
+            deleted: false,
             status: PostStatus.VISIBLE,
             text: searchQuery ? { contains: searchQuery } : undefined,
             createdAt: cursor ? { lt: cursor.createdAt } : undefined,
@@ -475,6 +507,7 @@ export const threadRouter = createTRPCRouter({
         where: {
           author: { followers: { some: { followerId: userId } } },
           parentId: null,
+          deleted: false,
           status: PostStatus.VISIBLE,
           text: searchQuery ? { contains: searchQuery } : undefined,
           createdAt: cursor ? { lt: cursor.createdAt } : undefined,
@@ -515,6 +548,8 @@ export const threadRouter = createTRPCRouter({
         where: {
           likes: { some: { userId } },
           text: searchQuery ? { contains: searchQuery } : undefined,
+          deleted: false,
+          status: PostStatus.VISIBLE,
         },
         take: limit + 1,
         cursor: cursor ? { createdAt_id: cursor } : undefined,
@@ -555,6 +590,9 @@ export const threadRouter = createTRPCRouter({
         where: {
           bookmarks: { some: { userId } },
           text: searchQuery ? { contains: searchQuery } : undefined,
+          deleted: false,
+          status: PostStatus.VISIBLE,
+          parentId: null,
         },
         take: limit + 1,
         cursor: cursor ? { createdAt_id: cursor } : undefined,
@@ -720,22 +758,13 @@ export const threadRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       const { db } = ctx;
       try {
-        await db.$transaction(async (prisma) => {
-          const threadToDelete = await prisma.thread.findUnique({
-            where: { id: input.id },
-          });
-
-          if (!threadToDelete) {
-            return { success: false };
-          }
-
-          await prisma.thread.delete({
-            where: {
-              id: input.id,
-            },
-          });
-
-          return { success: true };
+        await db.thread.update({
+          where: {
+            id: input.id,
+          },
+          data: {
+            deleted: true,
+          },
         });
 
         return { success: true };

@@ -31,6 +31,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   bookmarksCount,
   repliesCount,
   hideLikes,
+  pinned,
   privacy,
   linkPreview,
   //   showMuted = true,
@@ -94,6 +95,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
           id={id}
           currentText={text ?? ''}
           hideLikes={hideLikes!}
+          pinned={pinned!}
           variant={variant}
           mentions={mentions}
           privacy={privacy}
