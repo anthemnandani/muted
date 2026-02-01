@@ -23,7 +23,7 @@ const UserProfileMenu = ({
   isBlocked,
 }: UserProfileMenuProps) => {
   const { handleCopyProfileLink } = useCopyLink({ username });
-  const { handleToggleMuteUser, isLoading } = useToggleMuteUser({ userId });
+  const { toggleMute } = useToggleMuteUser({ userId });
   const [isOpen, setIsOpen] = useState(false);
   const { openUserReport } = useReportStore();
 
@@ -57,10 +57,9 @@ const UserProfileMenu = ({
           icon={Icons.mute}
           label={isMuted ? 'Unmute' : 'Mute'}
           onClick={() => {
-            handleToggleMuteUser({ userId });
+            toggleMute();
             setIsOpen(false);
           }}
-          disabled={isLoading}
         />
         <Separator />
 
