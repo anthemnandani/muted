@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import { Separator } from '../ui/separator';
+import { useBlockedUsers } from '@/store/blockedUsers';
 
 const PostActionMenu: React.FC<PostActionMenuProps> = ({
   author,
@@ -43,6 +44,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
   const { isMutedUser } = useMutedUsers();
   const { openForEditing } = usePostDialog();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const { openPostReport } = useReportStore();
   const { openDeleteDialog, setOpenDeleteDialog } = useDeletePostStore();
   const { handleDeletePost, isDeleting } = useDeletePost({
@@ -131,6 +133,8 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
                 username={author.username}
                 userId={author.id}
                 closeMenu={() => setMenuOpen(false)}
+                setIsOpen={setIsOpen}
+                isOpen={isOpen}
               />
               <Separator />
               <MenuItem

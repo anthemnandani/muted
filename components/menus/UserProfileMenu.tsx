@@ -25,6 +25,7 @@ const UserProfileMenu = ({
   const { handleCopyProfileLink } = useCopyLink({ username });
   const { toggleMute } = useToggleMuteUser({ userId });
   const [isOpen, setIsOpen] = useState(false);
+  const [blockUserOpen, setBlockUserOpen] = useState(false);
   const { openUserReport } = useReportStore();
 
   const handleCopyLink = () => {
@@ -68,6 +69,8 @@ const UserProfileMenu = ({
           userId={userId}
           closeMenu={() => setIsOpen(false)}
           isBlocked={isBlocked}
+          isOpen={blockUserOpen}
+          setIsOpen={setBlockUserOpen}
         />
 
         <MenuItem

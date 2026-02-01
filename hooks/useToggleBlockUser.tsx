@@ -1,73 +1,61 @@
-import { Icons } from '@/components/icons';
 import { UseToggleBlockUserProps } from '@/lib/types';
 import { useBlockedUsers } from '@/store/blockedUsers';
 import { api } from '@/trpc/react';
+import { useRef } from 'react';
 import { toast } from 'sonner';
 
 const useToggleBlockUser = ({
   userId,
-  username,
   isProfile,
   isBlocked,
 }: UseToggleBlockUserProps) => {
-  const {
-    isUserBlocked,
-    addBlockedUser,
-    removeBlockedUser,
-    setIsLoading,
-    isLoading,
-  } = useBlockedUsers();
+  const { isUserBlocked, addBlockedUser, removeBlockedUser } =
+    useBlockedUsers();
+
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isDirtyRef = useRef(false);
 
   const trpcUtils = api.useUtils();
 
   const isBlockedByMe = isProfile || isBlocked || isUserBlocked(userId);
 
-  const { mutateAsync: toggleBlockUser } = api.user.toggleBlockUser.useMutation(
-    {
-      onMutate: () => {
-        setIsLoading(true);
-        return { previousBlockedByMe: isBlockedByMe };
-      },
-      onSuccess: async (data) => {
-        if (data.blocked) {
-          addBlockedUser(userId);
-        } else {
-          removeBlockedUser(userId);
-        }
-        setIsLoading(false);
-      },
-      onSettled: async () => {
-        await trpcUtils.user.getUserProfile.invalidate();
-        await trpcUtils.user.getBlockedUsers.invalidate();
-      },
-      onError: (error) => {
-        setIsLoading(false);
-        toast.error(`BlockError: ${error.message || 'Something went wrong!'}`);
-      },
-    }
-  );
+  const { mutate: toggleBlockUser } = api.user.toggleBlockUser.useMutation({
+    onError: (error) => {
+      if (isBlockedByMe) removeBlockedUser(userId);
+      else addBlockedUser(userId);
+      toast.error('Failed to update block status');
+    },
+    onSettled: () => {
+      isDirtyRef.current = false;
+      trpcUtils.user.getUserProfile.invalidate();
+      trpcUtils.user.getBlockedUsers.invalidate();
+    },
+  });
 
-  const handleToggleBlock = () => {
-    toast.promise(toggleBlockUser({ targetUserId: userId }), {
-      loading: (
-        <div className='flex w-[270px] items-center justify-start gap-1.5 p-0'>
-          <div>
-            <Icons.loading className='size-8' />
-          </div>
-          {isBlockedByMe ? 'Unblocking...' : 'Blocking...'}
-        </div>
-      ),
-      success: (data) => (
-        <div className='flex-center p-0'>
-          {data.blocked ? `Blocked @${username}` : `Unblocked @${username}`}
-        </div>
-      ),
-      error: 'Error',
-      richColors: true,
-    });
+  const toggleBlock = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+    if (isBlockedByMe) {
+      removeBlockedUser(userId);
+      toast.success('Unblocked');
+    } else {
+      addBlockedUser(userId);
+      toast.success('Blocked');
+    }
+
+    isDirtyRef.current = !isDirtyRef.current;
+
+    timeoutRef.current = setTimeout(() => {
+      if (isDirtyRef.current) {
+        toggleBlockUser({ targetUserId: userId });
+      }
+    }, 1000);
   };
 
-  return { handleToggleBlock, isLoading, isBlockedByMe };
+  return { toggleBlock, isBlockedByMe };
 };
 
 export default useToggleBlockUser;

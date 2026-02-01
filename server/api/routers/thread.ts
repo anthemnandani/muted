@@ -466,6 +466,8 @@ export const threadRouter = createTRPCRouter({
             author: {
               deactivated: false,
               mutedByUsers: { none: { mutedByUserId: userId } },
+              blockedByUsers: { none: { blockingUserId: userId } },
+              blockedUsers: { none: { blockedUserId: userId } },
             },
           },
           take: limit + 1,
@@ -547,6 +549,8 @@ export const threadRouter = createTRPCRouter({
             deactivated: false,
             mutedByUsers: { none: { mutedByUserId: userId } },
             followers: { some: { followerId: userId } },
+            blockedByUsers: { none: { blockingUserId: userId } },
+            blockedUsers: { none: { blockedUserId: userId } },
           },
           parentId: null,
           deleted: false,
@@ -597,6 +601,8 @@ export const threadRouter = createTRPCRouter({
           author: {
             deactivated: false,
             mutedByUsers: { none: { mutedByUserId: userId } },
+            blockedByUsers: { none: { blockingUserId: userId } },
+            blockedUsers: { none: { blockedUserId: userId } },
           },
         },
         take: limit + 1,
@@ -645,6 +651,8 @@ export const threadRouter = createTRPCRouter({
           author: {
             deactivated: false,
             mutedByUsers: { none: { mutedByUserId: userId } },
+            blockedByUsers: { none: { blockingUserId: userId } },
+            blockedUsers: { none: { blockedUserId: userId } },
           },
         },
         take: limit + 1,

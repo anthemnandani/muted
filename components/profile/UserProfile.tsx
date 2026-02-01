@@ -9,7 +9,7 @@ import { Lock, Settings } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import FollowButton from '../buttons/FollowButton';
 import { Icons } from '../icons';
 import UserProfileMenu from '../menus/UserProfileMenu';
@@ -32,6 +32,7 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
   } = props;
   const { user } = useUser();
   const { handleCopyProfileLink } = useCopyLink({ username });
+  const [isOpen, setIsOpen] = useState(false);
 
   const { getOrCreateChat, getOrCreateChatLoading } = useChatContext();
   const router = useRouter();
@@ -80,7 +81,13 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
             </Fragment>
           )}
           {user?.id !== id && isBlocked && (
-            <BlockUser username={username} userId={id} isProfile />
+            <BlockUser
+              isOpen={isOpen}
+              setIsOpen={setIsOpen}
+              username={username}
+              userId={id}
+              isProfile
+            />
           )}
           {user?.id !== id && !isBlocked && (
             <Fragment>
@@ -95,7 +102,7 @@ const UserProfile: React.FC<UserProfileInfoProps> = (props) => {
                 disabled={getOrCreateChatLoading}
                 className={cn(
                   'min-w-[120px] text-base font-medium rounded-md transition-colors duration-200',
-                  'bg-white-13 hover:bg-white/20 !text-white/90 disabled:cursor-not-allowed'
+                  'bg-white-13 hover:bg-white/20 !text-white/90 disabled:cursor-not-allowed',
                 )}
               >
                 {getOrCreateChatLoading ? 'Starting...' : 'Message'}

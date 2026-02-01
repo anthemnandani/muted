@@ -8,11 +8,13 @@ import useToggleHideThread from '@/hooks/useToggleHideThread';
 import useToggleMuteUser from '@/hooks/useToggleMuteUser';
 import { ThreadActionMenuProps } from '@/lib/types';
 import { formatTimeLeft } from '@/lib/utils';
+import { useBlockedUsers } from '@/store/blockedUsers';
 import { useThreadStore } from '@/store/threadStore';
 import { useUser } from '@clerk/nextjs';
 import { MoreHorizontal, PinOff } from 'lucide-react';
 import { Fragment, useEffect, useState } from 'react';
 import { Icons } from '../icons';
+import BlockUser from '../modals/BlockUser';
 import ConfirmDialog from '../modals/ConfirmDialog';
 import {
   DropdownMenu,
@@ -37,7 +39,8 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
 }) => {
   const { user } = useUser();
   const [timeLeft, setTimeLeft] = useState<number>(0);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [blockUserOpen, setBlockUserOpen] = useState(false);
   const {
     deleteThreadId,
     setEditThreadInfo,
@@ -48,7 +51,7 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
   const { handleDeleteThread } = useDeleteThread({
     id,
     onClose: () => {
-      setIsOpen(false);
+      setIsMenuOpen(false);
       setDeleteThreadId(null);
     },
   });
@@ -65,6 +68,8 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
   const { toggleHide } = useToggleHideThread({ threadId: id });
 
   const { toggleMute } = useToggleMuteUser({ userId: authorId });
+
+  const { isUserBlocked } = useBlockedUsers();
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -93,6 +98,7 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
   }, [createdAt]);
 
   const isDeleteOpen = deleteThreadId === id;
+  const isBlockedByMe = isUserBlocked(authorId);
 
   return (
     <Fragment>
@@ -101,12 +107,24 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
         setOpen={(open) => {
           if (!open) setDeleteThreadId(null);
         }}
-        closeMenu={() => setIsOpen(false)}
+        closeMenu={() => setIsMenuOpen(false)}
         title='Delete Thread'
         description="If you delete this thread, you won't be able to restore it."
         onClick={handleDeleteThread}
       />
-      <DropdownMenu modal={false} open={isOpen} onOpenChange={setIsOpen}>
+      <BlockUser
+        isOpen={blockUserOpen}
+        setIsOpen={setBlockUserOpen}
+        username={username}
+        userId={authorId}
+        closeMenu={() => setIsMenuOpen(false)}
+        isThread
+      />
+      <DropdownMenu
+        modal={false}
+        open={isMenuOpen}
+        onOpenChange={setIsMenuOpen}
+      >
         <DropdownMenuTrigger asChild>
           <div className='icon-container-hover hover:before:bg-primary-2'>
             <MoreHorizontal className='aspect-square object-cover object-center size-5 overflow-hidden flex-1 text-white/90' />
@@ -135,9 +153,21 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
                 Mute
                 <Icons.mute className='size-5' />
               </DropdownMenuItem>
-              <DropdownMenuItem className='dropdown-menu-item'>
-                Block
-                <Icons.block className='size-5' />
+
+              <DropdownMenuItem
+                className='dropdown-menu-item text-primary-red hover:!text-primary-red'
+                onSelect={(e) => {
+                  e.preventDefault();
+                  setIsMenuOpen(false);
+                  setBlockUserOpen(true);
+                }}
+              >
+                {isBlockedByMe ? 'Unblock' : 'Block'}
+                {isBlockedByMe ? (
+                  <Icons.unblock className='size-5' />
+                ) : (
+                  <Icons.block className='size-5' />
+                )}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className='dropdown-menu-item'>
@@ -195,7 +225,7 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
                 className='dropdown-menu-item text-primary-red hover:!text-primary-red'
                 onClick={() => {
                   setDeleteThreadId(id);
-                  setIsOpen(false);
+                  setIsMenuOpen(false);
                 }}
               >
                 Delete

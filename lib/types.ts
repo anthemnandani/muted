@@ -1068,16 +1068,18 @@ export interface MutedPostProps {
 }
 
 export interface BlockUserDialogProps {
+  isOpen: boolean;
+  setIsOpen: (value: boolean) => void;
   username: string;
   userId: string;
   closeMenu?: () => void;
   isProfile?: boolean;
   isBlocked?: boolean;
+  isThread?: boolean;
 }
 
 export interface UseToggleBlockUserProps {
   userId: string;
-  username: string;
   isProfile?: boolean;
   isBlocked?: boolean;
 }
