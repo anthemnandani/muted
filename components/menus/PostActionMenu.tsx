@@ -65,10 +65,9 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
       postId,
     });
 
-  const { handleToggleMuteUser, isLoading: isLoadingMuteUser } =
-    useToggleMuteUser({
-      userId: author.id,
-    });
+  const { toggleMute } = useToggleMuteUser({
+    userId: author.id,
+  });
 
   const { handleCopyLink } = useCopyLink({ postId, username: author.username });
 
@@ -125,8 +124,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
               <MenuItem
                 icon={Icons.mute}
                 label={isMutedUser(author.id) ? 'Unmute' : 'Mute'}
-                onClick={() => handleToggleMuteUser({ userId: author.id })}
-                disabled={isLoadingMuteUser}
+                onClick={toggleMute}
               />
               <Separator />
               <BlockUser

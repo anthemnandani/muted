@@ -5,13 +5,9 @@ import React from 'react';
 import { Button } from '../ui/button';
 
 const MutedPost: React.FC<MutedPostProps> = ({ userId, username }) => {
-  const { handleToggleMuteUser, isLoading } = useToggleMuteUser({
+  const { toggleMute } = useToggleMuteUser({
     userId,
   });
-
-  const toggleMuteUser = () => {
-    handleToggleMuteUser({ userId });
-  };
 
   return (
     <div className='-ml-14 w-full max-w-[calc((0px-2rem+100vh)*0.5625)] h-[calc(0px-2rem+100vh)] flex-center relative snap-center snap-always'>
@@ -27,8 +23,7 @@ const MutedPost: React.FC<MutedPostProps> = ({ userId, username }) => {
             variant='outline'
             size='sm'
             className='rounded-full border-neutral-700 text-neutral-100 hover:bg-neutral-700/10 hover:text-neutral-100 gap-2'
-            onClick={toggleMuteUser}
-            disabled={isLoading}
+            onClick={toggleMute}
           >
             <UndoIcon className='size-4' />
             <span>Undo</span>

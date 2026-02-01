@@ -11,6 +11,7 @@ import {
   FileType,
   PostPrivacy,
   PostStatus,
+  Prisma,
 } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
@@ -414,6 +415,38 @@ export const threadRouter = createTRPCRouter({
       return { pinned: !threadExists.pinned };
     }),
 
+  toggleHideThread: privateProcedure
+    .input(
+      z.object({
+        threadId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { userId, db } = ctx;
+
+      const data = { threadId: input.threadId, userId };
+
+      const existingHiddenThread = await db.hiddenThread.findUnique({
+        where: {
+          userId_threadId: data,
+        },
+      });
+
+      if (existingHiddenThread == null) {
+        await db.hiddenThread.create({
+          data,
+        });
+        return { hidden: true };
+      } else {
+        await db.hiddenThread.delete({
+          where: {
+            userId_threadId: data,
+          },
+        });
+        return { hidden: false };
+      }
+    }),
+
   getAllThreads: privateProcedure
     .input(paginationInput)
     .query(async ({ input, ctx }) => {
@@ -427,8 +460,13 @@ export const threadRouter = createTRPCRouter({
             privacy: 'ANYONE',
             deleted: false,
             status: PostStatus.VISIBLE,
+            hiddenBy: { none: { userId } },
             text: searchQuery ? { contains: searchQuery } : undefined,
             createdAt: cursor ? { lt: cursor.createdAt } : undefined,
+            author: {
+              deactivated: false,
+              mutedByUsers: { none: { mutedByUserId: userId } },
+            },
           },
           take: limit + 1,
           orderBy: { createdAt: 'desc' },
@@ -505,10 +543,15 @@ export const threadRouter = createTRPCRouter({
 
       const threads = await db.thread.findMany({
         where: {
-          author: { followers: { some: { followerId: userId } } },
+          author: {
+            deactivated: false,
+            mutedByUsers: { none: { mutedByUserId: userId } },
+            followers: { some: { followerId: userId } },
+          },
           parentId: null,
           deleted: false,
           status: PostStatus.VISIBLE,
+          hiddenBy: { none: { userId } },
           text: searchQuery ? { contains: searchQuery } : undefined,
           createdAt: cursor ? { lt: cursor.createdAt } : undefined,
         },
@@ -547,9 +590,14 @@ export const threadRouter = createTRPCRouter({
       const threads = await db.thread.findMany({
         where: {
           likes: { some: { userId } },
+          hiddenBy: { none: { userId } },
           text: searchQuery ? { contains: searchQuery } : undefined,
           deleted: false,
           status: PostStatus.VISIBLE,
+          author: {
+            deactivated: false,
+            mutedByUsers: { none: { mutedByUserId: userId } },
+          },
         },
         take: limit + 1,
         cursor: cursor ? { createdAt_id: cursor } : undefined,
@@ -593,6 +641,11 @@ export const threadRouter = createTRPCRouter({
           deleted: false,
           status: PostStatus.VISIBLE,
           parentId: null,
+          hiddenBy: { none: { userId } },
+          author: {
+            deactivated: false,
+            mutedByUsers: { none: { mutedByUserId: userId } },
+          },
         },
         take: limit + 1,
         cursor: cursor ? { createdAt_id: cursor } : undefined,

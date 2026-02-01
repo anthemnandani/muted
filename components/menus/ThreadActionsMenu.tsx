@@ -4,6 +4,8 @@ import useCopyLink from '@/hooks/useCopyLink';
 import useDeleteThread from '@/hooks/useDeleteThread';
 import useHideLikes from '@/hooks/useHideLikes';
 import usePinThread from '@/hooks/usePinThread';
+import useToggleHideThread from '@/hooks/useToggleHideThread';
+import useToggleMuteUser from '@/hooks/useToggleMuteUser';
 import { ThreadActionMenuProps } from '@/lib/types';
 import { formatTimeLeft } from '@/lib/utils';
 import { useThreadStore } from '@/store/threadStore';
@@ -60,6 +62,10 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
 
   const { togglePin } = usePinThread({ id, pinned });
 
+  const { toggleHide } = useToggleHideThread({ threadId: id });
+
+  const { toggleMute } = useToggleMuteUser({ userId: authorId });
+
   useEffect(() => {
     const calculateTimeLeft = () => {
       const createdTime = new Date(createdAt).getTime();
@@ -114,12 +120,18 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
           {(!repostedBy && user?.id !== authorId) ||
           (repostedBy && user?.id !== repostedBy?.id) ? (
             <Fragment>
-              <DropdownMenuItem className='dropdown-menu-item'>
+              <DropdownMenuItem
+                className='dropdown-menu-item'
+                onClick={toggleHide}
+              >
                 Not Interested
                 <Icons.notInterested className='size-5' />
               </DropdownMenuItem>
 
-              <DropdownMenuItem className='dropdown-menu-item'>
+              <DropdownMenuItem
+                className='dropdown-menu-item'
+                onClick={toggleMute}
+              >
                 Mute
                 <Icons.mute className='size-5' />
               </DropdownMenuItem>

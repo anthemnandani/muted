@@ -6,7 +6,6 @@ import {
   formatDateAndTime,
   formatUTCDate,
   getTotalRepliesCount,
-  getUserEmail,
 } from '@/lib/utils';
 import {
   GET_MENTIONS,

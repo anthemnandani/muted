@@ -3,14 +3,15 @@
 import ThreadActions from '@/components/cards/ThreadActions';
 import { ThreadCardBaseProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { useHiddenPosts } from '@/store/hiddenPosts';
+import { useHiddenThreads } from '@/store/hiddenThreads';
 import { useMutedUsers } from '@/store/mutedUsers';
-import { useRouter } from 'next/navigation';
 import { Fragment } from 'react';
+import ThreadContent from '../shared/ThreadContent';
 import ThreadHeader from '../shared/ThreadHeader';
 import RepostedBy from '../user/RepostedBy';
+import HiddenThread from './HiddenThread';
 import LinkPreviewCard from './LinkPreviewCard';
-import ThreadContent from '../shared/ThreadContent';
+import MutedThread from './MutedThread';
 import ThreadQuoteCard from './ThreadQuoteCard';
 
 const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
@@ -34,16 +35,14 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   pinned,
   privacy,
   linkPreview,
-  //   showMuted = true,
   variant = 'default',
   showHeader = true,
   showActions = true,
   className,
   children,
 }) => {
-  const { isTemporarilyHidden } = useHiddenPosts();
+  const { isThreadHidden } = useHiddenThreads();
   const { isMutedUser } = useMutedUsers();
-  const router = useRouter();
 
   const content = (
     <Fragment>
@@ -62,25 +61,15 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
     </Fragment>
   );
 
-  //   if (isMutedUser(author.id) && showMuted) {
-  //     return (
-  //       <MutedPost
-  //         message={`Posts from ${author.username} are muted.`}
-  //         userId={author.id}
-  //       />
-  //     );
-  //   }
+  if (isMutedUser(author.id)) {
+    return <MutedThread username={author.username} userId={author.id} />;
+  }
 
-  //   if (isTemporarilyHidden(id)) {
-  //     return (
-  //       <HiddenPost
-  //         message={`This ${
-  //           variant === 'reply' ? 'reply' : 'post'
-  //         } has been hidden.`}
-  //         postId={id}
-  //       />
-  //     );
-  //   }
+  if (isThreadHidden(id)) {
+    return (
+      <HiddenThread message='This thread has been hidden.' threadId={id} />
+    );
+  }
 
   return (
     <div className={cn('mb-3', className)}>
