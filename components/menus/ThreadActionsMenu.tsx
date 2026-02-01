@@ -9,6 +9,7 @@ import useToggleMuteUser from '@/hooks/useToggleMuteUser';
 import { ThreadActionMenuProps } from '@/lib/types';
 import { formatTimeLeft } from '@/lib/utils';
 import { useBlockedUsers } from '@/store/blockedUsers';
+import { useReportStore } from '@/store/reportStore';
 import { useThreadStore } from '@/store/threadStore';
 import { useUser } from '@clerk/nextjs';
 import { MoreHorizontal, PinOff } from 'lucide-react';
@@ -60,6 +61,8 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
     postId: id,
     hideLikes,
   });
+
+  const { openThreadReport } = useReportStore();
 
   const { handleCopyLink } = useCopyLink({ threadId: id, username });
 
@@ -170,7 +173,13 @@ const ThreadActionMenu: React.FC<ThreadActionMenuProps> = ({
                 )}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className='dropdown-menu-item'>
+              <DropdownMenuItem
+                className='dropdown-menu-item text-primary-red focus:text-primary-red'
+                onClick={() => {
+                  openThreadReport(id);
+                  setIsMenuOpen(false);
+                }}
+              >
                 Report
                 <Icons.report className='size-5' />
               </DropdownMenuItem>

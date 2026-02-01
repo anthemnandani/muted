@@ -12,6 +12,7 @@ export type ReportState = {
   currentView: ReportViewType;
   reason: string | null;
   currentPostId: string | null;
+  currentThreadId: string | null;
   currentUserId: string | null;
   additionalInfo: string | null;
   targetUserId: string | null;
@@ -23,9 +24,11 @@ export type ReportState = {
   setCurrentView: (view: ReportViewType) => void;
   setReason: (reason: string | null) => void;
   setCurrentPostId: (postId: string | null) => void;
+  setCurrentThreadId: (threadId: string | null) => void;
   setCurrentUserId: (userId: string | null) => void;
   setAdditionalInfo: (info: string | null) => void;
   setTargetUserId: (userId: string | null) => void;
+  openThreadReport: (threadId: string) => void;
   openPostReport: (postId: string) => void;
   openUserReport: (userId: string) => void;
   reset: () => void;
@@ -39,6 +42,7 @@ export const useReportStore = create<ReportState>()((set) => ({
   currentView: 'categories',
   reason: null,
   currentPostId: null,
+  currentThreadId: null,
   currentUserId: null,
   additionalInfo: null,
   targetUserId: null,
@@ -50,6 +54,7 @@ export const useReportStore = create<ReportState>()((set) => ({
   setCurrentView: (view) => set({ currentView: view }),
   setReason: (reason) => set({ reason }),
   setCurrentPostId: (postId) => set({ currentPostId: postId }),
+  setCurrentThreadId: (threadId) => set({ currentThreadId: threadId }),
   setCurrentUserId: (userId) => set({ currentUserId: userId }),
   setAdditionalInfo: (info) => set({ additionalInfo: info }),
   setTargetUserId: (userId) => set({ targetUserId: userId }),
@@ -78,6 +83,19 @@ export const useReportStore = create<ReportState>()((set) => ({
       reason: null,
     }),
 
+  openThreadReport: (threadId) =>
+    set({
+      isOpen: true,
+      currentThreadId: threadId,
+      currentPostId: null,
+      currentUserId: null,
+      currentView: 'categories',
+      categoryId: null,
+      subcategoryId: null,
+      detailId: null,
+      reason: null,
+    }),
+
   reset: () =>
     set({
       categoryId: null,
@@ -86,6 +104,7 @@ export const useReportStore = create<ReportState>()((set) => ({
       currentView: 'categories',
       reason: null,
       currentPostId: null,
+      currentThreadId: null,
       currentUserId: null,
       additionalInfo: null,
       targetUserId: null,

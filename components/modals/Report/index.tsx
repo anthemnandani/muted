@@ -31,7 +31,7 @@ const Report = () => {
 
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [reportCategories, setReportCategories] = useState<ReportCategories>(
-    REPORT_POST_CATEGORIES
+    REPORT_POST_CATEGORIES,
   );
 
   useEffect(() => {
@@ -73,7 +73,7 @@ const Report = () => {
       case 'level1':
         if (!categoryId) return null;
         const category = Object.values(reportCategories).find(
-          (c) => c.id === categoryId
+          (c) => c.id === categoryId,
         );
         if (!category || !category.children) return null;
 
@@ -87,12 +87,12 @@ const Report = () => {
       case 'level2':
         if (!categoryId || !subcategoryId) return null;
         const parentCategory = Object.values(reportCategories).find(
-          (c) => c.id === categoryId
+          (c) => c.id === categoryId,
         );
         if (!parentCategory || !parentCategory.children) return null;
 
         const subcategory = parentCategory.children.find(
-          (sc) => sc.id === subcategoryId
+          (sc) => sc.id === subcategoryId,
         );
         if (!subcategory || !subcategory.children) return null;
 
@@ -124,7 +124,7 @@ const Report = () => {
     }
   };
 
-  const { handleSubmitReport, loading } = useReport({
+  const { handleSubmitReport } = useReport({
     getCurrentCategoryLabel,
     setShowConfirmation,
   });
@@ -139,7 +139,7 @@ const Report = () => {
         <DialogContent
           className={cn(
             'p-0 border-none bg-[#121212] text-white/90 overflow-hidden rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.12)] flex flex-col',
-            '!max-w-2xl h-[70vh]'
+            '!max-w-2xl h-[70vh]',
           )}
         >
           <ReportHeader
@@ -157,9 +157,9 @@ const Report = () => {
                 <Button
                   className='bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md border-none text-base'
                   onClick={handleSubmitReport}
-                  disabled={loading || !shouldEnableSubmit()}
+                  disabled={!shouldEnableSubmit()}
                 >
-                  {loading ? 'Submitting...' : 'Submit'}
+                  Submit
                 </Button>
               </div>
             </div>
