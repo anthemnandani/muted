@@ -1,4 +1,5 @@
 import { SidebarWrapperProps } from '@/lib/types';
+import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
 
 const SidebarWrapper = ({
@@ -9,7 +10,12 @@ const SidebarWrapper = ({
 }: SidebarWrapperProps) => {
   return (
     <div
-      className='fixed left-[76px] top-0 h-screen w-[20rem] bg-background shadow-[5px_0px_15px_rgba(0,0,0,0.25)] border-l border-white/5 overflow-hidden transition-transform duration-300 ease-in-out z-[9999]'
+      className={cn(
+        'fixed left-[76px] top-0 h-screen w-[20rem] bg-background',
+        'shadow-[5px_0px_15px_rgba(0,0,0,0.25)] border-x border-x-white-12 overflow-hidden',
+        'transition-transform duration-300 ease-in-out',
+        isOpen ? 'z-[1050]' : 'z-[1000]',
+      )}
       style={{
         transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
         pointerEvents: isOpen ? 'auto' : 'none',

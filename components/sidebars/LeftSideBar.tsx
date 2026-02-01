@@ -12,7 +12,7 @@ const LeftSideBar = () => {
   const { handleHomeClick } = useHomeNavigation();
 
   return (
-    <div className='z-[99] w-[76px] flex-shrink-0'>
+    <div className='z-[101] w-[76px] flex-shrink-0'>
       <section className='hidden md:fixed left-0 top-0 w-[76px] overscroll-contain overflow-x-clip overflow-y-hidden h-screen md:flex-col-between'>
         <Link href='/' className='logo' onClick={handleHomeClick}>
           <Image

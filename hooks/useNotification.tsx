@@ -20,7 +20,7 @@ const useNotification = () => {
       enabled: !!user,
       trpc: { abortOnUnmount: true },
       staleTime: 10 * 60 * 1000,
-    }
+    },
   );
 
   const { data: followRequestData } =
