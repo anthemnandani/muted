@@ -390,7 +390,7 @@ export function highlightTextContent(text: string) {
 
   const withHashtags = withUrls.replace(
     /#([\w.+?!,@$%&*()-]+[a-zA-Z0-9_$]+)(?=\s|$)/g,
-    '<a href="/feed/$1" class="hashtag-link !text-primary-blue hover:underline hover:decoration-1 hover:transition-all hover:duration-300">#$1</a>',
+    `<a href="/threads?tag=$1" class="hashtag-link !text-primary-blue hover:underline hover:decoration-1 hover:transition-all hover:duration-300">#$1</a>`,
   );
 
   return withHashtags.replace(
