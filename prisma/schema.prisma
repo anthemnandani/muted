@@ -101,7 +101,6 @@ model Post {
   author          User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId        String
   text            String?
-  // threadText      String?
   media           Json?
   // media        Media[]
   likes           Like[]
@@ -123,8 +122,6 @@ model Post {
   status          PostStatus     @default(HIDDEN)
   hiddenBy        HiddenPost[]
   lastEditedAt    DateTime?
-  // linkPreviewUrl  String?
-  // linkPreview     LinkPreview?   @relation(fields: [linkPreviewUrl], references: [url])
   pinned          Boolean        @default(false)
   Media           Media[]
   LinkPreview     LinkPreview?   @relation(fields: [linkPreviewId], references: [id])
@@ -133,7 +130,6 @@ model Post {
   deletedAt       DateTime?
 
   @@unique([createdAt, id])
-  // @@index([linkPreviewUrl])
   @@index([authorId])
   @@index([parentPostId])
   @@index([path])

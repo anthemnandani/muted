@@ -132,6 +132,10 @@ export const applyOptimisticUpdate = (
 ) => {
   if (!oldData) return oldData;
 
+  if (oldData.id === targetId) {
+    return recipes[action]({ item: oldData, userId, active, payload });
+  }
+
   const shouldRemoveItem = (item: any) => {
     if (action === 'DELETE' && item.id === targetId) {
       return true;

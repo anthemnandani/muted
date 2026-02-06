@@ -1,4 +1,4 @@
-import type { AuthorInfoProps } from '@/lib/types';
+import type { Mention } from '@/lib/types';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
 import { PostPrivacy } from '@prisma/client';
@@ -6,10 +6,7 @@ import { PostPrivacy } from '@prisma/client';
 interface UsePostInteractionProps {
   authorId: string;
   privacy: PostPrivacy;
-  mentions: Array<{
-    user: AuthorInfoProps;
-    index: number;
-  }>;
+  mentions?: Mention[];
 }
 
 export const usePostInteraction = ({
@@ -24,7 +21,7 @@ export const usePostInteraction = ({
     {
       enabled:
         privacy !== 'ANYONE' && !!loggedUser?.id && authorId !== loggedUser?.id,
-    }
+    },
   );
 
   const canInteract = () => {
@@ -39,7 +36,7 @@ export const usePostInteraction = ({
       case 'FOLLOWED':
         return userInfo.followers.some((user) => user.followerId === authorId);
       case 'MENTIONED':
-        return mentions.some((mention) => mention.user.id === loggedUser.id);
+        return mentions?.some((mention) => mention.user.id === loggedUser.id);
       default:
         return false;
     }

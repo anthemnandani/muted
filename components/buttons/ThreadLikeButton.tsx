@@ -10,6 +10,7 @@ const ThreadLikeButton: React.FC<LikeButtonProps> = ({
   likeInfo,
   authorId,
   hideLikes,
+  isParentThread,
 }) => {
   const { isLikedByMe, likesCount, toggleLike } = useLike({
     initialLikesCount: likeInfo.likesCount,
@@ -34,11 +35,13 @@ const ThreadLikeButton: React.FC<LikeButtonProps> = ({
             'text-primary-red': isLikedByMe,
           })}
         />
-        {(!hideLikes || user?.id === authorId) && likesCount > 0 && (
-          <strong className='text-[13px] leading-4 text-center text-white/75'>
-            {formatCount(likesCount)}
-          </strong>
-        )}
+        {(!hideLikes || user?.id === authorId) &&
+          likesCount > 0 &&
+          !isParentThread && (
+            <strong className='text-[13px] leading-4 text-center text-white/75'>
+              {formatCount(likesCount)}
+            </strong>
+          )}
       </button>
     </div>
   );

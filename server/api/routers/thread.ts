@@ -6,12 +6,13 @@ import {
   getBookmarksWithBlockFilter,
   getLikesWithBlockFilter,
 } from '@/server/constants';
+import { createId } from '@paralleldrive/cuid2';
 import {
   EncodingStatus,
   FileType,
+  NotificationType,
   PostPrivacy,
   PostStatus,
-  Prisma,
 } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
@@ -141,8 +142,6 @@ export const threadRouter = createTRPCRouter({
             });
           }
 
-          const path = `/${id}/`;
-
           const newThread = await prisma.thread.create({
             data: {
               id,
@@ -150,7 +149,6 @@ export const threadRouter = createTRPCRouter({
               authorId: userId,
               privacy,
               quoteId,
-              path,
               status,
               linkPreviewUrl: linkPreviewResult?.url,
               media: media ? { create: media } : undefined,
@@ -385,6 +383,336 @@ export const threadRouter = createTRPCRouter({
       },
     ),
 
+  commentToThread: privateProcedure
+    .input(
+      z.object({
+        threadAuthor: z.string(),
+        id: z.string(),
+        text: z.string().min(1, {
+          message: 'Comment cannot be empty',
+        }),
+        mentions: z
+          .array(
+            z.object({
+              mentionedUserId: z.string(),
+              index: z.number(),
+            }),
+          )
+          .optional(),
+        privacy: z.nativeEnum(PostPrivacy).default('ANYONE'),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { userId, db } = ctx;
+      const { text, mentions, privacy, id, threadAuthor } = input;
+
+      try {
+        const transactionResult = await db.$transaction(async (prisma) => {
+          const filter = new Filter();
+          const filteredText = filter.clean(text);
+          const hashtags = extractHashtags(filteredText);
+          const threadId = createId();
+
+          const parentThread = await prisma.thread.findUnique({
+            where: { id },
+            select: {
+              path: true,
+              id: true,
+              author: {
+                select: {
+                  blockedUsers: {
+                    select: {
+                      blockedUserId: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+
+          if (!parentThread) {
+            throw new TRPCError({
+              code: 'NOT_FOUND',
+              message: 'Parent thread not found',
+            });
+          }
+
+          const blockedUsers = parentThread.author.blockedUsers.map(
+            (blockedUser) => blockedUser.blockedUserId,
+          );
+
+          const isBlocked = blockedUsers.includes(userId);
+
+          if (isBlocked) {
+            throw new TRPCError({ code: 'FORBIDDEN' });
+          }
+
+          const path = `/${parentThread.id}`;
+
+          await prisma.thread.update({
+            where: { id: parentThread.id },
+            data: { repliesCount: { increment: 1 } },
+          });
+
+          const comment = await prisma.thread.create({
+            data: {
+              id: threadId,
+              text: filteredText,
+              authorId: userId,
+              parentId: id,
+              privacy,
+              path,
+              hashtags: {
+                connectOrCreate: hashtags.map((tag) => {
+                  const tagName = tag.slice(1);
+                  return {
+                    where: { name: tagName },
+                    create: { name: tagName },
+                  };
+                }),
+              },
+              mentions: mentions
+                ? {
+                    create: mentions.map((mention) => ({
+                      index: mention.index,
+                      user: {
+                        connect: {
+                          id: mention.mentionedUserId,
+                        },
+                      },
+                    })),
+                  }
+                : undefined,
+            },
+            select: {
+              id: true,
+              author: true,
+              mentions: true,
+            },
+          });
+
+          if (mentions && mentions.length > 0) {
+            const mentionNotifications = comment.mentions
+              .filter((user) => user.id !== userId)
+              .map((user) => ({
+                type: NotificationType.MENTION,
+                senderUserId: userId,
+                receiverUserId: user.id,
+                threadId: id,
+                message: `mentioned you in a comment: ${filteredText}`,
+              }));
+
+            if (mentionNotifications.length > 0) {
+              await prisma.notification.createMany({
+                data: mentionNotifications,
+              });
+            }
+          }
+
+          if (userId !== threadAuthor) {
+            await prisma.notification.create({
+              data: {
+                type: NotificationType.COMMENT,
+                senderUserId: userId,
+                receiverUserId: threadAuthor,
+                threadId: id,
+                message: `commented: ${filteredText}`,
+              },
+            });
+          }
+
+          return { comment };
+        });
+
+        if (!transactionResult) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to create reply',
+          });
+        }
+
+        return {
+          comment: transactionResult.comment,
+          success: true,
+        };
+      } catch (error) {
+        console.error('Error in replyToThread:', error);
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to process mentions. Please try again.',
+        });
+      }
+    }),
+
+  replyToComment: privateProcedure
+    .input(
+      z.object({
+        parentCommentId: z.string(),
+        originalThreadId: z.string(),
+        text: z.string().min(1, {
+          message: 'Reply cannot be empty',
+        }),
+        mentions: z
+          .array(
+            z.object({
+              mentionedUserId: z.string(),
+              index: z.number(),
+            }),
+          )
+          .optional(),
+        privacy: z.nativeEnum(PostPrivacy).default('ANYONE'),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { userId, db } = ctx;
+      const { parentCommentId, text, mentions, originalThreadId, privacy } =
+        input;
+
+      try {
+        const transactionResult = await db.$transaction(async (prisma) => {
+          const filter = new Filter();
+          const filteredText = filter.clean(text);
+          const hashtags = extractHashtags(filteredText);
+          const replyId = createId();
+
+          const parentComment = await prisma.thread.findUnique({
+            where: { id: parentCommentId },
+            select: {
+              path: true,
+              id: true,
+              authorId: true,
+              author: {
+                select: {
+                  blockedUsers: {
+                    select: { blockedUserId: true },
+                  },
+                },
+              },
+            },
+          });
+
+          if (!parentComment) {
+            throw new TRPCError({
+              code: 'NOT_FOUND',
+              message: 'Parent comment not found',
+            });
+          }
+
+          const blockedUsers = parentComment.author.blockedUsers.map(
+            (blockedUser) => blockedUser.blockedUserId,
+          );
+
+          const isBlocked = blockedUsers.includes(userId);
+
+          if (isBlocked) {
+            throw new TRPCError({ code: 'FORBIDDEN' });
+          }
+          const parentPath = parentComment.path ?? `/${parentComment.id}`;
+          const path = `${parentPath}${replyId}/`;
+
+          const ancestorIds = parentPath.split('/').filter(Boolean);
+
+          await prisma.thread.updateMany({
+            where: { id: { in: ancestorIds } },
+            data: { repliesCount: { increment: 1 } },
+          });
+
+          const reply = await prisma.thread.create({
+            data: {
+              id: replyId,
+              text: filteredText,
+              authorId: userId,
+              parentId: parentCommentId,
+              path,
+              privacy,
+              hashtags: {
+                connectOrCreate: hashtags.map((tag) => {
+                  const tagName = tag.slice(1);
+                  return {
+                    where: { name: tagName },
+                    create: { name: tagName },
+                  };
+                }),
+              },
+              mentions: mentions
+                ? {
+                    create: mentions.map((mention) => ({
+                      index: mention.index,
+                      user: {
+                        connect: {
+                          id: mention.mentionedUserId,
+                        },
+                      },
+                    })),
+                  }
+                : undefined,
+            },
+            select: {
+              id: true,
+              author: true,
+              mentions: true,
+            },
+          });
+
+          if (mentions && mentions.length > 0) {
+            const mentionNotifications = reply.mentions
+              .filter((user) => user.id !== userId)
+              .map((user) => ({
+                type: NotificationType.MENTION,
+                senderUserId: userId,
+                receiverUserId: user.id,
+                threadId: originalThreadId,
+                message: `mentioned you in a comment: ${filteredText}`,
+              }));
+
+            if (mentionNotifications.length > 0) {
+              await prisma.notification.createMany({
+                data: mentionNotifications,
+              });
+            }
+          }
+
+          if (userId !== parentComment.authorId) {
+            await prisma.notification.create({
+              data: {
+                type: NotificationType.COMMENT,
+                senderUserId: userId,
+                receiverUserId: parentComment.authorId,
+                threadId: originalThreadId,
+                message: `replied to your comment: ${filteredText}`,
+              },
+            });
+          }
+
+          return { reply };
+        });
+
+        if (!transactionResult) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to create reply',
+          });
+        }
+
+        return {
+          reply: transactionResult.reply,
+          success: true,
+        };
+      } catch (error) {
+        console.error('Error in replyToComment:', error);
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to process reply. Please try again.',
+        });
+      }
+    }),
+
   togglePinThread: privateProcedure
     .input(
       z.object({
@@ -535,6 +863,31 @@ export const threadRouter = createTRPCRouter({
       }
 
       return { threads: formattedThreads, nextCursor };
+    }),
+
+  getThreadById: privateProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const { id } = input;
+      const { userId, db } = ctx;
+
+      const thread = await db.thread.findUnique({
+        where: { id },
+        select: THREAD_SELECT(userId!),
+      });
+
+      if (!thread) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      const threadWithTokens = await enrichThreadWithTokens(thread);
+      return {
+        ...threadWithTokens,
+        likesCount: thread.likes.length,
+        repostsCount: thread.reposts.length,
+        repliesCount: thread.repliesCount,
+        bookmarksCount: new Set(thread.bookmarks.map((b) => b.userId)).size,
+      };
     }),
 
   getFollowingThreads: privateProcedure

@@ -30,6 +30,7 @@ export type TargetType =
       variables: { searchQuery?: string };
     }
   | { type: QUERY_TYPE.POST_DETAILS; variables: { id: string } }
+  | { type: QUERY_TYPE.THREAD_DETAILS; variables: { id: string } }
   | {
       type: QUERY_TYPE.COMMENTS;
       variables: { id: string; sortBy: 'LATEST' | 'OLDEST' };
@@ -115,6 +116,10 @@ export const OptimisticActionProvider = ({
 
       case QUERY_TYPE.POST_DETAILS:
         utils.post.getPostDetails.setData(target.variables, update('post'));
+        break;
+
+      case QUERY_TYPE.THREAD_DETAILS:
+        utils.thread.getThreadById.setData(target.variables, update('thread'));
         break;
 
       case QUERY_TYPE.USER_POSTS:

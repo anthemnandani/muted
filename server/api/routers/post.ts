@@ -378,7 +378,7 @@ export const postRouter = createTRPCRouter({
         mentions: z
           .array(
             z.object({
-              username: z.string(),
+              mentionedUserId: z.string(),
               index: z.number(),
             }),
           )
@@ -387,16 +387,17 @@ export const postRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { userId, db } = ctx;
+      const { text, mentions, postId, postAuthor } = input;
 
       try {
         const transactionResult = await db.$transaction(async (prisma) => {
           const filter = new Filter();
-          const filteredText = filter.clean(input.text);
+          const filteredText = filter.clean(text);
           const hashtags = extractHashtags(filteredText);
-          const postId = createId();
+          const commentId = createId();
 
           const parentPost = await prisma.post.findUnique({
-            where: { id: input.postId },
+            where: { id: postId },
             select: {
               path: true,
               id: true,
@@ -429,21 +430,19 @@ export const postRouter = createTRPCRouter({
             throw new TRPCError({ code: 'FORBIDDEN' });
           }
 
-          const parentPath = parentPost.path ?? `/${parentPost.id}`;
-          const path = `${parentPath}/${postId}/`;
-          const ancestorIds = parentPath.split('/').filter(Boolean);
+          const path = `/${parentPost.id}`;
 
-          await prisma.post.updateMany({
-            where: { id: { in: ancestorIds } },
+          await prisma.post.update({
+            where: { id: parentPost.id },
             data: { repliesCount: { increment: 1 } },
           });
 
           const repliedPost = await prisma.post.create({
             data: {
-              id: postId,
+              id: commentId,
               text: filteredText,
               authorId: userId,
-              parentPostId: input.postId,
+              parentPostId: postId,
               path,
               hashtags: {
                 connectOrCreate: hashtags.map((tag) => {
@@ -454,73 +453,51 @@ export const postRouter = createTRPCRouter({
                   };
                 }),
               },
+              mentions: mentions
+                ? {
+                    create: mentions.map((mention) => ({
+                      index: mention.index,
+                      user: {
+                        connect: {
+                          id: mention.mentionedUserId,
+                        },
+                      },
+                    })),
+                  }
+                : undefined,
             },
             select: {
               id: true,
               author: true,
+              mentions: true,
             },
           });
 
-          if (input.mentions && input.mentions.length > 0) {
-            const uniqueUsernames = Array.from(
-              new Set(input.mentions.map((m) => m.username)),
-            );
+          if (mentions && mentions.length > 0) {
+            const mentionNotifications = repliedPost.mentions
+              .filter((user) => user.id !== userId)
+              .map((user) => ({
+                type: NotificationType.MENTION,
+                senderUserId: userId,
+                receiverUserId: user.id,
+                postId,
+                message: `mentioned you in a comment: ${filteredText}`,
+              }));
 
-            const mentionedUsers = await prisma.user.findMany({
-              where: {
-                username: {
-                  in: uniqueUsernames,
-                },
-              },
-              select: {
-                id: true,
-                username: true,
-              },
-            });
-
-            const usernameToIdMap = new Map(
-              mentionedUsers.map((user) => [user.username, user.id]),
-            );
-
-            const validMentions = input.mentions.filter((mention) =>
-              usernameToIdMap.has(mention.username),
-            );
-
-            if (validMentions.length > 0) {
-              await prisma.mention.createMany({
-                data: validMentions.map((mention) => ({
-                  postId,
-                  userId: usernameToIdMap.get(mention.username)!,
-                  index: mention.index,
-                })),
-                skipDuplicates: true,
+            if (mentionNotifications.length > 0) {
+              await prisma.notification.createMany({
+                data: mentionNotifications,
               });
-
-              const mentionNotifications = mentionedUsers
-                .filter((user) => user.id !== userId)
-                .map((user) => ({
-                  type: NotificationType.MENTION,
-                  senderUserId: userId,
-                  receiverUserId: user.id,
-                  postId: input.postId,
-                  message: `mentioned you in a comment: ${filteredText}`,
-                }));
-
-              if (mentionNotifications.length > 0) {
-                await prisma.notification.createMany({
-                  data: mentionNotifications,
-                });
-              }
             }
           }
 
-          if (userId !== input.postAuthor) {
+          if (userId !== postAuthor) {
             await prisma.notification.create({
               data: {
                 type: NotificationType.COMMENT,
                 senderUserId: userId,
-                receiverUserId: input.postAuthor,
-                postId: input.postId,
+                receiverUserId: postAuthor,
+                postId,
                 message: `commented: ${filteredText}`,
               },
             });
@@ -563,7 +540,7 @@ export const postRouter = createTRPCRouter({
         mentions: z
           .array(
             z.object({
-              username: z.string(),
+              mentionedUserId: z.string(),
               index: z.number(),
             }),
           )
@@ -572,16 +549,17 @@ export const postRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { userId, db } = ctx;
+      const { text, mentions, parentCommentId, originalPostId } = input;
 
       try {
         const transactionResult = await db.$transaction(async (prisma) => {
           const filter = new Filter();
-          const filteredText = filter.clean(input.text);
+          const filteredText = filter.clean(text);
           const hashtags = extractHashtags(filteredText);
           const replyId = createId();
 
           const parentComment = await prisma.post.findUnique({
-            where: { id: input.parentCommentId },
+            where: { id: parentCommentId },
             select: {
               path: true,
               id: true,
@@ -627,7 +605,7 @@ export const postRouter = createTRPCRouter({
               id: replyId,
               text: filteredText,
               authorId: userId,
-              parentPostId: input.parentCommentId,
+              parentPostId: parentCommentId,
               path,
               hashtags: {
                 connectOrCreate: hashtags.map((tag) => {
@@ -638,63 +616,41 @@ export const postRouter = createTRPCRouter({
                   };
                 }),
               },
+              mentions: mentions
+                ? {
+                    create: mentions.map((mention) => ({
+                      index: mention.index,
+                      user: {
+                        connect: {
+                          id: mention.mentionedUserId,
+                        },
+                      },
+                    })),
+                  }
+                : undefined,
             },
             select: {
               id: true,
               author: true,
+              mentions: true,
             },
           });
 
-          if (input.mentions && input.mentions.length > 0) {
-            const uniqueUsernames = Array.from(
-              new Set(input.mentions.map((m) => m.username)),
-            );
+          if (mentions && mentions.length > 0) {
+            const mentionNotifications = reply.mentions
+              .filter((user) => user.id !== userId)
+              .map((user) => ({
+                type: NotificationType.MENTION,
+                senderUserId: userId,
+                receiverUserId: user.id,
+                postId: originalPostId,
+                message: `mentioned you in a comment: ${filteredText}`,
+              }));
 
-            const mentionedUsers = await prisma.user.findMany({
-              where: {
-                username: {
-                  in: uniqueUsernames,
-                },
-              },
-              select: {
-                id: true,
-                username: true,
-              },
-            });
-
-            const usernameToIdMap = new Map(
-              mentionedUsers.map((user) => [user.username, user.id]),
-            );
-
-            const validMentions = input.mentions.filter((mention) =>
-              usernameToIdMap.has(mention.username),
-            );
-
-            if (validMentions.length > 0) {
-              await prisma.mention.createMany({
-                data: validMentions.map((mention) => ({
-                  postId: reply.id,
-                  userId: usernameToIdMap.get(mention.username)!,
-                  index: mention.index,
-                })),
-                skipDuplicates: true,
+            if (mentionNotifications.length > 0) {
+              await prisma.notification.createMany({
+                data: mentionNotifications,
               });
-
-              const mentionNotifications = mentionedUsers
-                .filter((user) => user.id !== userId)
-                .map((user) => ({
-                  type: NotificationType.MENTION,
-                  senderUserId: userId,
-                  receiverUserId: user.id,
-                  postId: input.originalPostId,
-                  message: `mentioned you in a comment: ${filteredText}`,
-                }));
-
-              if (mentionNotifications.length > 0) {
-                await prisma.notification.createMany({
-                  data: mentionNotifications,
-                });
-              }
             }
           }
 
@@ -704,7 +660,7 @@ export const postRouter = createTRPCRouter({
                 type: NotificationType.COMMENT,
                 senderUserId: userId,
                 receiverUserId: parentComment.authorId,
-                postId: input.originalPostId,
+                postId: originalPostId,
                 message: `replied to your comment: ${filteredText}`,
               },
             });

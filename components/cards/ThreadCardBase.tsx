@@ -13,6 +13,7 @@ import HiddenThread from './HiddenThread';
 import LinkPreviewCard from './LinkPreviewCard';
 import MutedThread from './MutedThread';
 import ThreadQuoteCard from './ThreadQuoteCard';
+import { useRouter } from 'next/navigation';
 
 const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   id,
@@ -35,6 +36,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   pinned,
   privacy,
   linkPreview,
+  parentId,
   variant = 'default',
   showHeader = true,
   showActions = true,
@@ -43,6 +45,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
 }) => {
   const { isThreadHidden } = useHiddenThreads();
   const { isMutedUser } = useMutedUsers();
+  const router = useRouter();
 
   const content = (
     <Fragment>
@@ -93,7 +96,12 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
       )}
 
       {variant === 'default' ? (
-        <div className='w-full cursor-pointer'>{content}</div>
+        <div
+          className='w-full cursor-pointer'
+          onClick={() => router.push(`/thread/${id}`)}
+        >
+          {content}
+        </div>
       ) : (
         content
       )}
@@ -129,6 +137,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
             bookmarksCount={bookmarksCount ?? 0}
             bookmarks={bookmarks}
             privacy={privacy}
+            parentId={parentId}
           />
         </div>
       )}

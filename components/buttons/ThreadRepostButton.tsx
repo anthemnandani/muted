@@ -23,6 +23,8 @@ const ThreadRepostButton: React.FC<ThreadRepostButtonProps> = ({
   quoteId,
   repostsCount,
   isCheckingPermissions,
+  canInteract,
+  isParentThread,
 }) => {
   const {
     isRepostedByMe,
@@ -43,7 +45,7 @@ const ThreadRepostButton: React.FC<ThreadRepostButtonProps> = ({
           ) : (
             <Icons.threadRepost className='size-5' />
           )}
-          {mainRepostsCount > 0 && (
+          {mainRepostsCount > 0 && !isParentThread && (
             <span className='text-[13px] leading-4 text-center text-white/75 ml-2'>
               {mainRepostsCount}
             </span>
@@ -88,6 +90,7 @@ const ThreadRepostButton: React.FC<ThreadRepostButtonProps> = ({
                 linkPreview,
                 mentions,
               }}
+              disabled={!canInteract}
             />
           </Fragment>
         )}

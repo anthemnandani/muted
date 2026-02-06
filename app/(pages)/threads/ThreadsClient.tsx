@@ -9,7 +9,7 @@ const ThreadsClient = () => {
   const searchParams = useSearchParams();
   const tag = searchParams.get('tag');
 
-  const { data, isLoading, isFetching, isError, hasNextPage, fetchNextPage } =
+  const { data, isLoading, isError, hasNextPage, fetchNextPage } =
     api.thread.getAllThreads.useInfiniteQuery(
       { searchQuery: tag ?? '' },
       {
@@ -26,7 +26,7 @@ const ThreadsClient = () => {
       threads={allThreads!}
       fetchNextPage={fetchNextPage}
       hasNextPage={hasNextPage}
-      isLoading={isLoading || isFetching}
+      isLoading={isLoading}
       isError={isError}
       selectedFilter={ThreadFilter.FOR_YOU}
       emptyStateMessage='No threads found.'

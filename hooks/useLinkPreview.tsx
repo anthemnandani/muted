@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 
 const useLinkPreview = () => {
-  const { text, setLinkPreview } = useThreadStore();
+  const { text, setLinkPreview, replyThreadInfo } = useThreadStore();
   const [urlToFetch, setUrlToFetch] = useState<string | null>(null);
 
   const [debouncedUrl] = useDebounce(urlToFetch, 750);
@@ -12,7 +12,7 @@ const useLinkPreview = () => {
   const { data, isFetching } = api.post.getLinkInfo.useQuery(
     { url: debouncedUrl! },
     {
-      enabled: !!debouncedUrl,
+      enabled: !!debouncedUrl && !replyThreadInfo,
       retry: false,
       refetchOnWindowFocus: false,
     },

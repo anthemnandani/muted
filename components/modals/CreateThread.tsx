@@ -3,6 +3,7 @@
 import useCreateThread from '@/hooks/useCreateThread';
 import useLinkPreview from '@/hooks/useLinkPreview';
 import useMentions from '@/hooks/useMentions';
+import { cn } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
 import { useThreadStore } from '@/store/threadStore';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
@@ -23,7 +24,7 @@ import {
 } from '../ui/dialog';
 import DiscardPost from './DiscardPost';
 
-const CreateThread = () => {
+const CreateThread = ({ rootThreadId }: { rootThreadId?: string }) => {
   const {
     openDialog,
     text,
@@ -35,6 +36,7 @@ const CreateThread = () => {
     setLinkPreview,
     reset,
     editThreadInfo,
+    replyThreadInfo,
     setPrivacy,
   } = useThreadStore();
 
@@ -45,12 +47,14 @@ const CreateThread = () => {
   const {
     isCreating,
     isEditing,
-    handleCreate,
-    handleEdit,
+    isCommenting,
+    isReplying,
+    isDisabled,
     isUploading,
     uploadProgress,
     cancelUpload,
-  } = useCreateThread();
+    handleSubmit,
+  } = useCreateThread({ rootThreadId });
   const { isLinkPreviewLoading } = useLinkPreview();
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
 
@@ -121,11 +125,29 @@ const CreateThread = () => {
   };
 
   const buttonText = useMemo(() => {
+    if (isCommenting) return 'Commenting...';
+    if (isReplying) return 'Replying...';
     if (isCreating) return 'Posting...';
     if (isEditing) return 'Saving...';
     if (editThreadInfo) return 'Save';
+    if (replyThreadInfo && replyThreadInfo.isComment) return 'Comment';
+    if (replyThreadInfo) return 'Reply';
     return 'Post';
-  }, [isCreating, isEditing, editThreadInfo]);
+  }, [
+    isCreating,
+    isEditing,
+    isCommenting,
+    isReplying,
+    editThreadInfo,
+    replyThreadInfo,
+  ]);
+
+  const titleText = useMemo(() => {
+    if (editThreadInfo) return 'Edit thread';
+    if (replyThreadInfo && replyThreadInfo.isComment) return 'Comment';
+    if (replyThreadInfo) return 'Reply';
+    return 'New thread';
+  }, [editThreadInfo, replyThreadInfo]);
 
   return (
     <Fragment>
@@ -136,25 +158,41 @@ const CreateThread = () => {
         <DialogContent className='w-full select-none border-none bg-transparent shadow-none outline-none md:max-w-[668px]'>
           <DialogHeader>
             <DialogTitle>
-              <VisuallyHidden.Root>
-                {editThreadInfo ? 'Edit thread' : 'New thread'}
-              </VisuallyHidden.Root>
+              <VisuallyHidden.Root>{titleText}</VisuallyHidden.Root>
             </DialogTitle>
           </DialogHeader>
           <h1 className='mb-2 w-full text-center font-bold text-white'>
-            {editThreadInfo ? 'Edit thread' : 'New thread'}
+            {titleText}
           </h1>
           <Card className='relative rounded-2xl border-none bg-gray-6 shadow-2xl ring-1 ring-[#393939] ring-offset-0'>
             <div className='max-h-[calc(100vh-100px)] overflow-y-auto'>
-              <div className='p-6'>
+              <div
+                className={cn(
+                  'p-6',
+                  (linkPreview || isLinkPreviewLoading) && '!pb-4',
+                )}
+              >
+                {replyThreadInfo && (
+                  <CreateThreadInput
+                    textareaRef={textareaRef}
+                    handleMentionSearch={handleMentionSearch}
+                    replyThreadInfo={replyThreadInfo}
+                  />
+                )}
                 <CreateThreadInput
-                  placeholder='Start a thread...'
+                  placeholder={
+                    replyThreadInfo
+                      ? `${replyThreadInfo.isComment ? 'Comment' : 'Reply'} to ${replyThreadInfo?.author?.username}...`
+                      : 'Start a thread...'
+                  }
                   textareaRef={textareaRef}
                   handleMentionSearch={handleMentionSearch}
                   isUploading={isUploading}
                   uploadProgress={uploadProgress}
+                  hideMedia={!!replyThreadInfo}
                 />
               </div>
+
               {showMentionSuggestions && (
                 <UsersMenu
                   showMentionSuggestions={showMentionSuggestions}
@@ -179,16 +217,10 @@ const CreateThread = () => {
               <div className='w-full flex-between p-6'>
                 <PostPrivacyMenu />
                 <Button
-                  onClick={() => {
-                    if (editThreadInfo) {
-                      handleEdit();
-                    } else {
-                      handleCreate();
-                    }
-                  }}
+                  onClick={handleSubmit}
                   variant='ghost'
                   className='bg-transparent border border-border-light rounded-lg text-[14px] leading-none flex-center hover:bg-transparent disabled:cursor-not-allowed disabled:pointer-events-auto'
-                  disabled={text === '' || isCreating || isEditing}
+                  disabled={isDisabled}
                 >
                   {buttonText}
                 </Button>

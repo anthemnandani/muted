@@ -72,13 +72,15 @@ export type ThreadInfo = Partial<
   >
 >;
 
-export type ReplyPostInfo = {
+export type ReplyThreadInfo = {
   id: string;
   text: string;
   author: AuthorInfoProps;
   mentions?: Mention[];
+  media?: Media[];
   privacy: PostPrivacy;
   createdAt: Date;
+  isComment: boolean;
 };
 
 export type UserProfileInfoProps = RouterOutputs['user']['getUserProfile'] & {
@@ -337,11 +339,13 @@ export interface CreatePostInputProps extends DropzoneProps {
   handleMentionSearch: (value: string, cursorPosition: number) => void;
 }
 export interface CreateThreadInputProps {
-  placeholder: string;
+  placeholder?: string;
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   handleMentionSearch: (value: string, cursorPosition: number) => void;
-  isUploading: boolean;
-  uploadProgress: number;
+  isUploading?: boolean;
+  uploadProgress?: number;
+  replyThreadInfo?: ReplyThreadInfo;
+  hideMedia?: boolean;
 }
 
 export interface PostsListProps {
@@ -401,11 +405,24 @@ export interface UseLikeProps {
   type: 'POST' | 'THREAD';
 }
 
+export interface QuoteButtonProps {
+  quoteInfo: ThreadInfo;
+  disabled?: boolean;
+}
+
 export interface LikeButtonProps {
   likeInfo: Pick<Post, 'id' | 'likes' | 'likesCount'>;
   authorId: string;
   hideLikes?: boolean;
   isPanel?: boolean;
+  isParentThread?: boolean;
+}
+
+export interface ThreadReplyButtonProps {
+  replyThreadInfo: ReplyThreadInfo;
+  repliesCount: number;
+  isParentThread?: boolean;
+  canInteract?: boolean;
 }
 
 export interface ThreadRepostButtonProps {
@@ -420,6 +437,8 @@ export interface ThreadRepostButtonProps {
   reposts?: Repost[];
   repostsCount: number;
   isCheckingPermissions?: boolean;
+  isParentThread?: boolean;
+  canInteract?: boolean;
 }
 
 export interface BookmarkButtonProps {
@@ -675,7 +694,7 @@ export interface ThreadActionsProps {
   linkPreview: LinkPreview | null;
   mentions?: Mention[];
   hideLikes: boolean;
-  isParentPost?: boolean;
+  parentId: string | null;
   quoteId: string | null;
 }
 

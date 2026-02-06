@@ -17,7 +17,7 @@ const useAddReply = ({
 
   const { resetReply, validMentions } = useAddCommentStore();
 
-  const { isLoading: isReplying, mutateAsync: addReply } =
+  const { isPending: isReplying, mutateAsync: addReply } =
     api.post.replyToComment.useMutation({
       onMutate: () => {
         resetReply();
@@ -43,7 +43,7 @@ const useAddReply = ({
       originalPostId: postId,
       text,
       mentions: validMentions.map((mention) => ({
-        username: mention.username,
+        mentionedUserId: mention.mentionedUserId,
         index: mention.startIndex,
       })),
     });

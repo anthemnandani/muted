@@ -9,8 +9,9 @@ import { EncodingStatus, FileType, PostStatus } from '@prisma/client';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMuxUpload } from './useMuxUpload';
+import { useRouter } from 'next/navigation';
 
-const useCreateThread = () => {
+const useCreateThread = ({ rootThreadId }: { rootThreadId?: string }) => {
   const {
     text,
     privacy,
@@ -18,10 +19,13 @@ const useCreateThread = () => {
     quoteInfo,
     validMentions,
     reset,
+    replyThreadInfo,
     editThreadInfo,
   } = useThreadStore();
   const { threadMedia, setThreadMedia } = useFileStore();
   const { uploadToStorage, prepareMuxUpload, startMuxUpload } = useMuxUpload();
+
+  const router = useRouter();
 
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -31,6 +35,16 @@ const useCreateThread = () => {
 
   const utils = api.useUtils();
 
+  const resetState = () => {
+    reset();
+    setTimeout(() => {
+      setThreadMedia(null);
+      setIsUploading(false);
+      setUploadProgress(0);
+      createdThreadIdRef.current = null;
+    }, 300);
+  };
+
   const { mutateAsync: createThread, isPending: isCreatingDB } =
     api.thread.createThread.useMutation({
       onSuccess: () => {
@@ -38,8 +52,8 @@ const useCreateThread = () => {
         resetState();
       },
 
-      onSettled: async () => {
-        await utils.thread.invalidate();
+      onSettled: () => {
+        utils.thread.invalidate();
       },
     });
 
@@ -52,9 +66,38 @@ const useCreateThread = () => {
       onError: () => {
         toast.error('Failed to update thread');
       },
-      onSettled: async () => {
-        await utils.thread.invalidate();
+      onSettled: () => {
+        utils.thread.invalidate();
       },
+    });
+
+  const { mutateAsync: commentToThread, isPending: isCommenting } =
+    api.thread.commentToThread.useMutation({
+      onSuccess: () => {
+        toast.success('Commented!');
+        reset();
+      },
+
+      onSettled: () => {
+        utils.thread.invalidate();
+      },
+    });
+
+  const { mutateAsync: addReply, isPending: isReplying } =
+    api.thread.replyToComment.useMutation({
+      onError: (err) => {
+        if (err.data?.code === 'UNAUTHORIZED') {
+          return router.push('/sign-in');
+        }
+        if (err.data?.code === 'FORBIDDEN') {
+          return toast.error('You are not allowed to reply to this comment');
+        }
+        toast.error('ReplyingError: Something went wrong!');
+      },
+      onSettled: () => {
+        utils.thread.invalidate();
+      },
+      retry: false,
     });
 
   const { mutate: deleteThread } = api.thread.deleteThread.useMutation();
@@ -64,16 +107,6 @@ const useCreateThread = () => {
 
   const isMediaFile = (media: any): media is MediaFile =>
     media && 'file' in media && media.file instanceof File;
-
-  const resetState = () => {
-    reset();
-    setTimeout(() => {
-      setThreadMedia(null);
-      setIsUploading(false);
-      setUploadProgress(0);
-      createdThreadIdRef.current = null;
-    }, 300);
-  };
 
   const cancelUpload = () => {
     if (abortControllerRef.current) {
@@ -104,6 +137,36 @@ const useCreateThread = () => {
     } catch (error) {
       toast.error('Failed to update thread');
     }
+  };
+
+  const handleComment = async () => {
+    try {
+      await commentToThread({
+        id: replyThreadInfo!.id,
+        threadAuthor: replyThreadInfo!.author.id,
+        text: text.trim(),
+        privacy,
+        mentions: validMentions.map((m) => ({
+          mentionedUserId: m.mentionedUserId,
+          index: m.startIndex,
+        })),
+      });
+    } catch (error) {
+      toast.error('Failed to reply');
+    }
+  };
+
+  const handleReply = async () => {
+    await addReply({
+      parentCommentId: replyThreadInfo!.id,
+      originalThreadId: rootThreadId!,
+      text: text.trim(),
+      privacy,
+      mentions: validMentions.map((m) => ({
+        mentionedUserId: m.mentionedUserId,
+        index: m.startIndex,
+      })),
+    });
   };
 
   const handleCreate = async () => {
@@ -202,12 +265,29 @@ const useCreateThread = () => {
     }
   };
 
+  const handleSubmit = () => {
+    if (replyThreadInfo && replyThreadInfo.isComment) {
+      handleComment();
+    } else if (replyThreadInfo) {
+      handleReply();
+    } else if (editThreadInfo) {
+      handleEdit();
+    } else {
+      handleCreate();
+    }
+  };
+
+  const isCreating = isCreatingDB || isUploading;
+
   return {
-    handleCreate,
-    handleEdit,
+    handleSubmit,
     cancelUpload,
-    isCreating: isCreatingDB || isUploading,
+    isCreating,
+    isDisabled:
+      text === '' || isCreating || isEditing || isCommenting || isReplying,
     isEditing,
+    isCommenting,
+    isReplying,
     isUploading,
     uploadProgress,
   };

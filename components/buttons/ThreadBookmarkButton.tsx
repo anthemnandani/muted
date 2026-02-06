@@ -7,10 +7,12 @@ import React from 'react';
 
 interface BookmarkButtonProps {
   bookmarkInfo: Pick<PostProps, 'id' | 'bookmarks' | 'bookmarksCount'>;
+  isParentThread?: boolean;
 }
 
 const ThreadBookmarkButton: React.FC<BookmarkButtonProps> = ({
   bookmarkInfo,
+  isParentThread,
 }) => {
   const { id, bookmarksCount: initialCount, bookmarks } = bookmarkInfo;
 
@@ -34,7 +36,7 @@ const ThreadBookmarkButton: React.FC<BookmarkButtonProps> = ({
           className='size-5'
         />
       </button>
-      {bookmarksCount > 0 && (
+      {bookmarksCount > 0 && !isParentThread && (
         <span className='text-[13px] leading-4 text-center text-white/75'>
           {bookmarksCount}
         </span>

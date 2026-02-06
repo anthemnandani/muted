@@ -1,29 +1,22 @@
 import { Icons } from '@/components/icons';
-import type { ReplyPostInfo } from '@/lib/types';
+import { ThreadReplyButtonProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useThreadStore } from '@/store/threadStore';
 import React from 'react';
 import { toast } from 'sonner';
 
-interface ReplyButtonProps {
-  replyThreadInfo: ReplyPostInfo;
-  repliesCount: number;
-  isParentPost?: boolean;
-  canInteract?: boolean;
-}
-
-const ThreadReplyButton: React.FC<ReplyButtonProps> = ({
+const ThreadReplyButton: React.FC<ThreadReplyButtonProps> = ({
   replyThreadInfo,
   repliesCount,
-  isParentPost,
+  isParentThread = false,
   canInteract,
 }) => {
-  const { setOpenDialog, setReplyPostInfo } = useThreadStore();
+  const { setOpenDialog, setReplyThreadInfo } = useThreadStore();
 
   const handleReplyClick = () => {
-    if (!canInteract) return toast.error('You cannot reply to this post');
+    if (!canInteract) return toast.error('You cannot reply to this thread');
     setOpenDialog(true);
-    setReplyPostInfo(replyThreadInfo);
+    setReplyThreadInfo(replyThreadInfo);
   };
 
   return (
@@ -34,11 +27,9 @@ const ThreadReplyButton: React.FC<ReplyButtonProps> = ({
       )}
       onClick={handleReplyClick}
     >
-      <Icons.reply className='size-5 transition-colors duration-150 text-gray-4 dark:text-gray-2' />
-      {repliesCount > 0 && !isParentPost && (
-        <span className='text-[13px] ml-2 text-gray-4 dark:text-gray-2'>
-          {repliesCount}
-        </span>
+      <Icons.reply className='size-5' />
+      {repliesCount > 0 && !isParentThread && (
+        <span className='text-[13px] ml-2 text-white/50'>{repliesCount}</span>
       )}
     </div>
   );
