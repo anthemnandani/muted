@@ -5,7 +5,6 @@ import ThreadBookmarkButton from '@/components/buttons/ThreadBookmarkButton';
 import ThreadLikeButton from '@/components/buttons/ThreadLikeButton';
 import ThreadReplyButton from '@/components/buttons/ThreadReplyButton';
 import ThreadRepostButton from '@/components/buttons/ThreadRepostButton';
-import { usePostInteraction } from '@/hooks/usePostInteraction';
 import { ThreadActionsProps } from '@/lib/types';
 import { Fragment } from 'react';
 
@@ -26,14 +25,9 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
   mentions,
   bookmarks,
   bookmarksCount,
-  privacy,
-  parentId,
+  isCheckingPermissions,
+  canInteract,
 }) => {
-  const { isLoading: isCheckingPermissions, canInteract } = usePostInteraction({
-    authorId: author.id,
-    privacy,
-    mentions,
-  });
   return (
     <Fragment>
       <div className='flex items-center gap-5'>
@@ -47,20 +41,7 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
           authorId={author.id}
         />
 
-        <ThreadReplyButton
-          replyThreadInfo={{
-            id,
-            text,
-            author,
-            media,
-            createdAt,
-            privacy,
-            mentions,
-            isComment: !parentId,
-          }}
-          repliesCount={repliesCount}
-          canInteract={canInteract}
-        />
+        <ThreadReplyButton id={id} repliesCount={repliesCount} />
 
         <ThreadRepostButton
           id={id}

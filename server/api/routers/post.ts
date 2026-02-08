@@ -299,11 +299,7 @@ export const postRouter = createTRPCRouter({
           privacy: true,
           repliesCount: true,
           status: true,
-          author: {
-            select: {
-              ...GET_USER,
-            },
-          },
+          ...getAuthorAndHiddenSelect(userId),
           ...getLikesWithBlockFilter(userId),
           ...getBookmarksWithBlockFilter(userId),
           ...getPostReplies(userId),
@@ -812,7 +808,7 @@ export const postRouter = createTRPCRouter({
       };
     }),
 
-  getComments: publicProcedure
+  getComments: privateProcedure
     .input(
       z.object({
         id: z.string(),
@@ -910,7 +906,7 @@ export const postRouter = createTRPCRouter({
       };
     }),
 
-  getReplies: publicProcedure
+  getReplies: privateProcedure
     .input(
       z.object({
         parentCommentId: z.string(),

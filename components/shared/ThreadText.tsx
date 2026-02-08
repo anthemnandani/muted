@@ -7,15 +7,15 @@ import Username from '../user/Username';
 interface ThreadTextProps {
   text: string;
   mentions?: Mention[];
-  variant?: 'default' | 'reply';
 }
 
-const ThreadText: React.FC<ThreadTextProps> = ({
-  text,
-  mentions,
-  variant = 'default',
-}) => {
+const ThreadText: React.FC<ThreadTextProps> = ({ text, mentions }) => {
   const router = useRouter();
+
+  const containerClasses = cn(
+    'text-accent-foreground font-normal leading-[1.4em] antialiased whitespace-pre-line break-words',
+    'text-[16px] px-2 md:px-4 my-3',
+  );
 
   const handleClick = React.useCallback(
     (e: React.MouseEvent) => {
@@ -38,10 +38,7 @@ const ThreadText: React.FC<ThreadTextProps> = ({
           __html: highlightTextContent(text.replace(/\\n/g, '\n')),
         }}
         onClick={handleClick}
-        className={cn(
-          'text-accent-foreground text-[16px] font-normal leading-[1.4em] antialiased whitespace-pre-line px-2 md:px-4 my-3 break-words',
-          variant === 'reply' && 'max-md:max-w-full',
-        )}
+        className={containerClasses}
       />
     );
   }
@@ -92,16 +89,7 @@ const ThreadText: React.FC<ThreadTextProps> = ({
     );
   }
 
-  return (
-    <div
-      className={cn(
-        'text-accent-foreground text-[16px] font-normal leading-[1.4em] antialiased whitespace-pre-line px-2 md:px-4 my-3 break-words',
-        variant === 'reply' && 'max-md:max-w-full',
-      )}
-    >
-      {parts}
-    </div>
-  );
+  return <div className={containerClasses}>{parts}</div>;
 };
 
 export default ThreadText;

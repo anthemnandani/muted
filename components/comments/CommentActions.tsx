@@ -83,6 +83,13 @@ const CommentActions = ({
               }, you won't be able to restore it.`}
               onClick={handleDeletePost}
               isLoading={isDeleting}
+              trigger={
+                <MenuItem
+                  icon={Icons.delete}
+                  label='Delete'
+                  className='text-primary-red'
+                />
+              }
             />
           </Fragment>
         ) : (
@@ -110,6 +117,13 @@ const CommentActions = ({
                 }, you won't be able to restore it.`}
                 onClick={handleDeletePost}
                 isLoading={isDeleting}
+                trigger={
+                  <MenuItem
+                    icon={Icons.delete}
+                    label='Delete'
+                    className='text-primary-red'
+                  />
+                }
               />
             )}
           </Fragment>

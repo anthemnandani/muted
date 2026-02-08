@@ -1,11 +1,11 @@
-import type { AuthorInfoProps } from '@/lib/types';
+import type { AuthorProps } from '@/lib/types';
 import Link from 'next/link';
 import FollowButton from '../buttons/FollowButton';
 import { Icons } from '../icons';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import UserStats from '../profile/UserStats';
 
-const UserProfileCard: React.FC<AuthorInfoProps> = (props) => {
+const UserProfileCard: React.FC<AuthorProps> = (props) => {
   const { bio, image, username, followers, fullName, following, isAdmin } =
     props;
   return (

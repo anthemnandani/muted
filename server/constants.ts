@@ -35,6 +35,7 @@ export const GET_COUNT = {
 export const GET_REPOSTS = {
   select: {
     postId: true,
+    threadId: true,
     user: {
       select: {
         ...GET_USER,

@@ -5,19 +5,19 @@ import { Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
-const useAddComment = ({
-  postId,
-  authorId,
-}: {
-  postId: string;
+interface UseAddCommentProps {
+  postId?: string;
+  threadId?: string;
   authorId: string;
-}) => {
+}
+
+const useAddComment = ({ postId, threadId, authorId }: UseAddCommentProps) => {
   const router = useRouter();
   const trpcUtils = api.useUtils();
 
   const { commentText, reset, validMentions } = useAddCommentStore();
 
-  const { isPending: isReplying, mutateAsync: replyToPost } =
+  const { mutateAsync: replyToPost, isPending: isCommentingPost } =
     api.post.replyToPost.useMutation({
       onMutate: () => {
         reset();
@@ -37,9 +37,21 @@ const useAddComment = ({
       retry: false,
     });
 
-  const handleReply = () => {
+  const { mutateAsync: commentToThread, isPending: isCommentingThread } =
+    api.thread.commentToThread.useMutation({
+      onSuccess: () => {
+        toast.success('Commented!');
+        reset();
+      },
+      onSettled: () => {
+        trpcUtils.thread.getComments.invalidate({ id: threadId! });
+        trpcUtils.thread.getThreadById.invalidate({ id: threadId! });
+      },
+    });
+
+  const handlePostComment = () => {
     const promise = replyToPost({
-      postId,
+      postId: postId!,
       text: commentText,
       postAuthor: authorId,
       mentions: validMentions.map((m) => ({
@@ -71,9 +83,27 @@ const useAddComment = ({
     });
   };
 
+  const handleThreadComment = async () => {
+    try {
+      await commentToThread({
+        id: threadId!,
+        threadAuthor: authorId,
+        text: commentText.trim(),
+        mentions: validMentions.map((m) => ({
+          mentionedUserId: m.mentionedUserId,
+          index: m.startIndex,
+        })),
+      });
+    } catch (error) {
+      toast.error('Failed to comment');
+    }
+  };
+
   return {
-    handleReply,
-    isReplying,
+    handleThreadComment,
+    handlePostComment,
+    isCommentingPost,
+    isCommentingThread,
   };
 };
 

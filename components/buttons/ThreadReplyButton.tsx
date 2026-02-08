@@ -1,35 +1,22 @@
 import { Icons } from '@/components/icons';
 import { ThreadReplyButtonProps } from '@/lib/types';
-import { cn } from '@/lib/utils';
-import { useThreadStore } from '@/store/threadStore';
+import { useRouter } from 'next/navigation';
 import React from 'react';
-import { toast } from 'sonner';
 
 const ThreadReplyButton: React.FC<ThreadReplyButtonProps> = ({
-  replyThreadInfo,
+  id,
   repliesCount,
   isParentThread = false,
-  canInteract,
 }) => {
-  const { setOpenDialog, setReplyThreadInfo } = useThreadStore();
-
-  const handleReplyClick = () => {
-    if (!canInteract) return toast.error('You cannot reply to this thread');
-    setOpenDialog(true);
-    setReplyThreadInfo(replyThreadInfo);
-  };
-
+  const router = useRouter();
   return (
     <div
-      className={cn(
-        'icon-container-hover',
-        !canInteract && '!cursor-not-allowed',
-      )}
-      onClick={handleReplyClick}
+      className='icon-container-hover'
+      onClick={() => router.push(`/thread/${id}`)}
     >
       <Icons.reply className='size-5' />
       {repliesCount > 0 && !isParentThread && (
-        <span className='text-[13px] ml-2 text-white/50'>{repliesCount}</span>
+        <span className='text-[13px] ml-2 text-white/75'>{repliesCount}</span>
       )}
     </div>
   );

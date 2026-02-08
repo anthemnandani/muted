@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useThreadRepost } from '@/hooks/useThreadRepost';
-import { ThreadRepostButtonProps } from '@/lib/types';
+import { AuthorInfoProps, ThreadRepostButtonProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Fragment } from 'react';
 import QuoteButton from './QuoteButton';
@@ -83,7 +83,7 @@ const ThreadRepostButton: React.FC<ThreadRepostButtonProps> = ({
               quoteInfo={{
                 text,
                 id,
-                author,
+                author: author as AuthorInfoProps,
                 createdAt,
                 media,
                 quoteId,

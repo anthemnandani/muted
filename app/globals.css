@@ -158,7 +158,7 @@
 
   /* main */
   .main-container {
-    @apply ml-[90px] w-[calc(100%-90px)] pr-3 max-w-[1800px] pb-9 min-h-[calc(1px_+_100vh)];
+    @apply ml-[90px] w-[calc(100%-90px)] pr-3 max-w-[1800px] pb-9 md:pt-8 min-h-[calc(1px_+_100vh)];
   }
 
   /* Head Text */

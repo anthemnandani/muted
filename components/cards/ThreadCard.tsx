@@ -9,7 +9,7 @@ import ThreadCardBase from './ThreadCardBase';
 interface ThreadCardProps extends ThreadProps {
   isLastThread?: boolean;
   showUsername?: boolean;
-  variant?: 'default' | 'reply';
+  variant?: 'default' | 'comment';
 }
 
 const ThreadCard: React.FC<ThreadCardProps> = ({

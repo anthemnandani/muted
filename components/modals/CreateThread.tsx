@@ -24,7 +24,7 @@ import {
 } from '../ui/dialog';
 import DiscardPost from './DiscardPost';
 
-const CreateThread = ({ rootThreadId }: { rootThreadId?: string }) => {
+const CreateThread = () => {
   const {
     openDialog,
     text,
@@ -36,7 +36,6 @@ const CreateThread = ({ rootThreadId }: { rootThreadId?: string }) => {
     setLinkPreview,
     reset,
     editThreadInfo,
-    replyThreadInfo,
     setPrivacy,
   } = useThreadStore();
 
@@ -47,14 +46,13 @@ const CreateThread = ({ rootThreadId }: { rootThreadId?: string }) => {
   const {
     isCreating,
     isEditing,
-    isCommenting,
-    isReplying,
     isDisabled,
     isUploading,
     uploadProgress,
     cancelUpload,
-    handleSubmit,
-  } = useCreateThread({ rootThreadId });
+    handleCreate,
+    handleEdit,
+  } = useCreateThread();
   const { isLinkPreviewLoading } = useLinkPreview();
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
 
@@ -125,29 +123,24 @@ const CreateThread = ({ rootThreadId }: { rootThreadId?: string }) => {
   };
 
   const buttonText = useMemo(() => {
-    if (isCommenting) return 'Commenting...';
-    if (isReplying) return 'Replying...';
     if (isCreating) return 'Posting...';
     if (isEditing) return 'Saving...';
     if (editThreadInfo) return 'Save';
-    if (replyThreadInfo && replyThreadInfo.isComment) return 'Comment';
-    if (replyThreadInfo) return 'Reply';
     return 'Post';
-  }, [
-    isCreating,
-    isEditing,
-    isCommenting,
-    isReplying,
-    editThreadInfo,
-    replyThreadInfo,
-  ]);
+  }, [isCreating, isEditing, editThreadInfo]);
 
   const titleText = useMemo(() => {
     if (editThreadInfo) return 'Edit thread';
-    if (replyThreadInfo && replyThreadInfo.isComment) return 'Comment';
-    if (replyThreadInfo) return 'Reply';
     return 'New thread';
-  }, [editThreadInfo, replyThreadInfo]);
+  }, [editThreadInfo]);
+
+  const handleSubmit = () => {
+    if (editThreadInfo) {
+      handleEdit();
+    } else {
+      handleCreate();
+    }
+  };
 
   return (
     <Fragment>
@@ -172,24 +165,12 @@ const CreateThread = ({ rootThreadId }: { rootThreadId?: string }) => {
                   (linkPreview || isLinkPreviewLoading) && '!pb-4',
                 )}
               >
-                {replyThreadInfo && (
-                  <CreateThreadInput
-                    textareaRef={textareaRef}
-                    handleMentionSearch={handleMentionSearch}
-                    replyThreadInfo={replyThreadInfo}
-                  />
-                )}
                 <CreateThreadInput
-                  placeholder={
-                    replyThreadInfo
-                      ? `${replyThreadInfo.isComment ? 'Comment' : 'Reply'} to ${replyThreadInfo?.author?.username}...`
-                      : 'Start a thread...'
-                  }
+                  placeholder='Start a thread...'
                   textareaRef={textareaRef}
                   handleMentionSearch={handleMentionSearch}
                   isUploading={isUploading}
                   uploadProgress={uploadProgress}
-                  hideMedia={!!replyThreadInfo}
                 />
               </div>
 

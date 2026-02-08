@@ -72,7 +72,7 @@ const CommentInput = ({
           textareaRef.current.focus();
           textareaRef.current.setSelectionRange(
             prefixedText.length,
-            prefixedText.length
+            prefixedText.length,
           );
         }
       }, 0);
@@ -196,7 +196,7 @@ const CommentInput = ({
           if (textareaRef.current) {
             textareaRef.current.setSelectionRange(
               prefixedReply.length,
-              textValue.length
+              textValue.length,
             );
           }
         }, 0);
@@ -229,7 +229,7 @@ const CommentInput = ({
             maxLength={maxChars}
             className={cn(
               'w-full text-sm resize-none bg-transparent text-white placeholder-gray-400 outline-none py-2 overflow-hidden',
-              hasText ? 'pb-7' : ''
+              hasText ? 'pb-7' : '',
             )}
           />
 
@@ -251,7 +251,7 @@ const CommentInput = ({
           <div
             className={cn(
               `text-xs absolute bottom-2 left-3`,
-              isAtLimit ? 'text-primary-blue' : 'text-gray-400'
+              isAtLimit ? 'text-primary-blue' : 'text-gray-400',
             )}
           >
             {charCount}/{maxChars}
@@ -278,7 +278,7 @@ const CommentInput = ({
             : 'text-primary-blue'
         }`}
       >
-        {isEdit ? 'Update' : 'Post'}
+        {isEdit ? 'Update' : 'Comment'}
       </button>
     </div>
   );

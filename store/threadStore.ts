@@ -1,9 +1,8 @@
 import type {
-  ReplyThreadInfo,
-  ThreadInfo,
   LinkPreview,
-  ValidMention,
   Mention,
+  ThreadInfo,
+  ValidMention,
 } from '@/lib/types';
 import type { PostPrivacy } from '@prisma/client';
 import { create } from 'zustand';
@@ -24,7 +23,6 @@ interface ThreadStoreProps {
   linkPreview: LinkPreview | null;
   quoteInfo: ThreadInfo | null;
   validMentions: ValidMention[];
-  replyThreadInfo: ReplyThreadInfo | null;
   editThreadInfo: EditThreadData | null;
 
   setOpenDialog: (open: boolean) => void;
@@ -34,7 +32,6 @@ interface ThreadStoreProps {
   setLinkPreview: (linkPreview: LinkPreview | null) => void;
   setQuoteInfo: (quote: ThreadInfo | null) => void;
   addValidMention: (mention: ValidMention) => void;
-  setReplyThreadInfo: (reply: ReplyThreadInfo | null) => void;
   setEditThreadInfo: (edit: EditThreadData | null) => void;
 
   updateMentionIndices: (text: string) => void;
@@ -49,7 +46,6 @@ export const useThreadStore = create<ThreadStoreProps>((set, get) => ({
   privacy: 'ANYONE',
   linkPreview: null,
   validMentions: [],
-  replyThreadInfo: null,
   editThreadInfo: null,
   quoteInfo: null,
 
@@ -63,7 +59,6 @@ export const useThreadStore = create<ThreadStoreProps>((set, get) => ({
     set((state) => ({
       validMentions: [...state.validMentions, mention],
     })),
-  setReplyThreadInfo: (reply) => set({ replyThreadInfo: reply }),
   setEditThreadInfo: (edit) => set({ editThreadInfo: edit }),
   updateMentionIndices: (text) => {
     const currentMentions = get().validMentions;
@@ -104,7 +99,6 @@ export const useThreadStore = create<ThreadStoreProps>((set, get) => ({
           privacy: 'ANYONE',
           linkPreview: null,
           validMentions: [],
-          replyThreadInfo: null,
           editThreadInfo: null,
           quoteInfo: null,
           deleteThreadId: null,

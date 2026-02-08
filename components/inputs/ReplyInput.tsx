@@ -18,12 +18,13 @@ const ReplyInput = ({ postId, commentId, onCancel }: ReplyInputProps) => {
     replyToUsername,
   } = useAddCommentStore();
 
-  const { handleAddReply, isReplying } = useAddReply({
+  const { handlePostReply, isReplyingPost } = useAddReply({
     postId,
     commentId,
   });
 
-  const { handleEdit, isEditing: isEditingInProgress } = useEditComment();
+  const { handleEditPostComment, isEditing: isEditingInProgress } =
+    useEditComment();
 
   useEffect(() => {
     if (!isReplyEdit) {
@@ -36,18 +37,18 @@ const ReplyInput = ({ postId, commentId, onCancel }: ReplyInputProps) => {
   const submitContent = async () => {
     if (isReplyEdit) {
       if (!replyText.trim() || isEditingInProgress) return;
-      handleEdit(editReplyId, replyText);
+      handleEditPostComment(editReplyId, replyText);
     } else {
-      if (!replyText.trim() || isReplying) return;
-      handleAddReply(replyText);
+      if (!replyText.trim() || isReplyingPost) return;
+      handlePostReply(replyText);
     }
   };
 
   const placeholder = isReplyEdit
     ? 'Edit reply...'
     : replyToUsername
-    ? `Reply to @${replyToUsername}...`
-    : 'Add a reply...';
+      ? `Reply to @${replyToUsername}...`
+      : 'Add a reply...';
 
   return (
     <div className='py-2'>
@@ -58,7 +59,7 @@ const ReplyInput = ({ postId, commentId, onCancel }: ReplyInputProps) => {
         onSubmit={submitContent}
         charCount={replyCharCount}
         maxChars={200}
-        isSubmitting={isReplyEdit ? isEditingInProgress : isReplying}
+        isSubmitting={isReplyEdit ? isEditingInProgress : isReplyingPost}
         showCancelButton={true}
         onCancel={onCancel}
         isEdit={isReplyEdit}

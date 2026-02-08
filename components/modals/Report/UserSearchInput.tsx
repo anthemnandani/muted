@@ -1,14 +1,14 @@
 'use client';
 
 import { Input } from '@/components/ui/input';
-import { type AuthorInfoProps } from '@/lib/types';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { type AuthorProps } from '@/lib/types';
 import { useReportStore } from '@/store/reportStore';
 import { api } from '@/trpc/react';
 import { debounce } from 'lodash';
 import { Loader2, Search, X } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import UserCard from './UserCard';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 const UserSearchInput = ({ isUserReport }: { isUserReport: boolean }) => {
   const [searchText, setSearchText] = useState('');
@@ -21,7 +21,7 @@ const UserSearchInput = ({ isUserReport }: { isUserReport: boolean }) => {
     debounce((value: string) => {
       setDebouncedText(value);
     }, 500),
-    []
+    [],
   );
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,7 +40,7 @@ const UserSearchInput = ({ isUserReport }: { isUserReport: boolean }) => {
     },
     {
       refetchOnWindowFocus: false,
-    }
+    },
   );
 
   const showResults = debouncedText.trim().length > 0;
@@ -54,7 +54,7 @@ const UserSearchInput = ({ isUserReport }: { isUserReport: boolean }) => {
     }
   };
 
-  const handleUserSelection = (user: AuthorInfoProps) => {
+  const handleUserSelection = (user: AuthorProps) => {
     if (targetUserId === user.id) {
       setTargetUserId(null);
     } else {

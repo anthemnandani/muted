@@ -14,7 +14,7 @@ const useEditComment = () => {
   const { commentText, editCommentId, reset, resetReply, validMentions } =
     useAddCommentStore();
 
-  const { isLoading: isEditing, mutateAsync: editComment } =
+  const { mutateAsync: editComment, isPending: isEditing } =
     api.post.editPost.useMutation({
       onMutate: () => {
         reset();
@@ -27,12 +27,30 @@ const useEditComment = () => {
         }
       },
       onSettled: async () => {
-        await trpcUtils.invalidate();
+        await trpcUtils.post.getComments.invalidate();
       },
       retry: false,
     });
 
-  const handleEdit = (id?: string, text?: string) => {
+  const { mutateAsync: editThreadComment, isPending: isEditingThread } =
+    api.thread.editThread.useMutation({
+      onError: (err) => {
+        toast.error('EditingError: Something went wrong!');
+        if (err.data?.code === 'UNAUTHORIZED') {
+          router.push('/sign-in');
+        }
+      },
+      onSuccess: () => {
+        reset();
+        resetReply();
+      },
+      onSettled: () => {
+        trpcUtils.thread.getComments.invalidate();
+      },
+      retry: false,
+    });
+
+  const handleEditPostComment = (id?: string, text?: string) => {
     const postId = id || editCommentId;
     const content = text || commentText;
 
@@ -73,9 +91,32 @@ const useEditComment = () => {
     return promise;
   };
 
+  const handleEditThreadComment = async (id?: string, text?: string) => {
+    const threadId = id || editCommentId;
+    const content = text || commentText;
+
+    if (!threadId || !content.trim()) return;
+
+    try {
+      await editThreadComment({
+        id: threadId,
+        text: content,
+        mentions: validMentions.map((m) => ({
+          mentionedUserId: m.mentionedUserId,
+          index: m.startIndex,
+        })),
+        linkPreview: null,
+      });
+    } catch (error) {
+      toast.error('Failed to edit comment');
+    }
+  };
+
   return {
-    handleEdit,
+    handleEditPostComment,
+    handleEditThreadComment,
     isEditing,
+    isEditingThread,
   };
 };
 

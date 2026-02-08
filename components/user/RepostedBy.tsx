@@ -1,6 +1,6 @@
 'use client';
 
-import type { AuthorInfoProps } from '@/lib/types';
+import type { AuthorProps } from '@/lib/types';
 import { Icons } from '../icons';
 import Username from './Username';
 
@@ -8,7 +8,7 @@ const RepostedBy = ({
   repostedBy,
   repostedAt,
 }: {
-  repostedBy: AuthorInfoProps;
+  repostedBy: AuthorProps;
   repostedAt?: Date;
 }) => {
   return (

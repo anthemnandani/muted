@@ -5,17 +5,11 @@ import { Fragment } from 'react';
 import ThreadImageCard from '../cards/ThreadImageCard';
 import ThreadVideoCard from '../cards/ThreadVideoCard';
 
-const ThreadContent = ({
-  id,
-  text,
-  mentions,
-  media,
-  variant = 'default',
-}: ThreadContentProps) => {
+const ThreadContent = ({ id, text, mentions, media }: ThreadContentProps) => {
   const threadMedia = media?.[0];
   return (
     <Fragment>
-      {text && <ThreadText text={text} mentions={mentions} variant={variant} />}
+      {text && <ThreadText text={text} mentions={mentions} />}
       {threadMedia && (
         <Fragment>
           {(threadMedia.fileType === FileType.IMAGE ||

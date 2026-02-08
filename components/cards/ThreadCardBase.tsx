@@ -1,10 +1,12 @@
 'use client';
 
 import ThreadActions from '@/components/cards/ThreadActions';
+import { usePostInteraction } from '@/hooks/usePostInteraction';
 import { ThreadCardBaseProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useHiddenThreads } from '@/store/hiddenThreads';
 import { useMutedUsers } from '@/store/mutedUsers';
+import { useRouter } from 'next/navigation';
 import { Fragment } from 'react';
 import ThreadContent from '../shared/ThreadContent';
 import ThreadHeader from '../shared/ThreadHeader';
@@ -13,7 +15,6 @@ import HiddenThread from './HiddenThread';
 import LinkPreviewCard from './LinkPreviewCard';
 import MutedThread from './MutedThread';
 import ThreadQuoteCard from './ThreadQuoteCard';
-import { useRouter } from 'next/navigation';
 
 const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   id,
@@ -36,7 +37,6 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   pinned,
   privacy,
   linkPreview,
-  parentId,
   variant = 'default',
   showHeader = true,
   showActions = true,
@@ -46,18 +46,19 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   const { isThreadHidden } = useHiddenThreads();
   const { isMutedUser } = useMutedUsers();
   const router = useRouter();
+  const isComment = variant === 'comment';
+
+  const { isLoading: isCheckingPermissions, canInteract } = usePostInteraction({
+    authorId: author.id,
+    privacy,
+    mentions,
+  });
 
   const content = (
     <Fragment>
-      <ThreadContent
-        id={id}
-        text={text}
-        mentions={mentions}
-        media={media}
-        variant={variant}
-      />
+      <ThreadContent id={id} text={text} mentions={mentions} media={media} />
       {quoteId && (
-        <div className='px-10'>
+        <div className={cn('px-10', isComment && 'px-0 mt-2')}>
           <ThreadQuoteCard quoteId={quoteId} />
         </div>
       )}
@@ -88,23 +89,18 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
           currentText={text ?? ''}
           hideLikes={hideLikes!}
           pinned={pinned!}
-          variant={variant}
           mentions={mentions}
           privacy={privacy}
           linkPreview={linkPreview}
         />
       )}
 
-      {variant === 'default' ? (
-        <div
-          className='w-full cursor-pointer'
-          onClick={() => router.push(`/thread/${id}`)}
-        >
-          {content}
-        </div>
-      ) : (
-        content
-      )}
+      <div
+        className='w-full cursor-pointer'
+        onClick={() => router.push(`/thread/${id}`)}
+      >
+        {content}
+      </div>
 
       {linkPreview && (
         <div className='mx-2 md:mx-4 my-2'>
@@ -136,8 +132,8 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
             hideLikes={hideLikes!}
             bookmarksCount={bookmarksCount ?? 0}
             bookmarks={bookmarks}
-            privacy={privacy}
-            parentId={parentId}
+            isCheckingPermissions={isCheckingPermissions}
+            canInteract={canInteract}
           />
         </div>
       )}

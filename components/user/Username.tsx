@@ -26,14 +26,14 @@ const Username: React.FC<UsernameProps> = ({
           href={`/@${author.username}`}
           className={cn(
             'inline-flex items-center gap-1.5 group w-fit',
-            isSearch && 'max-w-[80%]'
+            isSearch && 'max-w-[80%]',
           )}
         >
           <span
             className={cn(
               'text-white/90 text-[14px] font-semibold group-hover:underline',
               isReposted && 'text-[13px] text-gray-3',
-              className
+              className,
             )}
           >
             {isMention && '@'}
@@ -41,16 +41,16 @@ const Username: React.FC<UsernameProps> = ({
           </span>
           {isComment && author?.id === postAuthorId && (
             <Fragment>
-              <span className='text-white/90 inline-block align-middle'>
+              <span className='text-white/50 inline-block align-middle'>
                 &middot;
               </span>
-              <span className='text-[14px] text-primary-red font-semibold'>
+              <span className='text-[14px] text-primary-blue font-semibold'>
                 Creator
               </span>
             </Fragment>
           )}
           {isReposted && (
-            <span className='text-[13px] text-[#999] dark:text-gray-3'>
+            <span className='text-[13px] text-gray-3'>
               reposted {formatRepostTime(repostedAt!)}
             </span>
           )}

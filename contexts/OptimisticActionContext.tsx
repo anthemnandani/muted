@@ -35,6 +35,10 @@ export type TargetType =
       type: QUERY_TYPE.COMMENTS;
       variables: { id: string; sortBy: 'LATEST' | 'OLDEST' };
     }
+  | {
+      type: QUERY_TYPE.THREAD_COMMENTS;
+      variables: { id: string; sortBy: 'LATEST' | 'OLDEST' };
+    }
   | { type: QUERY_TYPE.REPLIES; variables: { parentCommentId: string } }
   | { type: QUERY_TYPE.FOLLOWING_FEED; variables: {} }
   | { type: QUERY_TYPE.TAG_FEED; variables: { tag: string } }
@@ -102,6 +106,13 @@ export const OptimisticActionProvider = ({
 
       case QUERY_TYPE.COMMENTS:
         utils.post.getComments.setInfiniteData(
+          target.variables,
+          update('comments'),
+        );
+        break;
+
+      case QUERY_TYPE.THREAD_COMMENTS:
+        utils.thread.getComments.setInfiniteData(
           target.variables,
           update('comments'),
         );

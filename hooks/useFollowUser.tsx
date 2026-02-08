@@ -1,11 +1,11 @@
 import { Icons } from '@/components/icons';
-import type { AuthorInfoProps, FollowStatus } from '@/lib/types';
+import type { AuthorProps, FollowStatus } from '@/lib/types';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-const useFollowUser = ({ author }: { author: AuthorInfoProps }) => {
+const useFollowUser = ({ author }: { author: AuthorProps }) => {
   const { user: loggedUser } = useUser();
   const trpcUtils = api.useUtils();
 
@@ -16,10 +16,10 @@ const useFollowUser = ({ author }: { author: AuthorInfoProps }) => {
 
   useEffect(() => {
     const isFollowing = author.followers.some(
-      (follower) => follower.followerId === loggedUser?.id
+      (follower) => follower.followerId === loggedUser?.id,
     );
     const isRequested = author.receivedFollowRequests?.some(
-      (req) => req.requesterId === loggedUser?.id
+      (req) => req.requesterId === loggedUser?.id,
     );
 
     if (isFollowing) {

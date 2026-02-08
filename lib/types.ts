@@ -41,6 +41,11 @@ export type Post = RouterOutputs['post']['getInfinitePosts']['posts'][number];
 export type Thread =
   RouterOutputs['thread']['getAllThreads']['threads'][number];
 
+export type AuthorInfoProps =
+  RouterOutputs['thread']['getAllThreads']['threads'][number]['author'] & {
+    receivedFollowRequests?: FollowRequest[];
+  };
+
 export type PostMedia = {
   fileType: string;
   fileUrl?: string;
@@ -75,7 +80,7 @@ export type ThreadInfo = Partial<
 export type ReplyThreadInfo = {
   id: string;
   text: string;
-  author: AuthorInfoProps;
+  author: AuthorInfoProps | AuthorProps;
   mentions?: Mention[];
   media?: Media[];
   privacy: PostPrivacy;
@@ -91,7 +96,7 @@ export type UserProfilePostsProps = {
   id: string;
   media: PostMedia[];
   pinned: boolean;
-  author?: AuthorInfoProps;
+  author?: AuthorInfoProps | AuthorProps;
 };
 
 export interface UserPostsListProps {
@@ -129,7 +134,6 @@ export interface ThreadContentProps {
   text: string;
   media?: Media[] | null;
   mentions?: Mention[];
-  variant?: 'default' | 'reply';
 }
 
 export type UserCardProps = ArrayElement<
@@ -145,7 +149,22 @@ export type IconProps =
   | React.HTMLAttributes<SVGElement>
   | React.SVGProps<SVGSVGElement>;
 
-export type AuthorInfoProps = Post['author'] & {
+export type AuthorProps = {
+  link: string | null;
+  id: string;
+  createdAt: Date;
+  privacy: Privacy;
+  username: string;
+  fullName: string | null;
+  image: string | null;
+  bio: string | null;
+  isAdmin: boolean | null;
+  followers: {
+    followerId: string;
+  }[];
+  following: {
+    followingId: string;
+  }[];
   receivedFollowRequests?: FollowRequest[];
 };
 
@@ -188,33 +207,32 @@ export interface MenuItemProps {
 export type Repost = {
   postId?: string | null;
   threadId?: string | null;
-  user: AuthorInfoProps;
+  user: AuthorProps;
   createdAt: Date;
 };
 
 export type Mention = {
-  user: AuthorInfoProps;
+  user: AuthorProps;
   index: number;
 };
 
 export interface ThreadHeaderProps {
-  author: AuthorInfoProps;
+  author: AuthorInfoProps | AuthorProps;
   createdAt: Date;
   id: string;
-  repostedBy?: AuthorInfoProps;
+  repostedBy?: AuthorProps;
   currentText: string;
-  variant: 'default' | 'reply';
-  linkPreview: LinkPreview | null;
-  hideLikes: boolean;
-  pinned: boolean;
-  privacy: PostPrivacy;
+  linkPreview?: LinkPreview | null;
+  hideLikes?: boolean;
+  pinned?: boolean;
+  privacy?: PostPrivacy;
   mentions?: Mention[];
 }
 
 export interface ThreadActionMenuProps {
   authorId: string;
   id: string;
-  repostedBy?: AuthorInfoProps;
+  repostedBy?: AuthorProps;
   createdAt: Date;
   currentText: string;
   username: string;
@@ -251,9 +269,9 @@ export type ParentPostProps = {
   parentPost?: any;
   parentId?: string | null;
   mentions: Mention[];
-  author: AuthorInfoProps;
+  author: AuthorInfoProps | AuthorProps;
   linkPreview?: LinkPreview | null;
-  repostedBy?: AuthorInfoProps | null;
+  repostedBy?: AuthorProps | null;
   postChildren?: ParentPostProps[];
   likesCount?: number;
   bookmarksCount?: number;
@@ -291,9 +309,9 @@ export type ThreadProps = {
   reposts: Repost[];
   parentId: string | null;
   mentions?: Mention[];
-  author: AuthorInfoProps;
+  author: AuthorInfoProps | AuthorProps;
   linkPreview: LinkPreview | null;
-  repostedBy?: AuthorInfoProps | null;
+  repostedBy?: AuthorProps | null;
   likesCount: number;
   bookmarksCount: number;
   repostsCount: number;
@@ -316,7 +334,7 @@ export type ThreadProps = {
 };
 
 export interface ThreadCardBaseProps extends ThreadProps {
-  variant?: 'default' | 'reply';
+  variant?: 'default' | 'comment';
   showHeader?: boolean;
   showActions?: boolean;
   className?: string;
@@ -344,8 +362,6 @@ export interface CreateThreadInputProps {
   handleMentionSearch: (value: string, cursorPosition: number) => void;
   isUploading?: boolean;
   uploadProgress?: number;
-  replyThreadInfo?: ReplyThreadInfo;
-  hideMedia?: boolean;
 }
 
 export interface PostsListProps {
@@ -376,7 +392,7 @@ export interface PostActionsProps {
   privacy: PostPrivacy;
   likesCount: number;
   likes: { userId: string }[];
-  author: AuthorInfoProps;
+  author: AuthorInfoProps | AuthorProps;
   repliesCount: number;
   reposts: Repost[];
   repostsCount: number;
@@ -419,16 +435,15 @@ export interface LikeButtonProps {
 }
 
 export interface ThreadReplyButtonProps {
-  replyThreadInfo: ReplyThreadInfo;
+  id: string;
   repliesCount: number;
   isParentThread?: boolean;
-  canInteract?: boolean;
 }
 
 export interface ThreadRepostButtonProps {
   id: string;
   text: string;
-  author?: AuthorInfoProps;
+  author?: AuthorInfoProps | AuthorProps;
   media?: Media[];
   linkPreview: LinkPreview | null;
   quoteId: string | null;
@@ -491,7 +506,7 @@ export type Collection = {
     id: string;
     media: PostMedia[];
     text: string | null;
-    author: AuthorInfoProps;
+    author: AuthorInfoProps | AuthorProps;
   }[];
   postsCount: number;
   isDefault: boolean;
@@ -591,12 +606,12 @@ export interface GalleryProps {
 }
 
 export interface PostFooterProps {
-  author: AuthorInfoProps;
+  author: AuthorInfoProps | AuthorProps;
   createdAt: Date;
   id: string;
   text?: string | null;
   reposts: Repost[];
-  repostedBy?: AuthorInfoProps | null;
+  repostedBy?: AuthorProps | null;
   mentions?: Mention[];
   totalCount?: number;
   currentIndex: number;
@@ -612,7 +627,7 @@ export interface VideoContainerProps {
 }
 
 export interface MediaControlsProps {
-  author: AuthorInfoProps;
+  author: AuthorInfoProps | AuthorProps;
   postId: string;
   createdAt: Date;
   caption?: string | null;
@@ -679,11 +694,10 @@ export interface VolumeControlsProps {
 
 export interface ThreadActionsProps {
   id: string;
-  privacy: PostPrivacy;
   likesCount: number;
   likes: { userId: string }[];
   text: string;
-  author: AuthorInfoProps;
+  author: AuthorInfoProps | AuthorProps;
   createdAt: Date;
   repliesCount: number;
   reposts?: Repost[];
@@ -694,12 +708,13 @@ export interface ThreadActionsProps {
   linkPreview: LinkPreview | null;
   mentions?: Mention[];
   hideLikes: boolean;
-  parentId: string | null;
   quoteId: string | null;
+  isCheckingPermissions?: boolean;
+  canInteract?: boolean;
 }
 
 export interface PostActionMenuProps {
-  author: AuthorInfoProps;
+  author: AuthorInfoProps | AuthorProps;
   postId: string;
   createdAt: Date;
   caption?: string | null;
@@ -713,13 +728,13 @@ export interface PostActionMenuProps {
 
 export interface PostMediaCarouselProps {
   media: PostMedia[];
-  author: AuthorInfoProps;
+  author: AuthorInfoProps | AuthorProps;
   createdAt: Date;
   postId: string;
   text: string | null;
   pinned?: boolean;
   reposts: Repost[];
-  repostedBy?: AuthorInfoProps | null;
+  repostedBy?: AuthorProps | null;
   mentions?: Mention[];
   hideLikes?: boolean;
   turnOffComments?: boolean;
@@ -789,7 +804,7 @@ export interface UserPostCardProps {
   likesCount?: number;
   text?: string;
   createdAt?: Date;
-  author?: AuthorInfoProps;
+  author?: AuthorInfoProps | AuthorProps;
   query?: string;
 }
 
@@ -880,9 +895,9 @@ export interface CommentsPanelProps {
   repliesCount: number;
   text: string;
   createdAt: Date;
-  author: AuthorInfoProps;
+  author: AuthorInfoProps | AuthorProps;
   reposts: Repost[];
-  repostedBy?: AuthorInfoProps | null;
+  repostedBy?: AuthorProps | null;
   repostsCount?: number;
   likesCount?: number;
   likes?: { userId: string }[];
@@ -924,9 +939,11 @@ export type Comment = {
   id: string;
   text: string | null;
   likesCount: number;
-  author: AuthorInfoProps;
+  author: AuthorInfoProps | AuthorProps;
   createdAt: Date;
   repliesCount: number;
+  repostsCount?: number;
+  reposts?: Repost[];
   likes: { userId: string }[];
   mentions: Mention[];
 };
@@ -962,10 +979,10 @@ export interface ConfirmDialogProps {
 
 export interface PostInfoCardProps {
   postText: string;
-  author: AuthorInfoProps;
+  author: AuthorInfoProps | AuthorProps;
   createdAt: Date;
   reposts: Repost[];
-  repostedBy?: AuthorInfoProps | null;
+  repostedBy?: AuthorProps | null;
 }
 
 export interface UsersMenuProps {
@@ -992,7 +1009,7 @@ export interface UseMentionsProps {
 }
 
 export interface RepostBannerProps {
-  repostedBy?: AuthorInfoProps | null;
+  repostedBy?: AuthorProps | null;
   reposts: Repost[];
 }
 
@@ -1031,6 +1048,13 @@ export interface CommentCardProps {
   postAuthorId: string;
 }
 
+export interface ThreadCommentCardProps {
+  comment: Comment;
+  isLast: boolean;
+  originalThreadId: string;
+  threadAuthorId: string;
+}
+
 export type SortBy = 'LATEST' | 'OLDEST';
 
 export type Tab = 'posts' | 'reposts' | 'liked' | 'collections';
@@ -1045,7 +1069,7 @@ export type NotificationTab =
   | 'followers';
 
 export interface UsernameProps {
-  author: AuthorInfoProps;
+  author: AuthorProps;
   isReposted?: boolean;
   repostedAt?: Date;
   className?: string;
@@ -1202,7 +1226,7 @@ export interface SidebarWrapperProps {
 
 export type Notification = {
   id: string;
-  senderUser: AuthorInfoProps | null;
+  senderUser: AuthorProps | null;
   message: string;
   createdAt: Date;
   media?: PostMedia[];
@@ -1211,7 +1235,7 @@ export type Notification = {
 };
 
 export interface NotificationCardProps {
-  sender: AuthorInfoProps | null;
+  sender: AuthorProps | null;
   message: string;
   createdAt: Date;
   media?: PostMedia;
@@ -1418,7 +1442,7 @@ export type FollowStatus = 'FOLLOWING' | 'REQUESTED' | 'NOT_FOLLOWING';
 
 export interface FollowButtonProps extends React.HTMLAttributes<HTMLDivElement> {
   variant: 'default' | 'outline' | 'destructive';
-  author: AuthorInfoProps;
+  author: AuthorProps;
   size: 'default' | 'sm' | 'lg' | 'icon';
   isNotification?: boolean;
 }
@@ -1506,7 +1530,7 @@ export enum DownloadableData {
 
 export interface UsersListProps {
   isLoading: boolean;
-  users?: AuthorInfoProps[];
+  users?: AuthorProps[];
   fetchNextPage: () => void;
   hasNextPage: boolean | undefined;
   type: 'users' | 'followings' | 'followers';
@@ -1546,7 +1570,7 @@ export interface IssueStrikeProps {
 
 export interface CommentViewProps {
   text: string;
-  author: AuthorInfoProps;
+  author: AuthorProps;
   mentions?: Mention[];
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;

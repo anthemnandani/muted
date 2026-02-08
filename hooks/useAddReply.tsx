@@ -5,19 +5,19 @@ import { Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
-const useAddReply = ({
-  postId,
-  commentId,
-}: {
-  postId: string;
+interface UseAddReplyProps {
+  postId?: string;
+  threadId?: string;
   commentId: string;
-}) => {
+}
+
+const useAddReply = ({ postId, threadId, commentId }: UseAddReplyProps) => {
   const router = useRouter();
   const trpcUtils = api.useUtils();
 
   const { resetReply, validMentions } = useAddCommentStore();
 
-  const { isPending: isReplying, mutateAsync: addReply } =
+  const { mutateAsync: addPostReply, isPending: isReplyingPost } =
     api.post.replyToComment.useMutation({
       onMutate: () => {
         resetReply();
@@ -32,15 +32,32 @@ const useAddReply = ({
         toast.error('ReplyingError: Something went wrong!');
       },
       onSuccess: async () => {
-        await trpcUtils.invalidate();
+        await trpcUtils.post.invalidate();
       },
       retry: false,
     });
 
-  const handleAddReply = (text: string) => {
-    const promise = addReply({
+  const { mutateAsync: addThreadReply, isPending: isReplyingThread } =
+    api.thread.replyToComment.useMutation({
+      onError: (err) => {
+        if (err.data?.code === 'UNAUTHORIZED') {
+          return router.push('/sign-in');
+        }
+        if (err.data?.code === 'FORBIDDEN') {
+          return toast.error('You are not allowed to reply to this comment');
+        }
+        toast.error('ReplyingError: Something went wrong!');
+      },
+      onSettled: () => {
+        trpcUtils.thread.invalidate();
+      },
+      retry: false,
+    });
+
+  const handlePostReply = (text: string) => {
+    const promise = addPostReply({
       parentCommentId: commentId,
-      originalPostId: postId,
+      originalPostId: postId!,
       text,
       mentions: validMentions.map((mention) => ({
         mentionedUserId: mention.mentionedUserId,
@@ -73,9 +90,23 @@ const useAddReply = ({
     return promise;
   };
 
+  const handleThreadReply = async (text: string) => {
+    await addThreadReply({
+      parentCommentId: commentId,
+      originalThreadId: threadId!,
+      text,
+      mentions: validMentions.map((m) => ({
+        mentionedUserId: m.mentionedUserId,
+        index: m.startIndex,
+      })),
+    });
+  };
+
   return {
-    handleAddReply,
-    isReplying,
+    handlePostReply,
+    handleThreadReply,
+    isReplyingPost,
+    isReplyingThread,
   };
 };
 

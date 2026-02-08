@@ -4,7 +4,7 @@ import { Icons } from '@/components/icons';
 import { ResizeTextarea } from '@/components/ui/resize-textarea';
 import useWindow from '@/hooks/useWindow';
 import { CreateThreadInputProps } from '@/lib/types';
-import { formatTimeAgo, getFullName } from '@/lib/utils';
+import { getFullName } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
 import { useThreadStore } from '@/store/threadStore';
 import { useUser } from '@clerk/nextjs';
@@ -25,18 +25,13 @@ import EmojiPicker from '../modals/EmojiPicker';
 import GifPicker from '../modals/GifPicker';
 import UserAvatar from '../shared/UserAvatar';
 import { Button } from '../ui/button';
-import Username from '../user/Username';
-import { FileType } from '@prisma/client';
-import ThreadImageCard from '../cards/ThreadImageCard';
 
 const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
   placeholder,
   textareaRef,
-  replyThreadInfo,
   handleMentionSearch,
   isUploading,
   uploadProgress,
-  hideMedia,
 }) => {
   const { isMobile } = useWindow();
   const { user } = useUser();
@@ -149,127 +144,80 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
     });
   }, [openDialog]);
 
-  const threadMedia = replyThreadInfo?.media?.[0];
-
   return (
     <div className='flex space-x-3 mt-1'>
-      <div className='relative flex flex-col items-center'>
-        {replyThreadInfo ? (
-          <UserAvatar
-            image={replyThreadInfo.author.image}
-            username={replyThreadInfo.author.username}
-            fullname={replyThreadInfo.author.fullName}
-          />
-        ) : (
-          <UserAvatar
-            image={user?.imageUrl || ''}
-            username={user?.username!}
-            fullname={userFullName}
-          />
-        )}
-
-        {replyThreadInfo?.text && (
-          <div className='h-full w-0.5 bg-[#313639] rounded-full mt-1.5 my-1' />
-        )}
-      </div>
+      <UserAvatar
+        image={user?.imageUrl || ''}
+        username={user?.username!}
+        fullname={userFullName}
+      />
 
       <div className='flex flex-col w-full gap-1.5 pb-4'>
-        {replyThreadInfo ? (
-          <div className='flex items-center gap-2'>
-            <Username author={replyThreadInfo.author} />
-            <time className='text-[15px] leading-none text-white/50'>
-              {formatTimeAgo(replyThreadInfo.createdAt)}
-            </time>
-            <div className='size-3 invisible'>
-              <Icons.verified className='size-3' />
-            </div>
-          </div>
-        ) : (
-          <span className='text-[15px] font-medium leading-none tracking-normal'>
-            {user?.username}
-          </span>
-        )}
+        <span className='text-[15px] font-medium leading-none tracking-normal'>
+          {user?.username}
+        </span>
 
-        {replyThreadInfo ? (
-          <Fragment>
-            <div className='flex-grow resize-none overflow-hidden outline-none text-[15px] text-accent-foreground break-words placeholder:text-gray-3 w-full tracking-normal whitespace-pre-line'>
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: replyThreadInfo.text?.replace(/\\n/g, '\n') || '',
-                }}
-              />
-            </div>
-            {(threadMedia?.fileType === FileType.IMAGE ||
-              threadMedia?.fileType === FileType.GIF) && (
-              <ThreadImageCard
-                image={threadMedia.fileUrl!}
-                fileType={threadMedia.fileType}
-              />
-            )}
-          </Fragment>
-        ) : (
-          <Fragment>
-            <ResizeTextarea
-              name='text'
-              forwardedRef={textareaRef}
-              value={text}
-              onChange={handleResizeTextareaChange}
-              placeholder={placeholder}
-              maxLength={5000}
-            />
-            {previewURL && (
-              <div className='relative overflow-hidden rounded-xl border border-border w-fit'>
-                {previewType === 'image' && (
-                  <img
-                    src={previewURL}
-                    alt=''
-                    className='object-contain max-h-[360px] max-w-full'
-                  />
-                )}
-                {previewType === 'video' && (
-                  <video
-                    src={previewURL}
-                    className='object-contain max-h-[360px] max-w-full'
-                    loop
-                    muted
-                    autoPlay
-                    playsInline
-                  />
-                )}
+        <Fragment>
+          <ResizeTextarea
+            name='text'
+            forwardedRef={textareaRef}
+            value={text}
+            onChange={handleResizeTextareaChange}
+            placeholder={placeholder}
+            maxLength={5000}
+          />
+          {previewURL && (
+            <div className='relative overflow-hidden rounded-xl border border-border w-fit'>
+              {previewType === 'image' && (
+                <img
+                  src={previewURL}
+                  alt=''
+                  className='object-contain max-h-[360px] max-w-full'
+                />
+              )}
+              {previewType === 'video' && (
+                <video
+                  src={previewURL}
+                  className='object-contain max-h-[360px] max-w-full'
+                  loop
+                  muted
+                  autoPlay
+                  playsInline
+                />
+              )}
 
-                {isUploading && (
-                  <div className='absolute inset-0 z-40 bg-black/50 flex-col-center backdrop-blur-[1px]'>
-                    <div className='w-[80%] max-w-[200px] h-2 bg-white/20 rounded-full overflow-hidden'>
-                      <div
-                        className='h-full bg-primary-blue transition-all duration-200 ease-out'
-                        style={{ width: `${uploadProgress}%` }}
-                      />
-                    </div>
-                    <span className='text-white text-xs font-medium mt-2'>
-                      Uploading... {Math.round(uploadProgress!)}%
-                    </span>
+              {isUploading && (
+                <div className='absolute inset-0 z-40 bg-black/50 flex-col-center backdrop-blur-[1px]'>
+                  <div className='w-[80%] max-w-[200px] h-2 bg-white/20 rounded-full overflow-hidden'>
+                    <div
+                      className='h-full bg-primary-blue transition-all duration-200 ease-out'
+                      style={{ width: `${uploadProgress}%` }}
+                    />
                   </div>
-                )}
+                  <span className='text-white text-xs font-medium mt-2'>
+                    Uploading... {Math.round(uploadProgress!)}%
+                  </span>
+                </div>
+              )}
 
-                {!isUploading && (
-                  <Button
-                    onClick={() => {
-                      setThreadMedia(null);
-                      setPreviewURL('');
-                      setPreviewType(null);
-                    }}
-                    variant='ghost'
-                    className='size-[25px] p-1 absolute top-2 right-2 z-50 rounded-full transform active:scale-75 transition-transform cursor-pointer bg-background '
-                  >
-                    <X />
-                  </Button>
-                )}
-              </div>
-            )}
-          </Fragment>
-        )}
+              {!isUploading && (
+                <Button
+                  onClick={() => {
+                    setThreadMedia(null);
+                    setPreviewURL('');
+                    setPreviewType(null);
+                  }}
+                  variant='ghost'
+                  className='size-[25px] p-1 absolute top-2 right-2 z-50 rounded-full transform active:scale-75 transition-transform cursor-pointer bg-background '
+                >
+                  <X />
+                </Button>
+              )}
+            </div>
+          )}
+        </Fragment>
         <div className='flex items-center gap-2'>
-          {!replyThreadInfo?.text && !editThreadInfo?.text && !hideMedia && (
+          {!editThreadInfo?.text && (
             <Fragment>
               <div
                 {...getRootProps()}
@@ -291,9 +239,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
               />
             </Fragment>
           )}
-          {!replyThreadInfo?.text && (
-            <EmojiPicker onChange={handleEmojiSelect} />
-          )}
+          <EmojiPicker onChange={handleEmojiSelect} />
         </div>
 
         {quoteInfo && <ThreadQuoteCard {...quoteInfo} />}

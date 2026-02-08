@@ -9,9 +9,8 @@ import { EncodingStatus, FileType, PostStatus } from '@prisma/client';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMuxUpload } from './useMuxUpload';
-import { useRouter } from 'next/navigation';
 
-const useCreateThread = ({ rootThreadId }: { rootThreadId?: string }) => {
+const useCreateThread = () => {
   const {
     text,
     privacy,
@@ -19,13 +18,10 @@ const useCreateThread = ({ rootThreadId }: { rootThreadId?: string }) => {
     quoteInfo,
     validMentions,
     reset,
-    replyThreadInfo,
     editThreadInfo,
   } = useThreadStore();
   const { threadMedia, setThreadMedia } = useFileStore();
   const { uploadToStorage, prepareMuxUpload, startMuxUpload } = useMuxUpload();
-
-  const router = useRouter();
 
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -71,35 +67,6 @@ const useCreateThread = ({ rootThreadId }: { rootThreadId?: string }) => {
       },
     });
 
-  const { mutateAsync: commentToThread, isPending: isCommenting } =
-    api.thread.commentToThread.useMutation({
-      onSuccess: () => {
-        toast.success('Commented!');
-        reset();
-      },
-
-      onSettled: () => {
-        utils.thread.invalidate();
-      },
-    });
-
-  const { mutateAsync: addReply, isPending: isReplying } =
-    api.thread.replyToComment.useMutation({
-      onError: (err) => {
-        if (err.data?.code === 'UNAUTHORIZED') {
-          return router.push('/sign-in');
-        }
-        if (err.data?.code === 'FORBIDDEN') {
-          return toast.error('You are not allowed to reply to this comment');
-        }
-        toast.error('ReplyingError: Something went wrong!');
-      },
-      onSettled: () => {
-        utils.thread.invalidate();
-      },
-      retry: false,
-    });
-
   const { mutate: deleteThread } = api.thread.deleteThread.useMutation();
 
   const isGiphy = (media: any): media is IGif =>
@@ -137,36 +104,6 @@ const useCreateThread = ({ rootThreadId }: { rootThreadId?: string }) => {
     } catch (error) {
       toast.error('Failed to update thread');
     }
-  };
-
-  const handleComment = async () => {
-    try {
-      await commentToThread({
-        id: replyThreadInfo!.id,
-        threadAuthor: replyThreadInfo!.author.id,
-        text: text.trim(),
-        privacy,
-        mentions: validMentions.map((m) => ({
-          mentionedUserId: m.mentionedUserId,
-          index: m.startIndex,
-        })),
-      });
-    } catch (error) {
-      toast.error('Failed to reply');
-    }
-  };
-
-  const handleReply = async () => {
-    await addReply({
-      parentCommentId: replyThreadInfo!.id,
-      originalThreadId: rootThreadId!,
-      text: text.trim(),
-      privacy,
-      mentions: validMentions.map((m) => ({
-        mentionedUserId: m.mentionedUserId,
-        index: m.startIndex,
-      })),
-    });
   };
 
   const handleCreate = async () => {
@@ -265,29 +202,15 @@ const useCreateThread = ({ rootThreadId }: { rootThreadId?: string }) => {
     }
   };
 
-  const handleSubmit = () => {
-    if (replyThreadInfo && replyThreadInfo.isComment) {
-      handleComment();
-    } else if (replyThreadInfo) {
-      handleReply();
-    } else if (editThreadInfo) {
-      handleEdit();
-    } else {
-      handleCreate();
-    }
-  };
-
   const isCreating = isCreatingDB || isUploading;
 
   return {
-    handleSubmit,
+    handleCreate,
+    handleEdit,
     cancelUpload,
     isCreating,
-    isDisabled:
-      text === '' || isCreating || isEditing || isCommenting || isReplying,
+    isDisabled: text === '' || isCreating || isEditing,
     isEditing,
-    isCommenting,
-    isReplying,
     isUploading,
     uploadProgress,
   };

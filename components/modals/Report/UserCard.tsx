@@ -1,10 +1,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { type AuthorInfoProps } from '@/lib/types';
-import React from 'react';
+import { type AuthorProps } from '@/lib/types';
 
 interface UserCardProps {
-  user: AuthorInfoProps;
-  handleUserSelection: (user: AuthorInfoProps) => void;
+  user: AuthorProps;
+  handleUserSelection: (user: AuthorProps) => void;
   targetUserId: string | null;
 }
 

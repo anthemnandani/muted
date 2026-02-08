@@ -2,8 +2,11 @@ import { enrichThreadWithTokens, extractHashtags } from '@/lib/utils';
 import {
   GET_LINK_PREVIEW,
   GET_MENTIONS,
+  GET_REPOSTS,
   GET_USER,
+  getAuthorAndHiddenSelect,
   getBookmarksWithBlockFilter,
+  getCommentRepliesCount,
   getLikesWithBlockFilter,
 } from '@/server/constants';
 import { createId } from '@paralleldrive/cuid2';
@@ -31,17 +34,21 @@ const THREAD_SELECT = (userId: string) => ({
   hideLikes: true,
   pinned: true,
   privacy: true,
-  author: { select: { ...GET_USER } },
   ...getLikesWithBlockFilter(userId),
   ...getBookmarksWithBlockFilter(userId),
+  ...getAuthorAndHiddenSelect(userId!),
   ...GET_MENTIONS,
   ...GET_LINK_PREVIEW,
   reposts: {
-    select: {
-      createdAt: true,
-      threadId: true,
-      user: { select: { ...GET_USER } },
+    where: {
+      user: {
+        deactivated: false,
+      },
     },
+    ...GET_REPOSTS,
+    // orderBy: {
+    //   createdAt: 'desc',
+    // },
   },
 });
 
@@ -399,12 +406,11 @@ export const threadRouter = createTRPCRouter({
             }),
           )
           .optional(),
-        privacy: z.nativeEnum(PostPrivacy).default('ANYONE'),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const { userId, db } = ctx;
-      const { text, mentions, privacy, id, threadAuthor } = input;
+      const { text, mentions, id, threadAuthor } = input;
 
       try {
         const transactionResult = await db.$transaction(async (prisma) => {
@@ -460,7 +466,6 @@ export const threadRouter = createTRPCRouter({
               text: filteredText,
               authorId: userId,
               parentId: id,
-              privacy,
               path,
               hashtags: {
                 connectOrCreate: hashtags.map((tag) => {
@@ -563,13 +568,11 @@ export const threadRouter = createTRPCRouter({
             }),
           )
           .optional(),
-        privacy: z.nativeEnum(PostPrivacy).default('ANYONE'),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const { userId, db } = ctx;
-      const { parentCommentId, text, mentions, originalThreadId, privacy } =
-        input;
+      const { parentCommentId, text, mentions, originalThreadId } = input;
 
       try {
         const transactionResult = await db.$transaction(async (prisma) => {
@@ -627,7 +630,6 @@ export const threadRouter = createTRPCRouter({
               authorId: userId,
               parentId: parentCommentId,
               path,
-              privacy,
               hashtags: {
                 connectOrCreate: hashtags.map((tag) => {
                   const tagName = tag.slice(1);
@@ -772,6 +774,130 @@ export const threadRouter = createTRPCRouter({
           },
         });
         return { hidden: false };
+      }
+    }),
+
+  toggleRepost: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation(async ({ input: { id }, ctx }) => {
+      const { userId, db } = ctx;
+      const data = { threadId: id, userId };
+
+      const existingRepost = await db.repost.findUnique({
+        where: {
+          userId_threadId: data,
+        },
+      });
+
+      if (existingRepost == null) {
+        const transactionResult = await db.$transaction(async (prisma) => {
+          const createdRepost = await prisma.repost.create({
+            data,
+            select: {
+              thread: {
+                select: {
+                  text: true,
+                  authorId: true,
+                },
+              },
+            },
+          });
+
+          // const createNotification = await prisma.notification.create({
+          //   data: {
+          //     type: 'REPOST',
+          //     postId: data.postId,
+          //     message: createdRepost.post.text || '',
+          //     senderUserId: userId,
+          //     receiverUserId: createdRepost.post.authorId,
+          //   },
+          // });
+
+          return {
+            createdRepost,
+            // createNotification,
+          };
+        });
+
+        if (!transactionResult) {
+          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+        }
+
+        return { createdRepost: true };
+      } else {
+        const transactionResult = await db.$transaction(async (prisma) => {
+          const removeRepost = await prisma.repost.delete({
+            where: {
+              userId_threadId: data,
+            },
+          });
+
+          // const notification = await prisma.notification.findFirst({
+          //   where: {
+          //     senderUserId: userId,
+          //     postId: data.postId,
+          //     type: 'REPOST',
+          //   },
+          //   select: {
+          //     id: true,
+          //   },
+          // });
+
+          // if (notification) {
+          //   await prisma.notification.delete({
+          //     where: {
+          //       id: notification.id,
+          //     },
+          //   });
+          // }
+
+          return {
+            removeRepost,
+          };
+        });
+
+        if (!transactionResult) {
+          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
+        }
+
+        return { createdRepost: false };
+      }
+    }),
+
+  deleteThread: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { db } = ctx;
+      try {
+        await db.thread.update({
+          where: {
+            id: input.id,
+          },
+          data: {
+            deleted: true,
+          },
+        });
+
+        return { success: true };
+      } catch (error) {
+        console.error('Error in deleteThread:', error);
+
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to delete thread',
+        });
       }
     }),
 
@@ -1072,127 +1198,142 @@ export const threadRouter = createTRPCRouter({
       };
     }),
 
-  toggleRepost: privateProcedure
+  getComments: privateProcedure
     .input(
       z.object({
         id: z.string(),
+        limit: z.number().optional().default(10),
+        sortBy: z.enum(['LATEST', 'OLDEST']),
+        cursor: z
+          .object({
+            id: z.string(),
+            createdAt: z.date(),
+          })
+          .optional(),
       }),
     )
-    .mutation(async ({ input: { id }, ctx }) => {
+    .query(async ({ input, ctx }) => {
+      const { id, limit, cursor, sortBy } = input;
       const { userId, db } = ctx;
-      const data = { threadId: id, userId };
 
-      const existingRepost = await db.repost.findUnique({
+      const comments = await db.thread.findMany({
         where: {
-          userId_threadId: data,
-        },
-      });
-
-      if (existingRepost == null) {
-        const transactionResult = await db.$transaction(async (prisma) => {
-          const createdRepost = await prisma.repost.create({
-            data,
-            select: {
-              thread: {
-                select: {
-                  text: true,
-                  authorId: true,
-                },
+          parentId: id,
+          author: {
+            deactivated: false,
+            blockedByUsers: {
+              none: {
+                blockingUserId: userId,
               },
             },
-          });
-
-          // const createNotification = await prisma.notification.create({
-          //   data: {
-          //     type: 'REPOST',
-          //     postId: data.postId,
-          //     message: createdRepost.post.text || '',
-          //     senderUserId: userId,
-          //     receiverUserId: createdRepost.post.authorId,
-          //   },
-          // });
-
-          return {
-            createdRepost,
-            // createNotification,
-          };
-        });
-
-        if (!transactionResult) {
-          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
-        }
-
-        return { createdRepost: true };
-      } else {
-        const transactionResult = await db.$transaction(async (prisma) => {
-          const removeRepost = await prisma.repost.delete({
-            where: {
-              userId_threadId: data,
+            blockedUsers: {
+              none: {
+                blockedUserId: userId,
+              },
             },
-          });
+          },
+        },
+        take: limit + 1,
+        skip: 0,
+        cursor: cursor ? { id: cursor.id } : undefined,
+        select: { ...THREAD_SELECT(userId), ...getCommentRepliesCount(userId) },
+        orderBy:
+          sortBy === 'LATEST' ? { createdAt: 'desc' } : { createdAt: 'asc' },
+      });
 
-          // const notification = await prisma.notification.findFirst({
-          //   where: {
-          //     senderUserId: userId,
-          //     postId: data.postId,
-          //     type: 'REPOST',
-          //   },
-          //   select: {
-          //     id: true,
-          //   },
-          // });
-
-          // if (notification) {
-          //   await prisma.notification.delete({
-          //     where: {
-          //       id: notification.id,
-          //     },
-          //   });
-          // }
-
-          return {
-            removeRepost,
-          };
-        });
-
-        if (!transactionResult) {
-          throw new TRPCError({ code: 'NOT_IMPLEMENTED' });
-        }
-
-        return { createdRepost: false };
+      let nextCursor: typeof cursor | undefined = undefined;
+      if (comments.length > limit) {
+        const nextItem = comments[limit];
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
+        };
+        comments.pop();
       }
+
+      const formattedComments = comments.map((comment) => ({
+        ...comment,
+        likesCount: comment.likes.length,
+        repostsCount: comment.reposts.length,
+        repliesCount: comment._count.replies,
+        bookmarksCount: new Set(
+          comment.bookmarks.map((bookmark) => bookmark.userId),
+        ).size,
+        isHidden: comment.hiddenBy.length > 0,
+        isMuted: comment.author.mutedByUsers?.length > 0,
+      }));
+
+      return {
+        comments: formattedComments,
+        nextCursor,
+      };
     }),
 
-  deleteThread: privateProcedure
+  getReplies: privateProcedure
     .input(
       z.object({
-        id: z.string(),
+        parentCommentId: z.string(),
+        limit: z.number().optional().default(8),
+        cursor: z
+          .object({
+            id: z.string(),
+            createdAt: z.date(),
+          })
+          .optional(),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
-      const { db } = ctx;
-      try {
-        await db.thread.update({
-          where: {
-            id: input.id,
+    .query(async ({ input, ctx }) => {
+      const { parentCommentId, limit, cursor } = input;
+      const { userId, db } = ctx;
+
+      const replies = await db.thread.findMany({
+        where: {
+          parentId: parentCommentId,
+          author: {
+            deactivated: false,
+            blockedByUsers: {
+              none: {
+                blockingUserId: userId,
+              },
+            },
+            blockedUsers: {
+              none: {
+                blockedUserId: userId,
+              },
+            },
           },
-          data: {
-            deleted: true,
-          },
-        });
+        },
+        take: limit + 1,
+        skip: 0,
+        cursor: cursor ? { id: cursor.id } : undefined,
+        select: THREAD_SELECT(userId),
+        orderBy: { createdAt: 'asc' },
+      });
 
-        return { success: true };
-      } catch (error) {
-        console.error('Error in deleteThread:', error);
-
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to delete thread',
-        });
+      let nextCursor: typeof cursor | undefined = undefined;
+      if (replies.length > limit) {
+        const nextItem = replies[limit];
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
+        };
+        replies.pop();
       }
+
+      const formattedReplies = replies.map((reply) => ({
+        ...reply,
+        likesCount: reply.likes.length,
+        repostsCount: reply.reposts.length,
+        bookmarksCount: new Set(
+          reply.bookmarks.map((bookmark) => bookmark.userId),
+        ).size,
+        isHidden: reply.hiddenBy.length > 0,
+        isMuted: reply.author.mutedByUsers?.length > 0,
+      }));
+
+      return {
+        replies: formattedReplies,
+        nextCursor,
+      };
     }),
 });
