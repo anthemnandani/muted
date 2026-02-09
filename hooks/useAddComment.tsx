@@ -51,10 +51,6 @@ const useAddComment = ({ postId, threadId, authorId }: UseAddCommentProps) => {
         }
         toast.error('ReplyingError: Something went wrong!');
       },
-      onSuccess: () => {
-        toast.success('Commented!');
-        reset();
-      },
       onSettled: () => {
         trpcUtils.thread.getComments.invalidate({ id: threadId! });
         trpcUtils.thread.getThreadById.invalidate({ id: threadId! });
