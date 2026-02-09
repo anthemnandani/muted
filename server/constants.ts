@@ -163,6 +163,7 @@ export const getCommentRepliesCount = (userId: string) => ({
     select: {
       replies: {
         where: {
+          deleted: false,
           author: {
             blockedByUsers: {
               none: {

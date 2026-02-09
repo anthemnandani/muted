@@ -21,6 +21,7 @@ const useDeleteThread = ({ id, onClose, isAdmin }: UseDeletePostProps) => {
       // } else {
       //   utils.thread.getAllThreads.invalidate();
       // }
+      utils.thread.invalidate();
     },
   });
 

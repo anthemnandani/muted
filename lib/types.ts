@@ -1015,7 +1015,8 @@ export interface RepostBannerProps {
 }
 
 export interface ReplyInputProps {
-  postId: string;
+  postId?: string;
+  threadId?: string;
   commentId: string;
   onCancel: () => void;
   username?: string;
@@ -1026,6 +1027,13 @@ export interface ReplyCardProps {
   isLast: boolean;
   originalPostId: string;
   postAuthorId: string;
+}
+
+export interface ThreadReplyCardProps {
+  reply: Comment;
+  isLast: boolean;
+  originalThreadId: string;
+  threadAuthorId: string;
 }
 
 export interface CommentInputProps {
@@ -1040,6 +1048,7 @@ export interface CommentInputProps {
   onCancel?: () => void;
   isEdit?: boolean;
   replyToUsername?: string | null;
+  isReply?: boolean;
 }
 
 export interface CommentCardProps {
@@ -1634,3 +1643,10 @@ export type UploadResult = {
   playbackId?: string;
   encodingStatus?: EncodingStatus;
 } | null;
+
+export interface ThreadCommentContentProps {
+  comment: Comment;
+  threadAuthorId: string;
+  isReply?: boolean;
+  onEditClick?: () => void;
+}

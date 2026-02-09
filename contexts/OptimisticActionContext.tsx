@@ -40,6 +40,7 @@ export type TargetType =
       variables: { id: string; sortBy: 'LATEST' | 'OLDEST' };
     }
   | { type: QUERY_TYPE.REPLIES; variables: { parentCommentId: string } }
+  | { type: QUERY_TYPE.THREAD_REPLIES; variables: { parentCommentId: string } }
   | { type: QUERY_TYPE.FOLLOWING_FEED; variables: {} }
   | { type: QUERY_TYPE.TAG_FEED; variables: { tag: string } }
   | {
@@ -120,6 +121,13 @@ export const OptimisticActionProvider = ({
 
       case QUERY_TYPE.REPLIES:
         utils.post.getReplies.setInfiniteData(
+          target.variables,
+          update('replies'),
+        );
+        break;
+
+      case QUERY_TYPE.THREAD_REPLIES:
+        utils.thread.getReplies.setInfiniteData(
           target.variables,
           update('replies'),
         );

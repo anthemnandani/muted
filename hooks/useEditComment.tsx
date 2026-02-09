@@ -34,6 +34,10 @@ const useEditComment = () => {
 
   const { mutateAsync: editThreadComment, isPending: isEditingThread } =
     api.thread.editThread.useMutation({
+      onMutate: () => {
+        reset();
+        resetReply();
+      },
       onError: (err) => {
         toast.error('EditingError: Something went wrong!');
         if (err.data?.code === 'UNAUTHORIZED') {
@@ -46,6 +50,7 @@ const useEditComment = () => {
       },
       onSettled: () => {
         trpcUtils.thread.getComments.invalidate();
+        trpcUtils.thread.getReplies.invalidate();
       },
       retry: false,
     });
@@ -91,25 +96,46 @@ const useEditComment = () => {
     return promise;
   };
 
-  const handleEditThreadComment = async (id?: string, text?: string) => {
+  const handleEditThreadComment = (id?: string, text?: string) => {
     const threadId = id || editCommentId;
     const content = text || commentText;
 
     if (!threadId || !content.trim()) return;
 
-    try {
-      await editThreadComment({
-        id: threadId,
-        text: content,
-        mentions: validMentions.map((m) => ({
-          mentionedUserId: m.mentionedUserId,
-          index: m.startIndex,
-        })),
-        linkPreview: null,
-      });
-    } catch (error) {
-      toast.error('Failed to edit comment');
-    }
+    const promise = editThreadComment({
+      id: threadId,
+      text: content,
+      mentions: validMentions.map((m) => ({
+        mentionedUserId: m.mentionedUserId,
+        index: m.startIndex,
+      })),
+      linkPreview: null,
+    });
+
+    toast.promise(promise, {
+      loading: (
+        <div className='flex w-[270px] items-center justify-start gap-1.5 p-0'>
+          <div>
+            <Icons.loading className='size-8' />
+          </div>
+          Updating...
+        </div>
+      ),
+      success: () => {
+        return (
+          <div className='flex-between w-[270px] p-0 '>
+            <div className='flex-center gap-1.5'>
+              <Check className='size-5' />
+              Updated
+            </div>
+          </div>
+        );
+      },
+      error: 'Error',
+      richColors: true,
+    });
+
+    return promise;
   };
 
   return {

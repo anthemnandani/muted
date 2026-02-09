@@ -33,12 +33,18 @@ const CommentActions = ({
   const { openDeleteDialog, setOpenDeleteDialog } = useDeletePostStore();
   const { handleDeletePost } = useDeletePost({
     id: postId,
-    onClose: () => setIsOpen(false),
+    onClose: () => {
+      setIsOpen(false);
+      setOpenDeleteDialog(false);
+    },
   });
 
   const { handleDeleteThread } = useDeleteThread({
     id: postId,
-    onClose: () => setIsOpen(false),
+    onClose: () => {
+      setIsOpen(false);
+      setOpenDeleteDialog(false);
+    },
   });
 
   const handleDelete =

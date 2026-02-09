@@ -47,7 +47,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const { openPostReport } = useReportStore();
   const { openDeleteDialog, setOpenDeleteDialog } = useDeletePostStore();
-  const { handleDeletePost, isDeleting } = useDeletePost({
+  const { handleDeletePost } = useDeletePost({
     id: postId,
     onClose: () => {
       setOpenDeleteDialog(false);
@@ -92,7 +92,6 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
         title='Delete Post'
         description="If you delete this post, you won't be able to restore it."
         onClick={handleDeletePost}
-        isLoading={isDeleting}
       />
       <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen} modal={false}>
         <DropdownMenuTrigger asChild>

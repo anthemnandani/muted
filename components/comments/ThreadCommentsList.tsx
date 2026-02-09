@@ -45,7 +45,7 @@ const ThreadCommentsList = ({
   if (isLoading) {
     return (
       <div className='flex justify-center h-[300px]'>
-        <Icons.loading className='size-8 animate-spin' />
+        <Icons.loading className='size-10 animate-spin' />
       </div>
     );
   }

@@ -7,7 +7,12 @@ import useAddCommentStore from '@/store/addComment';
 import { useEffect } from 'react';
 import CommentInput from './CommentInput';
 
-const ReplyInput = ({ postId, commentId, onCancel }: ReplyInputProps) => {
+const ReplyInput = ({
+  postId,
+  threadId,
+  commentId,
+  onCancel,
+}: ReplyInputProps) => {
   const {
     replyText,
     setReplyText,
@@ -18,13 +23,23 @@ const ReplyInput = ({ postId, commentId, onCancel }: ReplyInputProps) => {
     replyToUsername,
   } = useAddCommentStore();
 
-  const { handlePostReply, isReplyingPost } = useAddReply({
+  const {
+    handlePostReply,
+    handleThreadReply,
+    isReplyingPost,
+    isReplyingThread,
+  } = useAddReply({
     postId,
+    threadId,
     commentId,
   });
 
-  const { handleEditPostComment, isEditing: isEditingInProgress } =
-    useEditComment();
+  const {
+    handleEditPostComment,
+    handleEditThreadComment,
+    isEditing,
+    isEditingThread,
+  } = useEditComment();
 
   useEffect(() => {
     if (!isReplyEdit) {
@@ -34,13 +49,23 @@ const ReplyInput = ({ postId, commentId, onCancel }: ReplyInputProps) => {
     }
   }, [replyText, isReplyEdit, setReplyCharCount]);
 
-  const submitContent = async () => {
+  const submitPostContent = () => {
     if (isReplyEdit) {
-      if (!replyText.trim() || isEditingInProgress) return;
+      if (!replyText.trim() || isEditing) return;
       handleEditPostComment(editReplyId, replyText);
     } else {
       if (!replyText.trim() || isReplyingPost) return;
       handlePostReply(replyText);
+    }
+  };
+
+  const submitThreadContent = () => {
+    if (isReplyEdit) {
+      if (!replyText.trim() || isEditingThread) return;
+      handleEditThreadComment(editReplyId, replyText);
+    } else {
+      if (!replyText.trim() || isReplyingThread) return;
+      handleThreadReply(replyText);
     }
   };
 
@@ -56,14 +81,19 @@ const ReplyInput = ({ postId, commentId, onCancel }: ReplyInputProps) => {
         placeholder={placeholder}
         textValue={replyText}
         onTextChange={setReplyText}
-        onSubmit={submitContent}
+        onSubmit={threadId ? submitThreadContent : submitPostContent}
         charCount={replyCharCount}
         maxChars={200}
-        isSubmitting={isReplyEdit ? isEditingInProgress : isReplyingPost}
+        isSubmitting={
+          threadId
+            ? isReplyingThread || isEditingThread
+            : isReplyingPost || isEditing
+        }
         showCancelButton={true}
         onCancel={onCancel}
         isEdit={isReplyEdit}
         replyToUsername={replyToUsername}
+        isReply
       />
     </div>
   );

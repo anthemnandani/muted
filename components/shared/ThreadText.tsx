@@ -7,14 +7,21 @@ import Username from '../user/Username';
 interface ThreadTextProps {
   text: string;
   mentions?: Mention[];
+  isComment?: boolean;
 }
 
-const ThreadText: React.FC<ThreadTextProps> = ({ text, mentions }) => {
+const ThreadText: React.FC<ThreadTextProps> = ({
+  text,
+  mentions,
+  isComment,
+}) => {
   const router = useRouter();
 
   const containerClasses = cn(
-    'text-accent-foreground font-normal leading-[1.4em] antialiased whitespace-pre-line break-words',
-    'text-[16px] px-2 md:px-4 my-3',
+    'text-accent-foreground font-normal antialiased whitespace-pre-line break-words',
+    isComment
+      ? 'text-[0.9rem] leading-[1.1375rem] mt-1'
+      : 'text-[16px] leading-[1.4em] px-2 md:px-4 my-3',
   );
 
   const handleClick = React.useCallback(

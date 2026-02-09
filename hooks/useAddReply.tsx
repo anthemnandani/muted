@@ -39,6 +39,9 @@ const useAddReply = ({ postId, threadId, commentId }: UseAddReplyProps) => {
 
   const { mutateAsync: addThreadReply, isPending: isReplyingThread } =
     api.thread.replyToComment.useMutation({
+      onMutate: () => {
+        resetReply();
+      },
       onError: (err) => {
         if (err.data?.code === 'UNAUTHORIZED') {
           return router.push('/sign-in');
@@ -49,7 +52,9 @@ const useAddReply = ({ postId, threadId, commentId }: UseAddReplyProps) => {
         toast.error('ReplyingError: Something went wrong!');
       },
       onSettled: () => {
-        trpcUtils.thread.invalidate();
+        trpcUtils.thread.getReplies.invalidate();
+        trpcUtils.thread.getThreadById.invalidate({ id: threadId! });
+        trpcUtils.thread.getComments.invalidate({ id: threadId! });
       },
       retry: false,
     });
@@ -90,8 +95,8 @@ const useAddReply = ({ postId, threadId, commentId }: UseAddReplyProps) => {
     return promise;
   };
 
-  const handleThreadReply = async (text: string) => {
-    await addThreadReply({
+  const handleThreadReply = (text: string) => {
+    const promise = addThreadReply({
       parentCommentId: commentId,
       originalThreadId: threadId!,
       text,
@@ -99,6 +104,28 @@ const useAddReply = ({ postId, threadId, commentId }: UseAddReplyProps) => {
         mentionedUserId: m.mentionedUserId,
         index: m.startIndex,
       })),
+    });
+
+    toast.promise(promise, {
+      loading: (
+        <div className='flex w-[270px] items-center justify-start gap-1.5 p-0'>
+          <div>
+            <Icons.loading className='size-8' />
+          </div>
+          Replying...
+        </div>
+      ),
+      success: () => {
+        return (
+          <div className='flex-between w-[270px] p-0 '>
+            <div className='flex-center gap-1.5'>
+              <Check className='size-5' />
+              Replied
+            </div>
+          </div>
+        );
+      },
+      richColors: true,
     });
   };
 

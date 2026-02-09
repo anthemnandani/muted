@@ -23,6 +23,7 @@ const CommentInput = ({
   onCancel,
   isEdit,
   replyToUsername,
+  isReply,
 }: CommentInputProps) => {
   const { user } = useUser();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -278,7 +279,7 @@ const CommentInput = ({
             : 'text-primary-blue'
         }`}
       >
-        {isEdit ? 'Update' : 'Comment'}
+        {isEdit ? 'Update' : isReply ? 'Reply' : 'Comment'}
       </button>
     </div>
   );

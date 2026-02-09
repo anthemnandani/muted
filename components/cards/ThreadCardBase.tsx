@@ -95,12 +95,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
         />
       )}
 
-      <div
-        className='w-full cursor-pointer'
-        onClick={() => router.push(`/thread/${id}`)}
-      >
-        {content}
-      </div>
+      <div className='w-full'>{content}</div>
 
       {linkPreview && (
         <div className='mx-2 md:mx-4 my-2'>

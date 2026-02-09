@@ -39,6 +39,18 @@ const useAddComment = ({ postId, threadId, authorId }: UseAddCommentProps) => {
 
   const { mutateAsync: commentToThread, isPending: isCommentingThread } =
     api.thread.commentToThread.useMutation({
+      onMutate: () => {
+        reset();
+      },
+      onError: (err) => {
+        if (err.data?.code === 'UNAUTHORIZED') {
+          return router.push('/sign-in');
+        }
+        if (err.data?.code === 'FORBIDDEN') {
+          return toast.error('You are not allowed to reply to this thread');
+        }
+        toast.error('ReplyingError: Something went wrong!');
+      },
       onSuccess: () => {
         toast.success('Commented!');
         reset();
@@ -83,20 +95,38 @@ const useAddComment = ({ postId, threadId, authorId }: UseAddCommentProps) => {
     });
   };
 
-  const handleThreadComment = async () => {
-    try {
-      await commentToThread({
-        id: threadId!,
-        threadAuthor: authorId,
-        text: commentText.trim(),
-        mentions: validMentions.map((m) => ({
-          mentionedUserId: m.mentionedUserId,
-          index: m.startIndex,
-        })),
-      });
-    } catch (error) {
-      toast.error('Failed to comment');
-    }
+  const handleThreadComment = () => {
+    const promise = commentToThread({
+      id: threadId!,
+      threadAuthor: authorId,
+      text: commentText.trim(),
+      mentions: validMentions.map((m) => ({
+        mentionedUserId: m.mentionedUserId,
+        index: m.startIndex,
+      })),
+    });
+
+    toast.promise(promise, {
+      loading: (
+        <div className='flex w-[270px] items-center justify-start gap-1.5 p-0'>
+          <div>
+            <Icons.loading className='size-8' />
+          </div>
+          Commenting...
+        </div>
+      ),
+      success: () => {
+        return (
+          <div className='flex-between w-[270px] p-0 '>
+            <div className='flex-center gap-1.5'>
+              <Check className='size-5' />
+              Commented
+            </div>
+          </div>
+        );
+      },
+      richColors: true,
+    });
   };
 
   return {

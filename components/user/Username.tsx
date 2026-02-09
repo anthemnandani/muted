@@ -44,7 +44,7 @@ const Username: React.FC<UsernameProps> = ({
               <span className='text-white/50 inline-block align-middle'>
                 &middot;
               </span>
-              <span className='text-[14px] text-primary-blue font-semibold'>
+              <span className='text-[14px] text-primary-red font-semibold'>
                 Creator
               </span>
             </Fragment>
