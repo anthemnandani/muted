@@ -13,6 +13,7 @@ import ConfirmDialog from '../modals/ConfirmDialog';
 import MenuItem from '../shared/MenuItem';
 import { DropdownMenuContent, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { useReportStore } from '@/store/reportStore';
+import useDeleteThread from '@/hooks/useDeleteThread';
 
 const CommentActions = ({
   authorId,
@@ -22,6 +23,7 @@ const CommentActions = ({
   text,
   isReply,
   onEditClick,
+  type = 'POST',
 }: CommentActionsProps) => {
   const { user } = useUser();
   const { timeLeft } = useTimeLeft({ createdAt });
@@ -29,10 +31,18 @@ const CommentActions = ({
   const { openPostReport } = useReportStore();
   const [isOpen, setIsOpen] = useState(false);
   const { openDeleteDialog, setOpenDeleteDialog } = useDeletePostStore();
-  const { handleDeletePost, isDeleting } = useDeletePost({
+  const { handleDeletePost } = useDeletePost({
     id: postId,
     onClose: () => setIsOpen(false),
   });
+
+  const { handleDeleteThread } = useDeleteThread({
+    id: postId,
+    onClose: () => setIsOpen(false),
+  });
+
+  const handleDelete =
+    type === 'THREAD' ? handleDeleteThread : handleDeletePost;
 
   const handleStartEditing = () => {
     if (onEditClick) {
@@ -81,8 +91,7 @@ const CommentActions = ({
               description={`If you delete this ${
                 isReply ? 'reply' : 'comment'
               }, you won't be able to restore it.`}
-              onClick={handleDeletePost}
-              isLoading={isDeleting}
+              onClick={handleDelete}
               trigger={
                 <MenuItem
                   icon={Icons.delete}
@@ -116,7 +125,6 @@ const CommentActions = ({
                   isReply ? 'reply' : 'comment'
                 }, you won't be able to restore it.`}
                 onClick={handleDeletePost}
-                isLoading={isDeleting}
                 trigger={
                   <MenuItem
                     icon={Icons.delete}

@@ -63,7 +63,7 @@ const ThreadInfoClient = ({ id }: { id: string }) => {
           <ThreadCommentsList threadId={id} threadAuthorId={data.author.id} />
         </div>
 
-        <div className='sticky bottom-0 left-0 w-full z-50 bg-transparent border-t border-border-light md:pl-[var(--sidebar-width)] lg:pl-0'>
+        <div className='sticky bottom-0 left-0 w-full z-50 bg-gray-6 border-t border-border-light md:pl-[var(--sidebar-width)] lg:pl-0'>
           <div className='w-full md:max-w-[600px] mx-auto'>
             <AddThreadComment threadId={data.id} authorId={data.author.id} />
           </div>

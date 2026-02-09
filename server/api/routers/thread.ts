@@ -1218,6 +1218,7 @@ export const threadRouter = createTRPCRouter({
 
       const comments = await db.thread.findMany({
         where: {
+          deleted: false,
           parentId: id,
           author: {
             deactivated: false,
@@ -1288,6 +1289,7 @@ export const threadRouter = createTRPCRouter({
 
       const replies = await db.thread.findMany({
         where: {
+          deleted: false,
           parentId: parentCommentId,
           author: {
             deactivated: false,

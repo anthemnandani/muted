@@ -21,7 +21,6 @@ const useDeleteThread = ({ id, onClose, isAdmin }: UseDeletePostProps) => {
       // } else {
       //   utils.thread.getAllThreads.invalidate();
       // }
-      utils.thread.getAllThreads.invalidate();
     },
   });
 
@@ -32,7 +31,7 @@ const useDeleteThread = ({ id, onClose, isAdmin }: UseDeletePostProps) => {
     if (performAction) {
       onClose();
       performAction(id, 'DELETE', true);
-      toast.success('Thread deleted');
+      toast.success('Deleted');
     }
 
     deleteThread({ id });

@@ -962,6 +962,7 @@ export interface CommentActionsProps {
   text: string;
   isReply?: boolean;
   onEditClick?: () => void;
+  type?: 'POST' | 'THREAD';
 }
 
 export interface ConfirmDialogProps {

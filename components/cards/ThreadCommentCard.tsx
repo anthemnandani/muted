@@ -167,7 +167,7 @@ const ThreadCommentCard = ({
             >
               <Repeat2
                 className={cn(
-                  'size-[15px] text-gray-400 transition-colors group-hover/repost:text-primary-blue',
+                  'size-4 text-gray-400 transition-colors group-hover/repost:text-primary-blue',
                   {
                     'text-primary-blue': isRepostedByMe,
                   },
@@ -200,6 +200,7 @@ const ThreadCommentCard = ({
           postId={id}
           createdAt={createdAt}
           text={text ?? ''}
+          type='THREAD'
         />
       </div>
 

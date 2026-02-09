@@ -25,13 +25,13 @@ const Username: React.FC<UsernameProps> = ({
         <Link
           href={`/@${author.username}`}
           className={cn(
-            'inline-flex items-center gap-1.5 group w-fit',
+            'inline-flex items-center gap-1.5 w-fit',
             isSearch && 'max-w-[80%]',
           )}
         >
           <span
             className={cn(
-              'text-white/90 text-[14px] font-semibold group-hover:underline',
+              'text-white/90 text-[14px] font-semibold hover:underline',
               isReposted && 'text-[13px] text-gray-3',
               className,
             )}

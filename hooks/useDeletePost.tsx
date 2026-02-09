@@ -1,3 +1,4 @@
+import { useOptimisticAction } from '@/contexts/OptimisticActionContext';
 import { UseDeletePostProps } from '@/lib/types';
 import { api } from '@/trpc/react';
 import { toast } from 'sonner';
@@ -7,30 +8,39 @@ const useDeletePost = ({
   onClose,
   isAdmin = false,
 }: UseDeletePostProps) => {
+  const performAction = useOptimisticAction();
   const trpcUtils = api.useUtils();
 
-  const { mutateAsync: deletePost, isPending } =
-    api.post.deletePost.useMutation({
-      onSettled: async () => {
-        if (isAdmin) await trpcUtils.admin.getAllPosts.invalidate();
-        else await trpcUtils.invalidate();
-      },
-      retry: false,
-    });
+  const { mutate: deletePost } = api.post.deletePost.useMutation({
+    onError: (err) => {
+      if (performAction) {
+        performAction(id, 'DELETE', false);
+      }
+      toast.error('Something went wrong');
+    },
 
-  const handleDeletePost = () => {
+    onSettled: async () => {
+      if (isAdmin) {
+        await trpcUtils.admin.getAllPosts.invalidate();
+      }
+    },
+  });
+
+  const handleDeletePost = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
     onClose();
-    const promise = deletePost({ id });
 
-    toast.promise(promise, {
-      loading: 'Deleting...',
-      success: () => 'Deleted',
-      error: 'Error deleting post.',
-      richColors: true,
-    });
+    if (performAction) {
+      performAction(id, 'DELETE', true);
+      toast.success('Deleted');
+    }
+
+    deletePost({ id });
   };
 
-  return { handleDeletePost, isDeleting: isPending };
+  return { handleDeletePost };
 };
 
 export default useDeletePost;
