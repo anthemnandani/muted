@@ -8,6 +8,7 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
   threads,
   fetchNextPage,
   hasNextPage,
+  isSeparate = false,
 }) => {
   return (
     <InfiniteScroll
@@ -19,6 +20,7 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
           <Icons.loading className='size-11' />
         </div>
       }
+      className={isSeparate ? 'flex flex-col gap-5' : ''}
     >
       {threads.map((thread, index) => {
         const uniqueKey = thread.repostedBy
@@ -29,6 +31,7 @@ const ThreadsList: React.FC<ThreadsListProps> = ({
             <ThreadCard
               {...thread}
               isLastThread={index === threads.length - 1}
+              isSeparate={isSeparate}
             />
           </div>
         );

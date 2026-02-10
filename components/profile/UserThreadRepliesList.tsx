@@ -55,6 +55,7 @@ const UserThreadRepliesList = ({ username }: { username: string }) => {
           threads={replies!}
           fetchNextPage={fetchNextPage}
           hasNextPage={hasNextPage}
+          isSeparate
         />
       </div>
     </Wrapper>

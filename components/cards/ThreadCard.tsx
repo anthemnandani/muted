@@ -9,17 +9,25 @@ import ThreadCardBase from './ThreadCardBase';
 interface ThreadCardProps extends ThreadProps {
   isLastThread?: boolean;
   showUsername?: boolean;
+  isSeparate?: boolean;
 }
 
 const ThreadCard: React.FC<ThreadCardProps> = ({
   isLastThread,
   showUsername,
+  isSeparate,
   ...props
 }) => {
   return (
-    <article className={cn('w-full pt-4', isLastThread && 'mb-20 md:mb-10')}>
+    <article
+      className={cn(
+        'w-full pt-4',
+        isSeparate &&
+          'pb-2 px-2 bg-gray-6 border-gray-5 shadow-lg rounded-[25px]',
+      )}
+    >
       <ThreadCardBase {...props} />
-      {!isLastThread && !showUsername && <Separator />}
+      {!isSeparate && !isLastThread && <Separator />}
     </article>
   );
 };

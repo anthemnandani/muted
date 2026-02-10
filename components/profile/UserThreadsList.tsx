@@ -50,13 +50,12 @@ const UserThreadsList = ({ username }: { username: string }) => {
     />
   ) : (
     <Wrapper>
-      <div className='flex flex-col gap-4 w-full'>
-        <ThreadsList
-          threads={threads!}
-          fetchNextPage={fetchNextPage}
-          hasNextPage={hasNextPage}
-        />
-      </div>
+      <ThreadsList
+        threads={threads!}
+        fetchNextPage={fetchNextPage}
+        hasNextPage={hasNextPage}
+        isSeparate
+      />
     </Wrapper>
   );
 };

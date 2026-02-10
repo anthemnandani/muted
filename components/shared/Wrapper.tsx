@@ -6,10 +6,10 @@ import React from 'react';
 
 const Wrapper = ({
   children,
-  isFeed = false,
+  isSmall = false,
 }: {
   children: React.ReactNode;
-  isFeed?: boolean;
+  isSmall?: boolean;
 }) => {
   const { isMobile } = useWindow();
   return (
@@ -18,13 +18,14 @@ const Wrapper = ({
         <div
           className={cn(
             'w-full md:max-w-6xl mx-auto relative',
-            isFeed ? 'md:max-w-[600px]' : 'mt-4 md:max-w-6xl',
+            isSmall ? 'md:max-w-[600px]' : 'mt-4 md:max-w-6xl',
           )}
         >
           <div
             className={cn(
-              'min-h-screen',
+              isSmall && 'min-h-screen',
               !isMobile &&
+                isSmall &&
                 'bg-gray-6 border-gray-5 shadow-lg rounded-tl-[25px] rounded-tr-[25px]',
             )}
           >

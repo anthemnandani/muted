@@ -17,6 +17,7 @@ import { useThreadStore } from '@/store/threadStore';
 import { useMemo } from 'react';
 import CreateThread from '../modals/CreateThread';
 import Loader from './Loader';
+import { cn } from '@/lib/utils';
 
 const FeedWrapper = ({
   threads,
@@ -47,7 +48,7 @@ const FeedWrapper = ({
           <ThreadFilterMenu selectedFilter={selectedFilter} />
         </HeaderWrapper>
       )}
-      <Wrapper isFeed={!isSearch}>
+      <Wrapper isSmall={!isSearch}>
         {!isSearch && (
           <div className='w-full md:flex hidden'>
             <CreateWithInput onClick={() => setOpenDialog(true)} />
@@ -61,11 +62,14 @@ const FeedWrapper = ({
               </p>
             </div>
           ) : (
-            <ThreadsList
-              threads={threads!}
-              fetchNextPage={fetchNextPage}
-              hasNextPage={hasNextPage}
-            />
+            <div className={cn(isSearch && 'mt-5')}>
+              <ThreadsList
+                threads={threads!}
+                fetchNextPage={fetchNextPage}
+                hasNextPage={hasNextPage}
+                isSeparate={isSearch}
+              />
+            </div>
           )}
         </section>
       </Wrapper>

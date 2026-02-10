@@ -380,6 +380,7 @@ export interface ThreadsListProps {
   threads: ThreadProps[];
   fetchNextPage: () => void;
   hasNextPage?: boolean;
+  isSeparate?: boolean;
 }
 
 export interface EditProfileProps {

@@ -46,7 +46,7 @@ const ThreadInfoClient = ({ id }: { id: string }) => {
           </div>
         </HeaderWrapper>
       )}
-      <Wrapper>
+      <Wrapper isSmall>
         <div className='flex flex-col min-h-screen pb-[120px] relative'>
           <OptimisticActionProvider
             target={{ type: QUERY_TYPE.THREAD_DETAILS, variables: { id } }}

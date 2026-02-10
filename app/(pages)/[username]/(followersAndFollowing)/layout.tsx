@@ -28,7 +28,7 @@ export default function FollowersAndFollowingLayout({
   const path = usePathname();
   const { basePath, lastSegment } = parseUsernamePath(
     path as string,
-    params!.username
+    params!.username,
   );
 
   const { data, isLoading, isError } = api.user.getUserProfile.useQuery({
@@ -49,7 +49,7 @@ export default function FollowersAndFollowingLayout({
       <main className='flex justify-center h-screen'>
         <section className='w-full'>
           <div className='w-full md:max-w-[550px] mx-auto relative'>
-            <Wrapper>
+            <Wrapper isSmall>
               <div className='flex-between px-6 pt-8 pb-4'>
                 <div className='flex items-center gap-4'>
                   <div className='cursor-pointer' onClick={() => router.back()}>

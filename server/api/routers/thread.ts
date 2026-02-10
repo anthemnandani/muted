@@ -467,6 +467,7 @@ export const threadRouter = createTRPCRouter({
               authorId: userId,
               parentId: id,
               path,
+              status: PostStatus.VISIBLE,
               hashtags: {
                 connectOrCreate: hashtags.map((tag) => {
                   const tagName = tag.slice(1);
@@ -630,6 +631,7 @@ export const threadRouter = createTRPCRouter({
               authorId: userId,
               parentId: parentCommentId,
               path,
+              status: PostStatus.VISIBLE,
               hashtags: {
                 connectOrCreate: hashtags.map((tag) => {
                   const tagName = tag.slice(1);
@@ -1071,6 +1073,8 @@ export const threadRouter = createTRPCRouter({
         select: THREAD_SELECT(userId!),
       });
 
+      console.log('Replies', rawReplies);
+
       let nextCursor: typeof cursor | undefined;
       if (rawReplies.length > limit) {
         const nextItem = rawReplies.pop();
@@ -1381,6 +1385,7 @@ export const threadRouter = createTRPCRouter({
 
       const comments = await db.thread.findMany({
         where: {
+          status: PostStatus.VISIBLE,
           deleted: false,
           parentId: id,
           author: {
@@ -1452,6 +1457,7 @@ export const threadRouter = createTRPCRouter({
 
       const replies = await db.thread.findMany({
         where: {
+          status: PostStatus.VISIBLE,
           deleted: false,
           parentId: parentCommentId,
           author: {

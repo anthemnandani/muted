@@ -440,6 +440,7 @@ export const postRouter = createTRPCRouter({
               authorId: userId,
               parentPostId: postId,
               path,
+              status: PostStatus.VISIBLE,
               hashtags: {
                 connectOrCreate: hashtags.map((tag) => {
                   const tagName = tag.slice(1);
@@ -602,6 +603,7 @@ export const postRouter = createTRPCRouter({
               text: filteredText,
               authorId: userId,
               parentPostId: parentCommentId,
+              status: PostStatus.VISIBLE,
               path,
               hashtags: {
                 connectOrCreate: hashtags.map((tag) => {
@@ -829,6 +831,7 @@ export const postRouter = createTRPCRouter({
       const comments = await db.post.findMany({
         where: {
           parentPostId: id,
+          status: PostStatus.VISIBLE,
           author: {
             deactivated: false,
             blockedByUsers: {
@@ -925,6 +928,7 @@ export const postRouter = createTRPCRouter({
 
       const replies = await db.post.findMany({
         where: {
+          status: PostStatus.VISIBLE,
           parentPostId: parentCommentId,
           author: {
             deactivated: false,
