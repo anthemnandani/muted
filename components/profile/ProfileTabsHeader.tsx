@@ -28,6 +28,7 @@ const ProfileTabsHeader = ({
         ]
       : []),
     { id: 'liked', icon: <Icons.liked className='size-5' />, label: 'Liked' },
+    { id: 'text', icon: <Icons.threads className='size-5' />, label: 'Text' },
   ];
 
   const [hoverTab, setHoverTab] = React.useState<string | null>(null);
@@ -61,7 +62,7 @@ const ProfileTabsHeader = ({
                 className={cn(
                   'absolute -bottom-2.5 left-0 right-0 h-[2px] bg-white/90',
                   hoverTab === tab.id && 'animate-tab-slide',
-                  tab.id === activeTab && !hoverTab && 'scale-x-100'
+                  tab.id === activeTab && !hoverTab && 'scale-x-100',
                 )}
               />
             )}

@@ -1067,7 +1067,9 @@ export interface ThreadCommentCardProps {
 
 export type SortBy = 'LATEST' | 'OLDEST';
 
-export type Tab = 'posts' | 'reposts' | 'liked' | 'collections';
+export type Tab = 'posts' | 'reposts' | 'liked' | 'collections' | 'text';
+
+export type TextSubTab = 'threads' | 'reposts' | 'replies';
 
 export type SearchTab = 'top' | 'users' | 'videos';
 

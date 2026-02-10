@@ -72,23 +72,23 @@ export const userRouter = createTRPCRouter({
 
       const totalLikes = userProfile.posts.reduce(
         (acc, post) => acc + post.likes.length,
-        0
+        0,
       );
 
       const isMuted = userProfile.mutedByUsers.some(
-        (mutedUser) => mutedUser.mutedByUserId === userId
+        (mutedUser) => mutedUser.mutedByUserId === userId,
       );
 
       const isBlockedByMe = userProfile.blockedByUsers.some(
-        (blockedUser) => blockedUser.blockingUserId === userId
+        (blockedUser) => blockedUser.blockingUserId === userId,
       );
 
       const hasBlockedMe = userProfile.blockedUsers.some(
-        (blockedUser) => blockedUser.blockedUserId === userId
+        (blockedUser) => blockedUser.blockedUserId === userId,
       );
 
       const isFollower = userProfile.followers.some(
-        (follower) => follower.followerId === userId
+        (follower) => follower.followerId === userId,
       );
 
       return {
@@ -119,7 +119,7 @@ export const userRouter = createTRPCRouter({
         sortBy: z.enum(['LATEST', 'OLDEST']).optional(),
         limit: z.number().min(1).max(100).default(18),
         cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
-      })
+      }),
     )
     .query(async ({ input, ctx }) => {
       const { username, limit, cursor, sortBy } = input;
@@ -193,7 +193,7 @@ export const userRouter = createTRPCRouter({
             repliesCount: getTotalRepliesCount(post) as number,
             bookmarksCount: new Set(post.bookmarks.map((b) => b.userId)).size,
           };
-        })
+        }),
       );
 
       return {
@@ -213,7 +213,7 @@ export const userRouter = createTRPCRouter({
             userId: z.string(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input: { username, limit = 18, cursor }, ctx }) => {
       if (!username) {
@@ -328,10 +328,10 @@ export const userRouter = createTRPCRouter({
             repostsCount: repost.post!.reposts.length,
             repliesCount: repost.post!.replies.length,
             bookmarksCount: new Set(
-              repost.post!.bookmarks.map((bookmark) => bookmark.userId)
+              repost.post!.bookmarks.map((bookmark) => bookmark.userId),
             ).size,
           };
-        })
+        }),
       );
 
       let nextCursor: typeof cursor | undefined;
@@ -361,7 +361,7 @@ export const userRouter = createTRPCRouter({
             userId: z.string(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input: { username, limit = 18, cursor }, ctx }) => {
       if (!username) {
@@ -480,10 +480,10 @@ export const userRouter = createTRPCRouter({
             repostsCount: likedPost.post!.reposts.length,
             repliesCount: getTotalRepliesCount(likedPost.post) as number,
             bookmarksCount: new Set(
-              likedPost.post!.bookmarks.map((bookmark) => bookmark.userId)
+              likedPost.post!.bookmarks.map((bookmark) => bookmark.userId),
             ).size,
           };
-        })
+        }),
       );
 
       let nextCursor: typeof cursor | undefined;
@@ -518,7 +518,7 @@ export const userRouter = createTRPCRouter({
         //   ),
         bio: z.string().max(150).optional(),
         // privacy: z.enum(['PUBLIC', 'PRIVATE']),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { user, db } = ctx;
@@ -572,7 +572,7 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const { userId, db } = ctx;
@@ -676,7 +676,7 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         searchQuery: z.string().optional(),
-      })
+      }),
     )
     .query(async ({ input: { searchQuery }, ctx }) => {
       if (!searchQuery || searchQuery.trim() === '') {
@@ -730,7 +730,7 @@ export const userRouter = createTRPCRouter({
         searchQuery: z.string().optional(),
         limit: z.number().optional(),
         cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
-      })
+      }),
     )
     .query(async ({ input: { limit = 20, cursor, searchQuery }, ctx }) => {
       const { db } = ctx;
@@ -774,7 +774,7 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         searchQuery: z.string(),
-      })
+      }),
     )
     .query(async ({ input: { searchQuery }, ctx }) => {
       const { db } = ctx;
@@ -805,7 +805,7 @@ export const userRouter = createTRPCRouter({
         limit: z.number().optional(),
         cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
         sortBy: z.enum(['latest', 'earliest']).optional().default('latest'),
-      })
+      }),
     )
     .query(async ({ input: { username, limit = 20, cursor, sortBy }, ctx }) => {
       const { userId, db } = ctx;
@@ -876,7 +876,7 @@ export const userRouter = createTRPCRouter({
         limit: z.number().optional(),
         cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
         sortBy: z.enum(['latest', 'earliest']).optional().default('latest'),
-      })
+      }),
     )
     .query(async ({ input: { username, limit = 20, cursor, sortBy }, ctx }) => {
       const { userId, db } = ctx;
@@ -944,7 +944,7 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         userId: z.string(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { userId: currentUserId, db } = ctx;
@@ -986,7 +986,7 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         targetUserId: z.string(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { userId, db } = ctx;
@@ -1060,7 +1060,7 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         isPrivate: z.boolean(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { userId, db } = ctx;
@@ -1157,7 +1157,7 @@ export const userRouter = createTRPCRouter({
             blockingUserId: z.string(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
       const { userId, db } = ctx;
@@ -1231,7 +1231,7 @@ export const userRouter = createTRPCRouter({
             mutedByUserId: z.string(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
       const { userId, db } = ctx;

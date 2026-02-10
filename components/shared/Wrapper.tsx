@@ -17,7 +17,7 @@ const Wrapper = ({
       <section className='w-full'>
         <div
           className={cn(
-            'w-full md:max-w-[600px] mx-auto relative',
+            'w-full md:max-w-6xl mx-auto relative',
             isSearch && 'mt-4',
           )}
         >

@@ -9,18 +9,16 @@ import ThreadCardBase from './ThreadCardBase';
 interface ThreadCardProps extends ThreadProps {
   isLastThread?: boolean;
   showUsername?: boolean;
-  variant?: 'default' | 'comment';
 }
 
 const ThreadCard: React.FC<ThreadCardProps> = ({
   isLastThread,
   showUsername,
-  variant = 'default',
   ...props
 }) => {
   return (
     <article className={cn('w-full pt-4', isLastThread && 'mb-20 md:mb-10')}>
-      <ThreadCardBase {...props} variant={variant} />
+      <ThreadCardBase {...props} />
       {!isLastThread && !showUsername && <Separator />}
     </article>
   );

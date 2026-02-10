@@ -41,6 +41,7 @@ export type TargetType =
     }
   | { type: QUERY_TYPE.REPLIES; variables: { parentCommentId: string } }
   | { type: QUERY_TYPE.THREAD_REPLIES; variables: { parentCommentId: string } }
+  | { type: QUERY_TYPE.USER_THREAD_REPLIES; variables: { username: string } }
   | { type: QUERY_TYPE.FOLLOWING_FEED; variables: {} }
   | { type: QUERY_TYPE.TAG_FEED; variables: { tag: string } }
   | {
@@ -48,7 +49,9 @@ export type TargetType =
       variables: { username: string; sortBy?: 'LATEST' | 'OLDEST' };
     }
   | { type: QUERY_TYPE.USER_REPOSTS; variables: { username: string } }
+  | { type: QUERY_TYPE.USER_THREAD_REPOSTS; variables: { username: string } }
   | { type: QUERY_TYPE.USER_LIKED; variables: { username: string } }
+  | { type: QUERY_TYPE.USER_THREADS; variables: { username: string } }
   | { type: QUERY_TYPE.COLLECTION_POSTS; variables: { id: string } };
 
 export const OptimisticActionProvider = ({
@@ -166,6 +169,27 @@ export const OptimisticActionProvider = ({
         utils.collection.getCollection.setInfiniteData(
           target.variables,
           update('posts'),
+        );
+        break;
+
+      case QUERY_TYPE.USER_THREADS:
+        utils.thread.getUserThreads.setInfiniteData(
+          target.variables,
+          update('threads'),
+        );
+        break;
+
+      case QUERY_TYPE.USER_THREAD_REPOSTS:
+        utils.thread.getUserThreadReposts.setInfiniteData(
+          target.variables,
+          update('reposts'),
+        );
+        break;
+
+      case QUERY_TYPE.USER_THREAD_REPLIES:
+        utils.thread.getUserThreadReplies.setInfiniteData(
+          target.variables,
+          update('replies'),
         );
         break;
 

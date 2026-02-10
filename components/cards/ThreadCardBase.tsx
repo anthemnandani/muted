@@ -6,7 +6,6 @@ import { ThreadCardBaseProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useHiddenThreads } from '@/store/hiddenThreads';
 import { useMutedUsers } from '@/store/mutedUsers';
-import { useRouter } from 'next/navigation';
 import { Fragment } from 'react';
 import ThreadContent from '../shared/ThreadContent';
 import ThreadHeader from '../shared/ThreadHeader';
@@ -37,7 +36,6 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   pinned,
   privacy,
   linkPreview,
-  variant = 'default',
   showHeader = true,
   showActions = true,
   className,
@@ -45,8 +43,6 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
 }) => {
   const { isThreadHidden } = useHiddenThreads();
   const { isMutedUser } = useMutedUsers();
-  const router = useRouter();
-  const isComment = variant === 'comment';
 
   const { isLoading: isCheckingPermissions, canInteract } = usePostInteraction({
     authorId: author.id,
@@ -58,7 +54,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
     <Fragment>
       <ThreadContent id={id} text={text} mentions={mentions} media={media} />
       {quoteId && (
-        <div className={cn('px-10', isComment && 'px-0 mt-2')}>
+        <div className='px-10'>
           <ThreadQuoteCard quoteId={quoteId} />
         </div>
       )}

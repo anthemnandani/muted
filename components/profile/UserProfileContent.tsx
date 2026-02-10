@@ -1,12 +1,12 @@
 'use client';
 
-import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   OptimisticActionProvider,
   type TargetType,
 } from '@/contexts/OptimisticActionContext';
 import { QUERY_TYPE } from '@/lib/constants';
-import { type Tab, UserProfileContentProps } from '@/lib/types';
+import { type Tab, TextSubTab, UserProfileContentProps } from '@/lib/types';
 import usePostStore from '@/store/postStore';
 import { useTabStore } from '@/store/tabStore';
 import { useUser } from '@clerk/nextjs';
@@ -21,6 +21,11 @@ import UserCollectionsList from './UserCollectionsList';
 import UserLikedPostsList from './UserLikedPostsList';
 import UserPostsList from './UserPostsList';
 import UserRepostsList from './UserRepostsList';
+import UserThreadsList from './UserThreadsList';
+import { cn } from '@/lib/utils';
+import UserRepliesList from './UserThreadRepliesList';
+import UserThreadRepliesList from './UserThreadRepliesList';
+import UserThreadRepostsList from './UserThreadRepostsList';
 
 const BlockedContent = () => (
   <EmptyState
@@ -46,7 +51,7 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
   isBlocked,
 }) => {
   const { user } = useUser();
-  const { activeTab, setActiveTab } = useTabStore();
+  const { activeTab, setActiveTab, textSubTab, setTextSubTab } = useTabStore();
   const { selectedFilter, setSelectedFilter } = usePostStore();
 
   const isOwner = user?.id === userId;
@@ -65,7 +70,22 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
       case 'liked':
         return { type: QUERY_TYPE.USER_LIKED, variables: { username } };
     }
-  }, [username, activeTab]);
+
+    switch (textSubTab) {
+      case 'threads':
+        return { type: QUERY_TYPE.USER_THREADS, variables: { username } };
+      case 'reposts':
+        return {
+          type: QUERY_TYPE.USER_THREAD_REPOSTS,
+          variables: { username },
+        };
+      case 'replies':
+        return {
+          type: QUERY_TYPE.USER_THREAD_REPLIES,
+          variables: { username },
+        };
+    }
+  }, [username, activeTab, textSubTab]);
 
   return (
     <OptimisticActionProvider target={target as TargetType}>
@@ -137,6 +157,43 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
               ) : (
                 <UserCollectionsList username={username} />
               )}
+            </TabsContent>
+            <TabsContent value='text' className='mt-0'>
+              <Tabs
+                value={textSubTab}
+                onValueChange={(value) => setTextSubTab(value as TextSubTab)}
+                className='w-full'
+              >
+                <div className='py-3 flex justify-start mx-auto w-full md:max-w-6xl'>
+                  <TabsList className='bg-transparent p-0 gap-4 h-auto justify-start'>
+                    {['threads', 'reposts', 'replies'].map((tab) => (
+                      <TabsTrigger
+                        key={tab}
+                        value={tab}
+                        className={cn(
+                          'rounded-full border border-border-light px-5 py-2 text-sm font-semibold',
+                          'text-muted-foreground capitalize data-[state=active]:bg-white',
+                          'data-[state=active]:text-black data-[state=active]:border-transparent transition-all',
+                        )}
+                      >
+                        {tab}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </div>
+
+                <div className='w-full min-h-[50vh]'>
+                  <TabsContent value='threads'>
+                    <UserThreadsList username={username} />
+                  </TabsContent>
+                  <TabsContent value='reposts'>
+                    <UserThreadRepostsList username={username} />
+                  </TabsContent>
+                  <TabsContent value='replies'>
+                    <UserThreadRepliesList username={username} />
+                  </TabsContent>
+                </div>
+              </Tabs>
             </TabsContent>
           </Tabs>
         </div>

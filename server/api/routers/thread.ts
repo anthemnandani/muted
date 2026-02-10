@@ -991,6 +991,169 @@ export const threadRouter = createTRPCRouter({
       return { threads: formattedThreads, nextCursor };
     }),
 
+  getUserThreads: privateProcedure
+    .input(
+      z.object({
+        username: z.string(),
+        limit: z.number().min(1).max(100).default(10),
+        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const { username, limit, cursor } = input;
+      const { userId, db } = ctx;
+
+      const user = await db.user.findUnique({ where: { username } });
+      if (!user) throw new TRPCError({ code: 'NOT_FOUND' });
+
+      const rawThreads = await db.thread.findMany({
+        where: {
+          authorId: user.id,
+          parentId: null,
+          status: PostStatus.VISIBLE,
+          deleted: false,
+        },
+        take: limit + 1,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        select: THREAD_SELECT(userId!),
+      });
+
+      let nextCursor: typeof cursor | undefined;
+      if (rawThreads.length > limit) {
+        const nextItem = rawThreads.pop();
+        if (nextItem) {
+          nextCursor = { id: nextItem.id, createdAt: nextItem.createdAt };
+        }
+      }
+
+      const formattedThreads = await Promise.all(
+        rawThreads.map(async (thread) => {
+          const threadWithTokens = await enrichThreadWithTokens(thread);
+          return {
+            ...threadWithTokens,
+            likesCount: thread.likes.length,
+            repostsCount: thread.reposts.length,
+            repliesCount: thread.repliesCount,
+            bookmarksCount: new Set(thread.bookmarks.map((b) => b.userId)).size,
+          };
+        }),
+      );
+
+      return { threads: formattedThreads, nextCursor };
+    }),
+
+  getUserThreadReplies: privateProcedure
+    .input(
+      z.object({
+        username: z.string(),
+        limit: z.number().min(1).max(100).default(10),
+        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const { username, limit, cursor } = input;
+      const { userId, db } = ctx;
+
+      const user = await db.user.findUnique({ where: { username } });
+      if (!user) throw new TRPCError({ code: 'NOT_FOUND' });
+
+      const rawReplies = await db.thread.findMany({
+        where: {
+          authorId: user.id,
+          parentId: { not: null },
+          status: PostStatus.VISIBLE,
+          deleted: false,
+        },
+        take: limit + 1,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        select: THREAD_SELECT(userId!),
+      });
+
+      let nextCursor: typeof cursor | undefined;
+      if (rawReplies.length > limit) {
+        const nextItem = rawReplies.pop();
+        if (nextItem) {
+          nextCursor = { id: nextItem.id, createdAt: nextItem.createdAt };
+        }
+      }
+
+      const formattedReplies = rawReplies.map((reply) => {
+        return {
+          ...reply,
+          likesCount: reply.likes.length,
+          repostsCount: reply.reposts.length,
+          repliesCount: reply.repliesCount,
+          bookmarksCount: new Set(reply.bookmarks.map((b) => b.userId)).size,
+        };
+      });
+
+      return { replies: formattedReplies, nextCursor };
+    }),
+
+  getUserThreadReposts: privateProcedure
+    .input(
+      z.object({
+        username: z.string(),
+        limit: z.number().min(1).max(100).default(10),
+        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const { username, limit, cursor } = input;
+      const { userId, db } = ctx;
+
+      const user = await db.user.findUnique({ where: { username } });
+      if (!user) throw new TRPCError({ code: 'NOT_FOUND' });
+
+      const reposts = await db.repost.findMany({
+        where: {
+          userId: user.id,
+          threadId: { not: null },
+        },
+        take: limit + 1,
+        cursor: cursor
+          ? { id: cursor.id, createdAt: cursor.createdAt }
+          : undefined,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          thread: {
+            select: THREAD_SELECT(userId!),
+          },
+        },
+      });
+
+      let nextCursor: typeof cursor | undefined;
+      if (reposts.length > limit) {
+        const nextItem = reposts.pop();
+        if (nextItem) {
+          nextCursor = { id: nextItem.id, createdAt: nextItem.createdAt };
+        }
+      }
+
+      const formattedReposts = await Promise.all(
+        reposts
+          .filter((r) => r.thread)
+          .map(async (repost) => {
+            const repostWithTokens = await enrichThreadWithTokens(
+              repost.thread!,
+            );
+            return {
+              ...repostWithTokens,
+              likesCount: repost.thread!.likes.length,
+              repostsCount: repost.thread!.reposts.length,
+              repliesCount: repost.thread!.repliesCount,
+              bookmarksCount: new Set(
+                repost.thread!.bookmarks.map((b) => b.userId),
+              ).size,
+            };
+          }),
+      );
+
+      return { reposts: formattedReposts, nextCursor };
+    }),
+
   getThreadById: privateProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input, ctx }) => {
