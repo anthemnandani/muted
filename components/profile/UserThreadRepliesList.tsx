@@ -49,7 +49,7 @@ const UserThreadRepliesList = ({ username }: { username: string }) => {
       description='Replies you make to threads will appear here.'
     />
   ) : (
-    <Wrapper isSearch>
+    <Wrapper>
       <div className='flex flex-col gap-4 w-full'>
         <ThreadsList
           threads={replies!}

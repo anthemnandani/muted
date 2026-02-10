@@ -6,10 +6,10 @@ import React from 'react';
 
 const Wrapper = ({
   children,
-  isSearch,
+  isFeed = false,
 }: {
   children: React.ReactNode;
-  isSearch?: boolean;
+  isFeed?: boolean;
 }) => {
   const { isMobile } = useWindow();
   return (
@@ -18,7 +18,7 @@ const Wrapper = ({
         <div
           className={cn(
             'w-full md:max-w-6xl mx-auto relative',
-            isSearch && 'mt-4',
+            isFeed ? 'md:max-w-[600px]' : 'mt-4 md:max-w-6xl',
           )}
         >
           <div

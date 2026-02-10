@@ -47,7 +47,7 @@ const FeedWrapper = ({
           <ThreadFilterMenu selectedFilter={selectedFilter} />
         </HeaderWrapper>
       )}
-      <Wrapper isSearch={isSearch}>
+      <Wrapper isFeed={!isSearch}>
         {!isSearch && (
           <div className='w-full md:flex hidden'>
             <CreateWithInput onClick={() => setOpenDialog(true)} />

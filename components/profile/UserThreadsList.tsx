@@ -49,7 +49,7 @@ const UserThreadsList = ({ username }: { username: string }) => {
       description='Threads you create will appear here.'
     />
   ) : (
-    <Wrapper isSearch>
+    <Wrapper>
       <div className='flex flex-col gap-4 w-full'>
         <ThreadsList
           threads={threads!}
