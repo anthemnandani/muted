@@ -26,15 +26,7 @@ const UserPostsList = ({
         staleTime: 10 * 60 * 1000,
         cacheTime: 10 * 60 * 1000,
         retry: false,
-      }
-    );
-
-  if (isError)
-    return (
-      <EmptyState
-        title='Error loading posts'
-        description='Please try again later'
-      />
+      },
     );
 
   const posts = useMemo(() => {
@@ -49,6 +41,14 @@ const UserPostsList = ({
   }, [posts, hasNextPage, fetchNextPage]);
 
   if (isLoading) return <SkeletonGrid />;
+
+  if (isError)
+    return (
+      <EmptyState
+        title='Error loading posts'
+        description='Please try again later'
+      />
+    );
 
   return posts?.length === 0 ? (
     <EmptyState

@@ -6,7 +6,6 @@ import usePostStore from '@/store/postStore';
 import { useProfileVideoPlayer } from '@/store/profileVideoPlayer';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Icons } from '../icons';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -26,7 +25,6 @@ const UserPostCard = ({
   query,
   isSearch = false,
 }: UserPostCardProps) => {
-  const router = useRouter();
   const [player, setPlayer] = useState<MuxPlayerRef | null>(null);
   const { playingVideoId, setPlayingVideoId } = useProfileVideoPlayer();
   const { setCurrentPostId, setCurrentIndex, setIsOpen } = usePostStore();
@@ -39,6 +37,9 @@ const UserPostCard = ({
     thumbnailToken: mediaItem?.thumbnailToken,
   });
 
+  const isVideo = mediaItem?.fileType === 'video';
+  const fileUrl = mediaItem?.fileUrl;
+
   useEffect(() => {
     if (mediaItem?.playbackId) {
       setStableTokens({
@@ -47,11 +48,6 @@ const UserPostCard = ({
       });
     }
   }, [mediaItem?.playbackId]);
-
-  if (!mediaItem) return null;
-
-  const isVideo = mediaItem.fileType === 'video';
-  const fileUrl = mediaItem.fileUrl;
 
   useEffect(() => {
     if (!player) return;
@@ -74,11 +70,7 @@ const UserPostCard = ({
     setCurrentPostId(postId);
     setCurrentIndex(index);
 
-    if (isSearch) {
-      return router.push(`/post/${postId}?q=${query}`);
-    }
-
-    const postLink = `/post/${postId}`;
+    const postLink = `/post/${postId}${query ? `?q=${query}` : ''}`;
 
     setIsOpen(true);
 

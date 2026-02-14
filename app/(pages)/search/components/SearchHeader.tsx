@@ -1,19 +1,27 @@
 'use client';
 
 import NotFound from '@/app/not-found';
+import PostDetailDialog from '@/components/modals/PostDetailDialog';
 import SkeletonTabs from '@/components/skeletons/SearchSkeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  OptimisticActionProvider,
+  type TargetType,
+} from '@/contexts/OptimisticActionContext';
+import { QUERY_TYPE } from '@/lib/constants';
 import { type SearchTab } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import usePostStore from '@/store/postStore';
 import { useSearchStore } from '@/store/searchStore';
 import { api } from '@/trpc/react';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import PostsGrid from './PostsGrid';
 import Threads from './Threads';
 import Users from './Users';
 import VideoPosts from './VideoPosts';
 
 const SearchHeader = ({ query }: { query: string }) => {
+  const { setPostList, setPagination } = usePostStore();
   const { activeTab, setActiveTab } = useSearchStore();
   const [hoverTab, setHoverTab] = useState<string | null>(null);
   const [isTabsContainerHovered, setIsTabsContainerHovered] = useState(false);
@@ -32,92 +40,119 @@ const SearchHeader = ({ query }: { query: string }) => {
         enabled: activeTab === 'top',
         trpc: { abortOnUnmount: true },
         staleTime: 10 * 60 * 1000,
+        cacheTime: 10 * 60 * 1000,
+        retry: false,
       },
     );
+
+  const topPosts = useMemo(
+    () => data?.pages.flatMap((page) => page.posts) ?? [],
+    [data],
+  );
+
+  useEffect(() => {
+    if (topPosts.length === 0) return;
+    setPostList(topPosts);
+    setPagination(!!hasNextPage, fetchNextPage);
+  }, [topPosts, hasNextPage, fetchNextPage]);
+
+  const target = useMemo(() => {
+    switch (activeTab) {
+      case 'top':
+        return {
+          type: QUERY_TYPE.SEARCH_TOP_POSTS,
+          variables: { query },
+        };
+
+      case 'videos':
+        return { type: QUERY_TYPE.SEARCH_VIDEO_POSTS, variables: { query } };
+    }
+  }, [activeTab]);
 
   if (isError) return <NotFound />;
 
   if (isLoading || isFetching) return <SkeletonTabs />;
 
-  const topPosts = data?.pages.flatMap((page) => page.posts);
-
   return (
-    <div className='sticky top-0 z-50'>
-      <div className='w-full main-container'>
-        <Tabs
-          defaultValue={activeTab}
-          className='w-full'
-          onValueChange={(value) => setActiveTab(value as SearchTab)}
-        >
-          <div className='flex-between w-full bg-[#222]'>
-            <TabsList
-              className='relative flex h-14 w-full bg-transparent'
-              onMouseEnter={() => setIsTabsContainerHovered(true)}
-              onMouseLeave={() => {
-                setIsTabsContainerHovered(false);
-                setHoverTab(null);
-              }}
-            >
-              {tabs.map((tab) => (
-                <TabsTrigger
-                  key={tab.id}
-                  value={tab.id}
-                  onClick={() => setActiveTab(tab.id as SearchTab)}
-                  className={cn(
-                    'flex items-center w-full relative data-[state=active]:text-white text-white/60 transition-colors mx-4',
-                  )}
-                >
-                  <div
-                    className='group text-base font-semibold cursor-pointer relative w-full text-center'
-                    onMouseEnter={() =>
-                      isTabsContainerHovered && setHoverTab(tab.id)
-                    }
-                  >
-                    <span className='font-medium transition-colors'>
-                      {tab.label}
-                    </span>
-                    {(hoverTab === tab.id ||
-                      (tab.id === activeTab && !hoverTab)) && (
-                      <div
-                        className={cn(
-                          'absolute -bottom-3 left-0 right-0 h-[2px] bg-white/90',
-                          hoverTab === tab.id && 'animate-tab-slide',
-                          tab.id === activeTab && !hoverTab && 'scale-x-100',
-                        )}
-                      />
+    <OptimisticActionProvider target={target as TargetType}>
+      <div className='sticky top-0 z-50'>
+        <div className='w-full main-container'>
+          <Tabs
+            defaultValue={activeTab}
+            className='w-full'
+            onValueChange={(value) => setActiveTab(value as SearchTab)}
+          >
+            <div className='flex-between w-full bg-[#222]'>
+              <TabsList
+                className='relative flex h-14 w-full bg-transparent'
+                onMouseEnter={() => setIsTabsContainerHovered(true)}
+                onMouseLeave={() => {
+                  setIsTabsContainerHovered(false);
+                  setHoverTab(null);
+                }}
+              >
+                {tabs.map((tab) => (
+                  <TabsTrigger
+                    key={tab.id}
+                    value={tab.id}
+                    onClick={() => setActiveTab(tab.id as SearchTab)}
+                    className={cn(
+                      'flex items-center w-full relative data-[state=active]:text-white text-white/60 transition-colors mx-4',
                     )}
-                  </div>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </div>
+                  >
+                    <div
+                      className='group text-base font-semibold cursor-pointer relative w-full text-center'
+                      onMouseEnter={() =>
+                        isTabsContainerHovered && setHoverTab(tab.id)
+                      }
+                    >
+                      <span className='font-medium transition-colors'>
+                        {tab.label}
+                      </span>
+                      {(hoverTab === tab.id ||
+                        (tab.id === activeTab && !hoverTab)) && (
+                        <div
+                          className={cn(
+                            'absolute -bottom-3 left-0 right-0 h-[2px] bg-white/90',
+                            hoverTab === tab.id && 'animate-tab-slide',
+                            tab.id === activeTab && !hoverTab && 'scale-x-100',
+                          )}
+                        />
+                      )}
+                    </div>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
 
-          <TabsContent value='top' className='w-full'>
-            {topPosts && topPosts.length > 0 ? (
-              <PostsGrid
-                posts={topPosts!}
-                fetchNextPage={fetchNextPage}
-                hasNextPage={hasNextPage}
-                query={query}
-              />
-            ) : (
-              <div className='flex-center p-10'>
-                <p className='text-white/70'>No posts found</p>
-              </div>
-            )}
-          </TabsContent>
-          <TabsContent value='users' className='w-full'>
-            <Users query={query} />
-          </TabsContent>
-          <TabsContent value='videos' className='w-full'>
-            <VideoPosts query={query} />
-          </TabsContent>
-          <TabsContent value='threads' className='w-full'>
-            <Threads query={query} />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value='top' className='w-full'>
+              {topPosts && topPosts.length > 0 ? (
+                <PostsGrid
+                  posts={topPosts!}
+                  fetchNextPage={fetchNextPage}
+                  hasNextPage={hasNextPage}
+                  query={query}
+                />
+              ) : (
+                <div className='flex-center p-10'>
+                  <p className='text-white/70'>No posts found</p>
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value='users' className='w-full'>
+              <Users query={query} />
+            </TabsContent>
+            <TabsContent value='videos' className='w-full'>
+              <VideoPosts query={query} />
+            </TabsContent>
+            <TabsContent value='threads' className='w-full'>
+              <Threads query={query} />
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
-    </div>
+      <PostDetailDialog query={query} />
+    </OptimisticActionProvider>
   );
 };
 

@@ -1,13 +1,13 @@
 'use client';
 
-import CommentsPanel from '@/components/comments/CommentsPanel';
-import PostMediaCarousel from '@/components/posts/PostMediaCarousel';
 import usePostStore from '@/store/postStore';
 import { X } from 'lucide-react';
 import { useCallback, useEffect } from 'react';
+import PostMediaCarousel from '../posts/PostMediaCarousel';
+import CommentsPanel from '../comments/CommentsPanel';
 import NewCollection from './NewCollection';
 
-const PostDetailDialog = () => {
+const PostDetailDialog = ({ query }: { query?: string }) => {
   const {
     isOpen,
     postList,
@@ -44,7 +44,11 @@ const PostDetailDialog = () => {
       if (newIndex >= 0 && newIndex < postList.length) {
         setCurrentIndex(newIndex);
         const nextPost = postList[newIndex];
-        window.history.replaceState(null, '', `/post/${nextPost.id}`);
+        window.history.replaceState(
+          null,
+          '',
+          `/post/${nextPost.id}${query ? `?q=${query}` : ''}`,
+        );
       }
     },
     [
@@ -54,7 +58,7 @@ const PostDetailDialog = () => {
       loadMorePosts,
       setCurrentIndex,
       setIsFetchingMore,
-    ]
+    ],
   );
 
   useEffect(() => {

@@ -1,12 +1,14 @@
 import NotFound from '@/app/not-found';
 import SkeletonGrid from '@/components/skeletons/SkeletonGrid';
+import usePostStore from '@/store/postStore';
 import { useSearchStore } from '@/store/searchStore';
 import { api } from '@/trpc/react';
-import React from 'react';
+import { useEffect, useMemo } from 'react';
 import PostsGrid from './PostsGrid';
 
 const VideoPosts = ({ query }: { query: string }) => {
   const { activeTab } = useSearchStore();
+  const { setPostList, setPagination } = usePostStore();
   const { data, isLoading, isFetching, isError, hasNextPage, fetchNextPage } =
     api.search.getVideoPosts.useInfiniteQuery(
       { query },
@@ -15,14 +17,25 @@ const VideoPosts = ({ query }: { query: string }) => {
         enabled: activeTab === 'videos',
         trpc: { abortOnUnmount: true },
         staleTime: 10 * 60 * 1000,
+        cacheTime: 10 * 60 * 1000,
+        retry: false,
       },
     );
+
+  const videoPosts = useMemo(
+    () => data?.pages.flatMap((page) => page.posts) ?? [],
+    [data],
+  );
+
+  useEffect(() => {
+    if (videoPosts.length === 0) return;
+    setPostList(videoPosts);
+    setPagination(!!hasNextPage, fetchNextPage);
+  }, [videoPosts, hasNextPage, fetchNextPage]);
 
   if (isError) return <NotFound />;
 
   if (isLoading || isFetching) return <SkeletonGrid />;
-
-  const videoPosts = data?.pages.flatMap((page) => page.posts);
 
   if (!videoPosts || videoPosts.length === 0) {
     return (

@@ -11,13 +11,15 @@ const SearchClient = () => {
   const { setCurrentlyPlaying } = useVideoPlayer();
   const query = decodeURIComponent(params?.get('q')?.trim() || '');
 
+  useEffect(() => {
+    if (query) {
+      setCurrentlyPlaying(null);
+    }
+  }, [query, setCurrentlyPlaying]);
+
   if (!query) {
     return <NotFound />;
   }
-
-  useEffect(() => {
-    setCurrentlyPlaying(null);
-  }, []);
 
   return (
     <main className='flex justify-between w-screen max-w-full flex-auto self-center'>

@@ -52,7 +52,15 @@ export type TargetType =
   | { type: QUERY_TYPE.USER_THREAD_REPOSTS; variables: { username: string } }
   | { type: QUERY_TYPE.USER_LIKED; variables: { username: string } }
   | { type: QUERY_TYPE.USER_THREADS; variables: { username: string } }
-  | { type: QUERY_TYPE.COLLECTION_POSTS; variables: { id: string } };
+  | { type: QUERY_TYPE.COLLECTION_POSTS; variables: { id: string } }
+  | {
+      type: QUERY_TYPE.SEARCH_TOP_POSTS;
+      variables: { query: string };
+    }
+  | {
+      type: QUERY_TYPE.SEARCH_VIDEO_POSTS;
+      variables: { query: string };
+    };
 
 export const OptimisticActionProvider = ({
   target,
@@ -167,6 +175,20 @@ export const OptimisticActionProvider = ({
 
       case QUERY_TYPE.COLLECTION_POSTS:
         utils.collection.getCollection.setInfiniteData(
+          target.variables,
+          update('posts'),
+        );
+        break;
+
+      case QUERY_TYPE.SEARCH_TOP_POSTS:
+        utils.search.getTopResults.setInfiniteData(
+          target.variables,
+          update('posts'),
+        );
+        break;
+
+      case QUERY_TYPE.SEARCH_VIDEO_POSTS:
+        utils.search.getVideoPosts.setInfiniteData(
           target.variables,
           update('posts'),
         );
