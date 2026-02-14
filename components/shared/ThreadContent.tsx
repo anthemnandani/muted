@@ -1,6 +1,6 @@
 import ThreadText from '@/components/shared/ThreadText';
+import { FileType } from '@/generated/prisma/enums';
 import { type OriginalDimensions, ThreadContentProps } from '@/lib/types';
-import { FileType } from '@prisma/client';
 import { Fragment } from 'react';
 import ThreadImageCard from '../cards/ThreadImageCard';
 import ThreadVideoCard from '../cards/ThreadVideoCard';

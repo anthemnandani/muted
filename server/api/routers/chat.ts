@@ -1,11 +1,11 @@
-import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
+import { Prisma } from '@/generated/prisma/client';
 import {
   MessageReportCategory,
   MessageReportStatus,
   MessageRequestStatus,
   MessageStatus,
-  Prisma,
-} from '@prisma/client';
+} from '@/generated/prisma/enums';
+import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
@@ -197,7 +197,7 @@ export const chatRouter = createTRPCRouter({
         chatId: z.string(),
         limit: z.number().optional(),
         cursor: z.object({ id: z.string() }).optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input: { limit = 60, cursor, chatId } }) => {
       const { userId, db } = ctx;
@@ -755,7 +755,7 @@ export const chatRouter = createTRPCRouter({
     .input(
       z.object({
         messageId: z.string(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { userId, db } = ctx;
@@ -827,7 +827,7 @@ export const chatRouter = createTRPCRouter({
     .input(
       z.object({
         chatId: z.string(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { userId, db } = ctx;
@@ -887,7 +887,7 @@ export const chatRouter = createTRPCRouter({
         messageId: z.string(),
         category: z.nativeEnum(MessageReportCategory),
         reason: z.string().min(1, 'Reason is required'),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { userId, db } = ctx;

@@ -1,5 +1,6 @@
 'use client';
 
+import { FileType } from '@/generated/prisma/enums';
 import type { SortableMediaProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useSortable } from '@dnd-kit/sortable';
@@ -36,7 +37,7 @@ const SortableMedia = ({
       className={cn(
         'relative aspect-square w-18 h-18 cursor-pointer rounded-md overflow-hidden group',
         isActive && 'ring-2 ring-neutral-100',
-        disabled && 'cursor-default'
+        disabled && 'cursor-default',
       )}
       onClick={onClick}
     >
@@ -54,7 +55,7 @@ const SortableMedia = ({
         onClick={handleRemove}
         className={cn(
           'absolute top-1 right-1 z-10 size-4 rounded-full bg-black/60 hover:bg-black/80',
-          'flex-center opacity-0 group-hover:opacity-100 transition-opacity'
+          'flex-center opacity-0 group-hover:opacity-100 transition-opacity',
         )}
         aria-label='Remove media'
         type='button'
@@ -62,7 +63,7 @@ const SortableMedia = ({
         <X className='size-3 text-neutral-100' />
       </button>
 
-      {file.type === 'image' ? (
+      {file.type === FileType.IMAGE ? (
         <img
           src={file.preview}
           className='h-full w-full object-cover'

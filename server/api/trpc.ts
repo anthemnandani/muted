@@ -1,11 +1,10 @@
-// Todo: Use Auth instead of currentUser
+import { Role } from '@/generated/prisma/enums';
 import { currentUser } from '@clerk/nextjs/server';
 import { TRPCError, initTRPC } from '@trpc/server';
 import { type NextRequest } from 'next/server';
 import superjson from 'superjson';
 import { ZodError } from 'zod';
 import { db } from '../db';
-import { Role } from '@prisma/client';
 
 interface CreateContextOptions {
   headers: Headers;

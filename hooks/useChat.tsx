@@ -1,11 +1,11 @@
 import { useChatContext } from '@/contexts/ChatContext';
 import { useSocket } from '@/contexts/SocketContext';
+import { MessageRequestStatus, MessageStatus } from '@/generated/prisma/enums';
 import { TYPING_EVENT } from '@/lib/socket-events';
 import { ChatUser, Message } from '@/lib/types';
 import useChatStore from '@/store/chatStore';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
-import { MessageRequestStatus, MessageStatus } from '@prisma/client';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -142,15 +142,15 @@ const useChat = () => {
               } else {
                 resolve(response);
               }
-            }
+            },
           );
         }),
         new Promise<never>((_, reject) => {
           setTimeout(() => {
             reject(
               new Error(
-                'Message send timeout - request took longer than 30 seconds'
-              )
+                'Message send timeout - request took longer than 30 seconds',
+              ),
             );
           }, MESSAGE_TIMEOUT);
         }),

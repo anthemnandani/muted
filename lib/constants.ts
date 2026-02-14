@@ -1,4 +1,4 @@
-import { AppealStatus, MessageReportCategory } from '@prisma/client';
+import { AppealStatus, MessageReportCategory } from '@/generated/prisma/enums';
 import {
   AlertCircle,
   AlertTriangle,

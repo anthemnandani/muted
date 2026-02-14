@@ -1,3 +1,10 @@
+import {
+  EncodingStatus,
+  FileType,
+  NotificationType,
+  PostPrivacy,
+  PostStatus,
+} from '@/generated/prisma/enums';
 import { enrichThreadWithTokens, extractHashtags } from '@/lib/utils';
 import {
   GET_LINK_PREVIEW,
@@ -10,13 +17,6 @@ import {
   getLikesWithBlockFilter,
 } from '@/server/constants';
 import { createId } from '@paralleldrive/cuid2';
-import {
-  EncodingStatus,
-  FileType,
-  NotificationType,
-  PostPrivacy,
-  PostStatus,
-} from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
 import z from 'zod';

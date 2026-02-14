@@ -9,8 +9,8 @@ import {
 } from '@/components/ui/select';
 import type { ReportStatusFilter } from '@/lib/types';
 import { useAdminFiltersStore } from '@/store/adminFiltersStore';
-import { ReportStatus } from '@prisma/client';
 import FilterBar from './FilterBar';
+import { ReportStatus } from '@/generated/prisma/enums';
 
 const ReportFilters = () => {
   const {

@@ -1,5 +1,15 @@
+import { Prisma } from '@/generated/prisma/client';
+import {
+  AppealStatus,
+  FileType,
+  NotificationType,
+  PostStatus,
+  ReportStatus,
+  Role,
+  SuspensionType,
+  UserStatus,
+} from '@/generated/prisma/enums';
 import { inngest } from '@/inngest/client';
-import { PostMedia } from '@/lib/types';
 import {
   enrichPostWithTokens,
   enrichThumbnailToken,
@@ -8,16 +18,6 @@ import {
 } from '@/lib/utils';
 import { GET_MENTIONS, GET_USER, getPostReplies } from '@/server/constants';
 import { clerkClient } from '@clerk/nextjs/server';
-import {
-  AppealStatus,
-  NotificationType,
-  PostStatus,
-  Prisma,
-  ReportStatus,
-  Role,
-  SuspensionType,
-  UserStatus,
-} from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import axios from 'axios';
 import { z } from 'zod';
@@ -45,7 +45,7 @@ const getActiveUsersFromClerk = async (since: Date): Promise<number> => {
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.error(
-        `Clerk API error (Axios): ${error.response?.data || error.message}`
+        `Clerk API error (Axios): ${error.response?.data || error.message}`,
       );
     } else {
       console.error(`An unexpected error occurred: ${error}`);
@@ -108,7 +108,7 @@ export const adminRouter = createTRPCRouter({
       } catch (clerkError) {
         console.error(
           `CRITICAL: DB update for user ${targetUserId} succeeded, but Clerk metadata update failed.`,
-          clerkError
+          clerkError,
         );
 
         throw new TRPCError({
@@ -125,7 +125,7 @@ export const adminRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const { db } = ctx;
@@ -216,7 +216,7 @@ export const adminRouter = createTRPCRouter({
       ]);
 
       const daysInSixMonths = Math.round(
-        (new Date().getTime() - sixMonthsAgo.getTime()) / (1000 * 3600 * 24)
+        (new Date().getTime() - sixMonthsAgo.getTime()) / (1000 * 3600 * 24),
       );
 
       const usersChartData = getChartDataTemplate(daysInSixMonths);
@@ -268,7 +268,7 @@ export const adminRouter = createTRPCRouter({
             createdAt: z.date(),
           })
           .optional(),
-      })
+      }),
     )
     .query(
       async ({ input: { limit = 15, cursor, search, type, status }, ctx }) => {
@@ -294,13 +294,13 @@ export const adminRouter = createTRPCRouter({
         if (type === 'IMAGE') {
           conditions.push({
             media: {
-              array_contains: [{ fileType: 'image' }],
+              some: { fileType: FileType.IMAGE },
             },
           });
         } else if (type === 'VIDEO') {
           conditions.push({
             media: {
-              array_contains: [{ fileType: 'video' }],
+              some: { fileType: FileType.VIDEO },
             },
           });
         }
@@ -352,7 +352,7 @@ export const adminRouter = createTRPCRouter({
               likesCount: post.likes.length,
               repliesCount: getTotalRepliesCount(post) as number,
             };
-          })
+          }),
         );
 
         let nextCursor: typeof cursor | undefined;
@@ -369,7 +369,7 @@ export const adminRouter = createTRPCRouter({
           posts: formattedPosts,
           nextCursor,
         };
-      }
+      },
     ),
 
   getAllUsers: adminProcedure
@@ -384,7 +384,7 @@ export const adminRouter = createTRPCRouter({
             createdAt: z.date(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input: { limit = 15, cursor, search, status }, ctx }) => {
       const { db } = ctx;
@@ -476,7 +476,7 @@ export const adminRouter = createTRPCRouter({
             createdAt: z.date(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input: { limit = 15, cursor, status, search }, ctx }) => {
       const { db } = ctx;
@@ -549,7 +549,7 @@ export const adminRouter = createTRPCRouter({
             createdAt: z.date(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input: { limit = 15, cursor, status, search }, ctx }) => {
       const { db } = ctx;
@@ -647,9 +647,7 @@ export const adminRouter = createTRPCRouter({
               ...report,
               post: {
                 ...report.post,
-                media: await enrichThumbnailToken(
-                  report.post.media as PostMedia[]
-                ),
+                media: await enrichThumbnailToken(report.post.media),
               },
             };
           }
@@ -657,7 +655,7 @@ export const adminRouter = createTRPCRouter({
             ...report,
             post: null,
           };
-        })
+        }),
       );
 
       return {
@@ -673,7 +671,7 @@ export const adminRouter = createTRPCRouter({
         reason: z.string(),
         postId: z.string().optional(),
         reportId: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { userId, postId, reason, reportId } = input;
@@ -826,7 +824,7 @@ export const adminRouter = createTRPCRouter({
       z.object({
         userId: z.string(),
         suspensionEndDate: z.date(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { userId, suspensionEndDate } = input;
@@ -919,7 +917,7 @@ export const adminRouter = createTRPCRouter({
       z.object({
         appealId: z.string(),
         decision: z.enum([AppealStatus.UPHELD, AppealStatus.OVERTURNED]),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { db } = ctx;
@@ -962,7 +960,7 @@ export const adminRouter = createTRPCRouter({
   banUser: adminProcedure
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ input, ctx }) => {
-      await ctx.db.user.update({
+      (await ctx.db.user.update({
         where: { id: input.userId },
         data: {
           status: UserStatus.BANNED,
@@ -973,7 +971,7 @@ export const adminRouter = createTRPCRouter({
           data: {
             userId: input.userId,
           },
-        });
+        }));
 
       return { success: true, message: 'User ban process initiated.' };
     }),

@@ -1,12 +1,12 @@
 'use client';
 
+import { Privacy } from '@/generated/prisma/enums';
 import { UserSetupProps } from '@/lib/types';
 import { getFullName } from '@/lib/utils';
 import { FormSchema } from '@/lib/validations';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Privacy } from '@prisma/client';
 import { Globe, Lock, Plus, User2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -43,7 +43,7 @@ const AccountSetupForm = () => {
   });
 
   const handleFieldChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setUserAccountData({
@@ -67,7 +67,7 @@ const AccountSetupForm = () => {
         }
       },
       retry: false,
-    }
+    },
   );
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -118,7 +118,7 @@ const AccountSetupForm = () => {
                         <div className='flex-grow overflow-hidden outline-none text-[15px] text-accent-foreground break-words tracking-wide w-full select-none'>
                           {`${getFullName(
                             user?.firstName ?? '',
-                            user?.lastName ?? ''
+                            user?.lastName ?? '',
                           )} ${'(' + user?.username + ')'}`}
                         </div>
                       </div>

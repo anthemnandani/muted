@@ -1,8 +1,8 @@
 'use client';
 
+import { Role } from '@/generated/prisma/enums';
 import { cn } from '@/lib/utils';
 import { api } from '@/trpc/react';
-import { Role } from '@prisma/client';
 import { ShieldCheck, ShieldOff } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -60,7 +60,7 @@ const ToggleAdmin = ({
       isLoading={isPending}
       btnTitle={isCurrentlyAdmin ? 'Remove' : 'Confirm'}
       btnClassName={cn(
-        !isCurrentlyAdmin ? 'text-primary-blue hover:text-primary-blue/90' : ''
+        !isCurrentlyAdmin ? 'text-primary-blue hover:text-primary-blue/90' : '',
       )}
       trigger={
         <Button

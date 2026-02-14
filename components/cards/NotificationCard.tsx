@@ -1,10 +1,10 @@
 'use client';
 
+import { FileType, NotificationType } from '@/generated/prisma/enums';
 import { NotificationCardProps } from '@/lib/types';
 import { cn, formatTimeAgo, getImageUrl } from '@/lib/utils';
 import useCommentPanelStore from '@/store/commentPanel';
 import { useNotificationStore } from '@/store/notificationStore';
-import { NotificationType } from '@prisma/client';
 import {
   AlertTriangle,
   CheckCircle,
@@ -41,7 +41,7 @@ const NotificationCard = ({
   ];
 
   const isSystemNotificationCheck = isSystemNotification.includes(
-    type as (typeof isSystemNotification)[number]
+    type as (typeof isSystemNotification)[number],
   );
 
   const handleClick = () => {
@@ -89,7 +89,7 @@ const NotificationCard = ({
       className={cn(
         'hover:bg-[#1a1a1a] transition-colors cursor-pointer',
         isLast && 'mb-20',
-        isSystemNotificationCheck && 'cursor-default'
+        isSystemNotificationCheck && 'cursor-default',
       )}
       onClick={handleClick}
     >
@@ -152,7 +152,7 @@ const NotificationCard = ({
             variant='default'
             className={cn(
               'border-none !text-white/90 !bg-primary-blue !h-7',
-              'flex-[0_0_auto] font-semibold !px-2 !py-1.5 !text-xs'
+              'flex-[0_0_auto] font-semibold !px-2 !py-1.5 !text-xs',
             )}
             isNotification
           />
@@ -163,7 +163,7 @@ const NotificationCard = ({
               alt='Thumbnail'
               width={42}
               height={56}
-              unoptimized={media.fileType === 'video'}
+              unoptimized={media.fileType === FileType.VIDEO}
               className='flex-[0_0_48px] rounded-md self-center object-cover'
             />
           </Link>

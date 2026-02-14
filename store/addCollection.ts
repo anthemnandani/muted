@@ -1,4 +1,4 @@
-import { CollectionPrivacy } from '@prisma/client';
+import { CollectionPrivacy } from '@/generated/prisma/enums';
 import { create } from 'zustand';
 
 export type CollectionData = {

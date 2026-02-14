@@ -3,9 +3,9 @@
 import ConfirmDialog from '@/components/modals/ConfirmDialog';
 import IssueStrike from '@/components/modals/IssueStrike';
 import { Button } from '@/components/ui/button';
+import { ReportStatus } from '@/generated/prisma/enums';
 import type { AdminReport } from '@/lib/types';
 import { api } from '@/trpc/react';
-import { ReportStatus } from '@prisma/client';
 import { Check, ShieldAlert, X } from 'lucide-react';
 import { Fragment, useState } from 'react';
 import { toast } from 'sonner';

@@ -1,5 +1,6 @@
 'use client';
 
+import { FileType } from '@/generated/prisma/enums';
 import { type MuxPlayerRef, UserPostCardProps } from '@/lib/types';
 import { formatCount, formatTimeAgo } from '@/lib/utils';
 import usePostStore from '@/store/postStore';
@@ -37,7 +38,7 @@ const UserPostCard = ({
     thumbnailToken: mediaItem?.thumbnailToken,
   });
 
-  const isVideo = mediaItem?.fileType === 'video';
+  const isVideo = mediaItem?.fileType === FileType.VIDEO;
   const fileUrl = mediaItem?.fileUrl;
 
   useEffect(() => {

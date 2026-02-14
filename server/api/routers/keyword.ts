@@ -1,5 +1,6 @@
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
-import { FeedType, Prisma } from '@prisma/client';
+import { FeedType } from '@/generated/prisma/enums';
+import { Prisma } from '@/generated/prisma/client';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
@@ -43,7 +44,7 @@ export const keywordRouter = createTRPCRouter({
           following: z.boolean(),
           friends: z.boolean(),
         }),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { keyword, feeds } = input;
@@ -91,7 +92,7 @@ export const keywordRouter = createTRPCRouter({
           following: z.boolean(),
           friends: z.boolean(),
         }),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { id, keyword, feeds } = input;
@@ -143,7 +144,7 @@ export const keywordRouter = createTRPCRouter({
             keyword: z.string(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input: { limit = 30, cursor }, ctx }) => {
       const { userId, db } = ctx;

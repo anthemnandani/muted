@@ -2,8 +2,8 @@
 
 import ConfirmDialog from '@/components/modals/ConfirmDialog';
 import { Button } from '@/components/ui/button';
+import { AppealStatus } from '@/generated/prisma/enums';
 import { api } from '@/trpc/react';
-import { AppealStatus } from '@prisma/client';
 import { Check, Loader2, X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';

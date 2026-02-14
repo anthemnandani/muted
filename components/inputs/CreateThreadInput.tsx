@@ -2,6 +2,7 @@
 
 import { Icons } from '@/components/icons';
 import { ResizeTextarea } from '@/components/ui/resize-textarea';
+import { FileType } from '@/generated/prisma/enums';
 import useWindow from '@/hooks/useWindow';
 import { CreateThreadInputProps } from '@/lib/types';
 import { getFullName } from '@/lib/utils';
@@ -115,7 +116,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
         id: crypto.randomUUID(),
         file: acceptedFile,
         preview: previewURL,
-        type: acceptedFile.type as 'image' | 'video' | 'gif',
+        type: acceptedFile.type as FileType,
       });
     },
     [maxSize],

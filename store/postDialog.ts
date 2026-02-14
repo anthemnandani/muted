@@ -1,17 +1,17 @@
+import { Media } from '@/generated/prisma/client';
+import { FileType, PostPrivacy } from '@/generated/prisma/enums';
 import type {
   MediaFile,
   ParentPostInfo,
   PostData,
-  PostMedia,
   ValidMention,
 } from '@/lib/types';
-import { PostPrivacy } from '@prisma/client';
 import { create } from 'zustand';
 import useFileStore from './fileStore';
 
 type PostWithId = PostData & {
   id: string;
-  media?: PostMedia[] | null;
+  media?: Media[] | null;
 };
 
 interface ToggleState {
@@ -56,9 +56,9 @@ const usePostDialog = create<ToggleState>((set, get) => ({
       const mediaFilesForStore: MediaFile[] = post.media.map((m) => ({
         id: crypto.randomUUID(),
         preview: m.fileUrl ?? '',
-        type: m.fileType as 'image' | 'video',
+        type: m.fileType,
         file: new File([], m.fileUrl?.split('/').pop() ?? 'mediafile', {
-          type: m.fileType === 'video' ? 'video/mp4' : 'image/jpeg',
+          type: m.fileType === FileType.VIDEO ? 'video/mp4' : 'image/jpeg',
         }),
         aspectRatio: m.aspectRatio ?? 'original',
       }));

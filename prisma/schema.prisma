@@ -1,11 +1,9 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
-
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
-  // directUrl = env("DIRECT_URL")
 }
 
 enum Privacy {
@@ -101,8 +99,7 @@ model Post {
   author          User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId        String
   text            String?
-  media           Json?
-  // media        Media[]
+  media        Media[]
   likes           Like[]
   parentPostId    String?
   parentPost      Post?          @relation("rootPost", fields: [parentPostId], references: [id], onDelete: Cascade)
@@ -123,7 +120,6 @@ model Post {
   hiddenBy        HiddenPost[]
   lastEditedAt    DateTime?
   pinned          Boolean        @default(false)
-  Media           Media[]
   LinkPreview     LinkPreview?   @relation(fields: [linkPreviewId], references: [id])
   linkPreviewId   String?
   deleted         Boolean        @default(false)
@@ -193,6 +189,7 @@ enum EncodingStatus {
   PROCESSING
   ENCODED
   FAILED
+  UPLOADED
 }
 
 model Media {

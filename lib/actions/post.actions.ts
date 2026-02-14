@@ -1,7 +1,7 @@
 'use server';
 
+import { FileType } from '@/generated/prisma/enums';
 import { db } from '@/server/db';
-import { PostMedia } from '../types';
 import { getVideoThumbnailUrl } from '../utils';
 
 export async function getPostMetadata(postId: string) {
@@ -9,6 +9,7 @@ export async function getPostMetadata(postId: string) {
     const post = await db.post.findUnique({
       where: { id: postId },
       include: {
+        media: true,
         author: {
           select: {
             username: true,
@@ -23,20 +24,18 @@ export async function getPostMetadata(postId: string) {
       return null;
     }
 
-    const postData = { ...post, media: post.media as PostMedia[] };
-
     let mediaUrl = null;
     let mediaType = null;
 
-    if (postData.media.length > 0) {
-      const firstMedia = postData.media[0];
+    if (post.media.length > 0) {
+      const firstMedia = post.media[0];
       mediaType = firstMedia.fileType;
-      if (firstMedia.fileType === 'image') {
+      if (firstMedia.fileType === FileType.IMAGE) {
         mediaUrl = firstMedia.fileUrl;
-      } else if (firstMedia.fileType === 'video') {
+      } else if (firstMedia.fileType === FileType.VIDEO) {
         mediaUrl = getVideoThumbnailUrl(
           firstMedia.playbackId as string,
-          firstMedia.thumbnailToken as string
+          firstMedia.thumbnailToken as string,
         );
       }
     }

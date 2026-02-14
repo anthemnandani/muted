@@ -1,6 +1,6 @@
+import { EncodingStatus, FileType, PostStatus } from '@/generated/prisma/enums';
 import { db } from '@/server/db';
 import Mux from '@mux/mux-node';
-import { PostStatus } from '@prisma/client';
 import { headers } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -40,36 +40,39 @@ export async function POST(req: NextRequest) {
     const [entityType, entityId] = passthroughRaw.split('|');
 
     const isSuccess = type === 'video.asset.ready';
-    const newEncodingStatus = isSuccess ? 'ENCODED' : 'FAILED';
+    const newEncodingStatus = isSuccess
+      ? EncodingStatus.ENCODED
+      : EncodingStatus.FAILED;
 
     if (entityType === 'post') {
-      const post = await db.post.findUnique({ where: { id: entityId } });
-      if (!post) throw new Error('Post not found');
-
-      const updatedMedia = (post.media as any[]).map((m) => {
-        if (m.videoId === uploadId) {
-          return {
-            ...m,
+      await db.$transaction(async (tx) => {
+        await tx.media.updateMany({
+          where: {
+            postId: entityId,
+            videoId: uploadId,
+          },
+          data: {
             encodingStatus: newEncodingStatus,
             playbackId: isSuccess ? playbackId : null,
-          };
+          },
+        });
+
+        const allMedia = await tx.media.findMany({
+          where: { postId: entityId },
+        });
+
+        const allReady = allMedia.every(
+          (m) =>
+            m.fileType !== FileType.VIDEO ||
+            m.encodingStatus === EncodingStatus.ENCODED,
+        );
+
+        if (allReady) {
+          await tx.post.update({
+            where: { id: entityId },
+            data: { status: PostStatus.VISIBLE },
+          });
         }
-        return m;
-      });
-
-      const allReady = updatedMedia.every(
-        (m) => m.fileType !== 'video' || m.encodingStatus === 'ENCODED',
-      );
-
-      await db.post.update({
-        where: { id: entityId },
-        data: {
-          media: updatedMedia,
-          status:
-            post.status === PostStatus.HIDDEN && allReady
-              ? PostStatus.VISIBLE
-              : post.status,
-        },
       });
     } else if (entityType === 'thread') {
       await db.media.updateMany({

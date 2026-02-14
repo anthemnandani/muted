@@ -2,6 +2,7 @@
 
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
+import { FilteredKeyword } from '@/generated/prisma/client';
 import useKeywords from '@/hooks/useKeywords';
 import { useSettingRefs } from '@/hooks/useSettingRefs';
 import { cn } from '@/lib/utils';
@@ -9,13 +10,12 @@ import { useState } from 'react';
 import AddKeyword from '../components/AddKeyword';
 import { KeywordList } from '../components/KeywordList';
 import SettingsLayout from '../components/SettingsLayout';
-import type { FilteredKeyword } from '@prisma/client';
 
 const KeywordFilteringClient = () => {
   const sectionRefs = useSettingRefs();
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingKeyword, setEditingKeyword] = useState<FilteredKeyword | null>(
-    null
+    null,
   );
   const {
     isLoading,
@@ -64,7 +64,7 @@ const KeywordFilteringClient = () => {
             variant='ghost'
             className={cn(
               'min-w-[180px] w-fit bg-primary-blue text-white hover:bg-primary-blue/90 hover:text-white/90',
-              'text-base !h-12 px-6 rounded-lg inline-flex items-center justify-center'
+              'text-base !h-12 px-6 rounded-lg inline-flex items-center justify-center',
             )}
             onClick={handleAddClick}
           >

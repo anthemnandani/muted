@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Role, UserStatus } from '@/generated/prisma/enums';
 import useDebounce from '@/hooks/useDebounce';
 import type { AdminUser } from '@/lib/types';
 import {
@@ -20,7 +21,6 @@ import {
 } from '@/lib/utils';
 import { useAdminFiltersStore } from '@/store/adminFiltersStore';
 import { api } from '@/trpc/react';
-import { Role, UserStatus } from '@prisma/client';
 import AdminItemsTable from './AdminItemsTable';
 import UserActions from './UserActions';
 
@@ -39,7 +39,7 @@ const UsersTable = () => {
         cacheTime: 10 * 60 * 1000,
         staleTime: 10 * 60 * 1000,
         retry: false,
-      }
+      },
     );
 
   const users = data?.pages.flatMap((page) => page.users);
@@ -94,7 +94,7 @@ const UsersTable = () => {
           <Badge
             className={cn(
               getStrikeBadgeClass(user.strikesCount),
-              'text-[13px] px-2 py-[1px]'
+              'text-[13px] px-2 py-[1px]',
             )}
           >
             {formatStrikesDisplay(user.strikesCount)}

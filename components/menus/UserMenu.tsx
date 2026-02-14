@@ -2,7 +2,6 @@
 
 import useWindow from '@/hooks/useWindow';
 import { SignOutButton, useUser } from '@clerk/nextjs';
-import { Role } from '@prisma/client';
 import {
   AlertCircle,
   Bookmark,
@@ -20,6 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
+import { Role } from '@/generated/prisma/enums';
 
 const UserMenu = () => {
   const router = useRouter();

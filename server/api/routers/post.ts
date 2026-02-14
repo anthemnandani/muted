@@ -1,4 +1,14 @@
-import { DownloadableData, type PostMedia } from '@/lib/types';
+import { Prisma } from '@/generated/prisma/client';
+import {
+  EncodingStatus,
+  FeedType,
+  FileType,
+  NotificationType,
+  PostPrivacy,
+  PostStatus,
+  Privacy,
+} from '@/generated/prisma/enums';
+import { DownloadableData } from '@/lib/types';
 import {
   capitalizeFirstLetter,
   enrichPostWithTokens,
@@ -19,14 +29,6 @@ import {
   getPrivacyFilter,
 } from '@/server/constants';
 import { createId } from '@paralleldrive/cuid2';
-import {
-  FeedType,
-  NotificationType,
-  PostPrivacy,
-  PostStatus,
-  Prisma,
-  Privacy,
-} from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
 import * as cheerio from 'cheerio';
@@ -43,15 +45,13 @@ export const postRouter = createTRPCRouter({
         media: z
           .array(
             z.object({
-              fileType: z.string(),
+              fileType: z.nativeEnum(FileType),
               fileUrl: z.string().optional(),
               playbackId: z.string().optional().nullable(),
               aspectRatio: z.string().optional(),
               thumbnailUrl: z.string().optional(),
               videoId: z.string().optional(),
-              encodingStatus: z
-                .enum(['PROCESSING', 'ENCODED', 'FAILED'])
-                .optional(),
+              encodingStatus: z.nativeEnum(EncodingStatus).optional(),
               originalDimensions: z
                 .object({
                   width: z.number(),
@@ -104,19 +104,12 @@ export const postRouter = createTRPCRouter({
         const transactionResult = await db.$transaction(async (prisma) => {
           const path = `/${id}/`;
 
-          const mediaWithDetails = media?.map((item) => ({
-            ...item,
-            aspectRatio: item.aspectRatio || 'original',
-            videoId: item.videoId,
-            encodingStatus: item.encodingStatus,
-          }));
-
           const newpost = await prisma.post.create({
             data: {
               id,
               text: filteredText,
               authorId: userId,
-              media: mediaWithDetails,
+              media: media && media.length > 0 ? { create: media } : undefined,
               status,
               privacy,
               path,
@@ -853,7 +846,6 @@ export const postRouter = createTRPCRouter({
           id: true,
           createdAt: true,
           text: true,
-          media: true,
           parentPostId: true,
           quoteId: true,
           path: true,
@@ -892,7 +884,6 @@ export const postRouter = createTRPCRouter({
 
       const formattedComments = comments.map((comment) => ({
         ...comment,
-        media: comment.media as PostMedia[],
         likesCount: comment.likes.length,
         repostsCount: comment.reposts.length,
         repliesCount: comment._count.replies,
@@ -951,7 +942,6 @@ export const postRouter = createTRPCRouter({
           id: true,
           createdAt: true,
           text: true,
-          media: true,
           parentPostId: true,
           quoteId: true,
           path: true,
@@ -988,7 +978,6 @@ export const postRouter = createTRPCRouter({
 
       const formattedReplies = replies.map((reply) => ({
         ...reply,
-        media: reply.media as PostMedia[],
         likesCount: reply.likes.length,
         repostsCount: reply.reposts.length,
         bookmarksCount: new Set(

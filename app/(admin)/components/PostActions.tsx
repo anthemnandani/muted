@@ -1,8 +1,8 @@
 import ConfirmDialog from '@/components/modals/ConfirmDialog';
 import IssueStrike from '@/components/modals/IssueStrike';
 import { Button } from '@/components/ui/button';
+import { PostStatus } from '@/generated/prisma/enums';
 import { api } from '@/trpc/react';
-import { PostStatus } from '@prisma/client';
 import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';

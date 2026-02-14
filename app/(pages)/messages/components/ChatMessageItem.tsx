@@ -9,6 +9,7 @@ import {
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
 import { useSocket } from '@/contexts/SocketContext';
+import { MessageStatus } from '@/generated/prisma/enums';
 import { EMOJIS } from '@/lib/constants';
 import { ChatMessageItemProps, MessageReaction } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -16,7 +17,6 @@ import useChatStore from '@/store/chatStore';
 import useReportMessageStore from '@/store/reportMessageStore';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
-import { MessageStatus } from '@prisma/client';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, MoreHorizontal } from 'lucide-react';
 import Image from 'next/image';
@@ -36,7 +36,7 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
   const { setOpenReportMessageId, isReportOpen } = useReportMessageStore();
 
   const [reactions, setReactions] = useState<MessageReaction[]>(
-    message.reactions || []
+    message.reactions || [],
   );
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -72,7 +72,7 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
     if (!user || !socket?.connected || isDeleting) return;
 
     const currentUserReactionIndex = reactions.findIndex(
-      (r) => r.userId === user.id
+      (r) => r.userId === user.id,
     );
 
     if (currentUserReactionIndex > -1) {
@@ -81,7 +81,7 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
         setReactions((prev) => prev.filter((r) => r.userId !== user.id));
       } else {
         setReactions((prev) =>
-          prev.map((r) => (r.userId === user.id ? { ...r, emoji } : r))
+          prev.map((r) => (r.userId === user.id ? { ...r, emoji } : r)),
         );
       }
     } else {
@@ -161,7 +161,7 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
             'absolute -bottom-5 flex items-center gap-0.5 z-10',
             'p-1 rounded-full',
             'bg-white/10 backdrop-blur-sm shadow-lg',
-            isOwn ? 'right-1' : 'left-1'
+            isOwn ? 'right-1' : 'left-1',
           )}
         >
           {reactions.map((reaction) => (
@@ -194,7 +194,7 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
         transition={{ duration: 0.15 }}
         className={cn(
           'msg-container transition-colors duration-150',
-          isOwn ? 'bg-slate-700' : 'bg-[#4b4b4b]'
+          isOwn ? 'bg-slate-700' : 'bg-[#4b4b4b]',
         )}
       >
         {isDeleting ? (
@@ -213,7 +213,7 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
     <div
       className={cn(
         'flex items-center self-center gap-0',
-        isOwn && 'flex-row-reverse'
+        isOwn && 'flex-row-reverse',
       )}
     >
       {!isDeleting && (
@@ -236,7 +236,7 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
             <div className='flex-center flex-wrap w-[266px] p-[13px]'>
               {EMOJIS.map((emoji, index) => {
                 const currentUserReaction = reactions.find(
-                  (r) => r.userId === user?.id
+                  (r) => r.userId === user?.id,
                 );
                 return (
                   <span
@@ -249,7 +249,7 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
                     <span
                       className={cn(
                         'flex-center size-10 cursor-pointer rounded-lg text-2xl transition-transform',
-                        'duration-300 hover:scale-[1.45]'
+                        'duration-300 hover:scale-[1.45]',
                       )}
                     >
                       {emoji}
@@ -282,7 +282,7 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
               label={isDeleting ? 'Deleting...' : 'Delete'}
               className={cn(
                 'text-primary-red focus:text-primary-red text-base',
-                isDeleting && 'opacity-50 cursor-not-allowed'
+                isDeleting && 'opacity-50 cursor-not-allowed',
               )}
               onClick={() =>
                 deleteMessage({
@@ -331,7 +331,7 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
           className={cn(
             isOwn ? 'flex justify-end gap-2' : 'flex items-end gap-2',
             'group relative',
-            isLastMessage ? 'mb-7' : isOwn ? 'mb-4' : 'mb-5'
+            isLastMessage ? 'mb-7' : isOwn ? 'mb-4' : 'mb-5',
           )}
         >
           {isOwn ? (

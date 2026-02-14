@@ -1,7 +1,7 @@
-import { clerkClient } from '@clerk/nextjs/server';
-import { UserStatus } from '@prisma/client';
-import { inngest } from './client';
+import { UserStatus } from '@/generated/prisma/enums';
 import { db } from '@/server/db';
+import { clerkClient } from '@clerk/nextjs/server';
+import { inngest } from './client';
 
 export const banUser = inngest.createFunction(
   { id: 'process-user-ban' },
@@ -67,12 +67,12 @@ export const banUser = inngest.createFunction(
       } catch (error) {
         console.error(
           `Failed to delete data for banned user ${userId}:`,
-          error
+          error,
         );
         throw error;
       }
     });
 
     return { status: `User ${userId} has been banned successfully.` };
-  }
+  },
 );

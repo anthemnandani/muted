@@ -41,8 +41,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   const tokens = useMemo(
     () => ({
-      playback: videoToken,
-      thumbnail: thumbnailToken,
+      playback: videoToken!,
+      thumbnail: thumbnailToken!,
     }),
     [videoToken, thumbnailToken],
   );

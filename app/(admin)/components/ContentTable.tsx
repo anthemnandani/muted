@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { PostStatus } from '@/generated/prisma/enums';
 import useDebounce from '@/hooks/useDebounce';
 import { type AdminPost } from '@/lib/types';
 import {
@@ -20,7 +21,6 @@ import {
 } from '@/lib/utils';
 import { useAdminFiltersStore } from '@/store/adminFiltersStore';
 import { api } from '@/trpc/react';
-import { PostStatus } from '@prisma/client';
 import { Heart, MessageCircle } from 'lucide-react';
 import { useState } from 'react';
 import AdminItemsTable from './AdminItemsTable';
@@ -41,7 +41,7 @@ const ContentTable = () => {
         cacheTime: 10 * 60 * 1000,
         staleTime: 10 * 60 * 1000,
         retry: false,
-      }
+      },
     );
 
   const posts = data?.pages.flatMap((page) => page.posts);

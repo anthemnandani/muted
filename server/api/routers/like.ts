@@ -1,5 +1,5 @@
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
-import { NotificationType } from '@prisma/client';
+import { NotificationType } from '@/generated/prisma/enums';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 

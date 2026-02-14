@@ -1,5 +1,4 @@
-import { PostPrivacy } from '@prisma/client';
-
+import { PostPrivacy } from '@/generated/prisma/enums';
 import { create } from 'zustand';
 
 interface PostState {

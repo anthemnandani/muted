@@ -1,5 +1,6 @@
 'use client';
 
+import { FileType } from '@/generated/prisma/enums';
 import { MediaLayerProps } from '@/lib/types';
 import { cn, getTargetRatio } from '@/lib/utils';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -26,7 +27,7 @@ const MediaLayer = ({
   }, [file.userCrop, file.userZoom]);
 
   useEffect(() => {
-    if (file.type === 'video' && videoRef.current) {
+    if (file.type === FileType.VIDEO && videoRef.current) {
       if (isActive) {
         videoRef.current.currentTime = 0;
         videoRef.current.play().catch(() => {});
@@ -47,7 +48,7 @@ const MediaLayer = ({
 
   const onCropComplete = useCallback(
     (_: Area, croppedAreaPixels: Area) => {
-      if (file.type === 'image') {
+      if (file.type === FileType.IMAGE) {
         updateMediaFile(file.id, {
           cropData: croppedAreaPixels,
           userCrop: crop,
@@ -55,7 +56,7 @@ const MediaLayer = ({
         });
       }
     },
-    [file.id, file.type, updateMediaFile, crop, zoom]
+    [file.id, file.type, updateMediaFile, crop, zoom],
   );
 
   const styles = {
@@ -75,10 +76,10 @@ const MediaLayer = ({
       <div
         className={cn(
           'relative w-full h-full',
-          (isPostStep || file.type === 'video') && 'flex-center'
+          (isPostStep || file.type === FileType.VIDEO) && 'flex-center',
         )}
       >
-        {file.type === 'image' ? (
+        {file.type === FileType.IMAGE ? (
           isPostStep ? (
             <div
               className='relative w-full max-h-full max-w-full'

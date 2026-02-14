@@ -7,10 +7,9 @@ import { type UserResource } from '@clerk/types';
 import {
   AppealStatus,
   FileType,
-  Media,
   ReportStatus,
   UserStatus,
-} from '@prisma/client';
+} from '@/generated/prisma/enums';
 import { type ClassValue, clsx } from 'clsx';
 import {
   differenceInDays,
@@ -35,8 +34,8 @@ import {
   type MediaFile,
   Message,
   ParentPostProps,
-  type PostMedia,
 } from './types';
+import { Media } from '@/generated/prisma/client';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -607,8 +606,8 @@ export const extractSuggestions = (
     .slice(0, limit);
 };
 
-export const getImageUrl = (media: PostMedia) => {
-  if (media.fileType === 'image') {
+export const getImageUrl = (media: Media) => {
+  if (media.fileType === FileType.IMAGE) {
     return media.fileUrl;
   }
   return `https://image.mux.com/${media.playbackId}/thumbnail.png?token=${media.thumbnailToken}`;
@@ -727,8 +726,8 @@ export const tooltipLabelFormatter = (value: string) => {
 export const getContentType = (post: AdminPost) => {
   if (post.media?.length > 0) {
     const fileType = post.media[0].fileType;
-    if (fileType === 'image') return 'IMAGE';
-    if (fileType === 'video') return 'VIDEO';
+    if (fileType === FileType.IMAGE) return 'IMAGE';
+    if (fileType === FileType.VIDEO) return 'VIDEO';
   }
 };
 
@@ -747,10 +746,10 @@ export const getContentTypeBadgeClass = (type: ContentType) => {
   }
 };
 
-export const getPostThumbnail = (media?: PostMedia) => {
+export const getPostThumbnail = (media?: Media): string => {
   if (!media) return '';
-  return media?.fileType === 'image'
-    ? media?.fileUrl
+  return media.fileType === FileType.IMAGE
+    ? media.fileUrl!
     : getVideoThumbnailUrl(
         media.playbackId as string,
         media.thumbnailToken as string,
@@ -851,14 +850,14 @@ export const getReportStatusClass = (status: ReportStatus) => {
 export const getReportType = (report: AdminReport) => {
   if (report.post?.parentPostId) return 'Comment';
   if (report.post) return 'Post';
-  if (report.user) return 'User';
+  if (report.userId) return 'User';
   return 'Unknown';
 };
 
 export async function enrichPostWithTokens<T extends { media: unknown }>(
   post: T,
-): Promise<T & { media: PostMedia[] }> {
-  const mediaItems = (post.media as PostMedia[]) || [];
+): Promise<T & { media: Media[] }> {
+  const mediaItems = (post.media as Media[]) || [];
 
   if (mediaItems.length === 0) {
     return { ...post, media: [] };
@@ -866,15 +865,15 @@ export async function enrichPostWithTokens<T extends { media: unknown }>(
 
   const mediaWithTokens = await Promise.all(
     mediaItems.map(async (mediaItem) => {
-      if (mediaItem.fileType === 'video' && mediaItem.playbackId) {
+      if (mediaItem.fileType === FileType.VIDEO && mediaItem.playbackId) {
         const { videoToken, thumbnailToken } = await createPlaybackTokens(
           mediaItem.playbackId,
         );
 
         return {
           ...mediaItem,
-          videoToken,
-          thumbnailToken,
+          videoToken: videoToken!,
+          thumbnailToken: thumbnailToken!,
         };
       }
       return mediaItem;
@@ -921,43 +920,43 @@ export async function enrichThreadWithTokens<T extends { media: unknown }>(
 
 export async function enrichPostsWithTokens<T extends { media: unknown }>(
   posts: T[],
-): Promise<(T & { media: PostMedia[] })[]> {
+): Promise<(T & { media: Media[] })[]> {
   return Promise.all(posts.map((post) => enrichPostWithTokens(post)));
 }
 
-export const enrichThumbnailToken = async (media: PostMedia[]) => {
+export const enrichThumbnailToken = async (media?: Media[]) => {
   if (!media || !Array.isArray(media) || media.length === 0) return [];
 
   const newMedia = [...media];
   const firstItem = newMedia[0];
 
-  if (firstItem.fileType === 'video' && firstItem.playbackId) {
+  if (firstItem.fileType === FileType.VIDEO && firstItem.playbackId) {
     const { thumbnailToken } = await createThumbnailToken(firstItem.playbackId);
 
     newMedia[0] = {
       ...firstItem,
-      thumbnailToken,
+      thumbnailToken: thumbnailToken!,
     };
   }
 
   return newMedia;
 };
 
-export const enrichMediaTokens = async (media: PostMedia[]) => {
+export const enrichMediaTokens = async (media?: Media[]) => {
   if (!media || !Array.isArray(media) || media.length === 0) return [];
 
   const newMedia = [...media];
   const firstItem = newMedia[0];
 
-  if (firstItem.fileType === 'video' && firstItem.playbackId) {
+  if (firstItem.fileType === FileType.VIDEO && firstItem.playbackId) {
     const { videoToken, thumbnailToken } = await createPlaybackTokens(
       firstItem.playbackId,
     );
 
     newMedia[0] = {
       ...firstItem,
-      videoToken,
-      thumbnailToken,
+      videoToken: videoToken!,
+      thumbnailToken: thumbnailToken!,
     };
   }
 

@@ -1,26 +1,25 @@
-import type { AppRouter } from '@/server/api/root';
-import type { RouterOutputs } from '@/trpc/shared';
-import type { GifID, IGif } from '@giphy/js-types';
-import MuxPlayer from '@mux/mux-player-react';
-import type {
+import { FilteredKeyword, Media, User } from '@/generated/prisma/client';
+import {
   AppealStatus,
   CollectionPrivacy,
   EncodingStatus,
   FileType,
-  FilteredKeyword,
   FollowRequestStatus,
-  Media,
   MessageReportCategory,
   MessageRequestStatus,
   MessageStatus,
   NotificationType,
+  PostPrivacy,
   PostStatus,
+  Privacy,
   ReportStatus,
   Role,
-  User,
   UserStatus,
-} from '@prisma/client';
-import { PostPrivacy, Privacy } from '@prisma/client';
+} from '@/generated/prisma/enums';
+import type { AppRouter } from '@/server/api/root';
+import type { RouterOutputs } from '@/trpc/shared';
+import type { GifID, IGif } from '@giphy/js-types';
+import MuxPlayer from '@mux/mux-player-react';
 import type { inferRouterOutputs } from '@trpc/server';
 import { LucideIcon } from 'lucide-react';
 import { ElementRef, ReactNode, RefObject } from 'react';
@@ -45,18 +44,6 @@ export type AuthorInfoProps =
   RouterOutputs['thread']['getAllThreads']['threads'][number]['author'] & {
     receivedFollowRequests?: FollowRequest[];
   };
-
-export type PostMedia = {
-  fileType: string;
-  fileUrl?: string;
-  aspectRatio?: string;
-  videoToken?: string;
-  thumbnailToken?: string;
-  originalDimensions?: OriginalDimensions;
-  videoId?: string;
-  playbackId?: string;
-  encodingStatus?: EncodingStatus;
-};
 
 export type ParentPostInfo = Pick<
   Post,
@@ -94,7 +81,7 @@ export type UserProfileInfoProps = RouterOutputs['user']['getUserProfile'] & {
 
 export type UserProfilePostsProps = {
   id: string;
-  media: PostMedia[];
+  media: Media[];
   pinned: boolean;
   author?: AuthorInfoProps | AuthorProps;
 };
@@ -258,7 +245,7 @@ export type ParentPostProps = {
   id: string;
   createdAt: Date;
   text: string | null;
-  media: PostMedia[];
+  media: Media[];
   likes: {
     userId: string;
   }[];
@@ -505,7 +492,7 @@ export type Collection = {
   privacy: CollectionPrivacy;
   bookmarks: {
     id: string;
-    media: PostMedia[];
+    media?: Media[];
     text: string | null;
     author: AuthorInfoProps | AuthorProps;
   }[];
@@ -522,7 +509,7 @@ export type MediaFile = {
   file: File;
   preview: string;
   id: string;
-  type: 'image' | 'video' | 'gif';
+  type: FileType;
   aspectRatio?: string;
   originalDimensions?: OriginalDimensions;
   originalWidth?: number;
@@ -637,7 +624,7 @@ export interface MediaControlsProps {
   VolumeControls?: React.ReactNode;
   hideLikes?: boolean;
   turnOffComments?: boolean;
-  media?: PostMedia[];
+  media?: Media[];
 }
 
 export interface MediaLayerProps {
@@ -649,7 +636,7 @@ export interface MediaLayerProps {
 
 export interface PostImageCardProps {
   image: string;
-  aspectRatio?: string;
+  aspectRatio: string | null;
   originalDimensions?: OriginalDimensions;
   text: string | null;
   isAdminPanel?: boolean;
@@ -665,11 +652,11 @@ export interface ThreadImageCardProps {
 export interface PostVideoCardProps {
   playbackId: string;
   postId: string;
-  encodingStatus?: EncodingStatus;
-  aspectRatio?: string;
+  encodingStatus: EncodingStatus | null;
+  aspectRatio: string | null;
   originalDimensions?: OriginalDimensions;
-  videoToken?: string;
-  thumbnailToken?: string;
+  videoToken: string | null;
+  thumbnailToken: string | null;
   showControls: boolean;
   isCarousel?: boolean;
   onPlayerRegister?: (player: MuxPlayerRef | null) => void;
@@ -724,11 +711,11 @@ export interface PostActionMenuProps {
   showControls: boolean;
   pinned?: boolean;
   isModal?: boolean;
-  media?: PostMedia[];
+  media?: Media[];
 }
 
 export interface PostMediaCarouselProps {
-  media: PostMedia[];
+  media: Media[];
   author: AuthorInfoProps | AuthorProps;
   createdAt: Date;
   postId: string;
@@ -764,9 +751,9 @@ export interface VideoPlayerProps {
   inView: boolean;
   startTime?: number;
   onVolumeChange?: (muted: boolean) => void;
-  videoToken?: string;
-  thumbnailToken?: string;
-  aspectRatio?: string;
+  videoToken: string | null;
+  thumbnailToken: string | null;
+  aspectRatio: string | null;
   originalDimensions?: OriginalDimensions;
   isCarousel?: boolean;
   isModal?: boolean;
@@ -797,7 +784,7 @@ export interface ProfileFiltersProps {
 }
 
 export interface UserPostCardProps {
-  media: PostMedia[];
+  media: Media[];
   postId: string;
   pinned?: boolean;
   index: number;
@@ -1242,7 +1229,7 @@ export type Notification = {
   senderUser: AuthorProps | null;
   message: string;
   createdAt: Date;
-  media?: PostMedia[];
+  media?: Media[];
   postId?: string;
   type: NotificationType;
 };
@@ -1251,7 +1238,7 @@ export interface NotificationCardProps {
   sender: AuthorProps | null;
   message: string;
   createdAt: Date;
-  media?: PostMedia;
+  media?: Media;
   postId?: string;
   type: NotificationType;
   isLast: boolean;
@@ -1364,7 +1351,7 @@ export interface MessageReportProps {
 }
 
 export interface PostMediaPreviewProps {
-  type: 'image' | 'video' | 'gif';
+  type: FileType;
   url?: string | IGif;
   text?: string;
   onRemove?: () => void;

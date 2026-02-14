@@ -1,10 +1,15 @@
 'use client';
 
+import { FileType } from '@/generated/prisma/enums';
 import useMediaControls from '@/hooks/useMediaControls';
-import { type MuxPlayerRef, PostMediaCarouselProps } from '@/lib/types';
+import {
+  type MuxPlayerRef,
+  type OriginalDimensions,
+  PostMediaCarouselProps,
+} from '@/lib/types';
 import { cn, getTargetRatio } from '@/lib/utils';
 import useCommentPanelStore from '@/store/commentPanel';
-import { Fragment, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { type Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -51,7 +56,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
   let containerClass = 'post-container-portrait';
   const numericRatio = getTargetRatio(
     firstMedia?.aspectRatio,
-    firstMedia?.originalDimensions
+    firstMedia?.originalDimensions as OriginalDimensions,
   );
 
   if (!isAdminPanel && !isModal) {
@@ -100,7 +105,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
         containerClass,
         shouldAnimate &&
           'transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]',
-        isShrunkView && 'xl:max-w-[45vw]'
+        isShrunkView && 'xl:max-w-[45vw]',
       )}
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => {
@@ -156,14 +161,16 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
       >
         {media?.map((item, index) => (
           <SwiperSlide key={`${postId}-${index}`}>
-            {item.fileType === 'video' ? (
+            {item.fileType === FileType.VIDEO ? (
               <PostVideoCard
                 playbackId={item.playbackId!}
                 encodingStatus={item.encodingStatus}
                 videoToken={item.videoToken}
                 thumbnailToken={item.thumbnailToken}
                 aspectRatio={item.aspectRatio}
-                originalDimensions={item.originalDimensions}
+                originalDimensions={
+                  item.originalDimensions as OriginalDimensions
+                }
                 postId={postId}
                 showControls={showControls}
                 isCarousel={media?.length > 1}
@@ -177,7 +184,9 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                 image={item.fileUrl!}
                 isAdminPanel={isAdminPanel}
                 aspectRatio={item.aspectRatio}
-                originalDimensions={item.originalDimensions}
+                originalDimensions={
+                  item.originalDimensions as OriginalDimensions
+                }
                 text={text}
                 isModal={isModal}
                 isCarousel={media?.length > 1}

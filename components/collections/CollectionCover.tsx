@@ -1,5 +1,6 @@
 'use client';
 
+import { FileType } from '@/generated/prisma/enums';
 import useBookmark from '@/hooks/useBookmark';
 import type { CollectionCoverProps } from '@/lib/types';
 import { getVideoThumbnailUrl } from '@/lib/utils';
@@ -26,8 +27,8 @@ const CollectionCover = ({
     toggleBookmark();
   };
 
-  const firstMedia = collectionBookmarks[0]?.media[0];
-  const isVideo = firstMedia?.fileType === 'video';
+  const firstMedia = collectionBookmarks[0]?.media?.[0];
+  const isVideo = firstMedia?.fileType === FileType.VIDEO;
 
   const renderContent = () => (
     <div className='flex-between w-full mb-3'>
@@ -42,7 +43,7 @@ const CollectionCover = ({
             <Image
               src={
                 !isVideo
-                  ? firstMedia.fileUrl!
+                  ? firstMedia?.fileUrl!
                   : getVideoThumbnailUrl(
                       firstMedia.playbackId as string,
                       firstMedia.thumbnailToken as string,

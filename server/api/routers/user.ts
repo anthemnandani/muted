@@ -1,4 +1,10 @@
 import {
+  FollowRequestStatus,
+  NotificationType,
+  PostStatus,
+  Privacy,
+} from '@/generated/prisma/enums';
+import {
   enrichPostWithTokens,
   getTotalRepliesCount,
   getUserEmail,
@@ -12,12 +18,6 @@ import {
   getPostReplies,
 } from '@/server/constants';
 import { clerkClient } from '@clerk/nextjs/server';
-import {
-  FollowRequestStatus,
-  NotificationType,
-  PostStatus,
-  Privacy,
-} from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '../trpc';

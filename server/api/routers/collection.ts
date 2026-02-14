@@ -1,4 +1,3 @@
-import { PostMedia } from '@/lib/types';
 import { enrichMediaTokens, enrichThumbnailToken } from '@/lib/utils';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
 import {
@@ -207,7 +206,7 @@ export const collectionRouter = createTRPCRouter({
 
           const bookmarks = await Promise.all(
             collection.bookmarks.map(async (bookmark, index) => {
-              let media = bookmark.post?.media as PostMedia[];
+              let media = bookmark.post?.media;
 
               if (index === coverIndex) {
                 media = await enrichThumbnailToken(media);
@@ -543,7 +542,7 @@ export const collectionRouter = createTRPCRouter({
       const posts = await Promise.all(
         collection?.bookmarks.map(async (bookmark) => ({
           ...bookmark.post!,
-          media: await enrichMediaTokens(bookmark.post?.media as PostMedia[]),
+          media: await enrichMediaTokens(bookmark.post?.media),
           likesCount: bookmark.post?.likes.length,
           repostsCount: bookmark.post?.reposts.length,
           bookmarksCount: new Set(

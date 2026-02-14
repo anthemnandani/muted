@@ -1,4 +1,5 @@
-import { PostMedia } from '@/lib/types';
+import { Prisma } from '@/generated/prisma/client';
+import { FileType, PostStatus } from '@/generated/prisma/enums';
 import {
   enrichPostWithTokens,
   extractSuggestions,
@@ -13,7 +14,6 @@ import {
   getPostReplies,
   getPrivacyFilter,
 } from '@/server/constants';
-import { PostStatus, Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure, publicProcedure } from '../trpc';
 
@@ -517,7 +517,7 @@ export const searchRouter = createTRPCRouter({
       });
 
       const videoPosts = posts.filter((post) =>
-        (post.media as PostMedia[]).some((m) => m.fileType === 'video'),
+        post.media.some((m) => m.fileType === FileType.VIDEO),
       );
 
       const postsWithTokens = await Promise.all(

@@ -2,7 +2,7 @@
 
 import { ThreadImageCardProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { FileType } from '@prisma/client';
+import { FileType } from '@/generated/prisma/enums';
 import Image from 'next/image';
 import React from 'react';
 

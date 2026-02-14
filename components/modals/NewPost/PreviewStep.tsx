@@ -1,5 +1,6 @@
 'use client';
 
+import { FileType } from '@/generated/prisma/enums';
 import { PreviewStepProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
@@ -43,25 +44,28 @@ const PreviewStep = ({
   };
 
   const isVideoOnly = useMemo(() => {
-    return mediaFiles.length > 0 && mediaFiles.every((f) => f.type === 'video');
+    return (
+      mediaFiles.length > 0 &&
+      mediaFiles.every((f) => f.type === FileType.VIDEO)
+    );
   }, [mediaFiles]);
 
   const isMixedMedia = useMemo(() => {
-    const hasImage = mediaFiles.some((f) => f.type === 'image');
-    const hasVideo = mediaFiles.some((f) => f.type === 'video');
+    const hasImage = mediaFiles.some((f) => f.type === FileType.IMAGE);
+    const hasVideo = mediaFiles.some((f) => f.type === FileType.VIDEO);
     return hasImage && hasVideo;
   }, [mediaFiles]);
 
   useEffect(() => {
     if (mediaFiles.length > 0) {
       const sortedFiles = [...mediaFiles].sort((a, b) => {
-        if (a.type === 'image' && b.type === 'video') return -1;
-        if (a.type === 'video' && b.type === 'image') return 1;
+        if (a.type === FileType.IMAGE && b.type === FileType.VIDEO) return -1;
+        if (a.type === FileType.VIDEO && b.type === FileType.IMAGE) return 1;
         return 0;
       });
 
       const isOrderChanged = sortedFiles.some(
-        (file, index) => file.id !== mediaFiles[index]?.id
+        (file, index) => file.id !== mediaFiles[index]?.id,
       );
 
       if (isOrderChanged) {
@@ -74,7 +78,7 @@ const PreviewStep = ({
     <div
       className={cn(
         'relative w-full bg-[#121212] overflow-hidden rounded-lg',
-        step === 'post' && 'rounded-r-none'
+        step === 'post' && 'rounded-r-none',
       )}
     >
       <div className='relative h-full'>

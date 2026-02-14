@@ -1,5 +1,6 @@
 'use client';
 
+import { FileType } from '@/generated/prisma/enums';
 import { UPLOAD_CONSTRAINTS } from '@/lib/constants';
 import { calculateTotalVideoDuration, getMediaType } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
@@ -34,7 +35,7 @@ const useFileUpload = ({ onSuccess }: { onSuccess?: () => void }) => {
 
       setProgress((++currentStep / totalSteps) * 100);
       const oversizedImages = files
-        .filter((file) => getMediaType(file) === 'image')
+        .filter((file) => getMediaType(file) === FileType.IMAGE)
         .filter((file) => file.size > UPLOAD_CONSTRAINTS.MAX_IMAGE_SIZE);
 
       if (oversizedImages.length > 0) {
@@ -46,7 +47,7 @@ const useFileUpload = ({ onSuccess }: { onSuccess?: () => void }) => {
       setProgress((++currentStep / totalSteps) * 100);
 
       const existingVideos = mediaFiles
-        .filter((media) => getMediaType(media.file) === 'video')
+        .filter((media) => getMediaType(media.file) === FileType.VIDEO)
         .map((media) => media.file);
 
       const existingDuration =
@@ -79,7 +80,7 @@ const useFileUpload = ({ onSuccess }: { onSuccess?: () => void }) => {
           file,
           preview: URL.createObjectURL(file),
           id: crypto.randomUUID(),
-          type: getMediaType(file) as 'image' | 'video',
+          type: getMediaType(file) as FileType,
         }));
 
         const updatedFiles = [...mediaFiles, ...newFiles].slice(

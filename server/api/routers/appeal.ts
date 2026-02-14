@@ -1,4 +1,4 @@
-import { AppealStatus } from '@prisma/client';
+import { AppealStatus } from '@/generated/prisma/enums';
 import { TRPCError } from '@trpc/server';
 import z from 'zod';
 import { createTRPCRouter, privateProcedure } from '../trpc';
@@ -40,7 +40,7 @@ export const appealRouter = createTRPCRouter({
           .min(20, 'Please provide a detailed reason (at least 20 characters).')
           .max(250, 'Your reason must be under 250 characters.'),
         suspensionId: z.string(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { userId, db } = ctx;

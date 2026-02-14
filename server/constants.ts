@@ -1,4 +1,4 @@
-import { Privacy } from '@prisma/client';
+import { Privacy } from '@/generated/prisma/enums';
 
 export const GET_USER = {
   id: true,

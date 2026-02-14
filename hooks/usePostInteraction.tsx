@@ -1,7 +1,7 @@
 import type { Mention } from '@/lib/types';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
-import { PostPrivacy } from '@prisma/client';
+import { PostPrivacy } from '@/generated/prisma/enums';
 
 interface UsePostInteractionProps {
   authorId: string;

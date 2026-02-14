@@ -1,5 +1,6 @@
 'use client';
 
+import { FileType } from '@/generated/prisma/enums';
 import { CollectionCardProps } from '@/lib/types';
 import { getVideoThumbnailUrl } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
@@ -27,17 +28,17 @@ const CollectionCard = ({ collection, username }: CollectionCardProps) => {
     }
 
     const { media } = firstBookmark;
-    const fileType = media[0]?.fileType;
-    const isVideo = fileType === 'video';
+    const fileType = media?.[0]?.fileType;
+    const isVideo = fileType === FileType.VIDEO;
 
     return (
       <Image
         src={
           !isVideo
-            ? media[0]?.fileUrl!
+            ? media?.[0]?.fileUrl!
             : getVideoThumbnailUrl(
-                media[0].playbackId as string,
-                media[0].thumbnailToken as string
+                media?.[0]?.playbackId as string,
+                media?.[0]?.thumbnailToken as string,
               )
         }
         alt={collection.name}

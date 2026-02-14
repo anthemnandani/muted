@@ -1,11 +1,11 @@
 'use client';
 
+import { MessageStatus } from '@/generated/prisma/enums';
 import { RECEIVE_MSG_EVENT } from '@/lib/socket-events';
 import { Chat, ChatUser, Message, MessageReaction } from '@/lib/types';
 import useChatStore from '@/store/chatStore';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
-import { MessageStatus } from '@prisma/client';
 import {
   createContext,
   FC,
@@ -81,7 +81,7 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
       refetchOnWindowFocus: false,
       staleTime: 0,
       cacheTime: 0,
-    }
+    },
   );
 
   const resetUnreadCountMutation = api.chat.resetUnreadCount.useMutation({
@@ -104,7 +104,7 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
     const fetchedMessageIds = new Set(fetchedMessages.map((msg) => msg.id));
 
     const realTimeMessages = currentMessages.filter(
-      (msg) => !fetchedMessageIds.has(msg.id)
+      (msg) => !fetchedMessageIds.has(msg.id),
     );
 
     setMessages([...fetchedMessages, ...realTimeMessages]);
@@ -159,12 +159,12 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
       setChats(
         useChatStore
           .getState()
-          .chats.filter((chat) => chat.id !== variables.chatId)
+          .chats.filter((chat) => chat.id !== variables.chatId),
       );
       setMessageRequests(
         useChatStore
           .getState()
-          .messageRequests.filter((chat) => chat.id !== variables.chatId)
+          .messageRequests.filter((chat) => chat.id !== variables.chatId),
       );
 
       if (currentChat?.id === variables.chatId) {
@@ -183,14 +183,14 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
       setMessages(
         useChatStore
           .getState()
-          .messages.map((msg) => (msg.id === tempId ? newMessage : msg))
+          .messages.map((msg) => (msg.id === tempId ? newMessage : msg)),
       );
 
       if (newMessage.status === MessageStatus.SENT) {
         updateChatLastMessage(newMessage.chatId, newMessage);
       }
     },
-    [setMessages]
+    [setMessages],
   );
 
   const addMessage = useCallback(
@@ -198,7 +198,7 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
       setMessages([...useChatStore.getState().messages, message]);
       updateChatLastMessage(message.chatId, message);
     },
-    [setMessages]
+    [setMessages],
   );
 
   const closeChat = () => {
@@ -211,8 +211,8 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
     const currentChats = useChatStore.getState().chats;
     setChats(
       currentChats.map((chat) =>
-        chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
-      )
+        chat.id === chatId ? { ...chat, unreadCount: 0 } : chat,
+      ),
     );
   };
 
@@ -251,7 +251,7 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
               lastMessage: message,
               lastMessageAt: new Date(message.createdAt),
             }
-          : null
+          : null,
       );
     }
   };
@@ -361,11 +361,11 @@ const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
           if (data.action === 'removed') {
             updatedReactions = updatedReactions.filter(
-              (r) => r.userId !== data.userId
+              (r) => r.userId !== data.userId,
             );
           } else if (data.reaction) {
             const existingIndex = updatedReactions.findIndex(
-              (r) => r.userId === data.userId
+              (r) => r.userId === data.userId,
             );
             if (existingIndex > -1) {
               updatedReactions[existingIndex] = data.reaction;

@@ -1,3 +1,4 @@
+import { EncodingStatus, FileType, PostStatus } from '@/generated/prisma/enums';
 import { MediaFile } from '@/lib/types';
 import { getVideoDimensions } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
@@ -5,7 +6,6 @@ import { useThreadStore } from '@/store/threadStore';
 import { api } from '@/trpc/react';
 import type { IGif } from '@giphy/js-types';
 import { createId } from '@paralleldrive/cuid2';
-import { EncodingStatus, FileType, PostStatus } from '@prisma/client';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMuxUpload } from './useMuxUpload';

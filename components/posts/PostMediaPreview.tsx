@@ -1,6 +1,7 @@
 import { PostMediaPreviewProps } from '@/lib/types';
 import { X } from 'lucide-react';
 import { Button } from '../ui/button';
+import { FileType } from '@/generated/prisma/enums';
 
 const PostMediaPreview = ({
   type,
@@ -9,7 +10,7 @@ const PostMediaPreview = ({
   onRemove,
 }: PostMediaPreviewProps) => (
   <div className='relative overflow-hidden rounded-xl border border-border w-fit'>
-    {type === 'image' || type === 'gif' ? (
+    {type === FileType.IMAGE || type === FileType.GIF ? (
       <img
         src={url as string}
         alt={text || ''}

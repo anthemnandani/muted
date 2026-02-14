@@ -1,5 +1,5 @@
+import { Privacy } from '@/generated/prisma/enums';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
-import { Privacy } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
@@ -10,7 +10,7 @@ export const authRouter = createTRPCRouter({
         bio: z.string(),
         link: z.string(),
         privacy: z.nativeEnum(Privacy),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { userId, db } = ctx;

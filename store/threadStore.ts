@@ -4,7 +4,7 @@ import type {
   ThreadInfo,
   ValidMention,
 } from '@/lib/types';
-import type { PostPrivacy } from '@prisma/client';
+import { PostPrivacy } from '@/generated/prisma/enums';
 import { create } from 'zustand';
 
 interface EditThreadData {

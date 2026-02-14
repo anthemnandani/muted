@@ -1,16 +1,17 @@
 import { Icons } from '@/components/icons';
+import { EncodingStatus, FileType, PostStatus } from '@/generated/prisma/enums';
 import { getCroppedImg } from '@/lib/canvasUtils';
-import type { MediaFile, PostMedia } from '@/lib/types';
+import type { MediaFile } from '@/lib/types';
 import { getImageDimensions, getVideoDimensions } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
 import usePostDialog from '@/store/postDialog';
 import { api } from '@/trpc/react';
 import type { UpChunk } from '@mux/upchunk';
 import { createId } from '@paralleldrive/cuid2';
-import { PostStatus } from '@prisma/client';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMuxUpload } from './useMuxUpload';
+import { Media } from '@/generated/prisma/client';
 
 const useCreatePost = () => {
   const { mediaFiles, setMediaFiles } = useFileStore();
@@ -99,7 +100,7 @@ const useCreatePost = () => {
     });
   };
 
-  const processImage = async (fileObj: MediaFile): Promise<PostMedia> => {
+  const processImage = async (fileObj: MediaFile) => {
     let fileToUpload = fileObj.file;
     let finalDimensions = { width: 0, height: 0 };
 
@@ -132,17 +133,15 @@ const useCreatePost = () => {
         : fileObj.aspectRatio;
 
     return {
-      fileType: 'image',
+      fileType: FileType.IMAGE,
       fileUrl: url,
-      aspectRatio: resolvedAspectRatio,
+      aspectRatio: resolvedAspectRatio as string,
       originalDimensions: finalDimensions,
+      encodingStatus: EncodingStatus.UPLOADED,
     };
   };
 
-  const processVideo = async (
-    fileObj: MediaFile,
-    postId: string,
-  ): Promise<{ media: PostMedia; uploadUrl: string }> => {
+  const processVideo = async (fileObj: MediaFile, postId: string) => {
     const finalDimensions = await getVideoDimensions(fileObj.file);
     const passthrough = `post|${postId}`;
     const { url, uploadId } = await prepareMuxUpload(passthrough);
@@ -150,12 +149,12 @@ const useCreatePost = () => {
 
     return {
       media: {
-        fileType: 'video',
+        fileType: FileType.VIDEO,
         videoId: uploadId,
         playbackId: localBlobUrl,
         aspectRatio: fileObj.aspectRatio,
         originalDimensions: finalDimensions,
-        encodingStatus: 'PROCESSING',
+        encodingStatus: EncodingStatus.PROCESSING,
       },
       uploadUrl: url,
     };
@@ -184,7 +183,7 @@ const useCreatePost = () => {
       const uploadPromises = mediaFiles.map(async (fileObj, index) => {
         if (signal.aborted) throw new Error('Cancelled');
 
-        if (fileObj.type === 'video') {
+        if (fileObj.type === FileType.VIDEO) {
           const { media, uploadUrl } = await processVideo(
             fileObj,
             generatedPostId,
@@ -220,7 +219,9 @@ const useCreatePost = () => {
           mentionedUserId: m.mentionedUserId,
           index: m.startIndex,
         })),
-        status: processedMedia.some((media) => media.fileType === 'video')
+        status: processedMedia.some(
+          (media) => media.fileType === FileType.VIDEO,
+        )
           ? PostStatus.HIDDEN
           : PostStatus.VISIBLE,
       });

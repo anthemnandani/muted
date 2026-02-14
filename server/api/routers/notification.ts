@@ -1,7 +1,9 @@
-import { type PostMedia } from '@/lib/types';
+import {
+  FollowRequestStatus,
+  NotificationType,
+} from '@/generated/prisma/enums';
 import { enrichThumbnailToken } from '@/lib/utils';
 import { GET_USER } from '@/server/constants';
-import { FollowRequestStatus, NotificationType } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '../trpc';
@@ -17,7 +19,7 @@ export const notificationRouter = createTRPCRouter({
             createdAt: z.date(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
       const { userId, db } = ctx;
@@ -76,11 +78,9 @@ export const notificationRouter = createTRPCRouter({
         notifications: await Promise.all(
           notifications.map(async (notification) => ({
             ...notification,
-            media: await enrichThumbnailToken(
-              notification.post?.media as PostMedia[]
-            ),
+            media: await enrichThumbnailToken(notification.post?.media),
             postId: notification.post?.id!,
-          }))
+          })),
         ),
         nextCursor,
       };
@@ -139,7 +139,7 @@ export const notificationRouter = createTRPCRouter({
             createdAt: z.date(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
       const { userId, db } = ctx;
@@ -197,11 +197,9 @@ export const notificationRouter = createTRPCRouter({
         notifications: await Promise.all(
           notifications.map(async (notification) => ({
             ...notification,
-            media: await enrichThumbnailToken(
-              notification.post?.media as PostMedia[]
-            ),
+            media: await enrichThumbnailToken(notification.post?.media),
             postId: notification.post?.id!,
-          }))
+          })),
         ),
         nextCursor,
       };
@@ -217,7 +215,7 @@ export const notificationRouter = createTRPCRouter({
             createdAt: z.date(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
       const { userId, db } = ctx;
@@ -275,11 +273,9 @@ export const notificationRouter = createTRPCRouter({
         notifications: await Promise.all(
           notifications.map(async (notification) => ({
             ...notification,
-            media: await enrichThumbnailToken(
-              notification.post?.media as PostMedia[]
-            ),
+            media: await enrichThumbnailToken(notification.post?.media),
             postId: notification.post?.id!,
-          }))
+          })),
         ),
         nextCursor,
       };
@@ -295,7 +291,7 @@ export const notificationRouter = createTRPCRouter({
             createdAt: z.date(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
       const { userId, db } = ctx;
@@ -353,11 +349,9 @@ export const notificationRouter = createTRPCRouter({
         notifications: await Promise.all(
           notifications.map(async (notification) => ({
             ...notification,
-            media: await enrichThumbnailToken(
-              notification.post?.media as PostMedia[]
-            ),
+            media: await enrichThumbnailToken(notification.post?.media),
             postId: notification.post?.id!,
-          }))
+          })),
         ),
         nextCursor,
       };
@@ -373,7 +367,7 @@ export const notificationRouter = createTRPCRouter({
             createdAt: z.date(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
       const { userId, db } = ctx;
@@ -437,7 +431,7 @@ export const notificationRouter = createTRPCRouter({
             createdAt: z.date(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input: { limit = 20, cursor }, ctx }) => {
       const { userId, db } = ctx;

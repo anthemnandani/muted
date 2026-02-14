@@ -1,6 +1,6 @@
+import { UserStatus } from '@/generated/prisma/enums';
 import { db } from '@/server/db';
 import { clerkClient } from '@clerk/nextjs/server';
-import { UserStatus } from '@prisma/client';
 import { inngest } from './client';
 
 export const unsuspendUser = inngest.createFunction(
@@ -54,7 +54,7 @@ export const unsuspendUser = inngest.createFunction(
           },
           orderBy: { endsAt: 'desc' },
         });
-      }
+      },
     );
 
     if (longestRemainingSuspension) {
@@ -111,5 +111,5 @@ export const unsuspendUser = inngest.createFunction(
     });
 
     return { status: 'User automatically unsuspended.' };
-  }
+  },
 );

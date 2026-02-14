@@ -1,4 +1,4 @@
-import { Privacy } from '@prisma/client';
+import { Privacy } from '@/generated/prisma/enums';
 import { create } from 'zustand';
 
 interface ToggleState {
