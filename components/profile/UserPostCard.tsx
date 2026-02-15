@@ -71,7 +71,7 @@ const UserPostCard = ({
     setCurrentPostId(postId);
     setCurrentIndex(index);
 
-    const postLink = `/post/${postId}${query ? `?q=${query}` : ''}`;
+    const postLink = `/post/${postId}${query ? `?q=${encodeURIComponent(query)}` : ''}`;
 
     setIsOpen(true);
 

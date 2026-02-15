@@ -47,7 +47,7 @@ const PostDetailDialog = ({ query }: { query?: string }) => {
         window.history.replaceState(
           null,
           '',
-          `/post/${nextPost.id}${query ? `?q=${query}` : ''}`,
+          `/post/${nextPost.id}${query ? `?q=${encodeURIComponent(query)}` : ''}`,
         );
       }
     },
