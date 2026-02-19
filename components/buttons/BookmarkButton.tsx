@@ -12,6 +12,7 @@ import DeleteBookmark from '../modals/DeleteBookmark';
 const BookmarkButton: React.FC<BookmarkButtonProps> = ({
   bookmarkInfo,
   isPanel,
+  isMainFeed,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const { setOpenDeleteDialog, openDeleteDialog } = useDeleteBookmark();
@@ -79,7 +80,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
     <div
       className={cn(
         'flex flex-col items-center relative',
-        isPanel && 'flex-row',
+        (isPanel || isMainFeed) && 'flex-row',
       )}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -90,22 +91,31 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
         ref={buttonRef}
         onClick={handleClick}
         className={cn(
-          'btn-action mt-2 mb-1.5',
+          isMainFeed
+            ? 'hover:scale-110 transition-transform mr-1.5'
+            : 'btn-action mt-2 mb-1.5',
           isPanel && 'mt-0 mb-0 mr-1.5 size-9',
         )}
       >
         <Icons.save
-          fill={isBookmarkedByMe ? 'currentColor' : '#fff'}
+          fill={
+            isBookmarkedByMe ? 'currentColor' : isMainFeed ? 'none' : '#fff'
+          }
           className={cn(
-            'size-5 transition-colors',
+            'transition-colors',
             isBookmarkedByMe && 'text-primary-blue',
+            isMainFeed ? 'size-6' : 'size-5',
           )}
+          stroke={isMainFeed && !isBookmarkedByMe ? 'currentColor' : 'none'}
+          strokeWidth={isMainFeed && !isBookmarkedByMe ? 2 : 0}
         />
       </button>
-
-      <strong className='text-[13px] leading-4 text-center text-white/75'>
-        {bookmarksCount}
-      </strong>
+      {!isMainFeed ||
+        (isMainFeed && bookmarksCount > 0 && (
+          <strong className='text-[13px] font-semibold leading-4 text-center text-white/75'>
+            {bookmarksCount}
+          </strong>
+        ))}
 
       {showMenu && (
         <CollectionsMenu

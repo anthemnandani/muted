@@ -33,6 +33,7 @@ import {
   type ContentType,
   type MediaFile,
   Message,
+  OriginalDimensions,
   ParentPostProps,
 } from './types';
 import { Media } from '@/generated/prisma/client';
@@ -961,4 +962,16 @@ export const enrichMediaTokens = async (media?: Media[]) => {
   }
 
   return newMedia;
+};
+
+export const getInstagramFeedRatio = (
+  aspectRatio: string | null,
+  originalDimensions?: OriginalDimensions,
+): number => {
+  const IG_MIN_RATIO = 0.8;
+  const IG_MAX_RATIO = 1.91;
+  const IG_DEFAULT = 0.8;
+  const raw = getTargetRatio(aspectRatio, originalDimensions);
+  if (!raw || raw <= 0) return IG_DEFAULT;
+  return Math.max(IG_MIN_RATIO, Math.min(IG_MAX_RATIO, raw));
 };

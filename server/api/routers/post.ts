@@ -226,7 +226,7 @@ export const postRouter = createTRPCRouter({
         },
       ];
 
-      if (searchQuery) {
+      if (searchQuery && searchQuery.trim().length > 0) {
         baseConditions.push({
           OR: [
             { text: { contains: searchQuery, mode: 'insensitive' } },
@@ -327,6 +327,161 @@ export const postRouter = createTRPCRouter({
 
       const formattedPosts = await Promise.all(
         posts.map(async (post) => {
+          const postWithTokens = await enrichPostWithTokens(post);
+          return {
+            ...postWithTokens,
+            likesCount: post.likes.length,
+            repostsCount: post.reposts.length,
+            repliesCount: getTotalRepliesCount(post) as number,
+            bookmarksCount: new Set(
+              post.bookmarks.map((bookmark) => bookmark.userId),
+            ).size,
+          };
+        }),
+      );
+
+      let nextCursor: typeof cursor | undefined;
+      if (formattedPosts.length > limit) {
+        const nextItem = formattedPosts[limit];
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
+        };
+        formattedPosts.length = limit;
+      }
+
+      return {
+        posts: formattedPosts,
+        nextCursor,
+      };
+    }),
+
+  getVideoPosts: privateProcedure
+    .input(
+      z.object({
+        searchQuery: z.string().optional(),
+        limit: z.number().optional(),
+        cursor: z
+          .object({
+            id: z.string(),
+            createdAt: z.date(),
+          })
+          .optional(),
+      }),
+    )
+    .query(async ({ input: { limit = 10, cursor, searchQuery }, ctx }) => {
+      const { userId, db } = ctx;
+
+      const visibilityCondition: Prisma.PostWhereInput = {
+        OR: [
+          { status: PostStatus.VISIBLE },
+          {
+            AND: [{ status: PostStatus.HIDDEN }, { authorId: userId }],
+          },
+        ],
+      };
+
+      const baseConditions: Prisma.PostWhereInput[] = [
+        getPrivacyFilter(userId),
+        visibilityCondition,
+        { parentPostId: null },
+        { hiddenBy: { none: { userId } } },
+        {
+          author: {
+            deactivated: false,
+            mutedByUsers: { none: { mutedByUserId: userId } },
+            blockedByUsers: { none: { blockingUserId: userId } },
+            blockedUsers: { none: { blockedUserId: userId } },
+          },
+        },
+        {
+          media: {
+            some: {
+              fileType: FileType.VIDEO,
+              encodingStatus: EncodingStatus.ENCODED,
+            },
+          },
+        },
+        {
+          media: { none: { fileType: { not: FileType.VIDEO } } },
+        },
+      ];
+
+      if (searchQuery && searchQuery.trim().length > 0) {
+        baseConditions.push({
+          OR: [
+            { text: { contains: searchQuery, mode: 'insensitive' } },
+            {
+              hashtags: {
+                some: {
+                  name: { contains: searchQuery, mode: 'insensitive' },
+                },
+              },
+            },
+          ],
+        });
+      }
+
+      const whereClause: Prisma.PostWhereInput = {
+        AND: baseConditions,
+      };
+
+      const posts = await db.post.findMany({
+        where: whereClause,
+        take: limit + 1,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        select: {
+          id: true,
+          createdAt: true,
+          text: true,
+          media: true,
+          parentPostId: true,
+          quoteId: true,
+          path: true,
+          hideLikes: true,
+          turnOffComments: true,
+          pinned: true,
+          privacy: true,
+          repliesCount: true,
+          status: true,
+          ...getAuthorAndHiddenSelect(userId),
+          ...getLikesWithBlockFilter(userId),
+          ...getBookmarksWithBlockFilter(userId),
+          ...getPostReplies(userId),
+          ...GET_MENTIONS,
+          reposts: {
+            ...GET_REPOSTS,
+            where: {
+              user: {
+                deactivated: false,
+                blockedByUsers: {
+                  none: {
+                    blockingUserId: {
+                      equals: userId,
+                    },
+                  },
+                },
+                blockedUsers: {
+                  none: {
+                    blockedUserId: {
+                      equals: userId,
+                    },
+                  },
+                },
+              },
+            },
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
+        },
+      });
+
+      const singleVideoPosts = posts.filter((post) => post.media.length === 1);
+
+      const formattedPosts = await Promise.all(
+        singleVideoPosts.map(async (post) => {
           const postWithTokens = await enrichPostWithTokens(post);
           return {
             ...postWithTokens,

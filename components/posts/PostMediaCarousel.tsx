@@ -103,8 +103,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
       className={cn(
         !isModal && 'relative rounded-2xl',
         containerClass,
-        shouldAnimate &&
-          'transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]',
+        shouldAnimate && 'transition-all duration-300 ease-in-out',
         isShrunkView && 'xl:max-w-[45vw]',
       )}
       onMouseEnter={() => setShowControls(true)}

@@ -7,13 +7,14 @@ import {
 } from '@/contexts/OptimisticActionContext';
 import { QUERY_TYPE } from '@/lib/constants';
 import { type Tab, TextSubTab, UserProfileContentProps } from '@/lib/types';
+import { cn } from '@/lib/utils';
 import usePostStore from '@/store/postStore';
 import { useTabStore } from '@/store/tabStore';
 import { useUser } from '@clerk/nextjs';
 import { useMemo } from 'react';
 import { Icons } from '../icons';
+import MultiPostDialog from '../modals/MultiPostDialog';
 import NewCollection from '../modals/NewCollection';
-import PostDetailDialog from '../modals/PostDetailDialog';
 import EmptyState from '../shared/EmptyState';
 import ProfileFilters from './ProfileFilters';
 import ProfileTabsHeader from './ProfileTabsHeader';
@@ -21,11 +22,9 @@ import UserCollectionsList from './UserCollectionsList';
 import UserLikedPostsList from './UserLikedPostsList';
 import UserPostsList from './UserPostsList';
 import UserRepostsList from './UserRepostsList';
-import UserThreadsList from './UserThreadsList';
-import { cn } from '@/lib/utils';
-import UserRepliesList from './UserThreadRepliesList';
 import UserThreadRepliesList from './UserThreadRepliesList';
 import UserThreadRepostsList from './UserThreadRepostsList';
+import UserThreadsList from './UserThreadsList';
 
 const BlockedContent = () => (
   <EmptyState
@@ -198,7 +197,7 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
           </Tabs>
         </div>
       </div>
-      <PostDetailDialog />
+      <MultiPostDialog />
     </OptimisticActionProvider>
   );
 };

@@ -1,8 +1,8 @@
 'use client';
 
 import Error from '@/app/error';
-import PostsList from '@/components/shared/PostsList';
-import ScrollContainer from '@/components/shared/ScrollContainer';
+import HomeFeedList from '@/components/shared/HomeFeedList';
+import HomeFeedScrollContainer from '@/components/shared/HomeFeedScrollContainer';
 import {
   OptimisticActionProvider,
   type TargetType,
@@ -11,9 +11,8 @@ import { QUERY_TYPE } from '@/lib/constants';
 import { api } from '@/trpc/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-const PostsClient = () => {
+const HomeFeedClient = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [resetToFirst, setResetToFirst] = useState(false);
   const mainContainerRef = useRef<HTMLDivElement>(null);
 
   const { data, isLoading, isError, hasNextPage, fetchNextPage, refetch } =
@@ -25,55 +24,40 @@ const PostsClient = () => {
         staleTime: 0,
         cacheTime: 0,
         refetchOnWindowFocus: false,
-        // retry: false,
-      }
+        retry: false,
+      },
     );
 
   useEffect(() => {
-    const handleRefresh = async (event: Event) => {
-      const customEvent = event as CustomEvent;
+    const handleRefresh = async () => {
       setIsRefreshing(true);
-
-      if (customEvent.detail?.resetToFirstPost) {
-        setResetToFirst(true);
-      }
-
+      mainContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
       await refetch();
       setIsRefreshing(false);
     };
-
     window.addEventListener('refreshFeed', handleRefresh);
-
-    return () => {
-      window.removeEventListener('refreshFeed', handleRefresh);
-    };
+    return () => window.removeEventListener('refreshFeed', handleRefresh);
   }, [refetch]);
 
-  const allPosts = data?.pages.flatMap((page) => page.posts);
+  const allPosts = data?.pages.flatMap((p) => p.posts);
 
-  const optimisticTarget = useMemo(
-    () => ({ type: QUERY_TYPE.FEED, variables: {} }),
-    []
-  );
+  const target = useMemo(() => ({ type: QUERY_TYPE.FEED, variables: {} }), []);
 
   if (isError) return <Error />;
 
   return (
-    <ScrollContainer ref={mainContainerRef}>
-      <OptimisticActionProvider target={optimisticTarget as TargetType}>
-        <PostsList
+    <HomeFeedScrollContainer ref={mainContainerRef}>
+      <OptimisticActionProvider target={target as TargetType}>
+        <HomeFeedList
           posts={allPosts}
           fetchNextPage={fetchNextPage}
           hasNextPage={hasNextPage}
           isLoading={isLoading || isRefreshing}
           emptyStateMessage='No posts found.'
-          resetToFirst={resetToFirst}
-          onResetComplete={() => setResetToFirst(false)}
-          containerRef={mainContainerRef}
         />
       </OptimisticActionProvider>
-    </ScrollContainer>
+    </HomeFeedScrollContainer>
   );
 };
 
-export default PostsClient;
+export default HomeFeedClient;

@@ -25,7 +25,6 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import { Separator } from '../ui/separator';
-import { useBlockedUsers } from '@/store/blockedUsers';
 
 const PostActionMenu: React.FC<PostActionMenuProps> = ({
   author,
@@ -62,10 +61,9 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
     },
   );
 
-  const { handleToggleHidePost, isLoading: isLoadingHidePost } =
-    useToggleHidePost({
-      postId,
-    });
+  const { toggleHide } = useToggleHidePost({
+    postId,
+  });
 
   const { toggleMute } = useToggleMuteUser({
     userId: author.id,
@@ -118,8 +116,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
               <MenuItem
                 icon={Icons.notInterested}
                 label='Not interested'
-                onClick={() => handleToggleHidePost({ postId })}
-                disabled={isLoadingHidePost}
+                onClick={toggleHide}
               />
               <Separator />
               <MenuItem

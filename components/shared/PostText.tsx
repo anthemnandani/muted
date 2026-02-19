@@ -13,7 +13,7 @@ const PostText: React.FC<PostTextProps> = ({
   mentions,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const MAX_LENGTH = 69;
+  const MAX_LENGTH = 100;
   const MAX_EXPANDED_LENGTH = 500;
 
   if (!text) return null;
@@ -24,8 +24,8 @@ const PostText: React.FC<PostTextProps> = ({
     !isExpanded && shouldTruncate
       ? text.slice(0, MAX_LENGTH)
       : text.length > MAX_EXPANDED_LENGTH
-      ? text.slice(0, MAX_EXPANDED_LENGTH) + '...'
-      : text;
+        ? text.slice(0, MAX_EXPANDED_LENGTH) + '...'
+        : text;
 
   const handleShowMoreClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -35,10 +35,10 @@ const PostText: React.FC<PostTextProps> = ({
 
   if (!mentions || mentions.length === 0) {
     return (
-      <div
+      <span
         className={cn(
-          'w-full overflow-hiddenrelative text-white/90 font-medium text-sm antialiased whitespace-pre-line break-words',
-          className
+          'w-full overflow-hidden relative text-white/90 font-normal text-sm antialiased whitespace-pre-line break-words',
+          className,
         )}
       >
         <ParsedText text={displayText} />
@@ -47,12 +47,12 @@ const PostText: React.FC<PostTextProps> = ({
             type='button'
             aria-label='Show more'
             onClick={handleShowMoreClick}
-            className='font-semibold text-primary-blue hover:cursor-pointer ml-1'
+            className='font-semibold text-primary-blue hover:cursor-pointer block mt-1'
           >
             more
           </button>
         )}
-      </div>
+      </span>
     );
   }
 
@@ -78,7 +78,7 @@ const PostText: React.FC<PostTextProps> = ({
         author={mention.user}
         className='!text-primary-blue hover:underline'
         isMention
-      />
+      />,
     );
 
     lastIndex = mentionStartIndex + mentionString.length;
@@ -90,10 +90,10 @@ const PostText: React.FC<PostTextProps> = ({
   }
 
   return (
-    <div
+    <span
       className={cn(
-        'w-full overflow-hidden relative text-white/90 font-medium text-sm antialiased whitespace-pre-line break-words',
-        className
+        'w-full overflow-hidden relative text-white/90 font-normal text-sm antialiased whitespace-pre-line break-words',
+        className,
       )}
     >
       {parts}
@@ -102,12 +102,12 @@ const PostText: React.FC<PostTextProps> = ({
           type='button'
           aria-label='Show more'
           onClick={handleShowMoreClick}
-          className='font-semibold text-primary-blue hover:cursor-pointer ml-1'
+          className='font-semibold text-primary-blue hover:cursor-pointer mt-1 block'
         >
           more
         </button>
       )}
-    </div>
+    </span>
   );
 };
 

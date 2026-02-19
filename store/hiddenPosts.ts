@@ -1,24 +1,24 @@
 import { create } from 'zustand';
 
 interface HiddenPostsState {
-  temporaryHiddenPosts: Set<string>;
-  hidePost: (postId: string) => void;
-  unhidePost: (postId: string) => void;
-  isTemporarilyHidden: (postId: string) => boolean;
+  hiddenPostIds: string[];
+  hidePost: (id: string) => void;
+  unhidePost: (id: string) => void;
+  isPostHidden: (id: string) => boolean;
 }
 
 export const useHiddenPosts = create<HiddenPostsState>((set, get) => ({
-  temporaryHiddenPosts: new Set<string>(),
-  hidePost: (postId: string) =>
+  hiddenPostIds: [],
+
+  hidePost: (id) =>
     set((state) => ({
-      temporaryHiddenPosts: new Set(state.temporaryHiddenPosts).add(postId),
+      hiddenPostIds: [...state.hiddenPostIds, id],
     })),
-  unhidePost: (postId: string) =>
-    set((state) => {
-      const newSet = new Set(state.temporaryHiddenPosts);
-      newSet.delete(postId);
-      return { temporaryHiddenPosts: newSet };
-    }),
-  isTemporarilyHidden: (postId: string) =>
-    get().temporaryHiddenPosts.has(postId),
+
+  unhidePost: (id) =>
+    set((state) => ({
+      hiddenPostIds: state.hiddenPostIds.filter((pId) => pId !== id),
+    })),
+
+  isPostHidden: (id) => get().hiddenPostIds.includes(id),
 }));

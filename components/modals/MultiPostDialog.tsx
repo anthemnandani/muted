@@ -7,7 +7,7 @@ import PostMediaCarousel from '../posts/PostMediaCarousel';
 import CommentsPanel from '../comments/CommentsPanel';
 import NewCollection from './NewCollection';
 
-const PostDetailDialog = ({ query }: { query?: string }) => {
+const MultiPostDialog = ({ query }: { query?: string }) => {
   const {
     isOpen,
     postList,
@@ -68,9 +68,21 @@ const PostDetailDialog = ({ query }: { query?: string }) => {
       if (e.key === 'ArrowUp') handleNavigation('up');
       if (e.key === 'Escape') handleClose();
     };
+
+    const handlePopState = () => {
+      if (isOpen) {
+        closeDialog();
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleNavigation, isOpen]);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [handleNavigation, isOpen, closeDialog]);
 
   const activePost = postList[currentIndex];
 
@@ -153,4 +165,4 @@ const PostDetailDialog = ({ query }: { query?: string }) => {
   );
 };
 
-export default PostDetailDialog;
+export default MultiPostDialog;

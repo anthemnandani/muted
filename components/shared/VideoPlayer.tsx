@@ -59,7 +59,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       <MuxPlayer
         ref={playerRef}
         playbackId={status === 'ENCODED' ? playbackId : undefined}
-        src={status === 'PROCESSING' ? playbackId : undefined}
         tokens={tokens}
         poster={securePoster}
         muted={isMuted}

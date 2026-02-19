@@ -1,7 +1,7 @@
 'use client';
 
 import NotFound from '@/app/not-found';
-import PostDetailDialog from '@/components/modals/PostDetailDialog';
+import PostDetailDialog from '@/components/modals/MultiPostDialog';
 import SkeletonTabs from '@/components/skeletons/SearchSkeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {

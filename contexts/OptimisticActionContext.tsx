@@ -26,6 +26,10 @@ export type TargetType =
       variables: { searchQuery?: string };
     }
   | {
+      type: QUERY_TYPE.VIDEO_FEED;
+      variables: { searchQuery?: string };
+    }
+  | {
       type: QUERY_TYPE.THREAD_FEED;
       variables: { searchQuery?: string };
     }
@@ -59,7 +63,7 @@ export type TargetType =
     }
   | {
       type: QUERY_TYPE.SEARCH_VIDEO_POSTS;
-      variables: { query: string };
+      variables: { searchQuery?: string };
     };
 
 export const OptimisticActionProvider = ({
@@ -90,6 +94,13 @@ export const OptimisticActionProvider = ({
     switch (target.type) {
       case QUERY_TYPE.FEED:
         utils.post.getInfinitePosts.setInfiniteData(
+          target.variables,
+          update('posts'),
+        );
+        break;
+
+      case QUERY_TYPE.VIDEO_FEED:
+        utils.post.getVideoPosts.setInfiniteData(
           target.variables,
           update('posts'),
         );
@@ -188,7 +199,7 @@ export const OptimisticActionProvider = ({
         break;
 
       case QUERY_TYPE.SEARCH_VIDEO_POSTS:
-        utils.search.getVideoPosts.setInfiniteData(
+        utils.post.getVideoPosts.setInfiniteData(
           target.variables,
           update('posts'),
         );

@@ -1,7 +1,7 @@
-import PostsClient from './PostsClient';
+import HomeFeedClient from './HomeFeedClient';
 
 const HomePage = () => {
-  return <PostsClient />;
+  return <HomeFeedClient />;
 };
 
 export default HomePage;

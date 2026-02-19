@@ -8,8 +8,10 @@ import { redirect } from 'next/navigation';
 
 export default async function PagesLayout({
   children,
+  modal,
 }: {
   children: React.ReactNode;
+  modal: React.ReactNode;
 }) {
   const user = await currentUser();
   if (!user) redirect('/sign-in');
@@ -35,6 +37,7 @@ export default async function PagesLayout({
       <PostNavigatorProvider>{children}</PostNavigatorProvider>
       {/* <BottomBar /> */}
       <Report />
+      {modal}
     </>
   );
 }

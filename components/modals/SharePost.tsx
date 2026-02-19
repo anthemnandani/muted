@@ -1,8 +1,9 @@
 import { useRepost } from '@/hooks/useRepost';
 import { SharePostProps } from '@/lib/types';
+import { cn } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
-import { X } from 'lucide-react';
-import React, { useState } from 'react';
+import { Send, X } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { Icons } from '../icons';
 import {
@@ -17,6 +18,7 @@ const SharePost: React.FC<SharePostProps> = ({
   reposts,
   repostsCount: initialRepostsCount,
   authorId,
+  isMainFeed,
 }) => {
   const { user } = useUser();
   const [open, setOpen] = useState(false);
@@ -24,8 +26,8 @@ const SharePost: React.FC<SharePostProps> = ({
 
   const { isRepostedByMe, repostsCount, isLoading, handleToggleRepost } =
     useRepost({
-      reposts,
-      initialRepostsCount,
+      reposts: reposts ?? [],
+      initialRepostsCount: initialRepostsCount ?? 0,
       postId: id,
     });
 
@@ -51,9 +53,20 @@ const SharePost: React.FC<SharePostProps> = ({
           <button
             type='button'
             aria-label='Share'
-            className='btn-action mt-2 mb-1.5'
+            className={cn(
+              isMainFeed
+                ? 'hover:scale-110 transition-transform'
+                : 'btn-action mt-2 mb-1.5',
+            )}
           >
-            <Icons.share className='size-6' />
+            {isMainFeed ? (
+              <Send
+                className='size-[26px] text-white mt-0.5 rotate-[22.5]'
+                strokeWidth={2}
+              />
+            ) : (
+              <Icons.share className='size-6' />
+            )}
           </button>
         </DialogTrigger>
         <DialogContent className='!max-w-[512px] w-full p-0 border-none bg-gray-6 rounded-2xl shadow-2xl'>
@@ -66,6 +79,7 @@ const SharePost: React.FC<SharePostProps> = ({
               <div className='flex-1 flex justify-end'>
                 <button
                   type='button'
+                  aria-label='Close'
                   className='text-neutral-100'
                   onClick={handleClose}
                 >
@@ -74,7 +88,7 @@ const SharePost: React.FC<SharePostProps> = ({
               </div>
             </div>
             <div className='flex px-2'>
-              {user?.id !== authorId && (
+              {user?.id !== authorId && !isMainFeed && (
                 <div className='relative p-5 cursor-pointer'>
                   <button
                     type='button'
@@ -115,9 +129,11 @@ const SharePost: React.FC<SharePostProps> = ({
           </div>
         </DialogContent>
       </Dialog>
-      <strong className='text-[13px] leading-4 text-center text-gray-2'>
-        {repostsCount ?? 0}
-      </strong>
+      {!isMainFeed && (
+        <strong className='text-[13px] leading-4 text-center text-gray-2'>
+          {repostsCount ?? 0}
+        </strong>
+      )}
     </div>
   );
 };

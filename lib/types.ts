@@ -250,7 +250,6 @@ export type ParentPostProps = {
     userId: string;
   }[];
   bookmarks: Bookmark[];
-  quoteId: string | null;
   reposts: Repost[];
   parentPostId?: string | null;
   parentPost?: any;
@@ -419,6 +418,7 @@ export interface LikeButtonProps {
   authorId: string;
   hideLikes?: boolean;
   isPanel?: boolean;
+  isMainFeed?: boolean;
   isParentThread?: boolean;
 }
 
@@ -447,6 +447,7 @@ export interface ThreadRepostButtonProps {
 export interface BookmarkButtonProps {
   bookmarkInfo: BookmarkInfo;
   isPanel?: boolean;
+  isMainFeed?: boolean;
 }
 
 export interface RepostersDialogProps {
@@ -734,6 +735,16 @@ export interface PostMediaCarouselProps {
   isFetchingMore?: boolean;
 }
 
+export interface InstagramMediaDisplayProps {
+  media: Media[];
+  postId: string;
+  text?: string | null;
+  username: string;
+  userId: string;
+  isHidden?: boolean;
+  isMuted?: boolean;
+}
+
 export interface ProfileVideoPlayerProps {
   playbackId: string;
   videoToken?: string;
@@ -757,6 +768,14 @@ export interface VideoPlayerProps {
   originalDimensions?: OriginalDimensions;
   isCarousel?: boolean;
   isModal?: boolean;
+}
+
+export interface VideoSlideProps {
+  playbackId: string;
+  videoToken: string;
+  thumbnailToken: string;
+  postId: string;
+  isActive: boolean;
 }
 
 export interface MediaTypeIndicatorProps {
@@ -1087,9 +1106,10 @@ export interface EmojiPickerProps {
 
 export interface SharePostProps {
   id: string;
-  reposts: Repost[];
-  repostsCount: number;
+  reposts?: Repost[];
+  repostsCount?: number;
   authorId: string;
+  isMainFeed?: boolean;
 }
 
 export interface UseRepostProps {
@@ -1108,6 +1128,7 @@ export interface ReplyButtonProps {
 export interface MutedPostProps {
   userId: string;
   username: string;
+  isFullHeight?: boolean;
 }
 
 export interface BlockUserDialogProps {

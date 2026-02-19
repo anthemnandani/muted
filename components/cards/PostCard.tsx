@@ -41,10 +41,10 @@ const PostCard: React.FC<PostCardProps> = ({
     updateCurrentPost,
     isShowingPost,
   } = useCommentPanelStore();
-  const { isTemporarilyHidden } = useHiddenPosts();
+  const { isPostHidden } = useHiddenPosts();
   const { isMutedUser } = useMutedUsers();
 
-  const isHidden = isTemporarilyHidden(id);
+  const isHidden = isPostHidden(id);
   const isMuted = isMutedUser(author.id);
 
   const { ref: postRef, inView } = useInView({
@@ -73,13 +73,13 @@ const PostCard: React.FC<PostCardProps> = ({
       ref={postRef}
     >
       {isHidden ? (
-        <HiddenPost postId={id} />
+        <HiddenPost postId={id} isFullHeight />
       ) : isMuted ? (
         <MutedPost userId={author.id} username={author.username} />
       ) : (
         <div
           className={cn(
-            'h-max flex-end grow gap-4 w-full transition-transform duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]',
+            'h-max flex-end grow gap-4 w-full transition-transform duration-300 ease-in-out',
             isPanelOpen ? 'translate-x-[-180px]' : 'translate-x-0',
           )}
         >

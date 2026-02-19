@@ -10,11 +10,11 @@ const VideoPosts = ({ query }: { query: string }) => {
   const { activeTab } = useSearchStore();
   const { setPostList, setPagination } = usePostStore();
   const { data, isLoading, isFetching, isError, hasNextPage, fetchNextPage } =
-    api.search.getVideoPosts.useInfiniteQuery(
-      { query },
+    api.post.getVideoPosts.useInfiniteQuery(
+      { searchQuery: query, limit: 21 },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
-        enabled: activeTab === 'videos',
+        enabled: activeTab === 'videos' && query.trim().length > 0,
         trpc: { abortOnUnmount: true },
         staleTime: 10 * 60 * 1000,
         cacheTime: 10 * 60 * 1000,

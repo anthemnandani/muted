@@ -2,7 +2,7 @@
 
 import Error from '@/app/error';
 import { Icons } from '@/components/icons';
-import PostDetailDialog from '@/components/modals/PostDetailDialog';
+import PostDetailDialog from '@/components/modals/MultiPostDialog';
 import UserPostCard from '@/components/profile/UserPostCard';
 import TopHeader from '@/components/shared/TopHeader';
 import HeaderSkeleton from '@/components/skeletons/HeaderSkeleton';
@@ -29,7 +29,7 @@ const CollectionDetails = ({ id }: { id: string }) => {
         staleTime: 10 * 60 * 1000,
         cacheTime: 10 * 60 * 1000,
         retry: false,
-      }
+      },
     );
 
   const posts = data?.pages.flatMap((page) => page.posts);
