@@ -6,7 +6,12 @@ import {
   type TargetType,
 } from '@/contexts/OptimisticActionContext';
 import { QUERY_TYPE } from '@/lib/constants';
-import { type Tab, TextSubTab, UserProfileContentProps } from '@/lib/types';
+import {
+  type MediaSubTab,
+  type Tab,
+  type TextSubTab,
+  UserProfileContentProps,
+} from '@/lib/types';
 import { cn } from '@/lib/utils';
 import usePostStore from '@/store/postStore';
 import { useTabStore } from '@/store/tabStore';
@@ -19,12 +24,14 @@ import EmptyState from '../shared/EmptyState';
 import ProfileFilters from './ProfileFilters';
 import ProfileTabsHeader from './ProfileTabsHeader';
 import UserCollectionsList from './UserCollectionsList';
+import UserImagePostsList from './UserImagePostsList';
 import UserLikedPostsList from './UserLikedPostsList';
 import UserPostsList from './UserPostsList';
 import UserRepostsList from './UserRepostsList';
 import UserThreadRepliesList from './UserThreadRepliesList';
 import UserThreadRepostsList from './UserThreadRepostsList';
 import UserThreadsList from './UserThreadsList';
+import UserVideoPostsList from './UserVideoPostsList';
 
 const BlockedContent = () => (
   <EmptyState
@@ -50,7 +57,14 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
   isBlocked,
 }) => {
   const { user } = useUser();
-  const { activeTab, setActiveTab, textSubTab, setTextSubTab } = useTabStore();
+  const {
+    activeTab,
+    setActiveTab,
+    textSubTab,
+    setTextSubTab,
+    mediaSubTab,
+    setMediaSubTab,
+  } = useTabStore();
   const { selectedFilter, setSelectedFilter } = usePostStore();
 
   const isOwner = user?.id === userId;
@@ -58,33 +72,50 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
     privacy === 'PRIVATE' && !isOwner && !isFollower;
 
   const target = useMemo(() => {
+    if (activeTab === 'posts') {
+      switch (mediaSubTab) {
+        case 'all':
+          return {
+            type: QUERY_TYPE.USER_POSTS,
+            variables: { username, sortBy: selectedFilter },
+          };
+        case 'videos':
+          return {
+            type: QUERY_TYPE.USER_VIDEO_POSTS,
+            variables: { username, sortBy: selectedFilter },
+          };
+        case 'images':
+          return {
+            type: QUERY_TYPE.USER_IMAGE_POSTS,
+            variables: { username, sortBy: selectedFilter },
+          };
+      }
+    }
+
     switch (activeTab) {
-      case 'posts':
-        return {
-          type: QUERY_TYPE.USER_POSTS,
-          variables: { username, sortBy: selectedFilter },
-        };
       case 'reposts':
         return { type: QUERY_TYPE.USER_REPOSTS, variables: { username } };
       case 'liked':
         return { type: QUERY_TYPE.USER_LIKED, variables: { username } };
     }
 
-    switch (textSubTab) {
-      case 'threads':
-        return { type: QUERY_TYPE.USER_THREADS, variables: { username } };
-      case 'reposts':
-        return {
-          type: QUERY_TYPE.USER_THREAD_REPOSTS,
-          variables: { username },
-        };
-      case 'replies':
-        return {
-          type: QUERY_TYPE.USER_THREAD_REPLIES,
-          variables: { username },
-        };
+    if (activeTab === 'text') {
+      switch (textSubTab) {
+        case 'threads':
+          return { type: QUERY_TYPE.USER_THREADS, variables: { username } };
+        case 'reposts':
+          return {
+            type: QUERY_TYPE.USER_THREAD_REPOSTS,
+            variables: { username },
+          };
+        case 'replies':
+          return {
+            type: QUERY_TYPE.USER_THREAD_REPLIES,
+            variables: { username },
+          };
+      }
     }
-  }, [username, activeTab, textSubTab]);
+  }, [username, activeTab, textSubTab, mediaSubTab]);
 
   return (
     <OptimisticActionProvider target={target as TargetType}>
@@ -124,7 +155,54 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
               ) : shouldShowPrivateContent ? (
                 <PrivateContent />
               ) : (
-                <UserPostsList username={username} filter={selectedFilter} />
+                <TabsContent value='posts' className='mt-0'>
+                  <Tabs
+                    value={mediaSubTab}
+                    onValueChange={(value) =>
+                      setMediaSubTab(value as MediaSubTab)
+                    }
+                    className='w-full'
+                  >
+                    <div className='py-3 flex justify-start w-full'>
+                      <TabsList className='bg-transparent p-0 gap-4 h-auto justify-start'>
+                        {['all', 'videos', 'images'].map((tab) => (
+                          <TabsTrigger
+                            key={tab}
+                            value={tab}
+                            className={cn(
+                              'rounded-full border border-border-light px-5 py-2 text-sm font-semibold',
+                              'text-muted-foreground capitalize data-[state=active]:bg-white',
+                              'data-[state=active]:text-black data-[state=active]:border-transparent transition-all',
+                            )}
+                          >
+                            {tab}
+                          </TabsTrigger>
+                        ))}
+                      </TabsList>
+                    </div>
+
+                    <div className='w-full'>
+                      <TabsContent value='all'>
+                        <UserPostsList
+                          username={username}
+                          filter={selectedFilter}
+                        />
+                      </TabsContent>
+                      <TabsContent value='videos'>
+                        <UserVideoPostsList
+                          username={username}
+                          filter={selectedFilter}
+                        />
+                      </TabsContent>
+                      <TabsContent value='images'>
+                        <UserImagePostsList
+                          username={username}
+                          filter={selectedFilter}
+                        />
+                      </TabsContent>
+                    </div>
+                  </Tabs>
+                </TabsContent>
               )}
             </TabsContent>
 

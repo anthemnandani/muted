@@ -1,5 +1,6 @@
-import { Icons } from '@/components/icons';
+import { useOptimisticAction } from '@/contexts/OptimisticActionContext';
 import { api } from '@/trpc/react';
+import { useRef } from 'react';
 import { toast } from 'sonner';
 
 const useTogglePinPost = ({
@@ -9,39 +10,57 @@ const useTogglePinPost = ({
   postId: string;
   isPinned: boolean;
 }) => {
-  const trpcUtils = api.useUtils();
-  const { mutateAsync: togglePinPost, isPending } =
-    api.post.togglePinPost.useMutation({
-      onError: (error, variables, context) => {
-        toast.error('Something went wrong!');
-      },
-      onSettled: async () => {
-        await trpcUtils.post.getInfinitePosts.invalidate();
-        await trpcUtils.user.getUserProfile.invalidate();
-      },
-    });
+  const utils = api.useUtils();
 
-  const handleTogglePinPost = () => {
-    toast.promise(togglePinPost({ postId }), {
-      loading: (
-        <div className='flex w-[270px] items-center justify-start gap-1.5 p-0'>
-          <div>
-            <Icons.loading className='size-8' />
-          </div>
-          {isPinned ? 'Unpinning...' : 'Pinning...'}
-        </div>
-      ),
-      success: (data) => (
-        <div className='flex-center p-0'>
-          {data.pinned ? 'Pinned' : 'Unpinned'}
-        </div>
-      ),
-      error: 'Error',
-      richColors: true,
-    });
+  const performAction = useOptimisticAction();
+
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const isDirtyRef = useRef(false);
+
+  const { mutate: togglePinPost } = api.post.togglePinPost.useMutation({
+    onError: (err) => {
+      if (performAction) {
+        performAction(postId, 'PIN', isPinned);
+      }
+      toast.error('Failed to update pin status');
+      isDirtyRef.current = false;
+    },
+
+    onSettled: () => {
+      isDirtyRef.current = false;
+
+      utils.user.getUserPosts.invalidate();
+      utils.user.getUserVideoPosts.invalidate();
+      utils.user.getUserImagePosts.invalidate();
+    },
+  });
+
+  const togglePin = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    if (performAction) {
+      performAction(postId, 'PIN', !isPinned);
+      toast.success(isPinned ? 'Unpinned' : 'Pinned');
+    }
+
+    isDirtyRef.current = !isDirtyRef.current;
+
+    timeoutRef.current = setTimeout(() => {
+      if (isDirtyRef.current) {
+        togglePinPost({ postId });
+      }
+    }, 1000);
   };
 
-  return { handleTogglePinPost, isLoading: isPending };
+  return {
+    togglePin,
+  };
 };
 
 export default useTogglePinPost;

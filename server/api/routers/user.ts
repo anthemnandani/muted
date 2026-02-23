@@ -1,4 +1,6 @@
 import {
+  EncodingStatus,
+  FileType,
   FollowRequestStatus,
   NotificationType,
   PostStatus,
@@ -195,6 +197,200 @@ export const userRouter = createTRPCRouter({
           };
         }),
       );
+
+      return {
+        posts: formattedPosts,
+        nextCursor,
+      };
+    }),
+
+  getUserVideoPosts: privateProcedure
+    .input(
+      z.object({
+        username: z.string(),
+        sortBy: z.enum(['LATEST', 'OLDEST']).optional(),
+        limit: z.number().min(1).max(100).default(18),
+        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const { username, limit, cursor, sortBy } = input;
+      const { userId, db } = ctx;
+
+      const userWithPosts = await db.user.findUnique({
+        where: { username },
+        select: {
+          posts: {
+            where: {
+              parentPostId: null,
+              status: PostStatus.VISIBLE,
+              media: {
+                some: {
+                  fileType: FileType.VIDEO,
+                  encodingStatus: EncodingStatus.ENCODED,
+                },
+                none: { fileType: { not: FileType.VIDEO } },
+              },
+            },
+            take: limit + 1,
+            cursor: cursor ? { createdAt_id: cursor } : undefined,
+            orderBy:
+              sortBy === 'LATEST'
+                ? [{ pinned: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }]
+                : [{ createdAt: 'asc' }, { id: 'asc' }],
+            select: {
+              id: true,
+              createdAt: true,
+              text: true,
+              media: true,
+              parentPostId: true,
+              quoteId: true,
+              path: true,
+              hideLikes: true,
+              turnOffComments: true,
+              pinned: true,
+              privacy: true,
+              repliesCount: true,
+              status: true,
+              author: {
+                select: {
+                  ...GET_USER,
+                },
+              },
+              ...getLikesWithBlockFilter(userId),
+              ...getBookmarksWithBlockFilter(userId),
+              ...getPostReplies(userId),
+              ...GET_MENTIONS,
+              reposts: {
+                ...GET_REPOSTS,
+                orderBy: { createdAt: 'desc' },
+              },
+            },
+          },
+        },
+      });
+
+      if (!userWithPosts) throw new TRPCError({ code: 'NOT_FOUND' });
+
+      let nextCursor: typeof cursor | undefined;
+      const rawPosts = userWithPosts.posts.filter(
+        (post) => post.media.length === 1,
+      );
+
+      if (rawPosts.length > limit) {
+        const nextItem = rawPosts.pop();
+        if (nextItem) {
+          nextCursor = { id: nextItem.id, createdAt: nextItem.createdAt };
+        }
+      }
+
+      const formattedPosts = await Promise.all(
+        rawPosts.map(async (post) => {
+          const postWithTokens = await enrichPostWithTokens(post);
+          return {
+            ...postWithTokens,
+            likesCount: post.likes.length,
+            repostsCount: post.reposts.length,
+            repliesCount: getTotalRepliesCount(post) as number,
+            bookmarksCount: new Set(post.bookmarks.map((b) => b.userId)).size,
+          };
+        }),
+      );
+
+      return {
+        posts: formattedPosts,
+        nextCursor,
+      };
+    }),
+
+  getUserImagePosts: privateProcedure
+    .input(
+      z.object({
+        username: z.string(),
+        sortBy: z.enum(['LATEST', 'OLDEST']).optional(),
+        limit: z.number().min(1).max(100).default(18),
+        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const { username, limit, cursor, sortBy } = input;
+      const { userId, db } = ctx;
+
+      const userWithPosts = await db.user.findUnique({
+        where: { username },
+        select: {
+          posts: {
+            where: {
+              parentPostId: null,
+              status: PostStatus.VISIBLE,
+              media: {
+                some: {
+                  encodingStatus: EncodingStatus.UPLOADED,
+                },
+                none: { fileType: { not: FileType.IMAGE } },
+              },
+            },
+            take: limit + 1,
+            cursor: cursor ? { createdAt_id: cursor } : undefined,
+            orderBy:
+              sortBy === 'LATEST'
+                ? [{ pinned: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }]
+                : [{ createdAt: 'asc' }, { id: 'asc' }],
+            select: {
+              id: true,
+              createdAt: true,
+              text: true,
+              media: true,
+              parentPostId: true,
+              quoteId: true,
+              path: true,
+              hideLikes: true,
+              turnOffComments: true,
+              pinned: true,
+              privacy: true,
+              repliesCount: true,
+              status: true,
+              author: {
+                select: {
+                  ...GET_USER,
+                },
+              },
+              ...getLikesWithBlockFilter(userId),
+              ...getBookmarksWithBlockFilter(userId),
+              ...getPostReplies(userId),
+              ...GET_MENTIONS,
+              reposts: {
+                ...GET_REPOSTS,
+                orderBy: { createdAt: 'desc' },
+              },
+            },
+          },
+        },
+      });
+
+      if (!userWithPosts) throw new TRPCError({ code: 'NOT_FOUND' });
+
+      let nextCursor: typeof cursor | undefined;
+      const rawPosts = userWithPosts.posts.filter(
+        (post) => post.media.length === 1,
+      );
+
+      if (rawPosts.length > limit) {
+        const nextItem = rawPosts.pop();
+        if (nextItem) {
+          nextCursor = { id: nextItem.id, createdAt: nextItem.createdAt };
+        }
+      }
+
+      const formattedPosts = rawPosts.map((post) => {
+        return {
+          ...post,
+          likesCount: post.likes.length,
+          repostsCount: post.reposts.length,
+          repliesCount: getTotalRepliesCount(post) as number,
+          bookmarksCount: new Set(post.bookmarks.map((b) => b.userId)).size,
+        };
+      });
 
       return {
         posts: formattedPosts,

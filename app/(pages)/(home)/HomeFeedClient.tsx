@@ -1,8 +1,8 @@
 'use client';
 
 import Error from '@/app/error';
-import HomeFeedList from '@/components/shared/HomeFeedList';
-import HomeFeedScrollContainer from '@/components/shared/HomeFeedScrollContainer';
+import InstaFeedList from '@/components/shared/InstaFeedList';
+import InstaFeedScrollContainer from '@/components/shared/InstaFeedScrollContainer';
 import {
   OptimisticActionProvider,
   type TargetType,
@@ -46,9 +46,9 @@ const HomeFeedClient = () => {
   if (isError) return <Error />;
 
   return (
-    <HomeFeedScrollContainer ref={mainContainerRef}>
+    <InstaFeedScrollContainer ref={mainContainerRef}>
       <OptimisticActionProvider target={target as TargetType}>
-        <HomeFeedList
+        <InstaFeedList
           posts={allPosts}
           fetchNextPage={fetchNextPage}
           hasNextPage={hasNextPage}
@@ -56,7 +56,7 @@ const HomeFeedClient = () => {
           emptyStateMessage='No posts found.'
         />
       </OptimisticActionProvider>
-    </HomeFeedScrollContainer>
+    </InstaFeedScrollContainer>
   );
 };
 

@@ -1,8 +1,8 @@
 'use client';
 
-import PostCard from '@/components/cards/PostCard';
 import EmptyState from '@/components/shared/EmptyState';
-import PostCardSkeleton from '@/components/skeletons/PostCardSkeleton';
+import PostDetailsLayout from '@/components/shared/PostDetailsLayout';
+import PostDetailsSkeleton from '@/components/skeletons/PostDetailsSkeleton';
 import { OptimisticActionProvider } from '@/contexts/OptimisticActionContext';
 import { QUERY_TYPE } from '@/lib/constants';
 import { api } from '@/trpc/react';
@@ -17,12 +17,12 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
       trpc: { abortOnUnmount: true },
       retry: false,
       refetchOnWindowFocus: false,
-    }
+    },
   );
 
   if (isError) {
     return (
-      <div className='flex-center w-full h-full'>
+      <div className='flex-center w-full h-screen'>
         <div className='flex flex-col items-center text-center'>
           <EmptyState
             icon={<Video className='size-11 text-white/90' />}
@@ -34,15 +34,17 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
     );
   }
 
+  if (isLoading || !data?.post) {
+    return <PostDetailsSkeleton />;
+  }
+
   return (
-    <main className='flex justify-between w-screen max-w-full flex-auto self-center'>
-      <div className='relative mx-auto my-0 w-full'>
-        <OptimisticActionProvider
-          target={{ type: QUERY_TYPE.POST_DETAILS, variables: { id: postId } }}
-        >
-          {isLoading ? <PostCardSkeleton /> : <PostCard {...data.post} />}
-        </OptimisticActionProvider>
-      </div>
+    <main className='flex w-full h-screen bg-[#121212] overflow-hidden md:pl-[90px]'>
+      <OptimisticActionProvider
+        target={{ type: QUERY_TYPE.POST_DETAILS, variables: { id: postId } }}
+      >
+        <PostDetailsLayout post={data.post} isModal />
+      </OptimisticActionProvider>
     </main>
   );
 };

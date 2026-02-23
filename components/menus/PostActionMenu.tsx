@@ -54,12 +54,10 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
     },
   });
 
-  const { handleTogglePinPost, isLoading: isLoadingPinPost } = useTogglePinPost(
-    {
-      postId,
-      isPinned: pinned!,
-    },
-  );
+  const { togglePin } = useTogglePinPost({
+    postId,
+    isPinned: pinned!,
+  });
 
   const { toggleHide } = useToggleHidePost({
     postId,
@@ -165,8 +163,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
               <MenuItem
                 icon={pinned ? PinOff : Icons.profilePin}
                 label={pinned ? 'Unpin from profile' : 'Pin to profile'}
-                onClick={handleTogglePinPost}
-                disabled={isLoadingPinPost}
+                onClick={togglePin}
               />
               <Separator />
 

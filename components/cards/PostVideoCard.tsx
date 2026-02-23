@@ -83,10 +83,10 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   }, [player, inView, currentlyPlaying, postId]);
 
   const handleTimeUpdate = useCallback(() => {
-    if (player && inView) {
+    if (player && inView && !isModal) {
       setTimestamp(postId, player.currentTime);
     }
-  }, [postId, player, inView, setTimestamp]);
+  }, [postId, player, inView, setTimestamp, isModal]);
 
   const handleVolumeSync = useCallback(
     (mutedState: boolean) => {
@@ -94,7 +94,7 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
         setIsMuted(mutedState);
       }
     },
-    [isMuted, setIsMuted]
+    [isMuted, setIsMuted],
   );
 
   return (

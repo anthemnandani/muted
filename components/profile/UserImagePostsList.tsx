@@ -1,11 +1,18 @@
+import type { ProfileFilter } from '@/lib/types';
 import { api } from '@/trpc/react';
 import { useMemo } from 'react';
 import ProfilePostsGrid from './ProfilePostsGrid';
 
-const UserRepostsList = ({ username }: { username: string }) => {
+const UserImagePostsList = ({
+  username,
+  filter,
+}: {
+  username: string;
+  filter: ProfileFilter;
+}) => {
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
-    api.user.getUserReposts.useInfiniteQuery(
-      { username },
+    api.user.getUserImagePosts.useInfiniteQuery(
+      { username, sortBy: filter },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         trpc: { abortOnUnmount: true },
@@ -24,12 +31,12 @@ const UserRepostsList = ({ username }: { username: string }) => {
       posts={posts}
       fetchNextPage={fetchNextPage}
       hasNextPage={hasNextPage ?? false}
-      title='No reposted posts yet'
-      description='Posts you reposted will appear here'
+      title='No images yet'
+      description='Images you post will appear here'
       isLoading={isLoading}
       isError={isError}
     />
   );
 };
 
-export default UserRepostsList;
+export default UserImagePostsList;

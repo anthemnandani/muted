@@ -52,6 +52,14 @@ export type TargetType =
       type: QUERY_TYPE.USER_POSTS;
       variables: { username: string; sortBy?: 'LATEST' | 'OLDEST' };
     }
+  | {
+      type: QUERY_TYPE.USER_VIDEO_POSTS;
+      variables: { username: string; sortBy?: 'LATEST' | 'OLDEST' };
+    }
+  | {
+      type: QUERY_TYPE.USER_IMAGE_POSTS;
+      variables: { username: string; sortBy?: 'LATEST' | 'OLDEST' };
+    }
   | { type: QUERY_TYPE.USER_REPOSTS; variables: { username: string } }
   | { type: QUERY_TYPE.USER_THREAD_REPOSTS; variables: { username: string } }
   | { type: QUERY_TYPE.USER_LIKED; variables: { username: string } }
@@ -165,6 +173,20 @@ export const OptimisticActionProvider = ({
 
       case QUERY_TYPE.USER_POSTS:
         utils.user.getUserPosts.setInfiniteData(
+          target.variables,
+          update('posts'),
+        );
+        break;
+
+      case QUERY_TYPE.USER_VIDEO_POSTS:
+        utils.user.getUserVideoPosts.setInfiniteData(
+          target.variables,
+          update('posts'),
+        );
+        break;
+
+      case QUERY_TYPE.USER_IMAGE_POSTS:
+        utils.user.getUserImagePosts.setInfiniteData(
           target.variables,
           update('posts'),
         );

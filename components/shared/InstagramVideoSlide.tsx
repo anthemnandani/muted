@@ -3,6 +3,8 @@
 import type { MuxPlayerRef } from '@/lib/types';
 import { VideoSlideProps } from '@/lib/types';
 import { getVideoThumbnailUrl } from '@/lib/utils';
+import useInstaVideoStore from '@/store/instaVideoStore';
+import useSinglePostStore from '@/store/singlePostStore';
 import useVideoPlayer from '@/store/videoPlayer';
 import MuxPlayer from '@mux/mux-player-react';
 import { Volume2, VolumeX } from 'lucide-react';
@@ -19,8 +21,12 @@ const InstagramVideoSlide: React.FC<VideoSlideProps> = ({
   const playerRef = useRef<MuxPlayerRef>(null);
   const { ref, inView } = useInView({ threshold: 0.7, triggerOnce: false });
 
-  const { currentlyPlaying, setCurrentlyPlaying, isMuted, setIsMuted } =
-    useVideoPlayer();
+  const { isMuted, setIsMuted } = useVideoPlayer();
+
+  const { currentlyPlayingFeed, setCurrentlyPlayingFeed } =
+    useInstaVideoStore();
+
+  const isModalOpen = useSinglePostStore((state) => !!state.activePost);
 
   const securePoster = useMemo(() => {
     if (playbackId && thumbnailToken) {
@@ -38,38 +44,43 @@ const InstagramVideoSlide: React.FC<VideoSlideProps> = ({
   );
 
   useEffect(() => {
+    if (inView && isActive && !isModalOpen) {
+      setCurrentlyPlayingFeed(postId);
+    }
+  }, [inView, isActive, isModalOpen, postId, setCurrentlyPlayingFeed]);
+
+  useEffect(() => {
     const player = playerRef.current;
     if (!player) return;
-    if (inView && isActive) {
-      setCurrentlyPlaying(postId);
+
+    const isMyTurn = currentlyPlayingFeed === postId;
+    const shouldPlay = inView && isActive && !isModalOpen && isMyTurn;
+
+    if (shouldPlay) {
       player.play().catch(() => {});
     } else {
-      player.pause();
+      if (!player.paused) player.pause();
     }
-  }, [inView, isActive, postId, setCurrentlyPlaying]);
+  }, [inView, isActive, isModalOpen, currentlyPlayingFeed, postId]);
 
   useEffect(() => {
     const player = playerRef.current;
     if (!player) return;
-    if (currentlyPlaying !== postId && !player.paused) player.pause();
-  }, [currentlyPlaying, postId]);
 
-  useEffect(() => {
-    const player = playerRef.current;
-    if (!player) return;
     const handler = () => {
-      if (document.hidden && !player.paused) player.pause();
-      else if (
-        !document.hidden &&
-        inView &&
-        isActive &&
-        currentlyPlaying === postId
-      )
+      const isMyTurn = currentlyPlayingFeed === postId;
+      const shouldPlay = inView && isActive && !isModalOpen && isMyTurn;
+
+      if (document.hidden) {
+        player.pause();
+      } else if (shouldPlay) {
         player.play().catch(() => {});
+      }
     };
+
     document.addEventListener('visibilitychange', handler);
     return () => document.removeEventListener('visibilitychange', handler);
-  }, [inView, isActive, currentlyPlaying, postId]);
+  }, [inView, isActive, isModalOpen, currentlyPlayingFeed, postId]);
 
   return (
     <div ref={ref} className='relative w-full h-full'>

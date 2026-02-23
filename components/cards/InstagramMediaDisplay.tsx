@@ -6,7 +6,7 @@ import {
   InstagramMediaDisplayProps,
   type OriginalDimensions,
 } from '@/lib/types';
-import { getInstagramFeedRatio } from '@/lib/utils';
+import { cn, getInstagramFeedRatio } from '@/lib/utils';
 import { Fragment, useMemo, useState } from 'react';
 import type { Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
@@ -15,6 +15,7 @@ import CarouselPagination from '../shared/CarouselPagination';
 import InstagramVideoSlide from '../shared/InstagramVideoSlide';
 import HiddenPost from './HiddenPost';
 import MutedPost from './MutedPost';
+import { Icons } from '../icons';
 
 const InstagramMediaDisplay: React.FC<InstagramMediaDisplayProps> = ({
   media,
@@ -60,6 +61,9 @@ const InstagramMediaDisplay: React.FC<InstagramMediaDisplayProps> = ({
       />
     );
   };
+
+  const isFirstItem = currentIndex === 0;
+  const isLastItem = currentIndex === media.length - 1;
   return (
     <div className='relative w-full bg-black overflow-hidden'>
       <div
@@ -74,24 +78,43 @@ const InstagramMediaDisplay: React.FC<InstagramMediaDisplayProps> = ({
           <Fragment>
             {!isCarousel && renderSlide(firstMedia, 0)}
             {isCarousel && (
-              <Fragment>
-                <div className='absolute top-3 right-3 z-20 bg-black/50 backdrop-blur-sm rounded-full px-2.5 py-1 text-white text-xs font-medium'>
-                  {currentIndex + 1}/{media.length}
-                </div>
-                <Swiper
-                  className='h-full w-full'
-                  onSwiper={setSwiperRef}
-                  onSlideChange={(s) => setCurrentIndex(s.activeIndex)}
-                >
-                  {media.map((item, i) => (
-                    <SwiperSlide key={`${postId}-s-${i}`}>
-                      <div className='w-full h-full'>
-                        {renderSlide(item, i)}
-                      </div>
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-              </Fragment>
+              <Swiper
+                className='h-full w-full relative'
+                onSwiper={setSwiperRef}
+                onSlideChange={(s) => setCurrentIndex(s.activeIndex)}
+              >
+                {media.map((item, i) => (
+                  <SwiperSlide key={`${postId}-s-${i}`}>
+                    <div className='w-full h-full'>{renderSlide(item, i)}</div>
+                  </SwiperSlide>
+                ))}
+                <Fragment>
+                  <button
+                    type='button'
+                    aria-label='Left'
+                    className={cn(
+                      'navigator-btn absolute top-1/2 left-4 -translate-y-1/2 size-8 bg-black/50 hover:bg-black/40',
+                      isFirstItem && 'cursor-not-allowed opacity-40',
+                    )}
+                    disabled={isFirstItem}
+                    onClick={() => swiperRef?.slidePrev()}
+                  >
+                    <Icons.chevronLeft className='size-5 text-white/90 font-medium' />
+                  </button>
+                  <button
+                    type='button'
+                    aria-label='Right'
+                    className={cn(
+                      'navigator-btn absolute top-1/2 right-4 -translate-y-1/2 size-8 bg-black/50 hover:bg-black/40',
+                      isLastItem && 'cursor-not-allowed opacity-40',
+                    )}
+                    disabled={isLastItem}
+                    onClick={() => swiperRef?.slideNext()}
+                  >
+                    <Icons.chevronRight className='size-5 text-white/90 font-medium' />
+                  </button>
+                </Fragment>
+              </Swiper>
             )}
           </Fragment>
         )}

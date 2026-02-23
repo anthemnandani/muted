@@ -802,6 +802,16 @@ export interface ProfileFiltersProps {
   setSelectedFilter: (filter: ProfileFilter) => void;
 }
 
+export interface ProfilePostsGridProps {
+  posts: ParentPostProps[];
+  fetchNextPage: () => void;
+  hasNextPage: boolean;
+  title: string;
+  description: string;
+  isLoading: boolean;
+  isError: boolean;
+}
+
 export interface UserPostCardProps {
   media: Media[];
   postId: string;
@@ -896,7 +906,7 @@ export interface NavigationButtonsProps {
 
 export interface CommentsPanelProps {
   postId: string;
-  onClose: () => void;
+  onClose?: () => void;
   authorId: string;
   isOpen: boolean;
   repliesCount: number;
@@ -1077,6 +1087,8 @@ export type SortBy = 'LATEST' | 'OLDEST';
 export type Tab = 'posts' | 'reposts' | 'liked' | 'collections' | 'text';
 
 export type TextSubTab = 'threads' | 'reposts' | 'replies';
+
+export type MediaSubTab = 'all' | 'videos' | 'images';
 
 export type SearchTab = 'top' | 'users' | 'videos';
 
@@ -1660,4 +1672,14 @@ export interface ThreadCommentContentProps {
   threadAuthorId: string;
   isReply?: boolean;
   onEditClick?: () => void;
+}
+
+export interface PostDetailsLayoutProps {
+  post: ParentPostProps;
+  onClose?: () => void;
+  isModal?: boolean;
+  onNavigate?: (direction: 'up' | 'down') => void;
+  isFirstPost?: boolean;
+  isLastPost?: boolean;
+  isFetchingMore?: boolean;
 }

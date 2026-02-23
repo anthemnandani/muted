@@ -41,6 +41,11 @@ const Navigation = () => {
         addFill
       />
       <MenuLink
+        route='/videos'
+        icon={Icons.videos}
+        isActive={pathname?.startsWith('/videos') && !isSearchOpen}
+      />
+      <MenuLink
         route='/threads'
         icon={Icons.threads}
         isActive={pathname?.startsWith('/threads') && !isSearchOpen}

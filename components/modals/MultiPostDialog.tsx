@@ -1,11 +1,8 @@
 'use client';
 
 import usePostStore from '@/store/postStore';
-import { X } from 'lucide-react';
 import { useCallback, useEffect } from 'react';
-import PostMediaCarousel from '../posts/PostMediaCarousel';
-import CommentsPanel from '../comments/CommentsPanel';
-import NewCollection from './NewCollection';
+import PostDetailsLayout from '../shared/PostDetailsLayout';
 
 const MultiPostDialog = ({ query }: { query?: string }) => {
   const {
@@ -88,79 +85,17 @@ const MultiPostDialog = ({ query }: { query?: string }) => {
 
   if (!activePost || !isOpen) return null;
 
-  const {
-    id,
-    media,
-    author,
-    createdAt,
-    mentions,
-    pinned,
-    reposts,
-    turnOffComments,
-    text,
-    likesCount,
-    bookmarksCount,
-    repostsCount,
-    repliesCount,
-    likes,
-    bookmarks,
-    hideLikes,
-  } = activePost;
-
   return (
     <div className='fixed inset-0 z-[999] flex w-full h-screen max-w-full bg-[#121212]'>
-      <button
-        type='button'
-        aria-label='Close'
-        className='post-detail-btn absolute top-4 left-4 z-[3001]'
-        onClick={handleClose}
-      >
-        <X width={24} height={24} className='text-white stroke-[2.5px]' />
-      </button>
-
-      <div className='relative flex-[2] h-full flex-center overflow-hidden'>
-        <PostMediaCarousel
-          key={id}
-          media={media}
-          author={author}
-          createdAt={createdAt}
-          mentions={mentions}
-          postId={id}
-          text={text}
-          pinned={pinned}
-          reposts={reposts}
-          hideLikes={hideLikes}
-          turnOffComments={turnOffComments}
-          onNavigate={handleNavigation}
-          isFirstPost={currentIndex === 0}
-          isLastPost={currentIndex === postList.length - 1 && !hasMorePosts}
-          isFetchingMore={isFetchingMore}
-          isModal
-        />
-      </div>
-
-      <div className='flex-1 h-full min-w-[350px] max-w-[500px] border-l border-zinc-800 bg-[#121212]'>
-        <CommentsPanel
-          key={`comments-${id}`}
-          postId={id}
-          onClose={handleClose}
-          authorId={author.id}
-          isOpen={true}
-          repliesCount={repliesCount}
-          createdAt={createdAt}
-          text={text ?? ''}
-          author={author}
-          reposts={reposts}
-          likesCount={likesCount ?? 0}
-          repostsCount={repostsCount ?? 0}
-          likes={likes}
-          hideLikes={hideLikes}
-          bookmarksCount={bookmarksCount ?? 0}
-          bookmarks={bookmarks}
-          isModal
-        />
-      </div>
-      <NewCollection />
+      <PostDetailsLayout
+        post={activePost}
+        onClose={handleClose}
+        onNavigate={handleNavigation}
+        isFirstPost={currentIndex === 0}
+        isLastPost={currentIndex === postList.length - 1 && !hasMorePosts}
+        isFetchingMore={isFetchingMore}
+        isModal
+      />
     </div>
   );
 };

@@ -1,4 +1,3 @@
-import React from 'react';
 import TopicFeedClient from './TopicFeedClient';
 
 const TopicFeedPage = ({ params }: { params: { tag: string } }) => {

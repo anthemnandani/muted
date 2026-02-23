@@ -6,7 +6,7 @@ const CommentsPanelHeader = ({
   onClose,
 }: {
   repliesCount: number;
-  onClose: () => void;
+  onClose?: () => void;
 }) => {
   return (
     <div className='flex-between px-4 py-3 border-b border-border-light'>
@@ -18,14 +18,16 @@ const CommentsPanelHeader = ({
       </div>
       <div className='flex items-center gap-3'>
         <SortComments />
-        <button
-          type='button'
-          title='Close'
-          className='text-gray-400'
-          onClick={onClose}
-        >
-          <X className='size-5' />
-        </button>
+        {onClose && (
+          <button
+            type='button'
+            title='Close'
+            className='text-gray-400'
+            onClick={onClose}
+          >
+            <X className='size-5' />
+          </button>
+        )}
       </div>
     </div>
   );

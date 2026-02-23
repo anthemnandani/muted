@@ -3,7 +3,7 @@ import type { ParentPostProps } from '@/lib/types';
 
 interface SinglePostStore {
   activePost: ParentPostProps | null;
-  setActivePost: (post: ParentPostProps) => void;
+  setActivePost: (post: ParentPostProps | null) => void;
 }
 
 const useSinglePostStore = create<SinglePostStore>((set) => ({

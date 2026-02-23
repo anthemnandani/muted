@@ -1,8 +1,8 @@
 'use client';
 
 import Error from '@/app/error';
-import PostsList from '@/components/shared/PostsList';
-import ScrollContainer from '@/components/shared/ScrollContainer';
+import InstaFeedList from '@/components/shared/InstaFeedList';
+import InstaFeedScrollContainer from '@/components/shared/InstaFeedScrollContainer';
 import {
   OptimisticActionProvider,
   type TargetType,
@@ -21,7 +21,7 @@ const TopicFeedClient = ({ tag }: { tag: string }) => {
         staleTime: 10 * 60 * 1000,
         cacheTime: 10 * 60 * 1000,
         retry: false,
-      }
+      },
     );
 
   const allPosts = data?.pages.flatMap((page) => page.posts);
@@ -33,9 +33,9 @@ const TopicFeedClient = ({ tag }: { tag: string }) => {
   if (isError) return <Error />;
 
   return (
-    <ScrollContainer>
+    <InstaFeedScrollContainer>
       <OptimisticActionProvider target={target as TargetType}>
-        <PostsList
+        <InstaFeedList
           posts={allPosts}
           fetchNextPage={fetchNextPage}
           hasNextPage={hasNextPage}
@@ -43,7 +43,7 @@ const TopicFeedClient = ({ tag }: { tag: string }) => {
           emptyStateMessage='No posts found.'
         />
       </OptimisticActionProvider>
-    </ScrollContainer>
+    </InstaFeedScrollContainer>
   );
 };
 
