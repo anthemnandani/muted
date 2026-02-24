@@ -12,7 +12,7 @@ const useTogglePinPost = ({
 }) => {
   const utils = api.useUtils();
 
-  const performAction = useOptimisticAction();
+  const { performAction } = useOptimisticAction();
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 

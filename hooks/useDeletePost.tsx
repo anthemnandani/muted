@@ -8,7 +8,7 @@ const useDeletePost = ({
   onClose,
   isAdmin = false,
 }: UseDeletePostProps) => {
-  const performAction = useOptimisticAction();
+  const { performAction } = useOptimisticAction();
   const trpcUtils = api.useUtils();
 
   const { mutate: deletePost } = api.post.deletePost.useMutation({

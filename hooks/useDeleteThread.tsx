@@ -4,7 +4,7 @@ import { api } from '@/trpc/react';
 import { toast } from 'sonner';
 
 const useDeleteThread = ({ id, onClose, isAdmin }: UseDeletePostProps) => {
-  const performAction = useOptimisticAction();
+  const { performAction } = useOptimisticAction();
   const utils = api.useUtils();
 
   const { mutate: deleteThread } = api.thread.deleteThread.useMutation({

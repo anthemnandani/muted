@@ -9,7 +9,7 @@ import {
 } from '@/contexts/OptimisticActionContext';
 import { QUERY_TYPE } from '@/lib/constants';
 import { api } from '@/trpc/react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const HomeFeedClient = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -41,7 +41,7 @@ const HomeFeedClient = () => {
 
   const allPosts = data?.pages.flatMap((p) => p.posts);
 
-  const target = useMemo(() => ({ type: QUERY_TYPE.FEED, variables: {} }), []);
+  const target = { type: QUERY_TYPE.FEED, variables: {} };
 
   if (isError) return <Error />;
 

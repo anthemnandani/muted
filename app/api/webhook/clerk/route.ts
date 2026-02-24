@@ -34,7 +34,7 @@ export const POST = async (request: Request) => {
   try {
     evnt = wh.verify(
       JSON.stringify(payload),
-      heads as IncomingHttpHeaders & WebhookRequiredHeaders
+      heads as IncomingHttpHeaders & WebhookRequiredHeaders,
     ) as Event;
   } catch (err) {
     return NextResponse.json({ message: err }, { status: 400 });
@@ -74,7 +74,7 @@ export const POST = async (request: Request) => {
             name: 'All Posts',
             userId: user.id,
             isDefault: true,
-            privacy: 'PUBLIC',
+            privacy: 'PRIVATE',
           },
         });
       });
@@ -87,13 +87,13 @@ export const POST = async (request: Request) => {
 
       return NextResponse.json(
         { message: 'User and default collection created successfully' },
-        { status: 201 }
+        { status: 201 },
       );
     } catch (error) {
       console.log(error);
       return NextResponse.json(
         { message: 'Internal Server Error' },
-        { status: 500 }
+        { status: 500 },
       );
     }
   }
@@ -108,20 +108,20 @@ export const POST = async (request: Request) => {
       });
       return NextResponse.json(
         { message: 'User deleted successfully' },
-        { status: 200 }
+        { status: 200 },
       );
     } catch (error) {
       console.log(error);
 
       return NextResponse.json(
         { message: 'Internal Server Error' },
-        { status: 500 }
+        { status: 500 },
       );
     }
   }
 
   return NextResponse.json(
     { message: 'Unsupported event type' },
-    { status: 400 }
+    { status: 400 },
   );
 };

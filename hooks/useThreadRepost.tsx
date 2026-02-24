@@ -25,7 +25,7 @@ export function useThreadRepost({
   const [isRepostedByMe, setIsRepostedByMe] = useState(isRepostedByMeInitial);
   const [repostsCount, setRepostsCount] = useState(initialRepostsCount || 0);
 
-  const performAction = useOptimisticAction();
+  const { performAction } = useOptimisticAction();
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { mutate: serverToggleRepost } = api.thread.toggleRepost.useMutation({

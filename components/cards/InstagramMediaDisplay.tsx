@@ -116,18 +116,20 @@ const InstagramMediaDisplay: React.FC<InstagramMediaDisplayProps> = ({
                 </Fragment>
               </Swiper>
             )}
+            {isCarousel && (
+              <div className='absolute bottom-3 left-0 right-0 flex justify-center z-20 pointer-events-none'>
+                <div className='pointer-events-auto'>
+                  <CarouselPagination
+                    selectedIndex={currentIndex}
+                    totalCount={media.length}
+                    onSelect={(i) => swiperRef?.slideTo(i)}
+                  />
+                </div>
+              </div>
+            )}
           </Fragment>
         )}
       </div>
-      {isCarousel && !isHidden && !isMuted && (
-        <div className='flex justify-center py-2'>
-          <CarouselPagination
-            selectedIndex={currentIndex}
-            totalCount={media.length}
-            onSelect={(i) => swiperRef?.slideTo(i)}
-          />
-        </div>
-      )}
     </div>
   );
 };

@@ -9,7 +9,7 @@ const useLike = ({ initialLikesCount, likes, id, type }: UseLikeProps) => {
   const { user: loggedUser } = useUser();
   const utils = api.useUtils();
 
-  const performAction = useOptimisticAction();
+  const { performAction } = useOptimisticAction();
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const isLikedByMeInitial = useMemo(

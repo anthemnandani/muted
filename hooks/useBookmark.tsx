@@ -22,7 +22,7 @@ const useBookmark = ({
   collectionId,
   type,
 }: UseBookmarkProps) => {
-  const performAction = useOptimisticAction();
+  const { performAction } = useOptimisticAction();
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { user: loggedUser } = useUser();
   const utils = api.useUtils();

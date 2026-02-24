@@ -7,7 +7,7 @@ export default function DefaultModal() {
   const setActivePost = useSinglePostStore((state) => state.setActivePost);
 
   useEffect(() => {
-    setActivePost(null);
+    setActivePost(null, null);
   }, [setActivePost]);
 
   return null;

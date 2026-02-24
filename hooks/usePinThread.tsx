@@ -6,7 +6,7 @@ import { useRef } from 'react';
 import { toast } from 'sonner';
 
 const usePinThread = ({ id, pinned }: { id: string; pinned: boolean }) => {
-  const performAction = useOptimisticAction();
+  const { performAction } = useOptimisticAction();
   //   const utils = api.useUtils();
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);

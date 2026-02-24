@@ -15,6 +15,7 @@ import PostText from '../shared/PostText';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import Username from '../user/Username';
 import InstagramMediaDisplay from './InstagramMediaDisplay';
+import { useOptimisticAction } from '@/contexts/OptimisticActionContext';
 
 const InstaFeedCard: React.FC<ParentPostProps> = ({
   id,
@@ -39,6 +40,7 @@ const InstaFeedCard: React.FC<ParentPostProps> = ({
   const { isMutedUser } = useMutedUsers();
 
   const { setActivePost } = useSinglePostStore();
+  const { target } = useOptimisticAction();
 
   const isHidden = isPostHidden(id);
   const isMuted = isMutedUser(author.id);
@@ -113,25 +115,28 @@ const InstaFeedCard: React.FC<ParentPostProps> = ({
                 aria-label='Comment'
                 className='hover:scale-110 transition-transform flex items-center'
                 onClick={() => {
-                  setActivePost({
-                    id,
-                    author,
-                    createdAt,
-                    text,
-                    media,
-                    mentions,
-                    likes,
-                    likesCount,
-                    repliesCount,
-                    bookmarks,
-                    reposts,
-                    privacy,
-                    path,
-                    bookmarksCount,
-                    hideLikes,
-                    turnOffComments,
-                    pinned,
-                  });
+                  setActivePost(
+                    {
+                      id,
+                      author,
+                      createdAt,
+                      text,
+                      media,
+                      mentions,
+                      likes,
+                      likesCount,
+                      repliesCount,
+                      bookmarks,
+                      reposts,
+                      privacy,
+                      path,
+                      bookmarksCount,
+                      hideLikes,
+                      turnOffComments,
+                      pinned,
+                    },
+                    target,
+                  );
                 }}
                 scroll={false}
               >

@@ -50,11 +50,6 @@ const Navigation = () => {
         icon={Icons.threads}
         isActive={pathname?.startsWith('/threads') && !isSearchOpen}
       />
-      <MenuLink
-        route='/videos'
-        icon={Icons.videos}
-        isActive={pathname?.startsWith('/videos') && !isSearchOpen}
-      />
       <button
         type='button'
         title='Search'

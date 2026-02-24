@@ -16,9 +16,14 @@ type PerformActionFn = (
   payload?: any,
 ) => void;
 
-const OptimisticActionContext = createContext<PerformActionFn | undefined>(
-  undefined,
-);
+interface OptimisticActionContextValue {
+  performAction: PerformActionFn;
+  target: TargetType;
+}
+
+const OptimisticActionContext = createContext<
+  OptimisticActionContextValue | undefined
+>(undefined);
 
 export type TargetType =
   | {
@@ -254,7 +259,7 @@ export const OptimisticActionProvider = ({
   };
 
   return (
-    <OptimisticActionContext.Provider value={performAction}>
+    <OptimisticActionContext.Provider value={{ performAction, target }}>
       {children}
     </OptimisticActionContext.Provider>
   );
@@ -262,5 +267,10 @@ export const OptimisticActionProvider = ({
 
 export const useOptimisticAction = () => {
   const context = useContext(OptimisticActionContext);
+  if (context === undefined) {
+    throw new Error(
+      'useOptimisticAction must be used within an OptimisticActionProvider',
+    );
+  }
   return context;
 };
