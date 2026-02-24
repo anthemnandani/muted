@@ -14,7 +14,6 @@ import {
   enrichPostWithTokens,
   enrichThumbnailToken,
   getChartDataTemplate,
-  getTotalRepliesCount,
 } from '@/lib/utils';
 import { GET_MENTIONS, GET_USER, getPostReplies } from '@/server/constants';
 import { clerkClient } from '@clerk/nextjs/server';
@@ -350,7 +349,6 @@ export const adminRouter = createTRPCRouter({
             return {
               ...postWithTokens,
               likesCount: post.likes.length,
-              repliesCount: getTotalRepliesCount(post) as number,
             };
           }),
         );

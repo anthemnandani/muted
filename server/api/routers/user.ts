@@ -6,11 +6,7 @@ import {
   PostStatus,
   Privacy,
 } from '@/generated/prisma/enums';
-import {
-  enrichPostWithTokens,
-  getTotalRepliesCount,
-  getUserEmail,
-} from '@/lib/utils';
+import { enrichPostWithTokens, getUserEmail } from '@/lib/utils';
 import {
   GET_MENTIONS,
   GET_REPOSTS,
@@ -192,7 +188,6 @@ export const userRouter = createTRPCRouter({
             ...postWithTokens,
             likesCount: post.likes.length,
             repostsCount: post.reposts.length,
-            repliesCount: getTotalRepliesCount(post) as number,
             bookmarksCount: new Set(post.bookmarks.map((b) => b.userId)).size,
           };
         }),
@@ -291,7 +286,6 @@ export const userRouter = createTRPCRouter({
             ...postWithTokens,
             likesCount: post.likes.length,
             repostsCount: post.reposts.length,
-            repliesCount: getTotalRepliesCount(post) as number,
             bookmarksCount: new Set(post.bookmarks.map((b) => b.userId)).size,
           };
         }),
@@ -387,7 +381,6 @@ export const userRouter = createTRPCRouter({
           ...post,
           likesCount: post.likes.length,
           repostsCount: post.reposts.length,
-          repliesCount: getTotalRepliesCount(post) as number,
           bookmarksCount: new Set(post.bookmarks.map((b) => b.userId)).size,
         };
       });
@@ -495,7 +488,7 @@ export const userRouter = createTRPCRouter({
               hideLikes: true,
               turnOffComments: true,
               privacy: true,
-              replies: true,
+              repliesCount: true,
               author: {
                 select: {
                   ...GET_USER,
@@ -522,7 +515,6 @@ export const userRouter = createTRPCRouter({
             ...postWithTokens,
             likesCount: repost.post!.likes.length,
             repostsCount: repost.post!.reposts.length,
-            repliesCount: repost.post!.replies.length,
             bookmarksCount: new Set(
               repost.post!.bookmarks.map((bookmark) => bookmark.userId),
             ).size,
@@ -644,6 +636,7 @@ export const userRouter = createTRPCRouter({
               path: true,
               hideLikes: true,
               turnOffComments: true,
+              repliesCount: true,
               privacy: true,
               author: {
                 select: {
@@ -674,7 +667,6 @@ export const userRouter = createTRPCRouter({
             ...postWithTokens,
             likesCount: likedPost.post!.likes.length,
             repostsCount: likedPost.post!.reposts.length,
-            repliesCount: getTotalRepliesCount(likedPost.post) as number,
             bookmarksCount: new Set(
               likedPost.post!.bookmarks.map((bookmark) => bookmark.userId),
             ).size,

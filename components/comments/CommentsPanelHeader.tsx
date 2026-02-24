@@ -14,7 +14,7 @@ const CommentsPanelHeader = ({
         <h2 className='text-lg font-semibold text-white'>
           Comment{repliesCount === 1 ? '' : 's'}
         </h2>
-        <span className='text-gray-400 text-sm'>{repliesCount}</span>
+        <span className='text-white/50 text-sm mt-0.5'>{repliesCount}</span>
       </div>
       <div className='flex items-center gap-3'>
         <SortComments />
@@ -22,7 +22,7 @@ const CommentsPanelHeader = ({
           <button
             type='button'
             title='Close'
-            className='text-gray-400'
+            className='text-white/50'
             onClick={onClose}
           >
             <X className='size-5' />

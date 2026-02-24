@@ -13,7 +13,6 @@ import {
   GET_USER,
   getAuthorAndHiddenSelect,
   getBookmarksWithBlockFilter,
-  getCommentRepliesCount,
   getLikesWithBlockFilter,
 } from '@/server/constants';
 import { createId } from '@paralleldrive/cuid2';
@@ -132,6 +131,7 @@ export const threadRouter = createTRPCRouter({
         const textToPost = text || '';
         const filteredText = filter.clean(textToPost);
         const hashtags = extractHashtags(filteredText);
+        const path = `/${id}/`;
 
         const transactionResult = await db.$transaction(async (prisma) => {
           let linkPreviewResult;
@@ -157,6 +157,7 @@ export const threadRouter = createTRPCRouter({
               privacy,
               quoteId,
               status,
+              path,
               linkPreviewUrl: linkPreviewResult?.url,
               media: media ? { create: media } : undefined,
               hashtags: {
@@ -453,7 +454,8 @@ export const threadRouter = createTRPCRouter({
             throw new TRPCError({ code: 'FORBIDDEN' });
           }
 
-          const path = `/${parentThread.id}`;
+          const parentPath = parentThread.path ?? `/${parentThread.id}/`;
+          const path = `${parentPath}${threadId}/`;
 
           await prisma.thread.update({
             where: { id: parentThread.id },
@@ -614,7 +616,7 @@ export const threadRouter = createTRPCRouter({
           if (isBlocked) {
             throw new TRPCError({ code: 'FORBIDDEN' });
           }
-          const parentPath = parentComment.path ?? `/${parentComment.id}`;
+          const parentPath = parentComment.path ?? `/${parentComment.id}/`;
           const path = `${parentPath}${replyId}/`;
 
           const ancestorIds = parentPath.split('/').filter(Boolean);
@@ -878,14 +880,52 @@ export const threadRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       const { db } = ctx;
+
       try {
-        await db.thread.update({
-          where: {
-            id: input.id,
-          },
-          data: {
-            deleted: true,
-          },
+        await db.$transaction(async (prisma) => {
+          const threadToDelete = await prisma.thread.findUnique({
+            where: { id: input.id },
+            select: { id: true, path: true, deleted: true },
+          });
+
+          if (!threadToDelete) {
+            throw new TRPCError({ code: 'NOT_FOUND' });
+          }
+
+          if (threadToDelete.deleted) {
+            return { success: true };
+          }
+
+          const currentPath = threadToDelete.path ?? `/${threadToDelete.id}/`;
+
+          const nodesToBeDeletedCount = await prisma.thread.count({
+            where: {
+              OR: [{ id: input.id }, { path: { startsWith: currentPath } }],
+              deleted: false,
+            },
+          });
+
+          const ancestorIds = currentPath
+            .split('/')
+            .filter(Boolean)
+            .filter((id) => id !== input.id);
+
+          await prisma.thread.updateMany({
+            where: {
+              OR: [{ id: input.id }, { path: { startsWith: currentPath } }],
+            },
+            data: {
+              deleted: true,
+              deletedAt: new Date(),
+            },
+          });
+
+          if (ancestorIds.length > 0 && nodesToBeDeletedCount > 0) {
+            await prisma.thread.updateMany({
+              where: { id: { in: ancestorIds } },
+              data: { repliesCount: { decrement: nodesToBeDeletedCount } },
+            });
+          }
         });
 
         return { success: true };
@@ -974,7 +1014,6 @@ export const threadRouter = createTRPCRouter({
             ...threadWithTokens,
             likesCount: item.likes.length,
             repostsCount: item.reposts.length,
-            repliesCount: item.repliesCount,
             bookmarksCount: new Set(item.bookmarks.map((b) => b.userId)).size,
           };
         }),
@@ -1036,7 +1075,6 @@ export const threadRouter = createTRPCRouter({
             ...threadWithTokens,
             likesCount: thread.likes.length,
             repostsCount: thread.reposts.length,
-            repliesCount: thread.repliesCount,
             bookmarksCount: new Set(thread.bookmarks.map((b) => b.userId)).size,
           };
         }),
@@ -1088,7 +1126,6 @@ export const threadRouter = createTRPCRouter({
           ...reply,
           likesCount: reply.likes.length,
           repostsCount: reply.reposts.length,
-          repliesCount: reply.repliesCount,
           bookmarksCount: new Set(reply.bookmarks.map((b) => b.userId)).size,
         };
       });
@@ -1147,7 +1184,6 @@ export const threadRouter = createTRPCRouter({
               ...repostWithTokens,
               likesCount: repost.thread!.likes.length,
               repostsCount: repost.thread!.reposts.length,
-              repliesCount: repost.thread!.repliesCount,
               bookmarksCount: new Set(
                 repost.thread!.bookmarks.map((b) => b.userId),
               ).size,
@@ -1178,7 +1214,6 @@ export const threadRouter = createTRPCRouter({
         ...threadWithTokens,
         likesCount: thread.likes.length,
         repostsCount: thread.reposts.length,
-        repliesCount: thread.repliesCount,
         bookmarksCount: new Set(thread.bookmarks.map((b) => b.userId)).size,
       };
     }),
@@ -1214,7 +1249,6 @@ export const threadRouter = createTRPCRouter({
         ...item,
         likesCount: item.likes.length,
         repostsCount: item.reposts.length,
-        repliesCount: item.repliesCount,
         bookmarksCount: new Set(item.bookmarks.map((b) => b.userId)).size,
       }));
 
@@ -1261,7 +1295,6 @@ export const threadRouter = createTRPCRouter({
         ...t,
         likesCount: t.likes.length,
         repostsCount: t.reposts.length,
-        repliesCount: t.repliesCount,
         bookmarksCount: new Set(t.bookmarks.map((b) => b.userId)).size,
         repostedBy: null,
         repostedAt: null,
@@ -1311,7 +1344,6 @@ export const threadRouter = createTRPCRouter({
         ...t,
         likesCount: t.likes.length,
         repostsCount: t.reposts.length,
-        repliesCount: t.repliesCount,
         bookmarksCount: new Set(t.bookmarks.map((b) => b.userId)).size,
         repostedBy: null,
         repostedAt: null,
@@ -1357,7 +1389,6 @@ export const threadRouter = createTRPCRouter({
           likeCount: threadInfo.likes,
           user: threadInfo.author,
           likes: threadInfo.likes.length,
-          repliesCount: threadInfo.repliesCount,
           media: threadInfo.media,
           linkPreview: threadInfo.linkPreview,
           mentions: threadInfo.mentions,
@@ -1405,7 +1436,7 @@ export const threadRouter = createTRPCRouter({
         take: limit + 1,
         skip: 0,
         cursor: cursor ? { id: cursor.id } : undefined,
-        select: { ...THREAD_SELECT(userId), ...getCommentRepliesCount(userId) },
+        select: THREAD_SELECT(userId),
         orderBy:
           sortBy === 'LATEST' ? { createdAt: 'desc' } : { createdAt: 'asc' },
       });
@@ -1424,7 +1455,6 @@ export const threadRouter = createTRPCRouter({
         ...comment,
         likesCount: comment.likes.length,
         repostsCount: comment.reposts.length,
-        repliesCount: comment._count.replies,
         bookmarksCount: new Set(
           comment.bookmarks.map((bookmark) => bookmark.userId),
         ).size,

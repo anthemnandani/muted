@@ -19,10 +19,11 @@ const useDeletePost = ({
       toast.error('Something went wrong');
     },
 
-    onSettled: async () => {
+    onSettled: () => {
       if (isAdmin) {
-        await trpcUtils.admin.getAllPosts.invalidate();
+        trpcUtils.admin.getAllPosts.invalidate();
       }
+      trpcUtils.post.invalidate();
     },
   });
 

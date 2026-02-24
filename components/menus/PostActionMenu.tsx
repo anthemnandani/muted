@@ -8,7 +8,6 @@ import useToggleMuteUser from '@/hooks/useToggleMuteUser';
 import useTogglePinPost from '@/hooks/useTogglePinPost';
 import { PostActionMenuProps } from '@/lib/types';
 import { cn, formatTimeLeft } from '@/lib/utils';
-import useDeletePostStore from '@/store/deletePost';
 import { useMutedUsers } from '@/store/mutedUsers';
 import usePostDialog from '@/store/postDialog';
 import { useReportStore } from '@/store/reportStore';
@@ -45,7 +44,7 @@ const PostActionMenu: React.FC<PostActionMenuProps> = ({
   const [menuOpen, setMenuOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const { openPostReport } = useReportStore();
-  const { openDeleteDialog, setOpenDeleteDialog } = useDeletePostStore();
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const { handleDeletePost } = useDeletePost({
     id: postId,
     onClose: () => {

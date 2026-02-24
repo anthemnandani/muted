@@ -15,7 +15,6 @@ import {
   extractHashtags,
   formatDateAndTime,
   formatUTCDate,
-  getTotalRepliesCount,
 } from '@/lib/utils';
 import {
   GET_MENTIONS,
@@ -332,7 +331,6 @@ export const postRouter = createTRPCRouter({
             ...postWithTokens,
             likesCount: post.likes.length,
             repostsCount: post.reposts.length,
-            repliesCount: getTotalRepliesCount(post) as number,
             bookmarksCount: new Set(
               post.bookmarks.map((bookmark) => bookmark.userId),
             ).size,
@@ -487,7 +485,6 @@ export const postRouter = createTRPCRouter({
             ...postWithTokens,
             likesCount: post.likes.length,
             repostsCount: post.reposts.length,
-            repliesCount: getTotalRepliesCount(post) as number,
             bookmarksCount: new Set(
               post.bookmarks.map((bookmark) => bookmark.userId),
             ).size,
@@ -573,8 +570,8 @@ export const postRouter = createTRPCRouter({
           if (isBlocked) {
             throw new TRPCError({ code: 'FORBIDDEN' });
           }
-
-          const path = `/${parentPost.id}`;
+          const parentPath = parentPost.path ?? `/${parentPost.id}/`;
+          const path = `${parentPath}${commentId}/`;
 
           await prisma.post.update({
             where: { id: parentPost.id },
@@ -735,7 +732,7 @@ export const postRouter = createTRPCRouter({
           if (isBlocked) {
             throw new TRPCError({ code: 'FORBIDDEN' });
           }
-          const parentPath = parentComment.path ?? `/${parentComment.id}`;
+          const parentPath = parentComment.path ?? `/${parentComment.id}/`;
           const path = `${parentPath}${replyId}/`;
 
           const ancestorIds = parentPath.split('/').filter(Boolean);
@@ -950,7 +947,6 @@ export const postRouter = createTRPCRouter({
           ...postWithTokens,
           likesCount: post.likes.length,
           repostsCount: post.reposts.length,
-          repliesCount: getTotalRepliesCount(post) as number,
           bookmarksCount: new Set(
             post.bookmarks.map((bookmark) => bookmark.userId),
           ).size,
@@ -1003,6 +999,7 @@ export const postRouter = createTRPCRouter({
           text: true,
           parentPostId: true,
           quoteId: true,
+          repliesCount: true,
           path: true,
           pinned: true,
           privacy: true,
@@ -1041,7 +1038,6 @@ export const postRouter = createTRPCRouter({
         ...comment,
         likesCount: comment.likes.length,
         repostsCount: comment.reposts.length,
-        repliesCount: comment._count.replies,
         bookmarksCount: new Set(
           comment.bookmarks.map((bookmark) => bookmark.userId),
         ).size,
@@ -1099,6 +1095,7 @@ export const postRouter = createTRPCRouter({
           text: true,
           parentPostId: true,
           quoteId: true,
+          repliesCount: true,
           path: true,
           pinned: true,
           privacy: true,
@@ -1284,11 +1281,31 @@ export const postRouter = createTRPCRouter({
             throw new TRPCError({ code: 'NOT_FOUND' });
           }
 
+          const currentPath = postToDelete.path ?? `/${postToDelete.id}/`;
+
+          const nodesToBeDeletedCount = await prisma.post.count({
+            where: {
+              path: { startsWith: currentPath },
+            },
+          });
+
+          const ancestorIds = currentPath
+            .split('/')
+            .filter(Boolean)
+            .filter((id) => id !== input.id);
+
           await prisma.post.delete({
             where: {
               id: input.id,
             },
           });
+
+          if (ancestorIds.length > 0) {
+            await prisma.post.updateMany({
+              where: { id: { in: ancestorIds } },
+              data: { repliesCount: { decrement: nodesToBeDeletedCount } },
+            });
+          }
 
           return { success: true };
         });
@@ -1450,6 +1467,7 @@ export const postRouter = createTRPCRouter({
           path: true,
           hideLikes: true,
           turnOffComments: true,
+          repliesCount: true,
           pinned: true,
           privacy: true,
           author: {
@@ -1499,7 +1517,6 @@ export const postRouter = createTRPCRouter({
             ...postWithTokens,
             likesCount: post.likes.length,
             repostsCount: post.reposts.length,
-            repliesCount: getTotalRepliesCount(post) as number,
             bookmarksCount: new Set(
               post.bookmarks.map((bookmark) => bookmark.userId),
             ).size,
@@ -1596,6 +1613,7 @@ export const postRouter = createTRPCRouter({
           path: true,
           hideLikes: true,
           turnOffComments: true,
+          repliesCount: true,
           pinned: true,
           privacy: true,
           author: {
@@ -1628,7 +1646,6 @@ export const postRouter = createTRPCRouter({
             ...postWithTokens,
             likesCount: post.likes.length,
             repostsCount: post.reposts.length,
-            repliesCount: getTotalRepliesCount(post) as number,
             bookmarksCount: new Set(
               post.bookmarks.map((bookmark) => bookmark.userId),
             ).size,

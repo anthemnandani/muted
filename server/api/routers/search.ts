@@ -1,10 +1,6 @@
 import { Prisma } from '@/generated/prisma/client';
 import { FileType, PostStatus } from '@/generated/prisma/enums';
-import {
-  enrichPostWithTokens,
-  extractSuggestions,
-  getTotalRepliesCount,
-} from '@/lib/utils';
+import { enrichPostWithTokens, extractSuggestions } from '@/lib/utils';
 import {
   GET_MENTIONS,
   GET_REPOSTS,
@@ -296,7 +292,6 @@ export const searchRouter = createTRPCRouter({
             ...postWithTokens,
             likesCount: post.likes.length,
             repostsCount: post.reposts.length,
-            repliesCount: getTotalRepliesCount(post) as number,
             bookmarksCount: new Set(
               post.bookmarks.map((bookmark) => bookmark.userId),
             ).size,

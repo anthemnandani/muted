@@ -3,7 +3,7 @@ import { UseDeletePostProps } from '@/lib/types';
 import { api } from '@/trpc/react';
 import { toast } from 'sonner';
 
-const useDeleteThread = ({ id, onClose, isAdmin }: UseDeletePostProps) => {
+const useDeleteThread = ({ id, onClose }: UseDeletePostProps) => {
   const { performAction } = useOptimisticAction();
   const utils = api.useUtils();
 

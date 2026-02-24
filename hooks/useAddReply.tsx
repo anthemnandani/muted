@@ -31,8 +31,8 @@ const useAddReply = ({ postId, threadId, commentId }: UseAddReplyProps) => {
         }
         toast.error('ReplyingError: Something went wrong!');
       },
-      onSuccess: async () => {
-        await trpcUtils.post.invalidate();
+      onSuccess: () => {
+        trpcUtils.post.invalidate();
       },
       retry: false,
     });
@@ -52,9 +52,7 @@ const useAddReply = ({ postId, threadId, commentId }: UseAddReplyProps) => {
         toast.error('ReplyingError: Something went wrong!');
       },
       onSettled: () => {
-        trpcUtils.thread.getReplies.invalidate();
-        trpcUtils.thread.getThreadById.invalidate({ id: threadId! });
-        trpcUtils.thread.getComments.invalidate({ id: threadId! });
+        trpcUtils.thread.invalidate();
       },
       retry: false,
     });
