@@ -1683,3 +1683,15 @@ export interface PostDetailsLayoutProps {
   isLastPost?: boolean;
   isFetchingMore?: boolean;
 }
+
+export type Page = {
+  id: string;
+  updatedAt: Date;
+  title: string;
+  slug: string;
+};
+
+export interface RichTextEditorProps {
+  content: string;
+  onChange: (html: string) => void;
+}

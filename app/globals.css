@@ -551,3 +551,8 @@ input[type='range']::-webkit-slider-thumb {
 em-emoji-picker {
   max-height: 400px;
 }
+
+.jodit-toolbar__box {
+  background-color: #18181b !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}

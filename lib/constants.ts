@@ -2,6 +2,7 @@ import { AppealStatus, MessageReportCategory } from '@/generated/prisma/enums';
 import {
   AlertCircle,
   AlertTriangle,
+  BookOpen,
   CheckCircle,
   FileText,
   Flag,
@@ -940,6 +941,11 @@ export const ADMIN_MENU_ITEMS = [
     icon: Flag,
   },
   { title: 'Appeals', url: '/admin/appeals', icon: Shield },
+  {
+    title: 'Pages',
+    url: '/admin/pages',
+    icon: BookOpen,
+  },
 ];
 
 export const ADMIN_ACCOUNT_ITEMS = [

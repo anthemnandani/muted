@@ -1,3 +1,6 @@
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
+
 -- CreateEnum
 CREATE TYPE "Privacy" AS ENUM ('PUBLIC', 'PRIVATE');
 
@@ -17,7 +20,7 @@ CREATE TYPE "PostStatus" AS ENUM ('VISIBLE', 'HIDDEN');
 CREATE TYPE "FileType" AS ENUM ('IMAGE', 'VIDEO', 'GIF');
 
 -- CreateEnum
-CREATE TYPE "EncodingStatus" AS ENUM ('PROCESSING', 'ENCODED', 'FAILED');
+CREATE TYPE "EncodingStatus" AS ENUM ('PROCESSING', 'ENCODED', 'FAILED', 'UPLOADED');
 
 -- CreateEnum
 CREATE TYPE "CollectionPrivacy" AS ENUM ('PUBLIC', 'PRIVATE');
@@ -1004,3 +1007,4 @@ ALTER TABLE "_ThreadHashtags" ADD CONSTRAINT "_ThreadHashtags_A_fkey" FOREIGN KE
 
 -- AddForeignKey
 ALTER TABLE "_ThreadHashtags" ADD CONSTRAINT "_ThreadHashtags_B_fkey" FOREIGN KEY ("B") REFERENCES "Thread"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+

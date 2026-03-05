@@ -2,6 +2,7 @@ generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
 }
+
 datasource db {
   provider = "postgresql"
 }
@@ -99,7 +100,7 @@ model Post {
   author          User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId        String
   text            String?
-  media        Media[]
+  media           Media[]
   likes           Like[]
   parentPostId    String?
   parentPost      Post?          @relation("rootPost", fields: [parentPostId], references: [id], onDelete: Cascade)
@@ -793,4 +794,12 @@ model Suspension {
 
   @@index([userId])
   @@index([isActive])
+}
+
+model Page {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  content   String   @db.Text
+  updatedAt DateTime @updatedAt
 }

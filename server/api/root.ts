@@ -6,6 +6,7 @@ import { collectionRouter } from './routers/collection';
 import { keywordRouter } from './routers/keyword';
 import { likeRouter } from './routers/like';
 import { notificationRouter } from './routers/notification';
+import { pageRouter } from './routers/page';
 import { postRouter } from './routers/post';
 import { reportRouter } from './routers/report';
 import { searchRouter } from './routers/search';
@@ -27,6 +28,7 @@ export const appRouter = createTRPCRouter({
   keyword: keywordRouter,
   admin: adminRouter,
   appeal: appealRouter,
+  page: pageRouter,
 });
 
 export type AppRouter = typeof appRouter;

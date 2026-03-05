@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import useHomeNavigation from '@/hooks/useHomeNavigation';
-import { ADMIN_ACCOUNT_ITEMS, ADMIN_MENU_ITEMS } from '@/lib/constants';
+import { ADMIN_MENU_ITEMS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { SignOutButton } from '@clerk/nextjs';
 import { LogOut } from 'lucide-react';
@@ -55,7 +55,7 @@ const AdminSidebar = () => {
                     isActive={pathname === item.url}
                     className={cn(
                       'text-white/60 hover:text-white/90 hover:bg-white/5',
-                      'data-[active=true]:bg-white/5 data-[active=true]:text-white/90'
+                      'data-[active=true]:bg-white/5 data-[active=true]:text-white/90',
                     )}
                   >
                     <Link href={item.url} className='flex items-center gap-3'>

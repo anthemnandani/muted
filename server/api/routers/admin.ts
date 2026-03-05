@@ -1005,4 +1005,35 @@ export const adminRouter = createTRPCRouter({
 
       return { success: true };
     }),
+
+  upsertPage: adminProcedure
+    .input(
+      z.object({
+        slug: z.string(),
+        title: z.string(),
+        content: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.page.upsert({
+        where: { slug: input.slug },
+        update: {
+          title: input.title,
+          content: input.content,
+        },
+        create: {
+          slug: input.slug,
+          title: input.title,
+          content: input.content,
+        },
+      });
+    }),
+
+  deletePage: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.page.delete({
+        where: { id: input.id },
+      });
+    }),
 });

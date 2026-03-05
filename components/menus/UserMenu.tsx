@@ -5,9 +5,11 @@ import { SignOutButton, useUser } from '@clerk/nextjs';
 import {
   AlertCircle,
   Bookmark,
+  FileText,
   Heart,
   LogOut,
   Settings,
+  Shield,
   ShieldCheck,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -42,6 +44,18 @@ const UserMenu = () => {
           onClick={() => router.push('/setting')}
         />
         <MenuItem icon={AlertCircle} label='Report a problem' />
+        <DropdownMenuSeparator />
+        <MenuItem
+          icon={FileText}
+          label='Terms & Conditions'
+          onClick={() => router.push('/pages/terms-and-conditions')}
+        />
+        <MenuItem
+          icon={Shield}
+          label='Privacy Policy'
+          onClick={() => router.push('/pages/privacy-policy')}
+        />
+        <DropdownMenuSeparator />
         {userRole === Role.ADMIN && (
           <MenuItem
             label='Admin Panel'
