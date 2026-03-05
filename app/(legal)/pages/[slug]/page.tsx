@@ -1,6 +1,5 @@
 import NotFound from '@/app/not-found';
 import { db } from '@/server/db';
-import { api } from '@/trpc/server';
 import { Metadata } from 'next';
 
 export async function generateMetadata({
@@ -25,8 +24,8 @@ export default async function DynamicContentPage({
 }: {
   params: { slug: string };
 }) {
-  const page = await api.page.getPage.query({
-    slug: params.slug,
+  const page = await db.page.findUnique({
+    where: { slug: params.slug },
   });
 
   if (!page) {

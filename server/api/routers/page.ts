@@ -1,8 +1,8 @@
 import z from 'zod';
-import { createTRPCRouter, privateProcedure } from '../trpc';
+import { createTRPCRouter, publicProcedure } from '../trpc';
 
 export const pageRouter = createTRPCRouter({
-  getAllPages: privateProcedure.query(async ({ ctx }) => {
+  getAllPages: publicProcedure.query(async ({ ctx }) => {
     return ctx.db.page.findMany({
       orderBy: { updatedAt: 'desc' },
       select: {
@@ -14,7 +14,7 @@ export const pageRouter = createTRPCRouter({
     });
   }),
 
-  getPage: privateProcedure
+  getPage: publicProcedure
     .input(z.object({ slug: z.string() }))
     .query(async ({ ctx, input }) => {
       return ctx.db.page.findUnique({
