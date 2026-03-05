@@ -1,5 +1,5 @@
 import NotFound from '@/app/not-found';
-import { db } from '@/server/db';
+import { getPublicPage } from '@/lib/actions/page.actions';
 import { Metadata } from 'next';
 
 export async function generateMetadata({
@@ -7,10 +7,7 @@ export async function generateMetadata({
 }: {
   params: { slug: string };
 }): Promise<Metadata> {
-  const page = await db.page.findUnique({
-    where: { slug: params.slug },
-    select: { title: true },
-  });
+  const page = await getPublicPage(params.slug);
 
   if (!page) return {};
 
@@ -24,9 +21,7 @@ export default async function DynamicContentPage({
 }: {
   params: { slug: string };
 }) {
-  const page = await db.page.findUnique({
-    where: { slug: params.slug },
-  });
+  const page = await getPublicPage(params.slug);
 
   if (!page) {
     return <NotFound />;

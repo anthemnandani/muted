@@ -11,7 +11,7 @@ import { api } from '@/trpc/react';
 import AdminPageTableRow from './AdminPageTableRow';
 
 const PagesTable = () => {
-  const { data: pages, isLoading } = api.page.getAllPages.useQuery(undefined, {
+  const { data: pages, isLoading } = api.admin.getAllPages.useQuery(undefined, {
     staleTime: Infinity,
     refetchOnWindowFocus: false,
     retry: false,

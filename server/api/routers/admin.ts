@@ -1006,6 +1006,26 @@ export const adminRouter = createTRPCRouter({
       return { success: true };
     }),
 
+  getAllPages: adminProcedure.query(async ({ ctx }) => {
+    return ctx.db.page.findMany({
+      orderBy: { updatedAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        updatedAt: true,
+      },
+    });
+  }),
+
+  getPage: adminProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.page.findUnique({
+        where: { slug: input.slug },
+      });
+    }),
+
   upsertPage: adminProcedure
     .input(
       z.object({

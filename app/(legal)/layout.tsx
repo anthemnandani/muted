@@ -1,12 +1,12 @@
 import LegalSidebar from '@/components/sidebars/LegalSidebar';
-import { api } from '@/trpc/server';
+import { getAllPublicPages } from '@/lib/actions/page.actions';
 
 export default async function PagesLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const pages = await api.page.getAllPages.query();
+  const pages = await getAllPublicPages();
   return (
     <div className='flex flex-col md:flex-row min-h-screen'>
       <LegalSidebar pages={pages} />
