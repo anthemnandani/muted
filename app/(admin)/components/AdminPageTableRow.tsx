@@ -15,8 +15,8 @@ const AdminPageTableRow = ({ id, updatedAt, title, slug }: Page) => {
   const { mutate: deletePage, isPending: isDeleting } =
     api.admin.deletePage.useMutation({
       onSettled: async () => {
-        await utils.page.getAllPages.invalidate();
-        await utils.page.getPage.invalidate();
+        await utils.admin.getAllPages.invalidate();
+        await utils.admin.getPage.invalidate();
       },
     });
 

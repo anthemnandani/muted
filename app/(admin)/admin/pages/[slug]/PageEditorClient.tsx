@@ -23,7 +23,7 @@ const PageEditorClient = ({ slug }: { slug: string }) => {
   const [title, setTitle] = useState(urlTitle);
   const [content, setContent] = useState('');
 
-  const { data: pageData, isLoading } = api.page.getPage.useQuery(
+  const { data: pageData, isLoading } = api.admin.getPage.useQuery(
     {
       slug,
     },
@@ -44,8 +44,8 @@ const PageEditorClient = ({ slug }: { slug: string }) => {
       toast.error('Something went wrong! Please try again later.');
     },
     onSettled: async () => {
-      await utils.page.getAllPages.invalidate();
-      await utils.page.getPage.invalidate();
+      await utils.admin.getAllPages.invalidate();
+      await utils.admin.getPage.invalidate();
     },
   });
 
