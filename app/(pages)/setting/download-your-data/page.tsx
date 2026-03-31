@@ -1,7 +1,9 @@
+import { Metadata } from 'next';
 import DownloadDataClient from './DownloadDataClient';
 
-export const metadata = {
-  title: 'Privacy and Settings',
+export const metadata: Metadata = {
+  title: 'Download Your Data',
+  description: 'Download your Muted account data.',
 };
 
 const DownloadDataPage = () => {

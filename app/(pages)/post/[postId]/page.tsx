@@ -7,8 +7,9 @@ export async function generateMetadata({
 }: {
   params: { postId: string };
 }): Promise<Metadata> {
-  const postId = params.postId;
-  const postData = await getPostMetadata(postId);
+  const postData = await getPostMetadata(params.postId);
+  const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
+  const fallbackImage = `${APP_URL}/og-image.png`; // Null-safe fallback
 
   if (!postData) {
     return {
@@ -17,41 +18,62 @@ export async function generateMetadata({
     };
   }
 
+  // Author name
+  const authorName = postData.author.fullName || postData.author.username;
+
+  // Use post media if exists, else fallback image
+  const image = postData.mediaUrl || fallbackImage;
+
+  // Check if post is a video
+  const isVideo = postData.mediaType === 'VIDEO';
+
+  // Description (truncated to 160 chars)
   const description = postData.text
     ? postData.text.length > 160
       ? `${postData.text.substring(0, 157)}...`
       : postData.text
-    : `Post by ${postData.author.fullName || postData.author.username}`;
+    : `Post by ${authorName} on Muted`;
 
-  const image = postData.mediaUrl;
-
+  // Title includes author for SEO
   const title = postData.text
-    ? `${postData.text.substring(0, 50)}${
-        postData.text.length > 50 ? '...' : ''
-      }`
-    : `${postData.author.username}'s post`;
+    ? `${postData.text.substring(0, 60)}${postData.text.length > 60 ? '...' : ''} — ${authorName} on Muted`
+    : `${authorName}'s post on Muted`;
 
   return {
     title,
     description,
+    alternates: {
+      canonical: `${APP_URL}/post/${params.postId}`, // canonical URL
+    },
     openGraph: {
       title,
       description,
-      type: 'article',
-      images: [{ url: image! }],
+      type: isVideo ? 'video.other' : 'article', // video-specific OG type
+      images: [{ url: image, width: 1200, height: 630 }],
+      url: `${APP_URL}/post/${params.postId}`,
       publishedTime: postData.createdAt.toISOString(),
-      authors: [postData.author.fullName || postData.author.username],
+      authors: [authorName],
+      siteName: 'Muted',
+      ...(isVideo && {
+        video: {
+          url: image, // assuming mediaUrl is video link
+          type: 'video/mp4',
+          width: 1280,
+          height: 720,
+        },
+      }),
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: [image!],
+      images: [image],
       creator: `@${postData.author.username}`,
     },
   };
 }
 
+// Functional component remains unchanged
 export default function PostDetails({
   params,
 }: {

@@ -11,8 +11,22 @@ export async function generateMetadata({
 
   if (!page) return {};
 
+  // Strip HTML tags for description
+  const plainText = page.content.replace(/<[^>]*>/g, '');
+
+  const description =
+    plainText.length > 160
+      ? `${plainText.substring(0, 157)}...`
+      : plainText;
+
   return {
-    title: `${page.title} | Muted Social`,
+    title: `${page.title} | Muted`,
+    description,
+    openGraph: {
+      title: `${page.title} | Muted`,
+      description,
+      type: 'article',
+    },
   };
 }
 

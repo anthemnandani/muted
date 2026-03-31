@@ -3,6 +3,23 @@ import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Activity',
+  description: 'View your recent activity, replies, and interactions on Muted.',
+  openGraph: {
+    title: 'Activity',
+    description: 'View your recent activity on Muted.',
+    type: 'website',
+    url: '/activity',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Activity',
+    description: 'View your recent activity on Muted.',
+  },
+};
 
 export default async function Page() {
   const user = await currentUser();

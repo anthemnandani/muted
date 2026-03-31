@@ -4,7 +4,26 @@ import LeftSideBar from '@/components/sidebars/LeftSideBar';
 import { PostNavigatorProvider } from '@/contexts/PostNavigatorContext';
 import { db } from '@/server/db';
 import { currentUser } from '@clerk/nextjs/server';
+import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+
+export const metadata: Metadata = {
+  title: {
+    default: 'Muted',
+    template: '%s | Muted',
+  },
+  description: 'Muted is a social platform to share posts, videos, and conversations.',
+  openGraph: {
+    title: 'Muted',
+    description: 'Share posts, videos, and connect with others on Muted.',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Muted',
+    description: 'Join Muted and explore content.',
+  },
+};
 
 export default async function PagesLayout({
   children,
