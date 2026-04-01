@@ -15,6 +15,21 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   const { userId, sessionClaims } = await auth();
   const { pathname } = req.nextUrl;
 
+  // ✅ Detect bots (VERY IMPORTANT)
+  const userAgent = req.headers.get('user-agent') || '';
+  const isBot =
+    userAgent.includes('facebookexternalhit') ||
+    userAgent.includes('WhatsApp') ||
+    userAgent.includes('Twitterbot') ||
+    userAgent.includes('LinkedInBot') ||
+    userAgent.includes('Slackbot');
+
+  // ✅ Allow bots to access everything (NO redirect)
+  if (isBot) {
+    return NextResponse.next();
+  }
+
+  // Existing API bypass
   if (pathname.startsWith('/api')) {
     return NextResponse.next();
   }
@@ -44,6 +59,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     return NextResponse.next();
   }
 
+  // Important: skip protect for bots already handled above
   if (!isPublicRoute(req)) {
     await auth.protect();
   }
