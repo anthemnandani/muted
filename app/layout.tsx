@@ -58,14 +58,14 @@ export const metadata: Metadata = {
     title: APP_NAME,
     description: APP_DESCRIPTION,
     siteName: APP_NAME,
-    // images: [
-    //   {
-    //     url: `${APP_URL}/og-image.jpg`,
-    //     width: 1200,
-    //     height: 630,
-    //     alt: APP_NAME,
-    //   },
-    // ],
+    images: [
+      {
+        url: `${APP_URL}/og-image.jpg`,
+        width: 1200,
+        height: 630,
+        alt: APP_NAME,
+      },
+    ],
   },
 
   // Twitter card metadata

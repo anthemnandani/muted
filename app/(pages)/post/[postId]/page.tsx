@@ -9,7 +9,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const postData = await getPostMetadata(params.postId);
   const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
-  const fallbackImage = `${APP_URL}/og-image.png`; // Null-safe fallback
+  const fallbackImage = `${APP_URL}/og-image.png`;
 
   if (!postData) {
     return {
@@ -18,51 +18,70 @@ export async function generateMetadata({
     };
   }
 
-  // Author name
-  const authorName = postData.author.fullName || postData.author.username;
+  // ✅ Author name
+  const authorName =
+    postData.author.fullName || postData.author.username;
 
-  // Use post media if exists, else fallback image
-  const image = postData.mediaUrl || fallbackImage;
+  const image = postData.mediaUrl
+    ? postData.mediaUrl.startsWith('http')
+      ? postData.mediaUrl
+      : `${APP_URL}${postData.mediaUrl}`
+    : fallbackImage;
 
-  // Check if post is a video
   const isVideo = postData.mediaType === 'VIDEO';
 
-  // Description (truncated to 160 chars)
   const description = postData.text
     ? postData.text.length > 160
       ? `${postData.text.substring(0, 157)}...`
       : postData.text
     : `Post by ${authorName} on Muted`;
 
-  // Title includes author for SEO
   const title = postData.text
-    ? `${postData.text.substring(0, 60)}${postData.text.length > 60 ? '...' : ''} — ${authorName} on Muted`
+    ? `${postData.text.substring(0, 60)}${postData.text.length > 60 ? '...' : ''
+    } — ${authorName} on Muted`
     : `${authorName}'s post on Muted`;
+
+  const url = `${APP_URL}/post/${params.postId}`;
 
   return {
     title,
     description,
+
     alternates: {
-      canonical: `${APP_URL}/post/${params.postId}`, // canonical URL
+      canonical: url,
     },
+
+    // ✅ OpenGraph (Facebook, WhatsApp, LinkedIn)
     openGraph: {
       title,
       description,
-      type: isVideo ? 'video.other' : 'article', // video-specific OG type
-      images: [{ url: image, width: 1200, height: 630 }],
-      url: `${APP_URL}/post/${params.postId}`,
+      url,
+      siteName: 'Muted',
+      type: isVideo ? 'video.other' : 'article',
+
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+
       publishedTime: postData.createdAt.toISOString(),
       authors: [authorName],
-      siteName: 'Muted',
+
       ...(isVideo && {
         video: {
-          url: image, // assuming mediaUrl is video link
+          url: image,
           type: 'video/mp4',
           width: 1280,
           height: 720,
         },
       }),
     },
+
+    // ✅ Twitter Card
     twitter: {
       card: 'summary_large_image',
       title,
@@ -73,7 +92,7 @@ export async function generateMetadata({
   };
 }
 
-// Functional component remains unchanged
+// ✅ Page Component
 export default function PostDetails({
   params,
 }: {
