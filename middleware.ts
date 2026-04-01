@@ -18,11 +18,13 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   // ✅ Detect bots (VERY IMPORTANT)
   const userAgent = req.headers.get('user-agent') || '';
   const isBot =
-    userAgent.includes('facebookexternalhit') ||
-    userAgent.includes('WhatsApp') ||
-    userAgent.includes('Twitterbot') ||
-    userAgent.includes('LinkedInBot') ||
-    userAgent.includes('Slackbot');
+  userAgent.includes('facebookexternalhit') ||
+  userAgent.includes('facebot') ||
+  userAgent.includes('twitterbot') ||
+  userAgent.includes('linkedinbot') ||
+  userAgent.includes('whatsapp') ||
+  userAgent.includes('slackbot') ||
+  userAgent.includes('discordbot');
 
   // ✅ Allow bots to access everything (NO redirect)
   if (isBot) {
