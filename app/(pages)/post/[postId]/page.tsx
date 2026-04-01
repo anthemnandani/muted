@@ -18,7 +18,7 @@ export async function generateMetadata({
     };
   }
 
-  // ✅ Author name
+  // Author name
   const authorName =
     postData.author.fullName || postData.author.username;
 
