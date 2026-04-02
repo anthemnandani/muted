@@ -242,7 +242,7 @@ export async function getThreadMetadata(
     await connectDB();
 
     const thread = (await Thread.findById(threadId)
-      .select('content createdAt author')
+      .select('content createdAt author media image') // media/image fields add karo
       .populate({
         path: 'author',
         model: User,
@@ -252,12 +252,19 @@ export async function getThreadMetadata(
 
     if (!thread) return null;
 
+    // Thread model mein jo bhi media field ka naam hai wo use karo
+    const mediaUrl = thread.media?.[0]?.url 
+      || thread.media?.[0]?.fileUrl 
+      || thread.image 
+      || null;
+      
+    const mediaType = thread.media?.[0]?.fileType || null;
+
     return {
       text: thread.content || '',
-      mediaUrl: null,
-      mediaType: null,
+      mediaUrl,
+      mediaType,
       createdAt: thread.createdAt,
-
       author: {
         username: thread.author?.username || '',
         fullName: thread.author?.name || '',
