@@ -83,6 +83,42 @@ async function getInternalLinkPreview(url: string, db: PrismaClient) {
     };
   }
 
+  // /thread/[threadId]
+const threadMatch = path.match(/^\/thread\/([\w-]+)$/);
+if (threadMatch) {
+  const thread = await db.thread.findUnique({
+    where: { id: threadMatch[1] },
+    include: {
+      media: true,
+      author: {
+        select: { username: true, image: true },
+      },
+    },
+  });
+  if (!thread) return null;
+
+  const authorName = thread.author.username;
+  let image: string | null = null;
+
+  if (thread.media.length > 0) {
+    const first = thread.media[0];
+    if (first.fileType === 'IMAGE' || first.fileType === 'GIF') {
+      image = first.fileUrl ?? null;
+    } else if (first.fileType === 'VIDEO' && first.playbackId) {
+      image = getVideoThumbnailUrl(first.playbackId, first.thumbnailUrl as string);
+    }
+  }
+
+  return {
+    url,
+    title: thread.text
+      ? `${thread.text.substring(0, 60)}...`
+      : `${authorName}'s thread on Muted`,
+    description: thread.text || `Thread by ${authorName}`,
+    image: image || thread.author.image || null,
+  };
+}
+
   // /@[username]
   const profileMatch = path.match(/^\/@([\w.-]+)$/);
   if (profileMatch) {
