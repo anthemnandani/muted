@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '@/generated/prisma/client';
+import { Prisma } from '@/generated/prisma/client';
 import {
   EncodingStatus,
   FeedType,
@@ -34,71 +34,6 @@ import * as cheerio from 'cheerio';
 import JSZip from 'jszip';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure, publicProcedure } from '../trpc';
-
-import { getVideoThumbnailUrl } from '@/lib/utils';
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
-
-async function getInternalLinkPreview(url: string, db: PrismaClient) {
-  if (!url.startsWith(APP_URL)) return null;
-
-  const path = new URL(url).pathname;
-
-  // /post/[postId]
-  const postMatch = path.match(/^\/post\/([\w-]+)$/);
-  if (postMatch) {
-    const post = await db.post.findUnique({
-      where: { id: postMatch[1] },
-      include: {
-        media: true,
-        author: {
-          select: { username: true, image: true },
-        },
-      },
-    });
-    if (!post) return null;
-
-    const authorName = post.author.username;
-    let image: string | null = null;
-
-    if (post.media.length > 0) {
-      const first = post.media[0];
-      if (first.fileType === 'IMAGE' || first.fileType === 'GIF') {
-        image = first.fileUrl ?? null;
-      } else if (first.fileType === 'VIDEO' && first.playbackId) {
-        image = getVideoThumbnailUrl(first.playbackId, first.thumbnailUrl as string);
-      }
-    }
-
-    return {
-      url,
-      title: post.text
-        ? `${post.text.substring(0, 60)}...`
-        : `${authorName}'s post on Muted`,
-      description: post.text || `Post by ${authorName}`,
-      image: image || post.author.image || null,
-    };
-  }
-
-  // /@[username]
-  const profileMatch = path.match(/^\/@([\w.-]+)$/);
-  if (profileMatch) {
-    const user = await db.user.findUnique({
-      where: { username: profileMatch[1] },
-      select: { username: true, bio: true, image: true },
-    });
-    if (!user) return null;
-
-    return {
-      url,
-      title: `@${user.username}`,
-      description: user.bio || `${user.username}'s profile on Muted`,
-      image: user.image || null,
-    };
-  }
-
-  return null;
-}
 
 export const postRouter = createTRPCRouter({
   createPost: privateProcedure
@@ -190,15 +125,15 @@ export const postRouter = createTRPCRouter({
               },
               mentions: mentions
                 ? {
-                  create: mentions.map((mention) => ({
-                    index: mention.index,
-                    user: {
-                      connect: {
-                        id: mention.mentionedUserId,
+                    create: mentions.map((mention) => ({
+                      index: mention.index,
+                      user: {
+                        connect: {
+                          id: mention.mentionedUserId,
+                        },
                       },
-                    },
-                  })),
-                }
+                    })),
+                  }
                 : undefined,
             },
             select: {
@@ -662,15 +597,15 @@ export const postRouter = createTRPCRouter({
               },
               mentions: mentions
                 ? {
-                  create: mentions.map((mention) => ({
-                    index: mention.index,
-                    user: {
-                      connect: {
-                        id: mention.mentionedUserId,
+                    create: mentions.map((mention) => ({
+                      index: mention.index,
+                      user: {
+                        connect: {
+                          id: mention.mentionedUserId,
+                        },
                       },
-                    },
-                  })),
-                }
+                    })),
+                  }
                 : undefined,
             },
             select: {
@@ -826,15 +761,15 @@ export const postRouter = createTRPCRouter({
               },
               mentions: mentions
                 ? {
-                  create: mentions.map((mention) => ({
-                    index: mention.index,
-                    user: {
-                      connect: {
-                        id: mention.mentionedUserId,
+                    create: mentions.map((mention) => ({
+                      index: mention.index,
+                      user: {
+                        connect: {
+                          id: mention.mentionedUserId,
+                        },
                       },
-                    },
-                  })),
-                }
+                    })),
+                  }
                 : undefined,
             },
             select: {
@@ -1997,52 +1932,43 @@ export const postRouter = createTRPCRouter({
       return { pinned: !postExists.pinned };
     }),
 
- getLinkInfo: publicProcedure
-  .input(z.object({ url: z.string().url('Invalid URL') }))
-  .query(async ({ input, ctx }) => {
-    try {
-      // Internal Muted URLs ke liye DB se directly lo
+  getLinkInfo: publicProcedure
+    .input(z.object({ url: z.string().url('Invalid URL') }))
+    .query(async ({ input }) => {
       try {
-        const internalPreview = await getInternalLinkPreview(input.url, ctx.db);
-        if (internalPreview) return internalPreview;
-      } catch (internalError) {
-        console.error('Internal preview failed, falling back:', internalError);
-      }
+        const response = await fetch(input.url);
+        if (
+          !response.ok ||
+          !response.headers.get('content-type')?.includes('text/html')
+        ) {
+          return null;
+        }
+        const html = await response.text();
+        const $ = cheerio.load(html);
 
-      // External URLs — existing code as-is
-      const response = await fetch(input.url);
-      if (
-        !response.ok ||
-        !response.headers.get('content-type')?.includes('text/html')
-      ) {
+        const preview = {
+          url: input.url,
+          title:
+            $('meta[property="og:title"]').attr('content') ||
+            $('title').text() ||
+            '',
+          description:
+            $('meta[property="og:description"]').attr('content') ||
+            $('meta[name="description"]').attr('content') ||
+            '',
+          image: $('meta[property="og:image"]').attr('content') || null,
+        };
+
+        if (!preview.title && !preview.description && !preview.image) {
+          return null;
+        }
+
+        return preview;
+      } catch (error) {
+        console.error('Failed to fetch link preview:', error);
         return null;
       }
-      const html = await response.text();
-      const $ = cheerio.load(html);
-
-      const preview = {
-        url: input.url,
-        title:
-          $('meta[property="og:title"]').attr('content') ||
-          $('title').text() ||
-          '',
-        description:
-          $('meta[property="og:description"]').attr('content') ||
-          $('meta[name="description"]').attr('content') ||
-          '',
-        image: $('meta[property="og:image"]').attr('content') || null,
-      };
-
-      if (!preview.title && !preview.description && !preview.image) {
-        return null;
-      }
-
-      return preview;
-    } catch (error) {
-      console.error('Failed to fetch link preview:', error);
-      return null;
-    }
-  }),
+    }),
 
   downloadUserData: privateProcedure
     .input(
@@ -2411,8 +2337,9 @@ export const postRouter = createTRPCRouter({
 
           let muteContent = '';
           for (const user of mutedUsers) {
-            muteContent += `Date: ${formatUTCDate(user.createdAt)}\nUsername: ${user.mutedUser.username
-              }\n\n`;
+            muteContent += `Date: ${formatUTCDate(user.createdAt)}\nUsername: ${
+              user.mutedUser.username
+            }\n\n`;
           }
           profileFolder?.file(
             'Mute List.txt',
