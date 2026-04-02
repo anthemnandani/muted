@@ -223,6 +223,53 @@ export async function deleteThread(id: string, path: string): Promise<void> {
   }
 }
 
+type ThreadMetadataType = {
+  text: string;
+  mediaUrl: string | null;
+  mediaType: string | null;
+  createdAt: Date;
+  author: {
+    username: string;
+    fullName: string;
+    image: string;
+  };
+};
+
+export async function getThreadMetadata(
+  threadId: string
+): Promise<ThreadMetadataType | null> {
+  try {
+    await connectDB();
+
+    const thread = (await Thread.findById(threadId)
+      .select('content createdAt author')
+      .populate({
+        path: 'author',
+        model: User,
+        select: 'username name image',
+      })
+      .lean()) as any;
+
+    if (!thread) return null;
+
+    return {
+      text: thread.content || '',
+      mediaUrl: null,
+      mediaType: null,
+      createdAt: thread.createdAt,
+
+      author: {
+        username: thread.author?.username || '',
+        fullName: thread.author?.name || '',
+        image: thread.author?.image || '',
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching thread metadata:', error);
+    return null;
+  }
+}
+
 // export async function updatePostPaths() {
 //   const postsToUpdate = await db.post.findMany({
 //     where: {

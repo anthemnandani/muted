@@ -21,11 +21,11 @@ export async function generateMetadata({
   const authorName =
     threadData.author.fullName || threadData.author.username;
 
-  const image = threadData.mediaUrl
-    ? threadData.mediaUrl.startsWith('http')
-      ? threadData.mediaUrl
-      : `${APP_URL}${threadData.mediaUrl}`
-    : fallbackImage;
+ const image = threadData.mediaUrl
+  ? threadData.mediaUrl.startsWith('http')
+    ? threadData.mediaUrl
+    : `${APP_URL}${threadData.mediaUrl}`
+  : fallbackImage;
 
   const isVideo = threadData.mediaType === 'VIDEO';
 
