@@ -1997,46 +1997,52 @@ export const postRouter = createTRPCRouter({
       return { pinned: !postExists.pinned };
     }),
 
-  getLinkInfo: publicProcedure
-    .input(z.object({ url: z.string().url('Invalid URL') }))
-    .query(async ({ input, ctx }) => {
+ getLinkInfo: publicProcedure
+  .input(z.object({ url: z.string().url('Invalid URL') }))
+  .query(async ({ input, ctx }) => {
+    try {
+      // Internal Muted URLs ke liye DB se directly lo
       try {
         const internalPreview = await getInternalLinkPreview(input.url, ctx.db);
         if (internalPreview) return internalPreview;
+      } catch (internalError) {
+        console.error('Internal preview failed, falling back:', internalError);
+      }
 
-        const response = await fetch(input.url);
-        if (
-          !response.ok ||
-          !response.headers.get('content-type')?.includes('text/html')
-        ) {
-          return null;
-        }
-        const html = await response.text();
-        const $ = cheerio.load(html);
-
-        const preview = {
-          url: input.url,
-          title:
-            $('meta[property="og:title"]').attr('content') ||
-            $('title').text() ||
-            '',
-          description:
-            $('meta[property="og:description"]').attr('content') ||
-            $('meta[name="description"]').attr('content') ||
-            '',
-          image: $('meta[property="og:image"]').attr('content') || null,
-        };
-
-        if (!preview.title && !preview.description && !preview.image) {
-          return null;
-        }
-
-        return preview;
-      } catch (error) {
-        console.error('Failed to fetch link preview:', error);
+      // External URLs — existing code as-is
+      const response = await fetch(input.url);
+      if (
+        !response.ok ||
+        !response.headers.get('content-type')?.includes('text/html')
+      ) {
         return null;
       }
-    }),
+      const html = await response.text();
+      const $ = cheerio.load(html);
+
+      const preview = {
+        url: input.url,
+        title:
+          $('meta[property="og:title"]').attr('content') ||
+          $('title').text() ||
+          '',
+        description:
+          $('meta[property="og:description"]').attr('content') ||
+          $('meta[name="description"]').attr('content') ||
+          '',
+        image: $('meta[property="og:image"]').attr('content') || null,
+      };
+
+      if (!preview.title && !preview.description && !preview.image) {
+        return null;
+      }
+
+      return preview;
+    } catch (error) {
+      console.error('Failed to fetch link preview:', error);
+      return null;
+    }
+  }),
 
   downloadUserData: privateProcedure
     .input(
