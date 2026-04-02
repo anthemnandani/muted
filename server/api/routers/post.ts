@@ -1,4 +1,4 @@
-import { Prisma } from '@/generated/prisma/client';
+import { Prisma, PrismaClient } from '@/generated/prisma/client';
 import {
   EncodingStatus,
   FeedType,
@@ -34,6 +34,74 @@ import * as cheerio from 'cheerio';
 import JSZip from 'jszip';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure, publicProcedure } from '../trpc';
+
+import { getVideoThumbnailUrl } from '@/lib/utils';
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
+
+async function getInternalLinkPreview(url: string, db: PrismaClient) {
+  const urlObj = new URL(url);
+  const appHost = new URL(APP_URL).hostname;
+
+  if (!urlObj.hostname.includes(appHost)) return null;
+
+  const path = urlObj.pathname;
+
+  // /post/[postId]
+  const postMatch = path.match(/^\/post\/([\w-]+)$/);
+  if (postMatch) {
+    const post = await db.post.findUnique({
+      where: { id: postMatch[1] },
+      include: {
+        media: true,
+        author: {
+          select: { username: true, image: true },
+        },
+      },
+    });
+    if (!post) return null;
+
+    const authorName = post.author.username;
+    let image: string | null = null;
+
+    if (post.media.length > 0) {
+      const first = post.media[0];
+      if (first.fileType === 'IMAGE' || first.fileType === 'GIF') {
+        image = first.fileUrl ?? null;
+      } else if (first.fileType === 'VIDEO' && first.playbackId) {
+        image = getVideoThumbnailUrl(first.playbackId, first.thumbnailUrl as string);
+      }
+    }
+
+    return {
+      url,
+      title: post.text
+        ? `${post.text.substring(0, 60)}...`
+        : `${authorName}'s post on Muted`,
+      description: post.text || `Post by ${authorName}`,
+      image: image || post.author.image || null,
+    };
+  }
+
+  // /@[username]
+  const profileMatch = path.match(/^\/@([\w.-]+)$/);
+  if (profileMatch) {
+    const user = await db.user.findUnique({
+      where: { username: profileMatch[1] },
+      select: { username: true, bio: true, image: true },
+    });
+    if (!user) return null;
+
+    return {
+      url,
+      title: `@${user.username}`,
+      description: user.bio || `${user.username}'s profile on Muted`,
+      image: user.image || null,
+    };
+  }
+
+  return null;
+}
 
 export const postRouter = createTRPCRouter({
   createPost: privateProcedure
@@ -125,15 +193,15 @@ export const postRouter = createTRPCRouter({
               },
               mentions: mentions
                 ? {
-                    create: mentions.map((mention) => ({
-                      index: mention.index,
-                      user: {
-                        connect: {
-                          id: mention.mentionedUserId,
-                        },
+                  create: mentions.map((mention) => ({
+                    index: mention.index,
+                    user: {
+                      connect: {
+                        id: mention.mentionedUserId,
                       },
-                    })),
-                  }
+                    },
+                  })),
+                }
                 : undefined,
             },
             select: {
@@ -597,15 +665,15 @@ export const postRouter = createTRPCRouter({
               },
               mentions: mentions
                 ? {
-                    create: mentions.map((mention) => ({
-                      index: mention.index,
-                      user: {
-                        connect: {
-                          id: mention.mentionedUserId,
-                        },
+                  create: mentions.map((mention) => ({
+                    index: mention.index,
+                    user: {
+                      connect: {
+                        id: mention.mentionedUserId,
                       },
-                    })),
-                  }
+                    },
+                  })),
+                }
                 : undefined,
             },
             select: {
@@ -761,15 +829,15 @@ export const postRouter = createTRPCRouter({
               },
               mentions: mentions
                 ? {
-                    create: mentions.map((mention) => ({
-                      index: mention.index,
-                      user: {
-                        connect: {
-                          id: mention.mentionedUserId,
-                        },
+                  create: mentions.map((mention) => ({
+                    index: mention.index,
+                    user: {
+                      connect: {
+                        id: mention.mentionedUserId,
                       },
-                    })),
-                  }
+                    },
+                  })),
+                }
                 : undefined,
             },
             select: {
@@ -1934,9 +2002,25 @@ export const postRouter = createTRPCRouter({
 
   getLinkInfo: publicProcedure
     .input(z.object({ url: z.string().url('Invalid URL') }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       try {
-        const response = await fetch(input.url);
+        // Internal Muted URLs ke liye DB se directly lo
+        try {
+          const internalPreview = await getInternalLinkPreview(input.url, ctx.db);
+          if (internalPreview) return internalPreview;
+        } catch (internalError) {
+          console.error('Internal preview failed, falling back:', internalError);
+        }
+
+        // External URLs — existing code as-is
+        // const response = await fetch(input.url);
+        const response = await fetch(input.url, {
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
+          },
+          redirect: 'follow',
+        });
         if (
           !response.ok ||
           !response.headers.get('content-type')?.includes('text/html')
@@ -2337,9 +2421,8 @@ export const postRouter = createTRPCRouter({
 
           let muteContent = '';
           for (const user of mutedUsers) {
-            muteContent += `Date: ${formatUTCDate(user.createdAt)}\nUsername: ${
-              user.mutedUser.username
-            }\n\n`;
+            muteContent += `Date: ${formatUTCDate(user.createdAt)}\nUsername: ${user.mutedUser.username
+              }\n\n`;
           }
           profileFolder?.file(
             'Mute List.txt',
