@@ -7,7 +7,7 @@ interface Props {
 }
 
 const useCopyLink = ({ postId, threadId, username }: Props) => {
-  const link = postId ? `/post/${postId}` : `/thread/${threadId}`;
+  const link = postId ? `post/${postId}` : `/thread/${threadId}`;
 
   const handleCopyLink = async () => {
     try {

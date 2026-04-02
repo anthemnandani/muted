@@ -25,6 +25,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { headers } from 'next/headers';
+
 export default async function PagesLayout({
   children,
   modal,
@@ -33,21 +35,27 @@ export default async function PagesLayout({
   modal: React.ReactNode;
 }) {
   const user = await currentUser();
-  if (!user) redirect('/sign-in');
+  const headersList = headers();
+  const userAgent = headersList.get('user-agent') || '';
+  const isCrawler = /facebookexternalhit|facebot|twitterbot|linkedinbot|whatsapp|slackbot|telegrambot|discordbot|googlebot|bingbot|Baiduspider|yandex/i.test(userAgent);
 
-  const dbUser = await db.user.findUnique({
-    where: {
-      id: user?.id,
-    },
-    select: {
-      verified: true,
-      deactivated: true,
-    },
-  });
+  if (!isCrawler) {
+    if (!user) redirect('/sign-in');
 
-  if (dbUser?.deactivated) redirect('/reactivate');
+    const dbUser = await db.user.findUnique({
+      where: {
+        id: user?.id,
+      },
+      select: {
+        verified: true,
+        deactivated: true,
+      },
+    });
 
-  if ((dbUser && !dbUser.verified) || !dbUser) redirect('/account?origin=/');
+    if (dbUser?.deactivated) redirect('/reactivate');
+
+    if ((dbUser && !dbUser.verified) || !dbUser) redirect('/account?origin=/');
+  }
 
   return (
     <>
