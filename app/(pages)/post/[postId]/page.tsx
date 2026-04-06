@@ -9,7 +9,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const postData = await getPostMetadata(params.postId);
   const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
-  const fallbackImage = `${APP_URL}/og-image.png`;
+  // const fallbackImage = `${APP_URL}/og-image.png`;
 
   if (!postData) {
     return {
@@ -22,11 +22,17 @@ export async function generateMetadata({
   const authorName =
     postData.author.fullName || postData.author.username;
 
+  // const image = postData.mediaUrl
+  //   ? postData.mediaUrl.startsWith('http')
+  //     ? postData.mediaUrl
+  //     : `${APP_URL}${postData.mediaUrl}`
+  //   : fallbackImage;
+
   const image = postData.mediaUrl
     ? postData.mediaUrl.startsWith('http')
       ? postData.mediaUrl
       : `${APP_URL}${postData.mediaUrl}`
-    : fallbackImage;
+    : null;
 
   const isVideo = postData.mediaType === 'VIDEO';
 
@@ -59,14 +65,27 @@ export async function generateMetadata({
       siteName: 'Muted',
       type: isVideo ? 'video.other' : 'article',
 
-      images: [
-        {
-          url: image,
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
+      // images: [
+      //   {
+      //     url: image,
+      //     width: 1200,
+      //     height: 630,
+      //     alt: title,
+      //   },
+      // ],
+
+      ...(image
+        ? {
+          images: [
+            {
+              url: image,
+              width: 1200,
+              height: 630,
+              alt: title,
+            },
+          ],
+        }
+        : {}),
 
       publishedTime: postData.createdAt.toISOString(),
       authors: [authorName],
@@ -86,7 +105,8 @@ export async function generateMetadata({
       card: 'summary_large_image',
       title,
       description,
-      images: [image],
+      // images: [image],
+      ...(image ? { images: [image] } : {}),
       creator: `@${postData.author.username}`,
     },
   };

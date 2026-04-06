@@ -9,7 +9,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const threadData = await getThreadMetadata(params.threadId);
   const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
-  const fallbackImage = `${APP_URL}/og-image.png`;
+  // const fallbackImage = `${APP_URL}/og-image.png`;
 
   if (!threadData) {
     return {
@@ -21,11 +21,17 @@ export async function generateMetadata({
   const authorName =
     threadData.author.fullName || threadData.author.username;
 
- const image = threadData.mediaUrl
-  ? threadData.mediaUrl.startsWith('http')
-    ? threadData.mediaUrl
-    : `${APP_URL}${threadData.mediaUrl}`
-  : fallbackImage;
+  //  const image = threadData.mediaUrl
+  //   ? threadData.mediaUrl.startsWith('http')
+  //     ? threadData.mediaUrl
+  //     : `${APP_URL}${threadData.mediaUrl}`
+  //   : fallbackImage;
+
+  const image = threadData.mediaUrl
+    ? threadData.mediaUrl.startsWith('http')
+      ? threadData.mediaUrl
+      : `${APP_URL}${threadData.mediaUrl}`
+    : null;
 
   const isVideo = threadData.mediaType === 'VIDEO';
 
@@ -36,9 +42,8 @@ export async function generateMetadata({
     : `Thread by ${authorName} on Muted`;
 
   const title = threadData.text
-    ? `${threadData.text.substring(0, 60)}${
-        threadData.text.length > 60 ? '...' : ''
-      } — ${authorName} on Muted`
+    ? `${threadData.text.substring(0, 60)}${threadData.text.length > 60 ? '...' : ''
+    } — ${authorName} on Muted`
     : `${authorName}'s thread on Muted`;
 
   const url = `${APP_URL}/thread/${params.threadId}`;
@@ -58,33 +63,57 @@ export async function generateMetadata({
       siteName: 'Muted',
       type: isVideo ? 'video.other' : 'article',
 
-      images: [
-        {
-          url: image,
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
+      // images: [
+      //   {
+      //     url: image,
+      //     width: 1200,
+      //     height: 630,
+      //     alt: title,
+      //   },
+      // ],
+
+      ...(image
+        ? {
+          images: [
+            {
+              url: image,
+              width: 1200,
+              height: 630,
+              alt: title,
+            },
+          ],
+        }
+        : {}),
 
       publishedTime: threadData.createdAt.toISOString(),
       authors: [authorName],
 
-      ...(isVideo && {
-        video: {
-          url: image,
-          type: 'video/mp4',
-          width: 1280,
-          height: 720,
-        },
-      }),
+      // ...(isVideo && {
+      //   video: {
+      //     url: image,
+      //     type: 'video/mp4',
+      //     width: 1280,
+      //     height: 720,
+      //   },
+      // }),
+
+      ...(isVideo && image
+        ? {
+          video: {
+            url: image,
+            type: 'video/mp4',
+            width: 1280,
+            height: 720,
+          },
+        }
+        : {}),
     },
 
     twitter: {
-      card: 'summary_large_image',
+      card: image ? 'summary_large_image' : 'summary',
       title,
       description,
-      images: [image],
+      ...(image ? { images: [image] } : {}),
       creator: `@${threadData.author.username}`,
     },
   };
