@@ -4,6 +4,10 @@ import Community from '../models/community.model';
 import Thread from '../models/thread.model';
 import User from '../models/user.model';
 import connectDB from '../mongoose';
+import { db } from '@/server/db';
+import { FileType } from '@/generated/prisma/enums';
+import { createThumbnailTokenForPreview } from './mux.actions';
+import { getVideoThumbnailUrl } from '../utils';
 
 interface CreateThreadParams {
   content: string;
@@ -235,39 +239,57 @@ type ThreadMetadataType = {
   };
 };
 
+// lib/actions/thread.actions.ts mein — getThreadMetadata replace karo
+
 export async function getThreadMetadata(
   threadId: string
 ): Promise<ThreadMetadataType | null> {
   try {
-    await connectDB();
-
-    const thread = (await Thread.findById(threadId)
-      .select('content createdAt author media')
-      .populate({
-        path: 'author',
-        model: User,
-        select: 'username name image',
-      })
-      .populate({
-        path: 'media',
-        select: 'fileUrl fileType',
-      })
-      .lean()) as any;
+    const thread = await db.thread.findUnique({
+      where: { id: threadId },
+      select: {
+        text: true,
+        createdAt: true,
+        media: true,
+        author: {
+          select: {
+            username: true,
+            fullName: true,
+            image: true,
+          },
+        },
+      },
+    });
 
     if (!thread) return null;
 
-    const firstMedia = thread.media?.[0] ?? null;
-    const mediaUrl = firstMedia?.fileUrl ?? null;
-    const mediaType = firstMedia?.fileType ?? null;
+    let mediaUrl: string | null = null;
+    let mediaType: string | null = null;
+
+    if (thread.media.length > 0) {
+      const firstMedia = thread.media[0];
+      mediaType = firstMedia.fileType;
+
+      if (firstMedia.fileType === FileType.IMAGE || firstMedia.fileType === FileType.GIF) {
+        mediaUrl = firstMedia.fileUrl ?? null;
+      } else if (firstMedia.fileType === FileType.VIDEO && firstMedia.playbackId) {
+        const { thumbnailToken } = await createThumbnailTokenForPreview(
+          firstMedia.playbackId
+        );
+        if (thumbnailToken) {
+          mediaUrl = getVideoThumbnailUrl(firstMedia.playbackId, thumbnailToken);
+        }
+      }
+    }
 
     return {
-      text: thread.content || '',
+      text: thread.text || '',
       mediaUrl,
       mediaType,
       createdAt: thread.createdAt,
       author: {
         username: thread.author?.username || '',
-        fullName: thread.author?.name || '',
+        fullName: thread.author?.fullName || '',
         image: thread.author?.image || '',
       },
     };
