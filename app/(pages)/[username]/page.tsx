@@ -25,7 +25,11 @@ export async function generateMetadata(
 
   const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
 
-  const image = user.image || `${APP_URL}/og-image.png` || `${APP_URL}/assets/muted-logo-blue.png`;
+  // const image = user.image || `${APP_URL}/og-image.png` || `${APP_URL}/assets/muted-logo-blue.png`;
+  const image =
+    user.image && !user.image.includes('img.clerk.com')
+      ? user.image
+      : `${APP_URL}/og-image.png`;
 
   return {
     title,
