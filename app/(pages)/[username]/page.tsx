@@ -27,14 +27,28 @@ export async function generateMetadata(
 
   // const image = user.image || `${APP_URL}/og-image.png` || `${APP_URL}/assets/muted-logo-blue.png`;
 
-  const isClerkUrl = user.image?.includes('img.clerk.com') ||
-    user.image?.includes('images.clerk.dev');
+  const getOgImage = (imageUrl: string | null, appUrl: string): string => {
+    if (!imageUrl) return `${appUrl}/og-image.png`;
 
-  const image = user.image && !isClerkUrl
-    ? user.image
-    : user.image && isClerkUrl
-      ? `${APP_URL}/_next/image?url=${encodeURIComponent(user.image)}&w=400&q=75`
-      : `${APP_URL}/og-image.png`;
+    // img.clerk.com proxy → images.clerk.dev direct URL mein convert karo
+    if (imageUrl.includes('img.clerk.com')) {
+      try {
+        const encoded = imageUrl.split('img.clerk.com/')[1];
+        const decoded = JSON.parse(
+          Buffer.from(encoded, 'base64').toString('utf8')
+        );
+        // decoded.src mein actual URL hoga
+        if (decoded.src) return decoded.src;
+      } catch {
+        return `${appUrl}/og-image.png`;
+      }
+    }
+
+    return imageUrl;
+  };
+
+  // generateMetadata mein:
+  const image = getOgImage(user.image, APP_URL);
 
   return {
     title,
