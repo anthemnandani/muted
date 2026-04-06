@@ -319,7 +319,7 @@ export const getVideoThumbnailUrl = (
   thumbnailToken: string,
 ) => {
   if (!playbackId && !thumbnailToken) return '';
-  return `https://image.mux.com/${playbackId}/thumbnail.png?token=${thumbnailToken}`;
+  return `https://image.mux.com/${playbackId}/thumbnail.jpg?token=${thumbnailToken}`;
 };
 
 export const getImageObjectFit = (
