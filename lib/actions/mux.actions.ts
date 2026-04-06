@@ -104,3 +104,28 @@ export const createThumbnailToken = async (playbackId: string) => {
     return { success: false, error: 'Failed to sign' };
   }
 };
+
+// REPLACE karo arrow function ko:
+async function signThumbnailForPreview(playbackId: string): Promise<string> {
+  const signingKeyId = process.env.MUX_SIGNING_KEY_ID!;
+  const base64PrivateKey = process.env.MUX_PRIVATE_KEY!;
+
+  const privateKey = Buffer.from(base64PrivateKey, 'base64').toString('utf8');
+
+  return await mux.jwt.signPlaybackId(playbackId, {
+    keyId: signingKeyId,
+    keySecret: privateKey,
+    expiration: '24h',
+    type: 'thumbnail',
+  });
+}
+
+export const createThumbnailTokenForPreview = async (playbackId: string) => {
+  try {
+    const thumbnailToken = await signThumbnailForPreview(playbackId);
+    return { success: true, thumbnailToken };
+  } catch (error) {
+    console.error('Preview Thumbnail Token Error:', error);
+    return { success: false, error: 'Failed to sign' };
+  }
+};

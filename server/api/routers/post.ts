@@ -34,7 +34,7 @@ import * as cheerio from 'cheerio';
 import JSZip from 'jszip';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure, publicProcedure } from '../trpc';
-import { createThumbnailToken } from '@/lib/actions/mux.actions';
+import { createThumbnailTokenForPreview } from '@/lib/actions/mux.actions';
 
 import { getVideoThumbnailUrl } from '@/lib/utils';
 
@@ -70,14 +70,9 @@ async function getInternalLinkPreview(url: string, db: PrismaClient) {
       if (first.fileType === 'IMAGE' || first.fileType === 'GIF') {
         image = first.fileUrl ?? null;
       } else if (first.fileType === 'VIDEO' && first.playbackId) {
-        const { thumbnailToken } = await createThumbnailToken(
-          first.playbackId
-        );
+        const { thumbnailToken } = await createThumbnailTokenForPreview(first.playbackId);
         if (thumbnailToken) {
-          image = getVideoThumbnailUrl(
-            first.playbackId,
-            thumbnailToken
-          );
+          image = getVideoThumbnailUrl(first.playbackId, thumbnailToken);
         }
       }
     }

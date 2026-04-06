@@ -3,7 +3,7 @@
 import { FileType } from '@/generated/prisma/enums';
 import { db } from '@/server/db';
 import { getVideoThumbnailUrl } from '../utils';
-import { createThumbnailToken } from './mux.actions';
+import { createThumbnailToken, createThumbnailTokenForPreview } from './mux.actions';
 
 export async function getPostMetadata(postId: string) {
   try {
@@ -33,18 +33,12 @@ export async function getPostMetadata(postId: string) {
       mediaType = firstMedia.fileType;
       if (firstMedia.fileType === FileType.IMAGE) {
         mediaUrl = firstMedia.fileUrl;
-      } else if (
-        firstMedia.fileType === FileType.VIDEO &&
-        firstMedia.playbackId
-      ) {
-        const { thumbnailToken } = await createThumbnailToken(
+      } else if (firstMedia.fileType === FileType.VIDEO && firstMedia.playbackId) {
+        const { thumbnailToken } = await createThumbnailTokenForPreview(
           firstMedia.playbackId
         );
         if (thumbnailToken) {
-          mediaUrl = getVideoThumbnailUrl(
-            firstMedia.playbackId,
-            thumbnailToken
-          );
+          mediaUrl = getVideoThumbnailUrl(firstMedia.playbackId, thumbnailToken);
         }
       }
     }
