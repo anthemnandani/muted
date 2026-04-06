@@ -26,9 +26,14 @@ export async function generateMetadata(
   const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
 
   // const image = user.image || `${APP_URL}/og-image.png` || `${APP_URL}/assets/muted-logo-blue.png`;
-  const image =
-    user.image && !user.image.includes('img.clerk.com')
-      ? user.image
+
+  const isClerkUrl = user.image?.includes('img.clerk.com') ||
+    user.image?.includes('images.clerk.dev');
+
+  const image = user.image && !isClerkUrl
+    ? user.image
+    : user.image && isClerkUrl
+      ? `${APP_URL}/_next/image?url=${encodeURIComponent(user.image)}&w=400&q=75`
       : `${APP_URL}/og-image.png`;
 
   return {
