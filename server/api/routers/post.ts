@@ -124,7 +124,7 @@ async function getInternalLinkPreview(url: string, db: PrismaClient) {
         ? `${thread.text.substring(0, 60)}...`
         : `${authorName}'s thread on Muted`,
       description: thread.text || `Thread by ${authorName}`,
-      image: image || thread.author.image || null,
+      image: image || null,
     };
   }
 
