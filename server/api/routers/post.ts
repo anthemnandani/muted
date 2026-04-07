@@ -109,7 +109,10 @@ async function getInternalLinkPreview(url: string, db: PrismaClient) {
       if (first.fileType === 'IMAGE' || first.fileType === 'GIF') {
         image = first.fileUrl ?? null;
       } else if (first.fileType === 'VIDEO' && first.playbackId) {
-        image = getVideoThumbnailUrl(first.playbackId, first.thumbnailUrl as string);
+        const { thumbnailToken } = await createThumbnailTokenForPreview(first.playbackId);
+        if (thumbnailToken) {
+          image = getVideoThumbnailUrl(first.playbackId, thumbnailToken);
+        }
       }
     }
 
