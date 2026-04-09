@@ -1,6 +1,6 @@
 'use client';
 
-import useWindow from '@/hooks/useWindow';
+import useBreakpoint from '@/hooks/useBreakpoint';
 import { cn } from '@/lib/utils';
 import React from 'react';
 
@@ -11,7 +11,7 @@ const Wrapper = ({
   children: React.ReactNode;
   isSmall?: boolean;
 }) => {
-  const { isMobile } = useWindow();
+  const { isMobile } = useBreakpoint();
   return (
     <main className='flex justify-center h-screen'>
       <section className='w-full'>

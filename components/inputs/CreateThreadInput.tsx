@@ -3,7 +3,6 @@
 import { Icons } from '@/components/icons';
 import { ResizeTextarea } from '@/components/ui/resize-textarea';
 import { FileType } from '@/generated/prisma/enums';
-import useWindow from '@/hooks/useWindow';
 import { CreateThreadInputProps } from '@/lib/types';
 import { getFullName } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
@@ -26,6 +25,7 @@ import EmojiPicker from '../modals/EmojiPicker';
 import GifPicker from '../modals/GifPicker';
 import UserAvatar from '../shared/UserAvatar';
 import { Button } from '../ui/button';
+import useBreakpoint from '@/hooks/useBreakpoint';
 
 const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
   placeholder,
@@ -34,7 +34,7 @@ const CreateThreadInput: React.FC<CreateThreadInputProps> = ({
   isUploading,
   uploadProgress,
 }) => {
-  const { isMobile } = useWindow();
+  const { isMobile } = useBreakpoint();
   const { user } = useUser();
   const { openDialog, text, setText, quoteInfo, editThreadInfo } =
     useThreadStore();

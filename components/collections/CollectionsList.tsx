@@ -1,6 +1,5 @@
 'use client';
 
-import useDevice from '@/hooks/useDevice';
 import { cn } from '@/lib/utils';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
@@ -10,9 +9,10 @@ import { Icons } from '../icons';
 import { ScrollArea } from '../ui/scroll-area';
 import CollectionCover from './CollectionCover';
 import type { BookmarkInfo } from '@/lib/types';
+import useBreakpoint from '@/hooks/useBreakpoint';
 
 const CollectionsList = ({ bookmarkInfo }: { bookmarkInfo: BookmarkInfo }) => {
-  const { isMobile } = useDevice();
+  const { isMobile } = useBreakpoint();
   const { user } = useUser();
   const { data, isLoading, hasNextPage, fetchNextPage } =
     api.collection.getUserCollections.useInfiniteQuery(

@@ -1,12 +1,12 @@
 'use client';
 
-import useDevice from '@/hooks/useDevice';
 import { CollectionsMenuProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import useAddCollection from '@/store/addCollection';
 import { Plus } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import CollectionsList from './CollectionsList';
+import useBreakpoint from '@/hooks/useBreakpoint';
 
 const CollectionsMenu = ({
   postId,
@@ -21,7 +21,7 @@ const CollectionsMenu = ({
     isOpen: isAddCollectionOpen,
     setPostId,
   } = useAddCollection();
-  const { isMobile, isSmallMobile } = useDevice();
+  const { isMobile, isSmallMobile } = useBreakpoint();
 
   const handleNewCollection = (e: React.MouseEvent) => {
     e.preventDefault();

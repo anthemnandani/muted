@@ -10,14 +10,14 @@ import HeaderWrapper from '@/components/shared/HeaderWrapper';
 import Loader from '@/components/shared/Loader';
 import Wrapper from '@/components/shared/Wrapper';
 import { OptimisticActionProvider } from '@/contexts/OptimisticActionContext';
-import useWindow from '@/hooks/useWindow';
+import useBreakpoint from '@/hooks/useBreakpoint';
 import { QUERY_TYPE } from '@/lib/constants';
 import { api } from '@/trpc/react';
 import { useRouter } from 'next/navigation';
 import { Fragment } from 'react';
 
 const ThreadInfoClient = ({ id }: { id: string }) => {
-  const { isMobile } = useWindow();
+  const { isMobile } = useBreakpoint();
   const router = useRouter();
 
   const { data, isLoading, isError } = api.thread.getThreadById.useQuery(

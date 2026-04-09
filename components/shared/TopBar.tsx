@@ -1,14 +1,14 @@
 'use client';
 
-import useDevice from '@/hooks/useDevice';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import UserMenu from '../menus/UserMenu';
+import useBreakpoint from '@/hooks/useBreakpoint';
 
 const TopBar = () => {
-  const { isMobile } = useDevice();
+  const { isMobile } = useBreakpoint();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {

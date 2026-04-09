@@ -10,7 +10,6 @@ import {
   OptimisticActionProvider,
   TargetType,
 } from '@/contexts/OptimisticActionContext';
-import useDevice from '@/hooks/useDevice';
 import { QUERY_TYPE } from '@/lib/constants';
 import { FeedWrapperProps } from '@/lib/types';
 import { useThreadStore } from '@/store/threadStore';
@@ -18,6 +17,7 @@ import { useMemo } from 'react';
 import CreateThread from '../modals/CreateThread';
 import Loader from './Loader';
 import { cn } from '@/lib/utils';
+import useBreakpoint from '@/hooks/useBreakpoint';
 
 const FeedWrapper = ({
   threads,
@@ -31,7 +31,7 @@ const FeedWrapper = ({
 }: FeedWrapperProps) => {
   const { setOpenDialog } = useThreadStore();
 
-  const { isMobile } = useDevice();
+  const { isMobile } = useBreakpoint();
 
   const optimisticTarget = useMemo(
     () => ({ type: QUERY_TYPE.THREAD_FEED, variables: {} }),
