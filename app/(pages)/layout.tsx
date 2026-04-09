@@ -26,6 +26,7 @@ export const metadata: Metadata = {
 };
 
 import { headers } from 'next/headers';
+import BottomBar from '@/components/shared/BottomBar2';
 
 export default async function PagesLayout({
   children,
@@ -62,7 +63,7 @@ export default async function PagesLayout({
       <TopBar />
       <LeftSideBar />
       <PostNavigatorProvider>{children}</PostNavigatorProvider>
-      {/* <BottomBar /> */}
+      <BottomBar />  
       <Report />
       {modal}
     </>

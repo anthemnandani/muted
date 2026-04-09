@@ -25,7 +25,11 @@ import UploadStep from './UploadStep';
 import UploadingView from './UploadingView';
 import useBreakpoint from '@/hooks/useBreakpoint';
 
-const NewPost = () => {
+type NewPostProps = {
+  trigger?: React.ReactNode;
+};
+
+const NewPost = ({ trigger }: NewPostProps) => {
   const {
     openDialog,
     editPostId,
@@ -114,8 +118,10 @@ const NewPost = () => {
   return (
     <Fragment>
       <Dialog open={openDialog} onOpenChange={handleOpenChange} modal={true}>
-        <DialogTrigger>
-          {isMobile ? (
+        <DialogTrigger asChild>
+          {trigger ? (
+            trigger
+          ) : isMobile ? (
             <CreateThreadMobile />
           ) : (
             <div className='hidden md:flex relative size-12 flex-center rounded-xl hover:bg-primary-2 transition-colors duration-150 border-none text-secondary-2 hover:text-foreground'>
@@ -134,7 +140,7 @@ const NewPost = () => {
                 className={cn(
                   'w-[500px]',
                   step === 'post' &&
-                    '-translate-x-[150px] w-full transition-all duration-500 ease-in-out'
+                  '-translate-x-[150px] w-full transition-all duration-500 ease-in-out'
                 )}
               >
                 <PostDialogTitle
