@@ -5,7 +5,7 @@ import { Progress } from '@/components/ui/progress';
 
 const UploadingView: React.FC<{ progress: number }> = ({ progress }) => {
   return (
-    <div className='size-[500px] bg-gray-6 rounded-lg flex-col-center p-8 border border-[#393939] shadow-2xl'>
+    <div className='w-full max-w-[500px] aspect-square bg-gray-6 rounded-lg flex-col-center p-8 border border-[#393939] shadow-2xl'>
       <div className='relative mb-8 flex-center'>
         <Icons.spinner className='size-20 animate-spin text-primary-blue' />
         <span className='absolute text-sm font-bold text-white/90'>

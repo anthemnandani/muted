@@ -13,7 +13,9 @@ const MainPreview = ({ editPostId }: { editPostId: string | null }) => {
   const isPostStep = step === 'post';
 
   return (
-    <div className='relative flex-center size-[500px] bg-black/5 overflow-hidden rounded-lg'>
+    // ❌ size-[500px] — hardcoded, mobile pe overflow
+    // ✅ w-full aspect-square — fluid width, square ratio maintain
+    <div className='relative flex-center w-full aspect-square bg-black/5 overflow-hidden rounded-lg'>
       {mediaFiles.map((file, index) => (
         <MediaLayer
           key={file.id}

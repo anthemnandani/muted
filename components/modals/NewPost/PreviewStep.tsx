@@ -20,7 +20,6 @@ const PreviewStep = ({
     usePostDialog();
 
   const currentFile = mediaFiles[currentMediaIndex];
-
   const selectedRatio = currentFile?.aspectRatio || 'original';
 
   const handleRemoveMedia = (id: string) => {
@@ -44,10 +43,7 @@ const PreviewStep = ({
   };
 
   const isVideoOnly = useMemo(() => {
-    return (
-      mediaFiles.length > 0 &&
-      mediaFiles.every((f) => f.type === FileType.VIDEO)
-    );
+    return mediaFiles.length > 0 && mediaFiles.every((f) => f.type === FileType.VIDEO);
   }, [mediaFiles]);
 
   const isMixedMedia = useMemo(() => {
@@ -63,25 +59,23 @@ const PreviewStep = ({
         if (a.type === FileType.VIDEO && b.type === FileType.IMAGE) return 1;
         return 0;
       });
-
       const isOrderChanged = sortedFiles.some(
         (file, index) => file.id !== mediaFiles[index]?.id,
       );
-
-      if (isOrderChanged) {
-        setMediaFiles(sortedFiles);
-      }
+      if (isOrderChanged) setMediaFiles(sortedFiles);
     }
   }, [mediaFiles, setMediaFiles]);
 
   return (
     <div
       className={cn(
-        'relative w-full bg-[#121212] overflow-hidden rounded-lg',
+        // ✅ w-full — fluid, h-full taaki Card ki height fill kare
+        'relative w-full h-full bg-[#121212] overflow-hidden rounded-lg',
         step === 'post' && 'rounded-r-none',
       )}
     >
-      <div className='relative h-full'>
+      {/* ✅ h-full propagate karo taaki MainPreview aspect-square sahi kaam kare */}
+      <div className='relative w-full h-full'>
         <MainPreview editPostId={editPostId} />
       </div>
 
@@ -92,7 +86,6 @@ const PreviewStep = ({
             onChange={handleAspectRatioChange}
             isVideoOnly={isVideoOnly}
           />
-
           <Gallery
             mediaFiles={mediaFiles}
             setMediaFiles={setMediaFiles}
