@@ -1,10 +1,12 @@
 'use client';
 
+import { useVideoViewTracker } from '@/hooks/useVideoViewTracker';
 import { MuxPlayerRef, PostVideoCardProps } from '@/lib/types';
 import useVideoPlayer from '@/store/videoPlayer';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import VideoContainer from '../shared/VideoContainer';
 import VideoPlayer from '../shared/VideoPlayer';
+import { ViewSource } from '@/generated/prisma/enums';
 
 const PostVideoCard: React.FC<PostVideoCardProps> = ({
   playbackId,
@@ -16,11 +18,20 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   encodingStatus,
   onPlayerRegister,
   originalDimensions,
-  isCarousel,
   isModal,
+  isAdminPanel,
+  source,
 }) => {
   const [inView, setInView] = useState(false);
   const [player, setPlayer] = useState<MuxPlayerRef | null>(null);
+
+  const { recordPlayback, flush } = useVideoViewTracker({
+    postId,
+    source,
+    enabled: !isAdminPanel && (!isModal || source === ViewSource.POST_DETAIL),
+  });
+
+  const lastTimeRef = useRef<number>(0);
 
   const [stableTokens, setStableTokens] = useState({
     videoToken,
@@ -85,8 +96,14 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
   const handleTimeUpdate = useCallback(() => {
     if (player && inView && !isModal) {
       setTimestamp(postId, player.currentTime);
+      const current = player.currentTime ?? 0;
+      const delta = current - lastTimeRef.current;
+      if (delta > 0 && delta < 2) {
+        recordPlayback(delta);
+        lastTimeRef.current = current;
+      }
     }
-  }, [postId, player, inView, setTimestamp, isModal]);
+  }, [postId, player, inView, setTimestamp, isModal, recordPlayback]);
 
   const handleVolumeSync = useCallback(
     (mutedState: boolean) => {
@@ -96,6 +113,13 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
     },
     [isMuted, setIsMuted],
   );
+
+  useEffect(() => {
+    if (!inView) {
+      flush();
+      lastTimeRef.current = 0;
+    }
+  }, [inView]);
 
   return (
     <VideoContainer
@@ -118,7 +142,6 @@ const PostVideoCard: React.FC<PostVideoCardProps> = ({
         onVolumeChange={handleVolumeSync}
         aspectRatio={aspectRatio}
         originalDimensions={originalDimensions}
-        isCarousel={isCarousel}
         isModal={isModal}
       />
     </VideoContainer>

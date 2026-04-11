@@ -1,6 +1,5 @@
 'use client';
 
-import { FileType } from '@/generated/prisma/enums';
 import { PreviewStepProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
@@ -9,6 +8,7 @@ import { useEffect, useMemo } from 'react';
 import AspectRatioSelector from './AspectRatioSelector';
 import Gallery from './Gallery';
 import MainPreview from './MainPreview';
+import { FileType } from '@/generated/prisma/enums';
 
 const PreviewStep = ({
   getRootProps,

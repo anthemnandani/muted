@@ -1,7 +1,9 @@
 'use client';
 
+import { useOptimisticAction } from '@/contexts/OptimisticActionContext';
+import { useViewTracker } from '@/hooks/useViewTracker';
 import type { ParentPostProps } from '@/lib/types';
-import { formatCount, formatTimeAgo } from '@/lib/utils';
+import { formatCount, formatTimeAgo, getContentType } from '@/lib/utils';
 import { useHiddenPosts } from '@/store/hiddenPosts';
 import { useMutedUsers } from '@/store/mutedUsers';
 import useSinglePostStore from '@/store/singlePostStore';
@@ -15,7 +17,6 @@ import PostText from '../shared/PostText';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import Username from '../user/Username';
 import InstagramMediaDisplay from './InstagramMediaDisplay';
-import { useOptimisticAction } from '@/contexts/OptimisticActionContext';
 
 const InstaFeedCard: React.FC<ParentPostProps> = ({
   id,
@@ -35,6 +36,7 @@ const InstaFeedCard: React.FC<ParentPostProps> = ({
   privacy,
   path,
   pinned,
+  source,
 }) => {
   const { isPostHidden } = useHiddenPosts();
   const { isMutedUser } = useMutedUsers();
@@ -42,13 +44,21 @@ const InstaFeedCard: React.FC<ParentPostProps> = ({
   const { setActivePost } = useSinglePostStore();
   const { target } = useOptimisticAction();
 
+  const contentType = getContentType(media);
+
+  const { ref: viewRef } = useViewTracker({
+    postId: id,
+    source: source!,
+    contentType,
+  });
+
   const isHidden = isPostHidden(id);
   const isMuted = isMutedUser(author.id);
 
   if (!media?.length && !text) return null;
 
   return (
-    <article className='border-b border-border-light'>
+    <article ref={viewRef} className='border-b border-border-light'>
       {!isHidden && !isMuted && (
         <div className='flex items-center justify-between px-3 py-2.5'>
           <div className='flex items-center gap-2.5'>
@@ -93,6 +103,7 @@ const InstaFeedCard: React.FC<ParentPostProps> = ({
           userId={author.id}
           isHidden={isHidden}
           isMuted={isMuted}
+          source={source}
         />
       )}
       {!isHidden && !isMuted && (

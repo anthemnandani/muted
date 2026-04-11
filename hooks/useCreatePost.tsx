@@ -11,7 +11,6 @@ import { createId } from '@paralleldrive/cuid2';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMuxUpload } from './useMuxUpload';
-import { Media } from '@/generated/prisma/client';
 
 const useCreatePost = () => {
   const { mediaFiles, setMediaFiles } = useFileStore();
@@ -180,21 +179,22 @@ const useCreatePost = () => {
       abortControllerRef.current = new AbortController();
       const signal = abortControllerRef.current.signal;
 
+      const pendingVideoUploads: Array<{
+        file: File;
+        uploadUrl: string;
+        index: number;
+      }> = [];
+
       const uploadPromises = mediaFiles.map(async (fileObj, index) => {
         if (signal.aborted) throw new Error('Cancelled');
 
-        if (fileObj.type === FileType.VIDEO) {
+        if (fileObj.type.toUpperCase() === FileType.VIDEO) {
           const { media, uploadUrl } = await processVideo(
             fileObj,
             generatedPostId,
           );
 
-          await startMuxUpload(
-            fileObj.file,
-            uploadUrl,
-            (pct) => handleProgressUpdate(index, pct),
-            (uploadInstance) => activeMuxUploads.current.push(uploadInstance),
-          );
+          pendingVideoUploads.push({ file: fileObj.file, uploadUrl, index });
 
           return media;
         } else {
@@ -225,6 +225,23 @@ const useCreatePost = () => {
           ? PostStatus.HIDDEN
           : PostStatus.VISIBLE,
       });
+
+      if (pendingVideoUploads.length > 0) {
+        const muxUploadPromises = pendingVideoUploads.map(
+          ({ file, uploadUrl, index }) => {
+            return startMuxUpload(
+              file,
+              uploadUrl,
+              (pct) => handleProgressUpdate(index, pct),
+              (uploadInstance) => activeMuxUploads.current.push(uploadInstance),
+            );
+          },
+        );
+
+        await Promise.all(muxUploadPromises);
+      }
+
+      if (signal.aborted) throw new Error('Cancelled');
 
       setUploadProgress(100);
       toast.success('Post uploaded!');

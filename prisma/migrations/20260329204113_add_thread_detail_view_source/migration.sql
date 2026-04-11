@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "ViewSource" ADD VALUE 'THREAD_DETAIL';

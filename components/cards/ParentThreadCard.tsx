@@ -7,6 +7,7 @@ import ThreadLikeButton from '../buttons/ThreadLikeButton';
 import ThreadReplyButton from '../buttons/ThreadReplyButton';
 import ThreadRepostButton from '../buttons/ThreadRepostButton';
 import ThreadCardBase from './ThreadCardBase';
+import { ViewSource } from '@/generated/prisma/enums';
 
 const ParentThreadCard = ({ threadInfo }: { threadInfo: ThreadProps }) => {
   const { repliesCount } = threadInfo;
@@ -20,7 +21,12 @@ const ParentThreadCard = ({ threadInfo }: { threadInfo: ThreadProps }) => {
     <div className='flex flex-col w-full pt-2'>
       <article className='pt-4'>
         <div className='flex flex-col w-full'>
-          <ThreadCardBase {...threadInfo} variant='default' showActions={false}>
+          <ThreadCardBase
+            {...threadInfo}
+            variant='default'
+            showActions={false}
+            source={ViewSource.THREAD_DETAIL}
+          >
             <div className='flex items-center space-x-6 border-b border-border-light pt-2 pb-4 px-2 md:px-4'>
               <ThreadLikeButton
                 likeInfo={{

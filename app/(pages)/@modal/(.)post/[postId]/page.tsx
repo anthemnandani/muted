@@ -1,16 +1,18 @@
 'use client';
 
 import PostDetailsLayout from '@/components/shared/PostDetailsLayout';
+import PostDetailsSkeleton from '@/components/skeletons/PostDetailsSkeleton';
 import {
   OptimisticActionProvider,
   type TargetType,
 } from '@/contexts/OptimisticActionContext';
 import { QUERY_TYPE } from '@/lib/constants';
 import useSinglePostStore from '@/store/singlePostStore';
+import { api } from '@/trpc/react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect } from 'react';
 
-const SinglePostModal = () => {
+const SinglePostModal = ({ params }: { params: { postId: string } }) => {
   const { activePost, feedTarget } = useSinglePostStore();
   const router = useRouter();
 
@@ -26,19 +28,35 @@ const SinglePostModal = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleClose]);
 
-  const fallbackTarget = {
+  const { data, isLoading } = api.post.getPostDetails.useQuery(
+    { id: params.postId },
+    {
+      enabled: !activePost,
+      staleTime: 10 * 60 * 1000,
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  );
+
+  const post = activePost ?? data?.post ?? null;
+
+  const target = feedTarget ?? {
     type: QUERY_TYPE.POST_DETAILS,
-    variables: { id: activePost?.id },
+    variables: { id: params.postId },
   };
 
-  if (!activePost) return null;
+  if (!post) {
+    return isLoading ? (
+      <div className='fixed inset-0 z-[999] flex w-full h-screen max-w-full bg-[#121212]'>
+        <PostDetailsSkeleton />
+      </div>
+    ) : null;
+  }
 
   return (
     <div className='fixed inset-0 z-[999] flex w-full h-screen max-w-full bg-[#121212]'>
-      <OptimisticActionProvider
-        target={(feedTarget || fallbackTarget) as TargetType}
-      >
-        <PostDetailsLayout post={activePost} onClose={handleClose} isModal />
+      <OptimisticActionProvider target={target as TargetType}>
+        <PostDetailsLayout post={post} onClose={handleClose} isModal />
       </OptimisticActionProvider>
     </div>
   );

@@ -1,5 +1,8 @@
 'use client';
 
+import { VIEW_EVENTS_BATCH } from '@/lib/socket-events';
+import { BATCH_FLUSH_INTERVAL_MS } from '@/lib/view-constants';
+import { useViewTrackingStore } from '@/store/viewTracking';
 import { api } from '@/trpc/react';
 import { useClerk, useUser } from '@clerk/nextjs';
 import {
@@ -90,7 +93,25 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({
 
     setSocket(socketInstance);
 
+    const flushInterval = setInterval(() => {
+      const events = useViewTrackingStore.getState().flushEvents();
+      if (events.length > 0 && socketInstance.connected) {
+        socketInstance.emit(VIEW_EVENTS_BATCH, { events });
+      }
+    }, BATCH_FLUSH_INTERVAL_MS);
+
+    const handleBeforeUnload = () => {
+      const events = useViewTrackingStore.getState().flushEvents();
+      if (events.length > 0 && socketInstance.connected) {
+        socketInstance.emit(VIEW_EVENTS_BATCH, { events });
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
+      clearInterval(flushInterval);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      handleBeforeUnload();
       socketInstance.disconnect();
     };
   }, [user?.id]);

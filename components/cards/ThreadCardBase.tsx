@@ -1,7 +1,9 @@
 'use client';
 
 import ThreadActions from '@/components/cards/ThreadActions';
+import { ViewContentType } from '@/generated/prisma/enums';
 import { usePostInteraction } from '@/hooks/usePostInteraction';
+import { useViewTracker } from '@/hooks/useViewTracker';
 import { ThreadCardBaseProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useHiddenThreads } from '@/store/hiddenThreads';
@@ -40,6 +42,8 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   showActions = true,
   className,
   children,
+  source,
+  disableTracking,
 }) => {
   const { isThreadHidden } = useHiddenThreads();
   const { isMutedUser } = useMutedUsers();
@@ -48,6 +52,13 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
     authorId: author.id,
     privacy,
     mentions,
+  });
+
+  const { ref: viewRef } = useViewTracker({
+    threadId: id,
+    source,
+    contentType: ViewContentType.THREAD,
+    skip: disableTracking,
   });
 
   const content = (
@@ -72,7 +83,7 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   }
 
   return (
-    <div className={cn('mb-3', className)}>
+    <div ref={viewRef} className={cn('mb-3', className)}>
       {repostedBy && (
         <RepostedBy repostedBy={repostedBy} repostedAt={repostedAt!} />
       )}

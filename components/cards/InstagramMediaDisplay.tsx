@@ -25,6 +25,7 @@ const InstagramMediaDisplay: React.FC<InstagramMediaDisplayProps> = ({
   userId,
   isHidden,
   isMuted,
+  source,
 }) => {
   const [swiperRef, setSwiperRef] = useState<SwiperType>();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -48,6 +49,7 @@ const InstagramMediaDisplay: React.FC<InstagramMediaDisplayProps> = ({
           thumbnailToken={item.thumbnailToken!}
           postId={postId}
           isActive={!isCarousel || currentIndex === index}
+          source={source!}
         />
       );
     }

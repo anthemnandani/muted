@@ -1,15 +1,9 @@
 'use client';
 
-import UserAvatar from '@/components/shared/UserAvatar';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import type { AdminReportPost, AdminPost } from '@/lib/types';
-import PostMediaCarousel from '../posts/PostMediaCarousel';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import type { AdminPost, AdminReportPost } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import PostMediaCarousel from '../posts/PostMediaCarousel';
 
 interface PostViewProps {
   post: AdminPost | AdminReportPost;
@@ -23,7 +17,7 @@ const PostView: React.FC<PostViewProps> = ({ post, isOpen, onOpenChange }) => {
       <DialogContent
         className={cn(
           'max-w-4xl max-h-[75vh] h-full flex flex-col justify-center p-0 gap-0 rounded-2xl',
-          'shadow-2xl overflow-hidden'
+          'shadow-2xl overflow-hidden',
         )}
       >
         <PostMediaCarousel

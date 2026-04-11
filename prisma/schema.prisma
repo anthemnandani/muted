@@ -78,6 +78,7 @@ model User {
   messageReportTargets     MessageReport[]   @relation("MessageReportTargets")
   sentFollowRequests       FollowRequest[]   @relation("SentFollowRequests")
   receivedFollowRequests   FollowRequest[]   @relation("ReceivedFollowRequests")
+  postViews                PostView[]
 
   @@unique([createdAt, id])
 }
@@ -125,6 +126,8 @@ model Post {
   linkPreviewId   String?
   deleted         Boolean        @default(false)
   deletedAt       DateTime?
+  viewCount       Int            @default(0)
+  views           PostView[]
 
   @@unique([createdAt, id])
   @@index([authorId])
@@ -171,8 +174,10 @@ model Thread {
   deleted       Boolean        @default(false)
   deletedAt     DateTime?
 
-  privacy PostPrivacy @default(ANYONE)
-  status  PostStatus  @default(HIDDEN)
+  privacy   PostPrivacy @default(ANYONE)
+  status    PostStatus  @default(HIDDEN)
+  viewCount Int         @default(0)
+  views     PostView[]
 
   @@unique([createdAt, id])
   @@index([authorId])
@@ -802,4 +807,47 @@ model Page {
   title     String
   content   String   @db.Text
   updatedAt DateTime @updatedAt
+}
+
+enum ViewTier {
+  IMPRESSION
+  VIEW
+}
+
+enum ViewSource {
+  MAIN_FEED
+  VIDEO_FEED
+  THREAD_FEED
+  FRIENDS_FEED
+  FOLLOWING_FEED
+  HASHTAG_FEED
+  POST_DETAIL
+  THREAD_DETAIL
+}
+
+enum ViewContentType {
+  VIDEO
+  IMAGE
+  THREAD
+}
+
+model PostView {
+  id          String          @id @default(cuid())
+  createdAt   DateTime        @default(now())
+  userId      String
+  postId      String?
+  threadId    String?
+  durationMs  Int
+  tier        ViewTier
+  source      ViewSource
+  contentType ViewContentType
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post        Post?           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  thread      Thread?         @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([threadId])
+  @@index([userId, postId])
+  @@index([userId, threadId])
+  @@index([createdAt])
 }

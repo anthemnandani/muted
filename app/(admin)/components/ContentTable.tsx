@@ -61,7 +61,7 @@ const ContentTable = () => {
   );
 
   const renderRow = (post: AdminPost) => {
-    const contentType = getContentType(post);
+    const contentType = getContentType(post.media);
     return (
       <TableRow key={post.id} className='bg-transparent hover:bg-muted/30'>
         <TableCell>

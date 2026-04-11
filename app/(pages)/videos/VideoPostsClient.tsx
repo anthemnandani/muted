@@ -7,6 +7,7 @@ import {
   OptimisticActionProvider,
   type TargetType,
 } from '@/contexts/OptimisticActionContext';
+import { ViewSource } from '@/generated/prisma/enums';
 import { QUERY_TYPE } from '@/lib/constants';
 import { api } from '@/trpc/react';
 import { useMemo, useRef } from 'react';
@@ -46,6 +47,7 @@ const VideoPostsClient = () => {
           isLoading={isLoading}
           emptyStateMessage='No posts found.'
           containerRef={mainContainerRef}
+          source={ViewSource.VIDEO_FEED}
         />
       </OptimisticActionProvider>
     </ScrollContainer>

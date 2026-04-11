@@ -32,6 +32,7 @@ const PostCard: React.FC<PostCardProps> = ({
   turnOffComments,
   likesCount,
   pinned,
+  source,
 }) => {
   const {
     isPanelOpen,
@@ -95,6 +96,7 @@ const PostCard: React.FC<PostCardProps> = ({
             repostedBy={repostedBy}
             hideLikes={hideLikes}
             turnOffComments={turnOffComments}
+            source={source!}
           />
           <PostActions
             id={id}

@@ -15,6 +15,8 @@ import {
   ReportStatus,
   Role,
   UserStatus,
+  ViewContentType,
+  ViewSource,
 } from '@/generated/prisma/enums';
 import type { AppRouter } from '@/server/api/root';
 import type { RouterOutputs } from '@/trpc/shared';
@@ -270,6 +272,7 @@ export type ParentPostProps = {
   isMuted?: boolean;
   privacy: PostPrivacy;
   status?: PostStatus;
+  source?: ViewSource;
   // _count?: {
   //   likes: number;
   //   reposts: number;
@@ -325,6 +328,8 @@ export interface ThreadCardBaseProps extends ThreadProps {
   showActions?: boolean;
   className?: string;
   children?: React.ReactNode;
+  disableTracking?: boolean;
+  source: ViewSource;
 }
 
 export interface UserAvatarProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -360,6 +365,7 @@ export interface PostsListProps {
   resetToFirst?: boolean;
   onResetComplete?: () => void;
   containerRef?: React.RefObject<HTMLDivElement>;
+  source: ViewSource;
 }
 
 export interface ThreadsListProps {
@@ -662,6 +668,8 @@ export interface PostVideoCardProps {
   isCarousel?: boolean;
   onPlayerRegister?: (player: MuxPlayerRef | null) => void;
   isModal?: boolean;
+  isAdminPanel?: boolean;
+  source?: ViewSource;
 }
 
 export interface ThreadVideoCardProps {
@@ -728,6 +736,7 @@ export interface PostMediaCarouselProps {
   hideLikes?: boolean;
   turnOffComments?: boolean;
   isAdminPanel?: boolean;
+  source?: ViewSource;
   isModal?: boolean;
   onNavigate?: (direction: 'up' | 'down') => void;
   isFirstPost?: boolean;
@@ -743,6 +752,7 @@ export interface InstagramMediaDisplayProps {
   userId: string;
   isHidden?: boolean;
   isMuted?: boolean;
+  source?: ViewSource;
 }
 
 export interface ProfileVideoPlayerProps {
@@ -766,7 +776,6 @@ export interface VideoPlayerProps {
   thumbnailToken: string | null;
   aspectRatio: string | null;
   originalDimensions?: OriginalDimensions;
-  isCarousel?: boolean;
   isModal?: boolean;
 }
 
@@ -776,6 +785,7 @@ export interface VideoSlideProps {
   thumbnailToken: string;
   postId: string;
   isActive: boolean;
+  source: ViewSource;
 }
 
 export interface MediaTypeIndicatorProps {
@@ -1658,6 +1668,24 @@ export type AdminAppeal =
 export type AdminReportPost = NonNullable<AdminReport['post']>;
 
 export type MuxPlayerRef = ElementRef<typeof MuxPlayer>;
+export type SubPanel = 'interactions' | 'media' | 'account' | 'dashboard';
+export type TimeRange = '7d' | '28d' | '90d' | 'all';
+export type ContentTab = 'posts' | 'threads';
+export type ChartTab = 'views' | 'impressions';
+
+export type TopPost = RouterOutputs['activity']['getTopPosts'][number];
+export type TopThread = RouterOutputs['activity']['getTopThreads'][number];
+
+export type ActivityPost =
+  RouterOutput['activity']['getUserPosts']['posts'][number];
+
+export type ActivityComment =
+  RouterOutput['activity']['getUserComments']['comments'][number];
+export type ActivityThreadComment =
+  RouterOutput['activity']['getUserThreadComments']['comments'][number];
+
+export type ActivityRepost =
+  RouterOutput['activity']['getUserReposts']['posts'][number];
 
 export type UploadResult = {
   fileType: FileType;
@@ -1682,6 +1710,7 @@ export interface PostDetailsLayoutProps {
   isFirstPost?: boolean;
   isLastPost?: boolean;
   isFetchingMore?: boolean;
+  source?: ViewSource;
 }
 
 export type Page = {
@@ -1694,4 +1723,84 @@ export type Page = {
 export interface RichTextEditorProps {
   content: string;
   onChange: (html: string) => void;
+}
+
+export type ViewEvent = {
+  postId?: string;
+  threadId?: string;
+  durationMs: number;
+  source: ViewSource;
+  contentType: ViewContentType;
+};
+
+export interface MetricsChartProps {
+  data: { date: string; views: number; impressions: number }[];
+  chartTab: ChartTab;
+  onTabChange: (tab: ChartTab) => void;
+  range: TimeRange;
+}
+
+export interface ContentTableProps {
+  items?: TopPost[] | TopThread[];
+  type: 'post' | 'thread';
+  isLoading: boolean;
+}
+
+export interface KPICardProps {
+  icon: React.ElementType;
+  label: string;
+  value: number | string;
+  delta?: number;
+}
+
+export interface ActionBannerProps {
+  count: number;
+  isProcessing: boolean;
+  onAction: () => void;
+  onCancel: () => void;
+  actionLabel: string;
+}
+
+export type SortOrder = 'newest' | 'oldest';
+
+export interface DateFilter {
+  startDate: Date | null;
+  endDate: Date | null;
+}
+
+export interface SortFilterState {
+  sortOrder: SortOrder;
+  dateFilter: DateFilter;
+}
+
+export interface SortFilterDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  value: SortFilterState;
+  onApply: (state: SortFilterState) => void;
+  minDate?: Date;
+}
+
+export interface DatePickerRowProps {
+  label: string;
+  month: number;
+  day: number;
+  year: number;
+  onMonthChange: (m: number) => void;
+  onDayChange: (d: number) => void;
+  onYearChange: (y: number) => void;
+  years: number[];
+}
+
+export interface SharedHeaderProps {
+  allSelected: boolean;
+  handleSelectAll: () => void;
+  canSelect: boolean;
+  hideContentTypeToggle?: boolean;
+}
+
+export interface SelectionOverlayProps {
+  isSelected: boolean;
+  isSelecting: boolean;
+  onToggle: (e: React.MouseEvent) => void;
 }
