@@ -6,50 +6,12 @@ import {
   PostStatus,
 } from '@/generated/prisma/enums';
 import { enrichThreadWithTokens, extractHashtags } from '@/lib/utils';
-import {
-  GET_LINK_PREVIEW,
-  GET_MENTIONS,
-  GET_REPOSTS,
-  GET_USER,
-  getAuthorAndHiddenSelect,
-  getBookmarksWithBlockFilter,
-  getLikesWithBlockFilter,
-} from '@/server/constants';
+import { GET_USER, THREAD_SELECT } from '@/server/constants';
 import { createId } from '@paralleldrive/cuid2';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';
 import z from 'zod';
 import { createTRPCRouter, privateProcedure } from '../trpc';
-
-const THREAD_SELECT = (userId: string) => ({
-  id: true,
-  createdAt: true,
-  text: true,
-  media: true,
-  parentId: true,
-  quoteId: true,
-  path: true,
-  repliesCount: true,
-  hideLikes: true,
-  pinned: true,
-  privacy: true,
-  ...getLikesWithBlockFilter(userId),
-  ...getBookmarksWithBlockFilter(userId),
-  ...getAuthorAndHiddenSelect(userId!),
-  ...GET_MENTIONS,
-  ...GET_LINK_PREVIEW,
-  reposts: {
-    where: {
-      user: {
-        deactivated: false,
-      },
-    },
-    ...GET_REPOSTS,
-    // orderBy: {
-    //   createdAt: 'desc',
-    // },
-  },
-});
 
 const paginationInput = z.object({
   limit: z.number().optional().default(20),
@@ -1291,14 +1253,19 @@ export const threadRouter = createTRPCRouter({
         select: THREAD_SELECT(userId),
       });
 
-      const formattedThreads = threads.map((t) => ({
-        ...t,
-        likesCount: t.likes.length,
-        repostsCount: t.reposts.length,
-        bookmarksCount: new Set(t.bookmarks.map((b) => b.userId)).size,
-        repostedBy: null,
-        repostedAt: null,
-      }));
+      const formattedThreads = await Promise.all(
+        threads.map(async (t) => {
+          const threadWithTokens = await enrichThreadWithTokens(t);
+          return {
+            ...threadWithTokens,
+            likesCount: t.likes.length,
+            repostsCount: t.reposts.length,
+            bookmarksCount: new Set(t.bookmarks.map((b) => b.userId)).size,
+            repostedBy: null,
+            repostedAt: null,
+          };
+        }),
+      );
 
       let nextCursor;
       if (formattedThreads.length > limit) {

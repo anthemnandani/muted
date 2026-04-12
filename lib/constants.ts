@@ -1,20 +1,26 @@
+import { ChartConfig } from '@/components/ui/chart';
 import { AppealStatus, MessageReportCategory } from '@/generated/prisma/enums';
 import {
   AlertCircle,
   AlertTriangle,
+  BarChart3,
   BookOpen,
   CheckCircle,
   FileText,
   Flag,
+  Heart,
+  ImageIcon,
   LayoutDashboard,
   Settings,
   Shield,
   Users,
 } from 'lucide-react';
-import {
-  type NotificationTab,
-  type ProfileFilter,
+import type {
+  NotificationTab,
+  ProfileFilter,
   ReportCategories,
+  SubPanel,
+  TimeRange,
 } from './types';
 
 export const UPLOAD_CONSTRAINTS = {
@@ -1031,4 +1037,74 @@ export enum QUERY_TYPE {
   USER_THREAD_REPOSTS = 'USER_THREAD_REPOSTS',
   USER_THREAD_REPLIES = 'USER_THREAD_REPLIES',
   COLLECTION_POSTS = 'COLLECTION_POSTS',
+  ACTIVITY = 'ACTIVITY',
+}
+
+export const ACTIVITY_SIDEBAR_ITEMS: {
+  id: SubPanel;
+  label: string;
+  description: string;
+  icon: React.ElementType;
+}[] = [
+  {
+    id: 'interactions',
+    label: 'Interactions',
+    description:
+      'Review and delete likes, comments, and your other interactions.',
+    icon: Heart,
+  },
+  {
+    id: 'media',
+    label: 'Photos, videos and threads',
+    description:
+      "View, archive or delete photos, videos and threads you've shared.",
+    icon: ImageIcon,
+  },
+  {
+    id: 'dashboard',
+    label: 'Stats Dashboard',
+    description: 'View your account analytics, views, and engagement.',
+    icon: BarChart3,
+  },
+];
+
+export const RANGE_OPTIONS: { label: string; value: TimeRange }[] = [
+  { label: '7 days', value: '7d' },
+  { label: '28 days', value: '28d' },
+  { label: '90 days', value: '90d' },
+  { label: 'All time', value: 'all' },
+];
+
+export const VIEWS_CHART_CONFIG = {
+  views: { label: 'Views', color: '#1c8cd2' },
+} satisfies ChartConfig;
+
+export const IMPRESSIONS_CHART_CONFIG = {
+  impressions: { label: 'Impressions', color: '#1c8cd2' },
+} satisfies ChartConfig;
+
+export const FOLLOWERS_CHART_CONFIG = {
+  count: { label: 'Followers', color: '#1c8cd2' },
+} satisfies ChartConfig;
+
+export const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+export enum INTERACTIONS_DATA {
+  POST_GRID,
+  POST_COMMENTS,
+  THREAD_LIST,
+  THREAD_COMMENTS,
 }

@@ -30,7 +30,7 @@ const MainPreview = ({ editPostId }: { editPostId: string | null }) => {
         onPrev={() => setCurrentMediaIndex(Math.max(0, currentMediaIndex - 1))}
         onNext={() =>
           setCurrentMediaIndex(
-            Math.min(mediaFiles.length - 1, currentMediaIndex + 1)
+            Math.min(mediaFiles.length - 1, currentMediaIndex + 1),
           )
         }
       />

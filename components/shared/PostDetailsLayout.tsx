@@ -15,6 +15,7 @@ const PostDetailsLayout = ({
   isFirstPost,
   isLastPost,
   isFetchingMore,
+  source,
 }: PostDetailsLayoutProps) => {
   return (
     <Fragment>
@@ -47,6 +48,7 @@ const PostDetailsLayout = ({
           isFirstPost={isFirstPost}
           isLastPost={isLastPost}
           isFetchingMore={isFetchingMore}
+          source={source}
         />
       </div>
 

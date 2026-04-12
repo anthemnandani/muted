@@ -7,6 +7,7 @@ import {
   OptimisticActionProvider,
   type TargetType,
 } from '@/contexts/OptimisticActionContext';
+import { ViewSource } from '@/generated/prisma/enums';
 import { QUERY_TYPE } from '@/lib/constants';
 import { api } from '@/trpc/react';
 import { useEffect, useRef, useState } from 'react';
@@ -54,6 +55,7 @@ const HomeFeedClient = () => {
           hasNextPage={hasNextPage}
           isLoading={isLoading || isRefreshing}
           emptyStateMessage='No posts found.'
+          source={ViewSource.MAIN_FEED}
         />
       </OptimisticActionProvider>
     </InstaFeedScrollContainer>

@@ -1,15 +1,17 @@
+import { Media } from '@/generated/prisma/client';
+import {
+  AppealStatus,
+  FileType,
+  ReportStatus,
+  UserStatus,
+  ViewContentType,
+} from '@/generated/prisma/enums';
 import useCommentPanelStore from '@/store/commentPanel';
 import { useNotificationStore } from '@/store/notificationStore';
 import { useSearchStore } from '@/store/searchStore';
 import useVideoPlayer from '@/store/videoPlayer';
 import { type User } from '@clerk/nextjs/server';
 import { type UserResource } from '@clerk/types';
-import {
-  AppealStatus,
-  FileType,
-  ReportStatus,
-  UserStatus,
-} from '@/generated/prisma/enums';
 import { type ClassValue, clsx } from 'clsx';
 import {
   differenceInDays,
@@ -17,26 +19,27 @@ import {
   differenceInMinutes,
   differenceInSeconds,
   differenceInWeeks,
+  endOfDay,
   format,
   isSameDay,
   isToday,
   isYesterday,
+  startOfDay,
+  subDays,
 } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
 import {
   createPlaybackTokens,
   createThumbnailToken,
 } from './actions/mux.actions';
-import {
-  type AdminPost,
-  type AdminReport,
-  type ContentType,
-  type MediaFile,
+import type {
+  AdminReport,
+  MediaFile,
   Message,
   OriginalDimensions,
   ParentPostProps,
+  TimeRange,
 } from './types';
-import { Media } from '@/generated/prisma/client';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -715,6 +718,21 @@ export const tickFormatter = (value: string) => {
   return date.toLocaleDateString('en-US', { month: 'short' });
 };
 
+export const getTickInterval = (dataLength: number, range: TimeRange) => {
+  if (range === 'all') return Math.max(1, Math.floor(dataLength / 6));
+  if (range === '90d') return Math.max(1, Math.floor(dataLength / 6));
+  if (range === '28d') return Math.max(1, Math.floor(dataLength / 7));
+  return Math.max(1, Math.floor(dataLength / 7)); // 7d
+};
+
+export const formatChartDate = (dateStr: string, range?: TimeRange) => {
+  const d = new Date(dateStr);
+  if (range === 'all' || range === '90d') {
+    return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+  }
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
 export const tooltipLabelFormatter = (value: string) => {
   const date = new Date(value);
   return date.toLocaleDateString('en-US', {
@@ -724,20 +742,23 @@ export const tooltipLabelFormatter = (value: string) => {
   });
 };
 
-export const getContentType = (post: AdminPost) => {
-  if (post.media?.length > 0) {
-    const fileType = post.media[0].fileType;
-    if (fileType === FileType.IMAGE) return 'IMAGE';
-    if (fileType === FileType.VIDEO) return 'VIDEO';
+export const getContentType = (media: Media[]) => {
+  if (media?.length > 0) {
+    const fileType = media[0].fileType;
+    if (fileType === FileType.IMAGE || fileType === FileType.GIF)
+      return 'IMAGE';
+    if (fileType === FileType.VIDEO) return FileType.VIDEO;
   }
+  return 'THREAD';
 };
 
-export const getContentTypeBadgeClass = (type: ContentType) => {
+export const getContentTypeBadgeClass = (type: ViewContentType) => {
   const badgeStyles = {
     IMAGE: 'border-transparent bg-blue-700/70 text-zinc-300 hover:bg-blue-700',
     VIDEO:
       'border-transparent bg-yellow-700/70 text-zinc-300 hover:bg-yellow-700',
-    TEXT: 'border-transparent bg-green-700/70 text-zinc-300 hover:bg-green-700',
+    THREAD:
+      'border-transparent bg-green-700/70 text-zinc-300 hover:bg-green-700',
   };
   switch (type) {
     case 'IMAGE':
@@ -993,4 +1014,60 @@ export const getOgImage = (imageUrl: string | null): string => {
   }
 
   return imageUrl;
+export const toLocalDateString = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+export const getDateRange = (range: string) => {
+  const now = new Date();
+  const end = endOfDay(now);
+  let start: Date;
+  switch (range) {
+    case '28d':
+      start = startOfDay(subDays(now, 28));
+      break;
+    case '90d':
+      start = startOfDay(subDays(now, 90));
+      break;
+    case 'all':
+      start = startOfDay(subDays(now, 365));
+      break;
+    default:
+      start = startOfDay(subDays(now, 7));
+  }
+  return { start, end };
+};
+
+export const getPreviousRange = (range: string) => {
+  const now = new Date();
+  let days: number;
+  switch (range) {
+    case '28d':
+      days = 28;
+      break;
+    case '90d':
+      days = 90;
+      break;
+    case 'all':
+      return { start: new Date(0), end: new Date(0) };
+    default:
+      days = 7;
+  }
+  return {
+    start: startOfDay(subDays(now, days * 2)),
+    end: startOfDay(subDays(now, days)),
+  };
+};
+
+export const getDaysInMonth = (month: number, year: number) => {
+  return new Date(year, month + 1, 0).getDate();
+};
+
+export const generateYears = (min: number, max: number) => {
+  const years: number[] = [];
+  for (let y = max; y >= min; y--) years.push(y);
+  return years;
 };

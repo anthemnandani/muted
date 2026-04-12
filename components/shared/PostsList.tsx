@@ -17,6 +17,7 @@ const PostsList: React.FC<PostsListProps> = ({
   resetToFirst = false,
   onResetComplete,
   containerRef,
+  source,
 }) => {
   const firstPostRef = useRef<HTMLDivElement>(null);
 
@@ -84,6 +85,7 @@ const PostsList: React.FC<PostsListProps> = ({
                 showMuted={showMuted}
                 index={index}
                 totalPosts={uniquePosts.length}
+                source={source}
               />
             </div>
           ))}

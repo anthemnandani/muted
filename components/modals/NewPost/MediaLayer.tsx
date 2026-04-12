@@ -20,6 +20,7 @@ const MediaLayer = ({
     height: number;
   } | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const fileType = file.type.toUpperCase();
 
   useEffect(() => {
     if (file.userCrop) setCrop(file.userCrop);
@@ -27,7 +28,7 @@ const MediaLayer = ({
   }, [file.userCrop, file.userZoom]);
 
   useEffect(() => {
-    if (file.type === FileType.VIDEO && videoRef.current) {
+    if (fileType === FileType.VIDEO && videoRef.current) {
       if (isActive) {
         videoRef.current.currentTime = 0;
         videoRef.current.play().catch(() => {});
@@ -48,7 +49,7 @@ const MediaLayer = ({
 
   const onCropComplete = useCallback(
     (_: Area, croppedAreaPixels: Area) => {
-      if (file.type === FileType.IMAGE) {
+      if (fileType === FileType.IMAGE) {
         updateMediaFile(file.id, {
           cropData: croppedAreaPixels,
           userCrop: crop,
@@ -76,10 +77,10 @@ const MediaLayer = ({
       <div
         className={cn(
           'relative w-full h-full',
-          (isPostStep || file.type === FileType.VIDEO) && 'flex-center',
+          (isPostStep || fileType === FileType.VIDEO) && 'flex-center',
         )}
       >
-        {file.type === FileType.IMAGE ? (
+        {fileType === FileType.IMAGE ? (
           isPostStep ? (
             <div
               className='relative w-full max-h-full max-w-full'

@@ -37,6 +37,7 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
   isFirstPost,
   isLastPost,
   isFetchingMore,
+  source,
   isAdminPanel = false,
   isModal = false,
 }) => {
@@ -177,6 +178,8 @@ const PostMediaCarousel: React.FC<PostMediaCarouselProps> = ({
                   handlePlayerRegister(index, player)
                 }
                 isModal={isModal}
+                isAdminPanel={isAdminPanel}
+                source={source}
               />
             ) : (
               <PostImageCard

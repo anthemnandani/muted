@@ -19,7 +19,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   thumbnailToken,
   aspectRatio,
   originalDimensions,
-  isCarousel,
   isModal = false,
 }) => {
   const playerRef = useRef<MuxPlayerRef>(null);
@@ -80,9 +79,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         style={{
           width: shouldUseAutoWidth ? 'auto' : '100%',
           height:
-            (isCarousel && !isModal && !isPortrait) || shouldUseAutoHeight
-              ? 'auto'
-              : '100%',
+            (!isModal && !isPortrait) || shouldUseAutoHeight ? 'auto' : '100%',
           aspectRatio: numericRatio,
           '--media-object-fit': 'cover',
           '--play-button': 'none',

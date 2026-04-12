@@ -61,11 +61,13 @@ export async function POST(req: NextRequest) {
           where: { postId: entityId },
         });
 
-        const allReady = allMedia.every(
-          (m) =>
-            m.fileType !== FileType.VIDEO ||
-            m.encodingStatus === EncodingStatus.ENCODED,
-        );
+        const allReady =
+          allMedia.length > 0 &&
+          allMedia.every(
+            (m) =>
+              m.fileType !== FileType.VIDEO ||
+              m.encodingStatus === EncodingStatus.ENCODED,
+          );
 
         if (allReady) {
           await tx.post.update({

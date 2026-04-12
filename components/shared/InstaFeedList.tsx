@@ -13,6 +13,7 @@ const InstaFeedList: React.FC<PostsListProps> = ({
   fetchNextPage,
   hasNextPage,
   emptyStateMessage,
+  source,
 }) => {
   const uniquePosts = useMemo(() => {
     if (!posts) return [];
@@ -49,7 +50,7 @@ const InstaFeedList: React.FC<PostsListProps> = ({
           }
         >
           {uniquePosts.map((post) => (
-            <InstaFeedCard key={`home-${post.id}`} {...post} />
+            <InstaFeedCard key={`home-${post.id}`} {...post} source={source} />
           ))}
         </InfiniteScroll>
       )}

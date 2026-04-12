@@ -7,6 +7,7 @@ import {
   OptimisticActionProvider,
   type TargetType,
 } from '@/contexts/OptimisticActionContext';
+import { ViewSource } from '@/generated/prisma/enums';
 import { QUERY_TYPE } from '@/lib/constants';
 import { api } from '@/trpc/react';
 import { useMemo } from 'react';
@@ -41,6 +42,7 @@ const TopicFeedClient = ({ tag }: { tag: string }) => {
           hasNextPage={hasNextPage}
           isLoading={isLoading}
           emptyStateMessage='No posts found.'
+          source={ViewSource.HASHTAG_FEED}
         />
       </OptimisticActionProvider>
     </InstaFeedScrollContainer>

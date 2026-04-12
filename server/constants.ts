@@ -277,3 +277,34 @@ export const getPrivacyFilter = (userId: string | null) => {
     ],
   };
 };
+
+export const THREAD_SELECT = (userId: string) => ({
+  id: true,
+  createdAt: true,
+  text: true,
+  media: true,
+  parentId: true,
+  quoteId: true,
+  path: true,
+  repliesCount: true,
+  viewCount: true,
+  hideLikes: true,
+  pinned: true,
+  privacy: true,
+  ...getLikesWithBlockFilter(userId),
+  ...getBookmarksWithBlockFilter(userId),
+  ...getAuthorAndHiddenSelect(userId!),
+  ...GET_MENTIONS,
+  ...GET_LINK_PREVIEW,
+  reposts: {
+    where: {
+      user: {
+        deactivated: false,
+      },
+    },
+    ...GET_REPOSTS,
+    // orderBy: {
+    //   createdAt: 'desc',
+    // },
+  },
+});

@@ -4,6 +4,7 @@ import EmptyState from '@/components/shared/EmptyState';
 import PostDetailsLayout from '@/components/shared/PostDetailsLayout';
 import PostDetailsSkeleton from '@/components/skeletons/PostDetailsSkeleton';
 import { OptimisticActionProvider } from '@/contexts/OptimisticActionContext';
+import { ViewSource } from '@/generated/prisma/enums';
 import { QUERY_TYPE } from '@/lib/constants';
 import { api } from '@/trpc/react';
 import { Video } from 'lucide-react';
@@ -43,7 +44,11 @@ const PostDetailsClient = ({ postId }: { postId: string }) => {
       <OptimisticActionProvider
         target={{ type: QUERY_TYPE.POST_DETAILS, variables: { id: postId } }}
       >
-        <PostDetailsLayout post={data.post} isModal />
+        <PostDetailsLayout
+          post={data.post}
+          isModal
+          source={ViewSource.POST_DETAIL}
+        />
       </OptimisticActionProvider>
     </main>
   );

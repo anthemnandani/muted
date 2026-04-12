@@ -400,6 +400,7 @@ export const postRouter = createTRPCRouter({
           pinned: true,
           privacy: true,
           repliesCount: true,
+          viewCount: true,
           status: true,
           ...getAuthorAndHiddenSelect(userId),
           ...getLikesWithBlockFilter(userId),
@@ -552,6 +553,7 @@ export const postRouter = createTRPCRouter({
           pinned: true,
           privacy: true,
           repliesCount: true,
+          viewCount: true,
           status: true,
           ...getAuthorAndHiddenSelect(userId),
           ...getLikesWithBlockFilter(userId),
@@ -992,6 +994,7 @@ export const postRouter = createTRPCRouter({
           pinned: true,
           privacy: true,
           repliesCount: true,
+          viewCount: true,
           author: {
             select: {
               ...GET_USER,
@@ -1578,6 +1581,7 @@ export const postRouter = createTRPCRouter({
           hideLikes: true,
           turnOffComments: true,
           repliesCount: true,
+          viewCount: true,
           pinned: true,
           privacy: true,
           author: {
@@ -1724,6 +1728,7 @@ export const postRouter = createTRPCRouter({
           hideLikes: true,
           turnOffComments: true,
           repliesCount: true,
+          viewCount: true,
           pinned: true,
           privacy: true,
           author: {

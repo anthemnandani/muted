@@ -12,3 +12,4 @@ export const ACTIVE_USERS_REMOVE = 'active-users-remove';
 export const REGISTER = 'register';
 export const MARK_ALL_MESSAGES_SEEN = 'mark-all-messages-seen';
 export const JOIN = 'join';
+export const VIEW_EVENTS_BATCH = 'VIEW_EVENTS_BATCH';

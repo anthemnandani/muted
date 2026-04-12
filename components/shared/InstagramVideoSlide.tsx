@@ -1,5 +1,6 @@
 'use client';
 
+import { useVideoViewTracker } from '@/hooks/useVideoViewTracker';
 import type { MuxPlayerRef } from '@/lib/types';
 import { VideoSlideProps } from '@/lib/types';
 import { getVideoThumbnailUrl } from '@/lib/utils';
@@ -8,7 +9,7 @@ import useSinglePostStore from '@/store/singlePostStore';
 import useVideoPlayer from '@/store/videoPlayer';
 import MuxPlayer from '@mux/mux-player-react';
 import { Volume2, VolumeX } from 'lucide-react';
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useInView } from 'react-intersection-observer';
 
 const InstagramVideoSlide: React.FC<VideoSlideProps> = ({
@@ -17,9 +18,13 @@ const InstagramVideoSlide: React.FC<VideoSlideProps> = ({
   thumbnailToken,
   postId,
   isActive,
+  source,
 }) => {
   const playerRef = useRef<MuxPlayerRef>(null);
   const { ref, inView } = useInView({ threshold: 0.7, triggerOnce: false });
+  const lastTimeRef = useRef(0);
+
+  const { recordPlayback, flush } = useVideoViewTracker({ postId, source });
 
   const { isMuted, setIsMuted } = useVideoPlayer();
 
@@ -82,6 +87,24 @@ const InstagramVideoSlide: React.FC<VideoSlideProps> = ({
     return () => document.removeEventListener('visibilitychange', handler);
   }, [inView, isActive, isModalOpen, currentlyPlayingFeed, postId]);
 
+  useEffect(() => {
+    if (!inView) {
+      flush();
+      lastTimeRef.current = 0;
+    }
+  }, [inView]);
+
+  const handleTimeUpdate = useCallback(() => {
+    const player = playerRef.current;
+    if (!player || !inView) return;
+    const current = player.currentTime ?? 0;
+    const delta = current - lastTimeRef.current;
+    if (delta > 0 && delta < 2) {
+      recordPlayback(delta);
+    }
+    lastTimeRef.current = current;
+  }, [inView, recordPlayback]);
+
   return (
     <div ref={ref} className='relative w-full h-full'>
       <MuxPlayer
@@ -94,6 +117,7 @@ const InstagramVideoSlide: React.FC<VideoSlideProps> = ({
         muted={isMuted}
         loop
         preload='metadata'
+        onTimeUpdate={handleTimeUpdate}
         style={{
           width: '100%',
           height: '100%',
