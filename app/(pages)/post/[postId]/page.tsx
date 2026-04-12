@@ -1,3 +1,4 @@
+import { FileType } from '@/generated/prisma/enums';
 import { getPostMetadata } from '@/lib/actions/post.actions';
 import { Metadata } from 'next';
 import PostDetailsClient from './PostDetailsClient';
@@ -9,7 +10,6 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const postData = await getPostMetadata(params.postId);
   const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
-  // const fallbackImage = `${APP_URL}/og-image.png`;
 
   if (!postData) {
     return {
@@ -18,15 +18,7 @@ export async function generateMetadata({
     };
   }
 
-  // Author name
-  const authorName =
-    postData.author.fullName || postData.author.username;
-
-  // const image = postData.mediaUrl
-  //   ? postData.mediaUrl.startsWith('http')
-  //     ? postData.mediaUrl
-  //     : `${APP_URL}${postData.mediaUrl}`
-  //   : fallbackImage;
+  const authorName = postData.author.fullName || postData.author.username;
 
   const image = postData.mediaUrl
     ? postData.mediaUrl.startsWith('http')
@@ -34,7 +26,7 @@ export async function generateMetadata({
       : `${APP_URL}${postData.mediaUrl}`
     : null;
 
-  const isVideo = postData.mediaType === 'VIDEO';
+  const isVideo = postData.mediaType === FileType.VIDEO;
 
   const description = postData.text
     ? postData.text.length > 160
@@ -43,8 +35,9 @@ export async function generateMetadata({
     : `Post by ${authorName} on Muted`;
 
   const title = postData.text
-    ? `${postData.text.substring(0, 60)}${postData.text.length > 60 ? '...' : ''
-    } — ${authorName} on Muted`
+    ? `${postData.text.substring(0, 60)}${
+        postData.text.length > 60 ? '...' : ''
+      } — ${authorName} on Muted`
     : `${authorName}'s post on Muted`;
 
   const url = `${APP_URL}/post/${params.postId}`;
@@ -57,7 +50,6 @@ export async function generateMetadata({
       canonical: url,
     },
 
-    // ✅ OpenGraph (Facebook, WhatsApp, LinkedIn)
     openGraph: {
       title,
       description,
@@ -76,15 +68,15 @@ export async function generateMetadata({
 
       ...(image
         ? {
-          images: [
-            {
-              url: image,
-              width: 1200,
-              height: 630,
-              alt: title,
-            },
-          ],
-        }
+            images: [
+              {
+                url: image,
+                width: 1200,
+                height: 630,
+                alt: title,
+              },
+            ],
+          }
         : {}),
 
       publishedTime: postData.createdAt.toISOString(),
@@ -100,7 +92,6 @@ export async function generateMetadata({
       }),
     },
 
-    // ✅ Twitter Card
     twitter: {
       card: 'summary_large_image',
       title,
@@ -112,7 +103,6 @@ export async function generateMetadata({
   };
 }
 
-// ✅ Page Component
 export default function PostDetails({
   params,
 }: {

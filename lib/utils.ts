@@ -975,3 +975,22 @@ export const getInstagramFeedRatio = (
   if (!raw || raw <= 0) return IG_DEFAULT;
   return Math.max(IG_MIN_RATIO, Math.min(IG_MAX_RATIO, raw));
 };
+
+export const getOgImage = (imageUrl: string | null): string => {
+  const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
+  if (!imageUrl) return `${APP_URL}/og-image.png`;
+
+  if (imageUrl.includes('img.clerk.com')) {
+    try {
+      const encoded = imageUrl.split('img.clerk.com/')[1];
+      const decoded = JSON.parse(
+        Buffer.from(encoded, 'base64').toString('utf8'),
+      );
+      if (decoded.src) return decoded.src;
+    } catch {
+      return `${APP_URL}/og-image.png`;
+    }
+  }
+
+  return imageUrl;
+};

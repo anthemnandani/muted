@@ -8,6 +8,7 @@ import {
   PostStatus,
   Privacy,
 } from '@/generated/prisma/enums';
+import { createThumbnailToken } from '@/lib/actions/mux.actions';
 import { DownloadableData } from '@/lib/types';
 import {
   capitalizeFirstLetter,
@@ -15,6 +16,7 @@ import {
   extractHashtags,
   formatDateAndTime,
   formatUTCDate,
+  getVideoThumbnailUrl,
 } from '@/lib/utils';
 import {
   GET_MENTIONS,
@@ -34,9 +36,6 @@ import * as cheerio from 'cheerio';
 import JSZip from 'jszip';
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure, publicProcedure } from '../trpc';
-import { createThumbnailTokenForPreview } from '@/lib/actions/mux.actions';
-
-import { getVideoThumbnailUrl } from '@/lib/utils';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
 
@@ -70,7 +69,7 @@ async function getInternalLinkPreview(url: string, db: PrismaClient) {
       if (first.fileType === 'IMAGE' || first.fileType === 'GIF') {
         image = first.fileUrl ?? null;
       } else if (first.fileType === 'VIDEO' && first.playbackId) {
-        const { thumbnailToken } = await createThumbnailTokenForPreview(first.playbackId);
+        const { thumbnailToken } = await createThumbnailToken(first.playbackId);
         if (thumbnailToken) {
           image = getVideoThumbnailUrl(first.playbackId, thumbnailToken);
         }
@@ -109,7 +108,7 @@ async function getInternalLinkPreview(url: string, db: PrismaClient) {
       if (first.fileType === 'IMAGE' || first.fileType === 'GIF') {
         image = first.fileUrl ?? null;
       } else if (first.fileType === 'VIDEO' && first.playbackId) {
-        const { thumbnailToken } = await createThumbnailTokenForPreview(first.playbackId);
+        const { thumbnailToken } = await createThumbnailToken(first.playbackId);
         if (thumbnailToken) {
           image = getVideoThumbnailUrl(first.playbackId, thumbnailToken);
         }
@@ -236,15 +235,15 @@ export const postRouter = createTRPCRouter({
               },
               mentions: mentions
                 ? {
-                  create: mentions.map((mention) => ({
-                    index: mention.index,
-                    user: {
-                      connect: {
-                        id: mention.mentionedUserId,
+                    create: mentions.map((mention) => ({
+                      index: mention.index,
+                      user: {
+                        connect: {
+                          id: mention.mentionedUserId,
+                        },
                       },
-                    },
-                  })),
-                }
+                    })),
+                  }
                 : undefined,
             },
             select: {
@@ -708,15 +707,15 @@ export const postRouter = createTRPCRouter({
               },
               mentions: mentions
                 ? {
-                  create: mentions.map((mention) => ({
-                    index: mention.index,
-                    user: {
-                      connect: {
-                        id: mention.mentionedUserId,
+                    create: mentions.map((mention) => ({
+                      index: mention.index,
+                      user: {
+                        connect: {
+                          id: mention.mentionedUserId,
+                        },
                       },
-                    },
-                  })),
-                }
+                    })),
+                  }
                 : undefined,
             },
             select: {
@@ -872,15 +871,15 @@ export const postRouter = createTRPCRouter({
               },
               mentions: mentions
                 ? {
-                  create: mentions.map((mention) => ({
-                    index: mention.index,
-                    user: {
-                      connect: {
-                        id: mention.mentionedUserId,
+                    create: mentions.map((mention) => ({
+                      index: mention.index,
+                      user: {
+                        connect: {
+                          id: mention.mentionedUserId,
+                        },
                       },
-                    },
-                  })),
-                }
+                    })),
+                  }
                 : undefined,
             },
             select: {
@@ -2049,10 +2048,16 @@ export const postRouter = createTRPCRouter({
       try {
         // Internal Muted URLs ke liye DB se directly lo
         try {
-          const internalPreview = await getInternalLinkPreview(input.url, ctx.db);
+          const internalPreview = await getInternalLinkPreview(
+            input.url,
+            ctx.db,
+          );
           if (internalPreview) return internalPreview;
         } catch (internalError) {
-          console.error('Internal preview failed, falling back:', internalError);
+          console.error(
+            'Internal preview failed, falling back:',
+            internalError,
+          );
         }
 
         // External URLs — existing code as-is
@@ -2464,8 +2469,9 @@ export const postRouter = createTRPCRouter({
 
           let muteContent = '';
           for (const user of mutedUsers) {
-            muteContent += `Date: ${formatUTCDate(user.createdAt)}\nUsername: ${user.mutedUser.username
-              }\n\n`;
+            muteContent += `Date: ${formatUTCDate(user.createdAt)}\nUsername: ${
+              user.mutedUser.username
+            }\n\n`;
           }
           profileFolder?.file(
             'Mute List.txt',

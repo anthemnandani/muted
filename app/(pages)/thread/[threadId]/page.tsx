@@ -1,3 +1,4 @@
+import { FileType } from '@/generated/prisma/enums';
 import { getThreadMetadata } from '@/lib/actions/thread.actions';
 import { Metadata } from 'next';
 import ThreadInfoClient from './ThreadInfoClient';
@@ -9,7 +10,6 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const threadData = await getThreadMetadata(params.threadId);
   const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
-  // const fallbackImage = `${APP_URL}/og-image.png`;
 
   if (!threadData) {
     return {
@@ -18,14 +18,7 @@ export async function generateMetadata({
     };
   }
 
-  const authorName =
-    threadData.author.fullName || threadData.author.username;
-
-  //  const image = threadData.mediaUrl
-  //   ? threadData.mediaUrl.startsWith('http')
-  //     ? threadData.mediaUrl
-  //     : `${APP_URL}${threadData.mediaUrl}`
-  //   : fallbackImage;
+  const authorName = threadData.author.fullName || threadData.author.username;
 
   const image = threadData.mediaUrl
     ? threadData.mediaUrl.startsWith('http')
@@ -33,7 +26,7 @@ export async function generateMetadata({
       : `${APP_URL}${threadData.mediaUrl}`
     : null;
 
-  const isVideo = threadData.mediaType === 'VIDEO';
+  const isVideo = threadData.mediaType === FileType.VIDEO;
 
   const description = threadData.text
     ? threadData.text.length > 160
@@ -42,8 +35,9 @@ export async function generateMetadata({
     : `Thread by ${authorName} on Muted`;
 
   const title = threadData.text
-    ? `${threadData.text.substring(0, 60)}${threadData.text.length > 60 ? '...' : ''
-    } — ${authorName} on Muted`
+    ? `${threadData.text.substring(0, 60)}${
+        threadData.text.length > 60 ? '...' : ''
+      } — ${authorName} on Muted`
     : `${authorName}'s thread on Muted`;
 
   const url = `${APP_URL}/thread/${params.threadId}`;
@@ -74,15 +68,15 @@ export async function generateMetadata({
 
       ...(image
         ? {
-          images: [
-            {
-              url: image,
-              width: 1200,
-              height: 630,
-              alt: title,
-            },
-          ],
-        }
+            images: [
+              {
+                url: image,
+                width: 1200,
+                height: 630,
+                alt: title,
+              },
+            ],
+          }
         : {}),
 
       publishedTime: threadData.createdAt.toISOString(),
@@ -99,18 +93,18 @@ export async function generateMetadata({
 
       ...(isVideo && image
         ? {
-          video: {
-            url: image,
-            type: 'video/mp4',
-            width: 1280,
-            height: 720,
-          },
-        }
+            video: {
+              url: image,
+              type: 'video/mp4',
+              width: 1280,
+              height: 720,
+            },
+          }
         : {}),
     },
 
     twitter: {
-       card: 'summary_large_image',
+      card: 'summary_large_image',
       title,
       description,
       ...(image ? { images: [image] } : {}),
@@ -119,7 +113,6 @@ export async function generateMetadata({
   };
 }
 
-// Page Component (same)
 export default function ThreadInfoPage({
   params,
 }: {

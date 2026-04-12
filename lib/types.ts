@@ -1695,3 +1695,15 @@ export interface RichTextEditorProps {
   content: string;
   onChange: (html: string) => void;
 }
+
+export type ThreadMetadataType = {
+  text: string;
+  mediaUrl: string | null;
+  mediaType: string | null;
+  createdAt: Date;
+  author: {
+    username: string;
+    fullName: string;
+    image: string;
+  };
+};
