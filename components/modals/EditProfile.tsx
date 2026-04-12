@@ -110,7 +110,7 @@ const EditProfile = ({ userBio, userImage }: EditProfileProps) => {
           Edit profile
         </Button>
       </DialogTrigger>
-      <DialogContent className='w-full max-w-lg select-none border-none bg-transparent shadow-none outline-none z-[999]'>
+      <DialogContent className='w-full max-w-lg select-none border-none bg-transparent shadow-none outline-none'>
         <DialogHeader>
           <DialogTitle>
             <VisuallyHidden.Root>Edit Profile</VisuallyHidden.Root>
