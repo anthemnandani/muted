@@ -1014,6 +1014,8 @@ export const getOgImage = (imageUrl: string | null): string => {
   }
 
   return imageUrl;
+};
+
 export const toLocalDateString = (date: Date): string => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
