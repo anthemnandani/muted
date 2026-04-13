@@ -1695,3 +1695,6 @@ export interface RichTextEditorProps {
   content: string;
   onChange: (html: string) => void;
 }
+
+export type ViewContentTypeValue = 'TEXT' | 'IMAGE' | 'VIDEO' | 'GIF';
+export type ViewSourceType = 'MAIN_FEED' | 'VIDEO_FEED' | 'PROFILE' | 'SEARCH' | 'SINGLE_POST';

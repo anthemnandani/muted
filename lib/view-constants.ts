@@ -1,0 +1,1 @@
+export const VIEW_INTERSECTION_THRESHOLD = 0.5;

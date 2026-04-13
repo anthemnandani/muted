@@ -29,7 +29,8 @@ const BottomBar = () => {
     if (!isMobile) return null;
 
     return (
-        <nav className='fixed bottom-0 left-0 right-0 z-[100] bg-[#101010] border-t border-border-light pb-safe'>
+        // <nav className='fixed bottom-0 left-0 right-0 z-[100] bg-[#101010] border-t border-border-light pb-safe'>
+         <nav className='dark:bg-[#101010D9] bg-background fixed bottom-[-1px] left-0 right-0 z-20 w-full backdrop-blur-lg md:hidden px-4 pt-2 pb-[calc(0.5rem_+_env(safe-area-inset-bottom))]'>
             <div className='flex items-center justify-around w-full h-[56px]'>
 
                 {/* HOME */}
