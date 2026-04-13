@@ -279,7 +279,7 @@ export type ParentPostProps = {
   repliesCount: number;
   parentRepliesCount?: number;
   viewCount?: number;
-  source?: 'MAIN_FEED' | 'VIDEO_FEED' | 'POST_PAGE';
+  source?: ViewSourceType;
 };
 
 export interface PostCardProps extends ParentPostProps, PostDisplayProps { }
