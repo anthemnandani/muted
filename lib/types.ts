@@ -278,9 +278,10 @@ export type ParentPostProps = {
   path: string | null;
   repliesCount: number;
   parentRepliesCount?: number;
+  viewCount?: number;
 };
 
-export interface PostCardProps extends ParentPostProps, PostDisplayProps {}
+export interface PostCardProps extends ParentPostProps, PostDisplayProps { }
 
 export type ThreadProps = {
   id: string;
