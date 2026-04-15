@@ -1,22 +1,27 @@
 'use client';
 
-import { useOptimisticAction } from '@/contexts/OptimisticActionContext';
-import { useViewTracker } from '@/hooks/useViewTracker';
-import type { ParentPostProps } from '@/lib/types';
-import { formatCount, formatTimeAgo, getContentType } from '@/lib/utils';
+import type { ParentPostProps, ViewContentTypeValue } from '@/lib/types';
+import { formatCount, formatTimeAgo } from '@/lib/utils';
+import useBreakpoint from '@/hooks/useBreakpoint';
+import { useViewTracker } from '@/hooks/useViewTracking';
 import { useHiddenPosts } from '@/store/hiddenPosts';
 import { useMutedUsers } from '@/store/mutedUsers';
 import useSinglePostStore from '@/store/singlePostStore';
-import { MessageCircle } from 'lucide-react';
+import { useUser } from '@clerk/nextjs';
+import { Eye, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useState } from 'react';
 import BookmarkButton from '../buttons/BookmarkButton';
 import LikeButton from '../buttons/LikeButton';
 import PostActionMenu from '../menus/PostActionMenu';
 import SharePost from '../modals/SharePost';
+import CommentsPanel from '../comments/CommentsPanel';
 import PostText from '../shared/PostText';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import BottomSheet from '../ui/bottom-sheet';
 import Username from '../user/Username';
 import InstagramMediaDisplay from './InstagramMediaDisplay';
+import { useOptimisticAction } from '@/contexts/OptimisticActionContext';
 
 const InstaFeedCard: React.FC<ParentPostProps> = ({
   id,
@@ -36,20 +41,34 @@ const InstaFeedCard: React.FC<ParentPostProps> = ({
   privacy,
   path,
   pinned,
-  source,
+  viewCount = 0,
+  source = 'MAIN_FEED',
 }) => {
   const { isPostHidden } = useHiddenPosts();
   const { isMutedUser } = useMutedUsers();
+  const { isMobile: isMobileView, isSmallMobile } = useBreakpoint();
+  const isMobile = isMobileView || isSmallMobile;
+  const [commentsOpen, setCommentsOpen] = useState(false);
 
   const { setActivePost } = useSinglePostStore();
   const { target } = useOptimisticAction();
+  const { user } = useUser();
 
-  const contentType = getContentType(media);
+  // Determine content type for view tracking
+  const contentType: ViewContentTypeValue = media?.[0]?.fileType === 'GIF'
+    ? 'GIF'
+    : media?.[0]?.fileType === 'VIDEO'
+      ? 'VIDEO'
+      : media?.[0]?.fileType === 'IMAGE'
+        ? 'IMAGE'
+        : 'TEXT';
 
   const { ref: viewRef } = useViewTracker({
     postId: id,
-    source: source!,
     contentType,
+    source,
+    authorId: author.id,
+    currentUserId: user?.id || '',
   });
 
   const isHidden = isPostHidden(id);
@@ -103,7 +122,6 @@ const InstaFeedCard: React.FC<ParentPostProps> = ({
           userId={author.id}
           isHidden={isHidden}
           isMuted={isMuted}
-          source={source}
         />
       )}
       {!isHidden && !isMuted && (
@@ -121,58 +139,88 @@ const InstaFeedCard: React.FC<ParentPostProps> = ({
                 isMainFeed
               />
 
-              <Link
-                href={`/post/${id}`}
-                aria-label='Comment'
-                className='hover:scale-110 transition-transform flex items-center'
-                onClick={() => {
-                  setActivePost(
-                    {
-                      id,
-                      author,
-                      createdAt,
-                      text,
-                      media,
-                      mentions,
-                      likes,
-                      likesCount,
-                      repliesCount,
-                      bookmarks,
-                      reposts,
-                      privacy,
-                      path,
-                      bookmarksCount,
-                      hideLikes,
-                      turnOffComments,
-                      pinned,
-                    },
-                    target,
-                  );
-                }}
-                scroll={false}
-              >
-                <MessageCircle
-                  className='size-[26px] text-white -rotate-90'
-                  strokeWidth={2}
-                />
-                {repliesCount > 0 && (
-                  <strong className='text-[13px] font-semibold leading-4 text-center text-white/90 ml-1.5'>
-                    {formatCount(repliesCount)}
-                  </strong>
-                )}
-              </Link>
+              {isMobile ? (
+                <button
+                  type='button'
+                  aria-label='Comment'
+                  className='hover:scale-110 transition-transform flex items-center'
+                  onClick={() => setCommentsOpen(true)}
+                  disabled={turnOffComments}
+                >
+                  <MessageCircle
+                    className='size-[26px] text-white -rotate-90'
+                    strokeWidth={2}
+                  />
+                  {repliesCount > 0 && (
+                    <strong className='text-[13px] font-semibold leading-4 text-center text-white/90 ml-1.5'>
+                      {formatCount(repliesCount)}
+                    </strong>
+                  )}
+                </button>
+              ) : (
+                <Link
+                  href={`/post/${id}`}
+                  aria-label='Comment'
+                  className='hover:scale-110 transition-transform flex items-center'
+                  onClick={() => {
+                    setActivePost(
+                      {
+                        id,
+                        author,
+                        createdAt,
+                        text,
+                        media,
+                        mentions,
+                        likes,
+                        likesCount,
+                        repliesCount,
+                        bookmarks,
+                        reposts,
+                        privacy,
+                        path,
+                        bookmarksCount,
+                        hideLikes,
+                        turnOffComments,
+                        pinned,
+                      },
+                      target,
+                    );
+                  }}
+                  scroll={false}
+                >
+                  <MessageCircle
+                    className='size-[26px] text-white -rotate-90'
+                    strokeWidth={2}
+                  />
+                  {repliesCount > 0 && (
+                    <strong className='text-[13px] font-semibold leading-4 text-center text-white/90 ml-1.5'>
+                      {formatCount(repliesCount)}
+                    </strong>
+                  )}
+                </Link>
+              )}
 
               <SharePost id={id} authorId={author.id} isMainFeed />
             </div>
 
-            <BookmarkButton
-              bookmarkInfo={{
-                id,
-                bookmarksCount,
-                bookmarks,
-              }}
-              isMainFeed
-            />
+            <div className='flex items-center gap-3'>
+              {viewCount > 0 && (
+                <div className='flex items-center gap-1 text-zinc-500'>
+                  <Eye className='size-4' />
+                  <span className='text-sm'>
+                    {formatCount(viewCount)}
+                  </span>
+                </div>
+              )}
+              <BookmarkButton
+                bookmarkInfo={{
+                  id,
+                  bookmarksCount,
+                  bookmarks,
+                }}
+                isMainFeed
+              />
+            </div>
           </div>
 
           {text && (
@@ -182,6 +230,24 @@ const InstaFeedCard: React.FC<ParentPostProps> = ({
             </div>
           )}
         </div>
+      )}
+      {isMobile && (
+        <BottomSheet open={commentsOpen} onOpenChange={setCommentsOpen}>
+          <div className='flex-1 min-h-0'>
+            <CommentsPanel
+              key={`comments-${id}`}
+              postId={id}
+              onClose={() => setCommentsOpen(false)}
+              authorId={author.id}
+              isOpen={commentsOpen}
+              repliesCount={repliesCount ?? 0}
+              createdAt={createdAt}
+              text={text ?? ''}
+              author={author}
+              reposts={reposts}
+            />
+          </div>
+        </BottomSheet>
       )}
     </article>
   );

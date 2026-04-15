@@ -281,11 +281,19 @@ export type ParentPostProps = {
   path: string | null;
   repliesCount: number;
   parentRepliesCount?: number;
-   viewCount?: number;
-  //  source?: ViewSourceType;
+  viewCount?: number;
+  seriesId?: string | null;
+  episodeNumber?: number | null;
+  episodeTitle?: string | null;
+  series?: {
+    id: string;
+    title: string;
+    seriesType: 'SEQUENTIAL' | string;
+    episodeCount: number;
+  } | null;
 };
 
-export interface PostCardProps extends ParentPostProps, PostDisplayProps {}
+export interface PostCardProps extends ParentPostProps, PostDisplayProps { }
 
 export type ThreadProps = {
   id: string;
@@ -1820,4 +1828,5 @@ export interface SelectionOverlayProps {
 
 
 export type ViewContentTypeValue = 'TEXT' | 'IMAGE' | 'VIDEO' | 'GIF';
-export type ViewSourceType = 'MAIN_FEED' | 'VIDEO_FEED' | 'PROFILE' | 'SEARCH' | 'SINGLE_POST';
+// export type ViewSourceType = 'MAIN_FEED' | 'VIDEO_FEED' | 'PROFILE' | 'SEARCH' | 'SINGLE_POST';
+export type ViewSourceType = ViewSource;
