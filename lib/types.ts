@@ -1755,7 +1755,7 @@ export type ViewEvent = {
   durationMs: number;
   source: ViewSource;
   contentType: ViewContentType;
-  tier?: 'VIEW';
+  tier?: 'VIEW' | 'IMPRESSION';
 };
 
 export interface MetricsChartProps {
