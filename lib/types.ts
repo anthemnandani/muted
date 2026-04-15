@@ -282,7 +282,6 @@ export type ParentPostProps = {
   repliesCount: number;
   parentRepliesCount?: number;
   viewCount?: number;
-<<<<<<< HEAD
   seriesId?: string | null;
   episodeNumber?: number | null;
   episodeTitle?: string | null;
@@ -292,8 +291,6 @@ export type ParentPostProps = {
     seriesType: 'SEQUENTIAL' | string;
     episodeCount: number;
   } | null;
-=======
->>>>>>> 380e88f (bug fix)
 };
 
 export interface PostCardProps extends ParentPostProps, PostDisplayProps { }
