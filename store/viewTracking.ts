@@ -1,5 +1,5 @@
 import { REPLAY_CAP, VIEW_THRESHOLDS } from '@/lib/view-constants';
-import type { ViewEvent } from '@/lib/types';
+import type { ViewContentTypeValue, ViewEvent } from '@/lib/types';
 import { create } from 'zustand';
 
 interface SeenEntry {
@@ -12,7 +12,7 @@ interface ViewTrackingStore {
   seenMap: Map<string, SeenEntry>;
   viewedIds: Map<string, Set<string>>;
   addEvent: (event: ViewEvent) => void;
-  hasBeenViewed: (id: string, contentType: string) => boolean;
+  hasBeenViewed: (id: string, contentType: ViewContentTypeValue) => boolean;
   flushEvents: () => ViewEvent[];
 }
 
