@@ -22,7 +22,7 @@ const TopBar = () => {
   return isMobile ? (
     <header
       className={cn(
-        'sticky top-0 z-10 w-full',
+        'sticky top-[-1px] z-30 w-full',
         isScrolled ? 'bg-[#101010D9] backdrop-blur-2xl' : 'bg-transparent'
       )}
     >

@@ -1,4 +1,5 @@
 import Report from '@/components/modals/Report';
+import BottomBar from '@/components/shared/BottomBar2';
 import TopBar from '@/components/shared/TopBar';
 import LeftSideBar from '@/components/sidebars/LeftSideBar';
 import { PostNavigatorProvider } from '@/contexts/PostNavigatorContext';
@@ -65,7 +66,7 @@ export default async function PagesLayout({
       <TopBar />
       <LeftSideBar />
       <PostNavigatorProvider>{children}</PostNavigatorProvider>
-      {/* <BottomBar /> */}
+      <BottomBar />  
       <Report />
       {modal}
     </>
