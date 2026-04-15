@@ -1,6 +1,5 @@
 'use client';
 
-import useWindow from '@/hooks/useWindow';
 import { UsersMenuProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { UserX } from 'lucide-react';
@@ -9,6 +8,7 @@ import { Icons } from '../icons';
 import UserAvatar from '../shared/UserAvatar';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { ScrollArea } from '../ui/scroll-area';
+import useBreakpoint from '@/hooks/useBreakpoint';
 
 const UsersMenu = ({
   showMentionSuggestions,
@@ -17,7 +17,7 @@ const UsersMenu = ({
   isLoading,
   onSelect,
 }: UsersMenuProps) => {
-  const { isMobile } = useWindow();
+  const { isMobile } = useBreakpoint();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {

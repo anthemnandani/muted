@@ -1,6 +1,5 @@
 'use client';
 
-import useWindow from '@/hooks/useWindow';
 import { cn } from '@/lib/utils';
 import useAddGif from '@/store/addGif';
 import { IGif } from '@giphy/js-types';
@@ -22,6 +21,7 @@ import {
 } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { ScrollArea } from '../ui/scroll-area';
+import useBreakpoint from '@/hooks/useBreakpoint';
 
 interface GifPickerProps {
   onGifSelect: (gif: IGif) => void;
@@ -34,7 +34,7 @@ const LoaderComponent = () => (
 );
 
 const GifPicker: React.FC<GifPickerProps> = ({ onGifSelect }) => {
-  const { isTablet, isMobile } = useWindow();
+  const { isTablet, isMobile } = useBreakpoint();
   const { openGifPicker, setOpenGifPicker } = useAddGif();
   const [searchTerm, setSearchTerm] = React.useState('');
   const [debouncedTerm, setDebouncedTerm] = React.useState('');

@@ -281,6 +281,8 @@ export type ParentPostProps = {
   path: string | null;
   repliesCount: number;
   parentRepliesCount?: number;
+   viewCount?: number;
+  //  source?: ViewSourceType;
 };
 
 export interface PostCardProps extends ParentPostProps, PostDisplayProps {}
@@ -1815,3 +1817,7 @@ export interface SelectionOverlayProps {
   isSelecting: boolean;
   onToggle: (e: React.MouseEvent) => void;
 }
+
+
+export type ViewContentTypeValue = 'TEXT' | 'IMAGE' | 'VIDEO' | 'GIF';
+export type ViewSourceType = 'MAIN_FEED' | 'VIDEO_FEED' | 'PROFILE' | 'SEARCH' | 'SINGLE_POST';

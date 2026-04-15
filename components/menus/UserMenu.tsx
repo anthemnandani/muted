@@ -1,7 +1,5 @@
 'use client';
 
-import { Role } from '@/generated/prisma/enums';
-import useWindow from '@/hooks/useWindow';
 import { SignOutButton, useUser } from '@clerk/nextjs';
 import {
   Activity,
@@ -23,10 +21,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
+import { Role } from '@/generated/prisma/enums';
+import useBreakpoint from '@/hooks/useBreakpoint';
 
 const UserMenu = () => {
   const router = useRouter();
-  const { isMobile } = useWindow();
+  const { isMobile } = useBreakpoint();
   const { user } = useUser();
   const userRole = user?.publicMetadata?.role;
 

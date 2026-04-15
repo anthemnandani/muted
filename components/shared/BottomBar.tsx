@@ -1,9 +1,10 @@
 'use client';
-import useWindow from '@/hooks/useWindow';
+
 import Navigation from './Navigation';
+import useBreakpoint from '@/hooks/useBreakpoint';
 
 const BottomBar = () => {
-  const { isMobile } = useWindow();
+  const { isMobile } = useBreakpoint();
   return (
     isMobile && (
       <section className='dark:bg-[#101010D9] bg-background fixed bottom-0 z-20 w-full backdrop-blur-lg md:hidden p-4'>

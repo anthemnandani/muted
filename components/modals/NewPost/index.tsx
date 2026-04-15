@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import useCreatePost from '@/hooks/useCreatePost';
-import useDevice from '@/hooks/useDevice';
 import useFileUpload from '@/hooks/useFileUpload';
 import { cn } from '@/lib/utils';
 import useFileStore from '@/store/fileStore';
@@ -24,6 +23,7 @@ import PreviewStep from './PreviewStep';
 import UploadError from './UploadError';
 import UploadStep from './UploadStep';
 import UploadingView from './UploadingView';
+import useBreakpoint from '@/hooks/useBreakpoint';
 
 const NewPost = () => {
   const {
@@ -36,7 +36,7 @@ const NewPost = () => {
   } = usePostDialog();
   const { setMediaFiles, setThreadMedia } = useFileStore();
   const [showDiscardModal, setShowDiscardModal] = useState(false);
-  const { isMobile } = useDevice();
+  const { isMobile } = useBreakpoint();
 
   const {
     error,

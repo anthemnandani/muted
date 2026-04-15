@@ -35,4 +35,4 @@ const useDevice = () => {
   };
 };
 
-export default useDevice;
+// export default useDevice;

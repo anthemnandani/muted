@@ -1,7 +1,6 @@
 // 'use client';
 
 // import { ResizeTextarea } from '@/components/ui/resize-textarea';
-// import useDevice from '@/hooks/useDevice';
 // import { CreatePostInputProps, GiphyMedia } from '@/lib/types';
 // import { getFullName } from '@/lib/utils';
 // import useFileStore from '@/store/fileStore';
@@ -11,6 +10,7 @@
 // import { Fragment, useMemo } from 'react';
 // import PostMediaTools from '../posts/PostMediaTools';
 // import UserAvatar from '../shared/UserAvatar';
+// import useBreakpoint from '@/hooks/useBreakpoint';
 
 // const CreatePostInput = ({
 //   onTextareaChange,
@@ -22,7 +22,7 @@
 //   getRootProps,
 //   getInputProps,
 // }: CreatePostInputProps) => {
-//   const { isMobile } = useDevice();
+//   const { isMobile } = useBreakpoint();
 //   const { user } = useUser();
 //   const { postData } = usePostDialog();
 //   const { setThreadMedia } = useFileStore();

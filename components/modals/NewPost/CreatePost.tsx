@@ -2,11 +2,11 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
-import useDevice from '@/hooks/useDevice';
 import usePostDialog from '@/store/postDialog';
 import { useUser } from '@clerk/nextjs';
 import { useRef, useEffect } from 'react';
 import EmojiPicker from '../EmojiPicker';
+import useBreakpoint from '@/hooks/useBreakpoint';
 
 const CreatePost = () => {
   const { user } = useUser();
@@ -25,7 +25,7 @@ const CreatePost = () => {
     }
   }, [editPostId]);
 
-  const { isMobile } = useDevice();
+  const { isMobile } = useBreakpoint();
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setPostData({ ...postData, caption: e.target.value });

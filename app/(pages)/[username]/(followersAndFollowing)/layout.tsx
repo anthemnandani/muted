@@ -6,7 +6,7 @@ import SortFollowersAndFollowing from '@/components/menus/SortFollowersAndFollow
 import Loader from '@/components/shared/Loader';
 import ProfileTabItem from '@/components/shared/ProfileTabItem';
 import Wrapper from '@/components/shared/Wrapper';
-import useDevice from '@/hooks/useDevice';
+import useBreakpoint from '@/hooks/useBreakpoint';
 import { parseUsernamePath } from '@/lib/utils';
 import useSortBy from '@/store/sortBy';
 import { api } from '@/trpc/react';
@@ -22,7 +22,7 @@ export default function FollowersAndFollowingLayout({
 }: FollowersAndFollowingLayoutProps) {
   const router = useRouter();
   const { resetSortBy } = useSortBy();
-  const { isMobile } = useDevice();
+  const { isMobile } = useBreakpoint();
   const params = useParams<{ username: string }>();
   const username = decodeURIComponent(params!.username).substring(1);
   const path = usePathname();
