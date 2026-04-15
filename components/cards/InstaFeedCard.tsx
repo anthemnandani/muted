@@ -55,13 +55,12 @@ const InstaFeedCard: React.FC<ParentPostProps> = ({
   const { user } = useUser();
 
   // Determine content type for view tracking
-  const contentType: ViewContentTypeValue = media?.[0]?.fileType === 'GIF'
-    ? 'GIF'
-    : media?.[0]?.fileType === 'VIDEO'
-      ? 'VIDEO'
-      : media?.[0]?.fileType === 'IMAGE'
-        ? 'IMAGE'
-        : 'TEXT';
+const contentType: ViewContentTypeValue =
+  media?.[0]?.fileType === 'VIDEO'
+    ? 'VIDEO'
+    : media?.[0]?.fileType === 'IMAGE'
+      ? 'IMAGE'
+      : 'IMAGE'; 
 
   const { ref: viewRef } = useViewTracker({
     postId: id,

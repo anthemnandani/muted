@@ -1828,6 +1828,7 @@ export interface SelectionOverlayProps {
 }
 
 
-export type ViewContentTypeValue = 'TEXT' | 'IMAGE' | 'VIDEO' | 'GIF';
+// export type ViewContentTypeValue = 'TEXT' | 'IMAGE' | 'VIDEO' | 'GIF';
+export type ViewContentTypeValue = ViewContentType;
 // export type ViewSourceType = 'MAIN_FEED' | 'VIDEO_FEED' | 'PROFILE' | 'SEARCH' | 'SINGLE_POST';
 export type ViewSourceType = ViewSource;
