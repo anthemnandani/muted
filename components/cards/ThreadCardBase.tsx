@@ -8,7 +8,7 @@ import { ThreadCardBaseProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useHiddenThreads } from '@/store/hiddenThreads';
 import { useMutedUsers } from '@/store/mutedUsers';
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import ThreadContent from '../shared/ThreadContent';
 import ThreadHeader from '../shared/ThreadHeader';
 import RepostedBy from '../user/RepostedBy';
@@ -16,6 +16,10 @@ import HiddenThread from './HiddenThread';
 import LinkPreviewCard from './LinkPreviewCard';
 import MutedThread from './MutedThread';
 import ThreadQuoteCard from './ThreadQuoteCard';
+import BottomSheet from '../ui/bottom-sheet';
+import CommentsPanel from '../comments/CommentsPanel';
+import useBreakpoint from '@/hooks/useBreakpoint';
+import ThreadCommentsPanel from '../comments/ThreadCommentsPanel';
 
 const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
   id,
@@ -47,6 +51,9 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
 }) => {
   const { isThreadHidden } = useHiddenThreads();
   const { isMutedUser } = useMutedUsers();
+  const { isMobile: isMobileView, isSmallMobile } = useBreakpoint();
+  const isMobile = isMobileView || isSmallMobile;
+  const [commentsOpen, setCommentsOpen] = useState(false);
 
   const { isLoading: isCheckingPermissions, canInteract } = usePostInteraction({
     authorId: author.id,
@@ -136,11 +143,42 @@ const ThreadCardBase: React.FC<ThreadCardBaseProps> = ({
             bookmarks={bookmarks}
             isCheckingPermissions={isCheckingPermissions}
             canInteract={canInteract}
+            onCommentsToggle={isMobile ? () => setCommentsOpen(true) : undefined}
           />
         </div>
       )}
 
       {children}
+
+      {isMobile && (
+        <BottomSheet open={commentsOpen} onOpenChange={setCommentsOpen}>
+          <div className='flex-1 min-h-0'>
+            {/* <CommentsPanel
+              key={`comments-${id}`}
+              postId={id}
+              onClose={() => setCommentsOpen(false)}
+              authorId={author.id}
+              isOpen={commentsOpen}
+              repliesCount={repliesCount ?? 0}
+              createdAt={createdAt}
+              text={text ?? ''}
+              author={author}
+              reposts={reposts}
+            /> */}
+            <ThreadCommentsPanel
+              threadId={id}
+              onClose={() => setCommentsOpen(false)}
+              authorId={author.id}
+              isOpen={commentsOpen}
+              repliesCount={repliesCount ?? 0}
+              text={text}
+              createdAt={createdAt}
+              author={author}
+              reposts={reposts}
+            />
+          </div>
+        </BottomSheet>
+      )}
     </div>
   );
 };

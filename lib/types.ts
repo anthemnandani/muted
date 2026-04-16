@@ -442,6 +442,7 @@ export interface ThreadReplyButtonProps {
   id: string;
   repliesCount: number;
   isParentThread?: boolean;
+  onCommentsToggle?: () => void;
 }
 
 export interface ThreadRepostButtonProps {
@@ -458,6 +459,19 @@ export interface ThreadRepostButtonProps {
   isCheckingPermissions?: boolean;
   isParentThread?: boolean;
   canInteract?: boolean;
+}
+
+export interface ThreadCommentsPanelProps {
+  threadId: string;
+  onClose: () => void;
+  authorId: string;
+  isOpen: boolean;
+  repliesCount: number;
+  text?: string;
+  createdAt?: Date;
+  author?: any;
+  repostedBy?: any;
+  reposts?: any;
 }
 
 export interface BookmarkButtonProps {
@@ -718,6 +732,7 @@ export interface ThreadActionsProps {
   quoteId: string | null;
   isCheckingPermissions?: boolean;
   canInteract?: boolean;
+  onCommentsToggle?: () => void;
 }
 
 export interface PostActionMenuProps {
