@@ -27,22 +27,21 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
   bookmarksCount,
   isCheckingPermissions,
   canInteract,
-  onCommentsToggle,
 }) => {
   return (
     <Fragment>
       <div className='flex items-center gap-5'>
         <ThreadLikeButton
-          likeInfo={{ id, likesCount, likes }}
+          likeInfo={{
+            id,
+            likesCount,
+            likes,
+          }}
           hideLikes={hideLikes}
           authorId={author.id}
         />
 
-        <ThreadReplyButton
-          id={id}
-          repliesCount={repliesCount}
-          onCommentsToggle={onCommentsToggle}
-        />
+        <ThreadReplyButton id={id} repliesCount={repliesCount} />
 
         <ThreadRepostButton
           id={id}
@@ -62,7 +61,11 @@ const ThreadActions: React.FC<ThreadActionsProps> = ({
 
       <div className='flex items-center gap-5'>
         <ThreadBookmarkButton
-          bookmarkInfo={{ id, bookmarksCount, bookmarks }}
+          bookmarkInfo={{
+            id,
+            bookmarksCount,
+            bookmarks,
+          }}
         />
         <CopyLinkButton threadId={id} />
       </div>

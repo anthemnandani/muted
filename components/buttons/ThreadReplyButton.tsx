@@ -7,20 +7,13 @@ const ThreadReplyButton: React.FC<ThreadReplyButtonProps> = ({
   id,
   repliesCount,
   isParentThread = false,
-  onCommentsToggle,
 }) => {
   const router = useRouter();
-
-  const handleClick = () => {
-    if (onCommentsToggle) {
-      onCommentsToggle();
-    } else {
-      router.push(`/thread/${id}`);
-    }
-  };
-
   return (
-    <div className='icon-container-hover' onClick={handleClick}>
+    <div
+      className='icon-container-hover'
+      onClick={() => router.push(`/thread/${id}`)}
+    >
       <Icons.reply className='size-5' />
       {repliesCount > 0 && !isParentThread && (
         <span className='text-[13px] ml-2 text-white/75'>{repliesCount}</span>
