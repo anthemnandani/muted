@@ -226,7 +226,7 @@ const CommentInput = ({
             onPaste={handlePaste}
             onKeyDown={handleKeyDown}
             rows={1}
-            autoFocus
+            // autoFocus
             maxLength={maxChars}
             className={cn(
               'w-full text-sm resize-none bg-transparent text-white placeholder-gray-400 outline-none py-2 overflow-hidden',
