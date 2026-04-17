@@ -114,7 +114,7 @@ const CommentsPanel: React.FC<CommentsPanelProps> = ({
       <div
         ref={scrollRef}
         id='scrollableDiv'
-        className='flex-1 overflow-y-auto hide-scrollbar flex flex-col'
+        className='flex-1 overflow-y-auto hide-scrollbar flex flex-col will-change-scroll'
       >
         <div ref={infoCardSentinelRef} className='p-4'>
           <PostInfoCard
