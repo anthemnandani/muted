@@ -184,7 +184,7 @@ const CommentInput = ({
         (e.key === 'Delete' && cursorPos < prefixedReply.length) ||
         ((e.key === 'Backspace' || e.key === 'Delete') &&
           textareaRef.current?.selectionStart !==
-            textareaRef.current?.selectionEnd &&
+          textareaRef.current?.selectionEnd &&
           (textareaRef.current?.selectionStart || 0) < prefixedReply.length)
       ) {
         e.preventDefault();
@@ -205,6 +205,17 @@ const CommentInput = ({
       }
     }
   };
+
+ const handleFocus = () => {
+  setTimeout(() => {
+    requestAnimationFrame(() => {
+      textareaRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    });
+  }, 100);
+};
 
   return (
     <div className='relative flex items-center gap-2'>
@@ -227,9 +238,10 @@ const CommentInput = ({
             onKeyDown={handleKeyDown}
             rows={1}
             // autoFocus
+            onFocus={handleFocus}
             maxLength={maxChars}
             className={cn(
-              'w-full text-sm resize-none bg-transparent text-white placeholder-gray-400 outline-none py-2 overflow-hidden',
+              'w-full text-sm resize-none bg-transparent text-white placeholder-gray-400 outline-none py-2 overflow-hidden will-change-[height]',
               hasText ? 'pb-7' : '',
             )}
           />
@@ -273,11 +285,10 @@ const CommentInput = ({
       <button
         onClick={onSubmit}
         disabled={isSubmitting || !textValue.trim()}
-        className={`font-medium px-2 text-sm ${
-          !textValue.trim() || isSubmitting
+        className={`font-medium px-2 text-sm ${!textValue.trim() || isSubmitting
             ? 'text-gray-600'
             : 'text-primary-blue'
-        }`}
+          }`}
       >
         {isEdit ? 'Update' : isReply ? 'Reply' : 'Comment'}
       </button>
